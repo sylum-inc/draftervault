@@ -15,6 +15,7 @@ npm run build:single # one self-contained HTML file in dist-single/
 npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 599-player pool from nflverse production data
+npm run build:icons  # redraw the app icons (CI checks they match)
 docker compose up -d --build     # nginx on :8080
 ```
 
@@ -38,6 +39,8 @@ src/pages/Index.tsx
         ├── BudgetPlanner.tsx     what a bid leaves behind, live
         ├── BargainBoard.tsx      our board against expert consensus
         ├── AdvisorPanel.tsx      the opinion layer, off by default
+        ├── LeagueSettings.tsx    teams, budget, roster shape — re-prices the board
+        ├── RankingsImport.tsx    bring your own values, previewed before applying
         ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
         │                         ScheduleStrip, BidLadder, PositionSwarm,
         │                         OutcomeCurve, ConsensusRange, QuadrantScatter,
@@ -48,6 +51,8 @@ src/pages/Index.tsx
 
 src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 
+src/lib/valuation.ts                  league shape + points-to-dollars (shared)
+src/lib/rankingsCsv.ts                parsing and matching an imported ranking
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/draftAdvisor.ts          the opinion layer, deliberately separate
 src/services/nflIdentity.ts           team colors, crests, headshots
@@ -57,6 +62,7 @@ src/data/nfl/schedule.json            2026 season by team, with matchup difficul
 src/data/nfl/team-context.json        per-offence pace, PROE, red-zone rate
 scripts/build-player-pool.mjs         builds the pool from nflverse
 scripts/fetch-nfl-data.mjs            builds team identity from ESPN
+scripts/build-icons.mjs               draws public/icons/ with no image library
 src/styles/draft-room.css             design tokens + component styles
 ```
 
@@ -83,6 +89,33 @@ and the pool reports an observation. `draftAdvisor.ts` takes a position — bid,
 hold, walk away — and it is a separate module for that reason, off until asked
 for, rendered in its own dashed box with the reasoning that produced each call.
 Don't let a recommendation leak into `DraftAnalytics`.
+
+**The league is one definition, not two.** `src/lib/valuation.ts` holds both the
+league shape and the arithmetic that turns projected points into dollars. The
+pool builder imports it through Node's type stripping (hence the pinned Node 22
+in CI); the client imports it directly and re-prices from `projection.points`,
+which is league-independent, rather than trusting the values baked into
+pool.json. That is what lets a league the pool was never built for price
+correctly with no regeneration. A test re-prices the shipped pool at the shape
+it was built for and asserts all 599 auction values, VORPs and replacement
+levels match exactly — that test is the guard against the two drifting, so
+don't weaken it to a tolerance.
+
+**A league change clears the draft; an import does not.** Bids were made against
+prices a new league does not charge, so replaying them would build a roster
+nobody could have bought — `restore()` refuses a save stamped with a different
+league for the same reason. An imported ranking only changes what the players
+still on the board are said to be worth, so a draft in progress survives it.
+
+**An import may not guess.** The pool joins on ids the whole way, but a CSV
+someone exports from a spreadsheet carries only names. `rankingsCsv.ts` keeps
+the half of the rule that still applies: a name matching two players matches
+neither and is reported as ambiguous. The shipped pool has 27 names that
+collide on first-initial-plus-surname — "B. Robinson" is Bijan ($54) or Brian
+(a bench back) — which is exactly what the old importer's `includes(lastName)`
+bound silently and wrongly. Imported values replace ours everywhere including
+in the advice, because an opinion nothing acts on is decoration; ours survives
+on `player.modelValue` and the board marks whose number it is showing.
 
 **Identity is two-tiered.** The bundled snapshot in `src/data/nfl/` paints first
 with real names, colors and faces and needs no network; `refreshIdentity()` then
@@ -143,8 +176,11 @@ Legacy services under `src/services/` named `real*` still generate numbers with
 
 - A `lint-staged` pre-commit hook runs `eslint --fix` and `prettier --write`, so
   commits touching an unformatted legacy file will reformat it. Expected.
-- `npm run lint` reports ~78 pre-existing `no-explicit-any` errors in the older
-  files. Don't add more; fixing them is a separate cleanup.
+- **`npm run validate` passes and CI gates on it.** It used to be unpassable:
+  lint reported 74 errors, all in the dead tree that `tsconfig.app.json`
+  already excludes. `eslint.config.js` now reads that file's `include` list and
+  lints exactly what tsc typechecks, rather than keeping a second copy of the
+  list that would drift. Deleting the dead tree makes that block a no-op.
 - **`type-check` used to check nothing.** The root `tsconfig.json` is a
   solution-style config (`"files": []` + project references), so `tsc --noEmit`
   against it silently exits 0 having compiled zero files. It now runs
@@ -175,7 +211,9 @@ and FantasyPros consensus; seven-tab player dossiers with twelve bespoke charts;
 a compare tray; the league board with money flow and tier depletion; a live
 budget simulator; a bargain board; a separated advisor layer; defensive
 personnel for all 32 teams; results with grades and export; Docker/nginx
-deployment; a single-file build; 74 tests.
+deployment; a single-file build; a configurable league that re-prices the whole
+board; a custom-rankings import that refuses to guess; app icons and a manifest
+that describe what actually exists; CI gating `npm run validate`; 133 tests.
 
 The one caveat worth knowing: the CSV **download** works in a browser but does
 nothing inside the published artifact preview, whose sandbox blocks
@@ -183,20 +221,28 @@ page-initiated downloads. Copy CSV and Print work everywhere.
 
 Open, roughly in order of value:
 
-1. **League configuration.** Twelve teams at $200 with a fixed roster shape is
-   hardcoded in both the engine and the pool builder's `LEAGUE` constant. The
-   dollar values depend on it, so the two must stay in step.
-2. **Dead code**: ~59k lines unreachable from `main.tsx`, about 40k of it
-   `src/data/playerDatabase/`. Now that the pool comes from nflverse, that tree is
-   genuinely redundant rather than salvageable — as are the Bloomberg interface,
-   the orphaned AI stack and the unused shadcn components. It is currently
-   excluded from `tsconfig.app.json` rather than deleted, so typechecking works;
-   deleting it is a one-line `git rm -r` away and would remove ~460 latent
-   errors. Only 57 files are reachable from `main.tsx`.
-3. **No CI.** `npm run validate` gates nothing on push — and it is worth gating
-   now that it actually checks something. Also `@sentry/react` and
-   `web-vitals` are imported by `src` but declared as devDependencies, and
-   `index.html` references `/icons/*` files that do not exist.
+1. **Dead code**: 132 files and ~79k lines under `src/` unreachable from
+   `main.tsx`, about 40k of it `src/data/playerDatabase/`. Deleting it was
+   measured, not estimated: removing the 89 non-shadcn files leaves type-check,
+   all 133 tests and the production build passing, with exactly one breakage —
+   `src/components/ui/sidebar.tsx` imports `@/hooks/use-mobile`, and because
+   `tsconfig.app.json` includes the whole `src/components/ui` directory, every
+   shadcn file is an effective typecheck entry point even though nothing in the
+   app imports it. So the safe deletion is those 89 files minus
+   `src/hooks/use-mobile.tsx`, or those 89 plus `sidebar.tsx`. The 43 unused
+   shadcn primitives are a separate call: they are a vendored library, and
+   people add components from it later.
+2. **Per-league pool regeneration.** The client re-prices for any league shape
+   from the shipped projections, which is right for dollar values. What it
+   cannot change is the pool's _membership_ — 599 players chosen for a
+   twelve-team league — so a 32-team league runs thinner than it should. That
+   needs `npm run build:pool` per shape, or a larger pool shipped once.
+3. **`getPlayerAnalytics` still assumes a nine-slot starting lineup** in
+   `AuctionDraftService.STARTERS` — QB1/RB2/WR3/TE1/K1/DST1, which sums to the
+   nine that `league.starters` now controls, but as a fixed positional shape
+   rather than one derived from the league. Roster size, budget, team count and
+   position limits all follow the league; that table does not, so it is what
+   decides positional urgency no matter how the league is configured.
 
 ## Related
 
