@@ -1,0 +1,27 @@
+{
+  "source": "ESPN public API",
+  "season": 2026,
+  "generatedAt": "2026-08-25T03:06:38.988Z",
+  "players": [
+    {
+      "id": "31",
+      "name": "T. Hill",
+      "position": "WR",
+      "team": "MIA",
+      "candidates": [
+        "Tutu Atwell",
+        "Chris Bell",
+        "Kevin Coleman Jr.",
+        "Caleb Douglas",
+        "AJ Henning",
+        "Terrace Marshall Jr.",
+        "Donaven McCulley",
+        "Jalen Reagor",
+        "Jalen Tolbert",
+        "Malik Washington",
+        "Tahj Washington",
+        "Theo Wease Jr."
+      ]
+    }
+  ]
+}

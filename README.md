@@ -100,17 +100,33 @@ Docker `--build-arg` values, which are baked in at build time.
 
 ---
 
-## Using the draft board
+## Using the draft room
 
-|                    |                                                                                                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Draft a player** | `Select for Auction` on any card → the Player Analytics dialog opens → choose a team → enter a bid → `Confirm Pick`                                                    |
-| **Tabs**           | Draft Board, AI Insights (draft phase and strategic targets), Team Builder, Analytics (value vs ADP, scarcity, efficiency, risk/reward, trends, projections), Settings |
-| **Filters**        | Search by player or team, the `All Pos` and `All Tiers` dropdowns, and the `Available` / `Drafted` toggle                                                              |
-| **Auto-draft**     | `Simulate Auction` runs the draft on its own                                                                                                                           |
-| **Player detail**  | The analytics dialog's Overview selector switches between deeper metric groups                                                                                         |
+|                  |                                                                                                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Nominate**     | Click any card. The player takes the stage on the right (a bottom sheet on phones) with their valuation and bid controls                                  |
+| **Sell**         | Pick the winning team, set the bid, hit `Sold`. Illegal bids are refused with the reason — over budget, position full, roster full, or not a whole dollar |
+| **Undo**         | `Undo pick` in the top bar reverses the last sale, money and roster slot included                                                                         |
+| **Filters**      | Search by player or team, filter by position, sort by ADP, value or projection                                                                            |
+| **Full profile** | Real bio (jersey, age, height, weight, college, experience), the full valuation ladder, and risk factors                                                  |
 
-Draft state lives in memory only: reloading the page starts a fresh draft.
+Drafts save themselves. Close the tab mid-auction and the next visit replays
+every pick, so nothing is lost to a stray refresh.
+
+---
+
+## Where the player data comes from
+
+Names, teams, colors, crests, headshots and defensive personnel come from
+ESPN's public API. `npm run fetch:nfl` regenerates the curated snapshot in
+`src/data/nfl/`, which ships in the bundle so the board is populated before any
+network request happens. At runtime the app quietly refreshes injury status and
+team changes on top of that snapshot, and falls back to it whenever ESPN is
+unreachable.
+
+The generator also reports where the auction pool disagrees with ESPN — a
+misspelled name, or a player the pool still lists on last season's team. Those
+entries are flagged in the app rather than silently papered over.
 
 ---
 

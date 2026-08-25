@@ -1,0 +1,860 @@
+/* ==========================================================================
+   Draft Room — a broadcast-desk look for the auction board.
+   Committed to one dark visual world on purpose: an auction runs in a lit room
+   on a shared screen, and the team colors only read against a deep ground.
+   ========================================================================== */
+
+.draft-room {
+  /* Neutrals carry a slight blue bias so team colors sit on them as accents
+     rather than fighting a dead grey. */
+  --dr-ground: #080a0f;
+  --dr-surface: #111621;
+  --dr-raised: #1a2130;
+  --dr-line: #242d3d;
+  --dr-line-strong: #35415a;
+
+  --dr-ink: #edf1f7;
+  --dr-ink-muted: #8996ac;
+  --dr-ink-faint: #5b6880;
+
+  /* Semantic signals, kept separate from the team accent. */
+  --dr-value: #3dd68c;
+  --dr-caution: #f0a93b;
+  --dr-danger: #f0616d;
+
+  /* Overridden per card/panel with the nominated player's team color. */
+  --dr-accent: #4d7cff;
+  --dr-accent-ink: #ffffff;
+
+  --dr-radius: 10px;
+  --dr-radius-sm: 6px;
+  --dr-gap: 16px;
+
+  --dr-display: 'Barlow Condensed', 'Oswald', 'Arial Narrow', sans-serif;
+  --dr-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --dr-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+  background: var(--dr-ground);
+  color: var(--dr-ink);
+  font-family: var(--dr-sans);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+   shared primitives
+   -------------------------------------------------------------------------- */
+
+.dr-panel {
+  background: var(--dr-surface);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius);
+}
+
+.dr-eyebrow {
+  font-family: var(--dr-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-num {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.dr-display {
+  font-family: var(--dr-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+.draft-room button {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.draft-room :focus-visible {
+  outline: 2px solid var(--dr-accent);
+  outline-offset: 2px;
+  border-radius: var(--dr-radius-sm);
+}
+
+/* --------------------------------------------------------------------------
+   top bar
+   -------------------------------------------------------------------------- */
+
+.dr-topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 18px;
+  background: linear-gradient(180deg, #0d121b 0%, var(--dr-ground) 100%);
+  border-bottom: 1px solid var(--dr-line);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.dr-wordmark {
+  font-family: var(--dr-display);
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.dr-wordmark span {
+  color: var(--dr-value);
+}
+
+.dr-progress {
+  flex: 1;
+  min-width: 120px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--dr-value), #7ce4b3);
+  transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dr-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.dr-stat-value {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.dr-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: var(--dr-radius-sm);
+  border: 1px solid var(--dr-line-strong);
+  background: var(--dr-raised);
+  color: var(--dr-ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.dr-button:hover:not(:disabled) {
+  background: #232c3e;
+  border-color: var(--dr-line-strong);
+}
+
+.dr-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.dr-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dr-button-primary {
+  background: var(--dr-accent);
+  border-color: transparent;
+  color: var(--dr-accent-ink);
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dr-button-primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+  background: var(--dr-accent);
+}
+
+/* --------------------------------------------------------------------------
+   layout
+   -------------------------------------------------------------------------- */
+
+.dr-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--dr-gap);
+  padding: var(--dr-gap);
+  align-items: start;
+}
+
+.dr-aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-gap);
+  position: sticky;
+  top: 74px;
+}
+
+/* --------------------------------------------------------------------------
+   board
+   -------------------------------------------------------------------------- */
+
+.dr-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.dr-search {
+  flex: 1;
+  min-width: 190px;
+  padding: 9px 12px;
+  background: var(--dr-surface);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  color: var(--dr-ink);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.dr-search::placeholder {
+  color: var(--dr-ink-faint);
+}
+
+.dr-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--dr-line);
+  background: transparent;
+  color: var(--dr-ink-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.dr-chip:hover {
+  color: var(--dr-ink);
+  border-color: var(--dr-line-strong);
+}
+
+.dr-chip[aria-pressed='true'] {
+  background: var(--dr-ink);
+  border-color: var(--dr-ink);
+  color: var(--dr-ground);
+}
+
+.dr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   player card
+   -------------------------------------------------------------------------- */
+
+.dr-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 0;
+  overflow: hidden;
+  background: var(--dr-surface);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.dr-card:hover {
+  border-color: var(--dr-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -14px var(--dr-accent);
+}
+
+.dr-card[aria-selected='true'] {
+  border-color: var(--dr-accent);
+  box-shadow: inset 0 0 0 1px var(--dr-accent);
+}
+
+.dr-card-head {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 8px 12px 0;
+  min-height: 84px;
+  /* The team color is the card's ground, faded so names stay legible. */
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--dr-accent) 42%, transparent) 0%,
+      transparent 100%
+    ),
+    var(--dr-surface);
+}
+
+.dr-card-photo {
+  width: 88px;
+  height: 64px;
+  flex: none;
+  /* Pushed to the trailing edge so the team mark and tier badge get the left
+     half — the same anchoring a broadcast lower-third uses. */
+  margin-left: auto;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+}
+
+.dr-card-monogram {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--dr-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dr-ink-muted);
+}
+
+.dr-card-logo {
+  position: absolute;
+  top: 58%;
+  left: 14px;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+.dr-card-name {
+  font-family: var(--dr-display);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.05;
+  margin: 8px 12px 0;
+}
+
+.dr-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 12px 0;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+  letter-spacing: 0.03em;
+}
+
+.dr-pos {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--dr-accent);
+  color: var(--dr-accent-ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.dr-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 10px;
+  background: var(--dr-line);
+  border-top: 1px solid var(--dr-line);
+}
+
+.dr-card-stat {
+  background: var(--dr-surface);
+  padding: 7px 8px;
+}
+
+.dr-card-stat dt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-card-stat dd {
+  margin: 2px 0 0;
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dr-tier {
+  position: absolute;
+  z-index: 2;
+  top: 6px;
+  left: 10px;
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--dr-ink);
+  background: rgb(8 10 15 / 0.65);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.dr-flag {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* --------------------------------------------------------------------------
+   nomination stage
+   -------------------------------------------------------------------------- */
+
+.dr-stage {
+  overflow: hidden;
+}
+
+.dr-stage-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 16px 16px 14px;
+  background:
+    radial-gradient(
+      120% 140% at 100% 0%,
+      color-mix(in srgb, var(--dr-accent) 55%, transparent) 0%,
+      transparent 62%
+    ),
+    linear-gradient(180deg, #151c2a 0%, var(--dr-surface) 100%);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-stage-photo {
+  width: 126px;
+  height: 92px;
+  flex: none;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  box-shadow: 0 8px 22px -12px #000;
+}
+
+.dr-stage-name {
+  font-family: var(--dr-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: 0.005em;
+}
+
+.dr-stage-sub {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-stage-logo {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  opacity: 0.9;
+}
+
+.dr-stage-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--dr-line);
+}
+
+.dr-tile {
+  background: var(--dr-surface);
+  padding: 9px 10px;
+}
+
+.dr-tile dt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-tile dd {
+  margin: 3px 0 0;
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.dr-stage-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.dr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dr-select,
+.dr-input {
+  width: 100%;
+  padding: 9px 10px;
+  background: var(--dr-ground);
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius-sm);
+  color: var(--dr-ink);
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+
+.dr-bid {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 6px;
+}
+
+.dr-bid .dr-input {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.dr-step {
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.dr-notice {
+  display: flex;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: var(--dr-radius-sm);
+  font-size: 12px;
+  line-height: 1.4;
+  background: color-mix(in srgb, var(--dr-danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dr-danger) 34%, transparent);
+  color: #ffc7cc;
+}
+
+.dr-verdict {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-verdict strong {
+  font-family: var(--dr-mono);
+  font-size: 13px;
+}
+
+.dr-empty {
+  padding: 34px 18px;
+  text-align: center;
+  color: var(--dr-ink-faint);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* --------------------------------------------------------------------------
+   budget rail
+   -------------------------------------------------------------------------- */
+
+.dr-rail {
+  padding: 12px 14px 14px;
+}
+
+.dr-rail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.dr-team-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  padding: 7px 0;
+  border-top: 1px solid var(--dr-line);
+  font-size: 12px;
+}
+
+.dr-team-row:first-of-type {
+  border-top: none;
+}
+
+.dr-team-bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-team-bar span {
+  display: block;
+  height: 100%;
+  background: var(--dr-value);
+  transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dr-team-bar.is-low span {
+  background: var(--dr-caution);
+}
+
+.dr-team-bar.is-broke span {
+  background: var(--dr-danger);
+}
+
+/* --------------------------------------------------------------------------
+   ticker
+   -------------------------------------------------------------------------- */
+
+.dr-ticker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 18px;
+  border-top: 1px solid var(--dr-line);
+  background: #0b0f17;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.dr-pick {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--dr-ink-muted);
+  animation: dr-pick-in 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dr-pick strong {
+  color: var(--dr-ink);
+  font-weight: 600;
+}
+
+.dr-pick .dr-num {
+  color: var(--dr-value);
+}
+
+@keyframes dr-pick-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  .dr-body {
+    grid-template-columns: minmax(0, 1fr);
+    /* Room for the bid sheet, which floats over the bottom of the board. */
+    padding-bottom: 96px;
+  }
+
+  .dr-aside {
+    position: static;
+  }
+
+  /* Nothing is nominated yet, so the panel would only push the board down. */
+  .dr-stage.is-empty {
+    display: none;
+  }
+
+  /* Once a player is up, bidding has to stay reachable while the board scrolls,
+     so the stage becomes a sheet anchored to the bottom of the screen. */
+  .dr-stage:not(.is-empty) {
+    position: fixed;
+    inset: auto 10px 10px;
+    z-index: 40;
+    max-height: 72vh;
+    overflow-y: auto;
+    box-shadow: 0 -18px 50px -20px #000;
+  }
+}
+
+@media (max-width: 560px) {
+  .dr-body {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .dr-grid {
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  }
+
+  .dr-stage-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dr-topbar {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draft-room *,
+  .draft-room *::before,
+  .draft-room *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   profile modal
+   -------------------------------------------------------------------------- */
+
+.dr-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.dr-modal-scrim {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  background: rgb(4 6 10 / 0.78);
+  backdrop-filter: blur(3px);
+  cursor: default;
+}
+
+/* The close control owns the top-right corner, so the crest steps aside. */
+.dr-modal-panel .dr-stage-logo {
+  right: 52px;
+}
+
+.dr-modal-panel {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: min(86vh, 860px);
+  overflow-y: auto;
+  background: var(--dr-surface);
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius);
+  box-shadow: 0 30px 80px -30px #000;
+  animation: dr-modal-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes dr-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+}
+
+.dr-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--dr-line-strong);
+  background: rgb(8 10 15 / 0.6);
+  color: var(--dr-ink-muted);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.dr-modal-close:hover {
+  color: var(--dr-ink);
+}
+
+.dr-modal-section {
+  padding: 14px 16px;
+  border-top: 1px solid var(--dr-line);
+}
+
+.dr-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px 16px;
+  margin: 10px 0 0;
+}
+
+.dr-facts dt {
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-facts dd {
+  margin: 2px 0 0;
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+
+.dr-notice-warn {
+  background: color-mix(in srgb, var(--dr-caution) 12%, transparent);
+  border-color: color-mix(in srgb, var(--dr-caution) 34%, transparent);
+  color: #ffdfae;
+}

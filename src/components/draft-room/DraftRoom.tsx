@@ -1,0 +1,285 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  AuctionDraftService,
+  type BidCheck,
+  type DraftAnalytics,
+  type Player,
+  type Team,
+} from '@/services/auctionDraftService';
+import { getIdentity, refreshIdentity, snapshotMeta } from '@/services/nflIdentity';
+import { PlayerCard } from './PlayerCard';
+import { NominationStage } from './NominationStage';
+import { BudgetRail } from './BudgetRail';
+import { PlayerProfile } from './PlayerProfile';
+import '@/styles/draft-room.css';
+
+interface DraftRoomProps {
+  draftService: AuctionDraftService;
+}
+
+type SortKey = 'adp' | 'value' | 'projected';
+
+const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE'] as const;
+
+const SORTS: Record<SortKey, (a: Player, b: Player) => number> = {
+  adp: (a, b) => a.adp - b.adp,
+  value: (a, b) => b.estimatedValue - a.estimatedValue,
+  projected: (a, b) => b.projectedPoints - a.projectedPoints,
+};
+
+export const DraftRoom = ({ draftService }: DraftRoomProps) => {
+  const [players, setPlayers] = useState<Player[]>(() => draftService.getPlayers());
+  const [teams, setTeams] = useState<Team[]>(() => draftService.getTeams());
+  const [selected, setSelected] = useState<Player | null>(null);
+  const [teamId, setTeamId] = useState('');
+  const [bid, setBid] = useState('');
+  const [query, setQuery] = useState('');
+  const [position, setPosition] = useState<(typeof POSITIONS)[number]>('ALL');
+  const [sort, setSort] = useState<SortKey>('adp');
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [resumed, setResumed] = useState(0);
+
+  const sync = useCallback(() => {
+    setPlayers(draftService.getPlayers());
+    setTeams(draftService.getTeams());
+  }, [draftService]);
+
+  // Resume an interrupted draft, then quietly freshen injury status from ESPN.
+  useEffect(() => {
+    if (AuctionDraftService.hasSavedDraft()) {
+      const restored = draftService.restore();
+      setResumed(restored);
+      if (restored) sync();
+    }
+    void refreshIdentity().then((count) => {
+      if (count) sync();
+    });
+  }, [draftService, sync]);
+
+  const available = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return players
+      .filter((player) => !player.isDrafted)
+      .filter((player) => position === 'ALL' || player.position === position)
+      .filter((player) => {
+        if (!needle) return true;
+        const identity = getIdentity(player.id);
+        return (
+          player.name.toLowerCase().includes(needle) ||
+          player.team.toLowerCase().includes(needle) ||
+          (identity?.name ?? '').toLowerCase().includes(needle)
+        );
+      })
+      .sort(SORTS[sort]);
+  }, [players, query, position, sort]);
+
+  const drafted = useMemo(
+    () =>
+      players
+        .filter((player) => player.isDrafted)
+        .sort((a, b) => (b.pickNumber ?? 0) - (a.pickNumber ?? 0)),
+    [players]
+  );
+
+  const analytics: DraftAnalytics | null = useMemo(() => {
+    if (!selected) return null;
+    try {
+      return draftService.getPlayerAnalytics(selected.id, teamId || 'team-1');
+    } catch {
+      return null;
+    }
+  }, [selected, teamId, draftService]);
+
+  const check: BidCheck | null = useMemo(() => {
+    if (!selected || !teamId) return null;
+    return draftService.validateBid(selected.id, teamId, Number.parseInt(bid, 10));
+  }, [selected, teamId, bid, draftService]);
+
+  const nominate = useCallback(
+    (player: Player) => {
+      setSelected(player);
+      let opening = player.estimatedValue;
+      try {
+        opening = Math.max(
+          1,
+          Math.round(draftService.getPlayerAnalytics(player.id, teamId || 'team-1').openingBid)
+        );
+      } catch {
+        /* fall back to the list price */
+      }
+      setBid(String(opening));
+    },
+    [draftService, teamId]
+  );
+
+  const confirm = useCallback(() => {
+    if (!selected || !teamId) return;
+    if (!draftService.draftPlayer(selected.id, teamId, Number.parseInt(bid, 10))) return;
+    sync();
+    setSelected(null);
+    setBid('');
+    setProfileOpen(false);
+  }, [selected, teamId, bid, draftService, sync]);
+
+  const undo = useCallback(() => {
+    if (draftService.undoLastPick()) sync();
+  }, [draftService, sync]);
+
+  const reset = useCallback(() => {
+    draftService.resetDraft();
+    setResumed(0);
+    setSelected(null);
+    setBid('');
+    sync();
+  }, [draftService, sync]);
+
+  const spent = teams.reduce((total, team) => total + team.spent, 0);
+  const progress = players.length ? (drafted.length / players.length) * 100 : 0;
+  const { season } = snapshotMeta();
+
+  return (
+    <div className="draft-room">
+      <header className="dr-topbar">
+        <h1 className="dr-wordmark">
+          Draft<span>Vault</span>
+        </h1>
+
+        <div className="dr-stat">
+          <span className="dr-eyebrow">Picks</span>
+          <span className="dr-stat-value">
+            {drafted.length}
+            <span style={{ color: 'var(--dr-ink-faint)' }}>/{players.length}</span>
+          </span>
+        </div>
+
+        <div
+          className="dr-progress"
+          role="progressbar"
+          aria-valuenow={Math.round(progress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div className="dr-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+
+        <div className="dr-stat">
+          <span className="dr-eyebrow">Committed</span>
+          <span className="dr-stat-value" style={{ color: 'var(--dr-value)' }}>
+            ${spent}
+          </span>
+        </div>
+
+        <button className="dr-button" onClick={undo} disabled={!draftService.canUndo()}>
+          Undo pick
+        </button>
+        <button className="dr-button" onClick={reset} disabled={!drafted.length}>
+          Reset
+        </button>
+      </header>
+
+      {resumed > 0 && (
+        <p
+          className="dr-ticker"
+          role="status"
+          style={{ color: 'var(--dr-ink-muted)', fontSize: 12 }}
+        >
+          Resumed your saved draft — {resumed} pick{resumed === 1 ? '' : 's'} restored.
+        </p>
+      )}
+
+      <div className="dr-body">
+        <main aria-label="Available players">
+          <div className="dr-toolbar">
+            <input
+              className="dr-search"
+              placeholder="Search players or teams…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-label="Search players"
+            />
+            {POSITIONS.map((pos) => (
+              <button
+                key={pos}
+                type="button"
+                className="dr-chip"
+                aria-pressed={position === pos}
+                onClick={() => setPosition(pos)}
+              >
+                {pos}
+              </button>
+            ))}
+            <select
+              className="dr-chip"
+              value={sort}
+              onChange={(event) => setSort(event.target.value as SortKey)}
+              aria-label="Sort players"
+            >
+              <option value="adp">By ADP</option>
+              <option value="value">By value</option>
+              <option value="projected">By projection</option>
+            </select>
+          </div>
+
+          {available.length === 0 ? (
+            <p className="dr-empty dr-panel">
+              No players match that filter.
+              {query && ' Try clearing the search.'}
+            </p>
+          ) : (
+            <div className="dr-grid">
+              {available.map((player) => (
+                <PlayerCard
+                  key={player.id}
+                  player={player}
+                  selected={selected?.id === player.id}
+                  onSelect={nominate}
+                />
+              ))}
+            </div>
+          )}
+        </main>
+
+        <aside className="dr-aside">
+          <NominationStage
+            player={selected}
+            teams={teams}
+            teamId={teamId}
+            bid={bid}
+            analytics={analytics}
+            check={check}
+            onTeamChange={setTeamId}
+            onBidChange={setBid}
+            onConfirm={confirm}
+            onOpenProfile={() => setProfileOpen(true)}
+          />
+          <BudgetRail teams={teams} activeTeamId={teamId} />
+        </aside>
+      </div>
+
+      <footer className="dr-ticker" aria-label="Recent picks">
+        <span className="dr-eyebrow" style={{ flex: 'none' }}>
+          {season ? `${season} pool` : 'Pool'}
+        </span>
+        {drafted.length === 0 ? (
+          <span style={{ color: 'var(--dr-ink-faint)', fontSize: 12 }}>No picks yet.</span>
+        ) : (
+          drafted.slice(0, 12).map((player) => (
+            <span className="dr-pick" key={player.id}>
+              <strong>{getIdentity(player.id)?.name ?? player.name}</strong>
+              {teams.find((team) => team.id === player.draftedBy)?.name}
+              <span className="dr-num">${player.draftCost}</span>
+            </span>
+          ))
+        )}
+      </footer>
+
+      {profileOpen && selected && (
+        <PlayerProfile
+          player={selected}
+          analytics={analytics}
+          onClose={() => setProfileOpen(false)}
+        />
+      )}
+    </div>
+  );
+};

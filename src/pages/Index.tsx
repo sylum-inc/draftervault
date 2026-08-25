@@ -1,11 +1,11 @@
 import { AuctionDraftService } from '@/services/auctionDraftService';
-import { AuctionDraftInterface } from '@/components/AuctionDraftInterface';
+import { DraftRoom } from '@/components/draft-room/DraftRoom';
 
 // Initialize draft service
 const draftService = new AuctionDraftService();
 
 const Index = () => {
-  return <AuctionDraftInterface draftService={draftService} />;
+  return <DraftRoom draftService={draftService} />;
 };
 
 export default Index;
