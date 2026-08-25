@@ -22,6 +22,17 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
+    <!-- Terminal fonts. Fetched as a non-render-blocking stylesheet so the app
+         still starts (with fallback monospace) when Google Fonts is unreachable. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+
     <meta property="og:title" content="Premium Fantasy Football Auction Draft - Advanced Analytics" />
     <meta property="og:description" content="Professional fantasy football auction draft application with advanced analytics, real-time tracking, and premium UI design." />
     <meta property="og:type" content="website" />

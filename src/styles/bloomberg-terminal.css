@@ -3,8 +3,12 @@
    Fantasy Football Draft Terminal
    ============================================ */
 
-/* Import Bloomberg-style monospace fonts */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+/* The Bloomberg-style monospace fonts are pulled in from index.html.
+   They must not be @imported here: this stylesheet ships in the lazily loaded
+   route chunk, and Vite's chunk loader waits for the stylesheet's load event.
+   A remote @import that never answers (blocked network, offline draft night)
+   therefore stalls the dynamic import and the app never leaves its loading
+   screen. Loading the fonts from the document keeps that failure cosmetic. */
 
 :root {
   /* Bloomberg Core Colors */
@@ -137,8 +141,12 @@
 }
 
 @keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .ticker-item {
@@ -292,12 +300,24 @@
   width: 32px;
 }
 
-.cell-position.qb { color: #ff6666; }
-.cell-position.rb { color: #66ff66; }
-.cell-position.wr { color: #6699ff; }
-.cell-position.te { color: #ffaa66; }
-.cell-position.k { color: #cc99ff; }
-.cell-position.dst { color: #66cccc; }
+.cell-position.qb {
+  color: #ff6666;
+}
+.cell-position.rb {
+  color: #66ff66;
+}
+.cell-position.wr {
+  color: #6699ff;
+}
+.cell-position.te {
+  color: #ffaa66;
+}
+.cell-position.k {
+  color: #cc99ff;
+}
+.cell-position.dst {
+  color: #66cccc;
+}
 
 .cell-team {
   color: var(--bloomberg-text-secondary);
@@ -338,17 +358,40 @@
    HEAT MAP COLORS
    ============================================ */
 
-.heat-1 { background: rgba(0, 210, 106, 0.3); color: var(--bloomberg-green); }
-.heat-2 { background: rgba(0, 210, 106, 0.2); color: var(--bloomberg-green); }
-.heat-3 { background: rgba(255, 200, 0, 0.2); color: var(--bloomberg-gold); }
-.heat-4 { background: rgba(255, 102, 0, 0.2); color: var(--bloomberg-orange); }
-.heat-5 { background: rgba(255, 51, 51, 0.2); color: var(--bloomberg-red); }
+.heat-1 {
+  background: rgba(0, 210, 106, 0.3);
+  color: var(--bloomberg-green);
+}
+.heat-2 {
+  background: rgba(0, 210, 106, 0.2);
+  color: var(--bloomberg-green);
+}
+.heat-3 {
+  background: rgba(255, 200, 0, 0.2);
+  color: var(--bloomberg-gold);
+}
+.heat-4 {
+  background: rgba(255, 102, 0, 0.2);
+  color: var(--bloomberg-orange);
+}
+.heat-5 {
+  background: rgba(255, 51, 51, 0.2);
+  color: var(--bloomberg-red);
+}
 
 /* Value Heat Map */
-.value-elite { background: rgba(255, 200, 0, 0.25); }
-.value-good { background: rgba(0, 210, 106, 0.2); }
-.value-fair { background: transparent; }
-.value-poor { background: rgba(255, 51, 51, 0.15); }
+.value-elite {
+  background: rgba(255, 200, 0, 0.25);
+}
+.value-good {
+  background: rgba(0, 210, 106, 0.2);
+}
+.value-fair {
+  background: transparent;
+}
+.value-poor {
+  background: rgba(255, 51, 51, 0.15);
+}
 
 /* ============================================
    COMMAND BAR / SEARCH
@@ -471,8 +514,13 @@
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-left-color: var(--bloomberg-amber); }
-  50% { border-left-color: var(--bloomberg-orange); }
+  0%,
+  100% {
+    border-left-color: var(--bloomberg-amber);
+  }
+  50% {
+    border-left-color: var(--bloomberg-orange);
+  }
 }
 
 /* ============================================
@@ -619,8 +667,13 @@
 }
 
 @keyframes alert-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .alert-urgent {
@@ -790,8 +843,12 @@
 }
 
 @keyframes flash {
-  0% { background: rgba(255, 102, 0, 0.3); }
-  100% { background: transparent; }
+  0% {
+    background: rgba(255, 102, 0, 0.3);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
 .pulse-value {
@@ -799,8 +856,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* ============================================

@@ -1,0 +1,12 @@
+services:
+  draft-vault:
+    build:
+      context: .
+      args:
+        VITE_APP_ENV: production
+    image: draft-vault:latest
+    container_name: draft-vault
+    restart: unless-stopped
+    ports:
+      # host:container — put a TLS-terminating proxy in front for public serving
+      - '8080:80'

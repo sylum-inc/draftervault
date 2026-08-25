@@ -9,8 +9,15 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-single
 dist-ssr
 *.local
+coverage
+
+# Local environment files (never commit real keys)
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*

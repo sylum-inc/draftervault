@@ -3,7 +3,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { ThemeProvider } from '@/components/ThemeToggle';
@@ -15,6 +15,10 @@ import { logInfo } from '@/lib/logger';
 
 // Initialize Sentry for error tracking
 initSentry();
+
+// Hash routing (VITE_ROUTER=hash) works on any static host and from file://
+// without server-side rewrite rules; browser history routing is the default.
+const Router = import.meta.env.VITE_ROUTER === 'hash' ? HashRouter : BrowserRouter;
 
 // Lazy load pages for code splitting
 const Index = lazy(() => import('./pages/Index'));
@@ -59,14 +63,14 @@ const AppContent = () => {
         }}
       />
       <PWAPrompt />
-      <BrowserRouter>
+      <Router>
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-      </BrowserRouter>
+      </Router>
     </>
   );
 };
