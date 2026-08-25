@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AuctionDraftService } from '@/services/auctionDraftService';
+import { leagueShape } from '@/lib/valuation';
 
 const firstAvailable = (service: AuctionDraftService, position?: string) =>
   service.getAvailablePlayers().find((p) => !position || p.position === position)!;
@@ -160,6 +161,92 @@ describe('AuctionDraftService', () => {
     it('hands out a new array each read so consumers can diff references', () => {
       expect(service.getPlayers()).not.toBe(service.getPlayers());
       expect(service.getPlayers()).toHaveLength(service.getPlayers().length);
+    });
+  });
+
+  describe('league configuration', () => {
+    it('defaults to the league the shipped pool was priced for', () => {
+      expect(service.getLeagueShape()).toEqual(service.getPoolLeagueShape());
+      expect(service.getTeams()).toHaveLength(12);
+      expect(service.getTeams()[0].budget).toBe(200);
+    });
+
+    it('rebuilds the room when the league changes', () => {
+      expect(service.setLeagueShape(leagueShape({ teams: 10, budget: 300 }))).toBe(true);
+
+      const teams = service.getTeams();
+      expect(teams).toHaveLength(10);
+      expect(teams.every((team) => team.budget === 300 && team.remaining === 300)).toBe(true);
+    });
+
+    it('re-prices the board rather than relabelling it', () => {
+      const before = service.getPlayers().find((p) => p.position === 'RB')!;
+      service.setLeagueShape(leagueShape({ budget: 400 }));
+      const after = service.getPlayers().find((p) => p.id === before.id)!;
+
+      // Twice the money chasing the same players has to reach the price tags.
+      expect(after.estimatedValue).toBeGreaterThan(before.estimatedValue);
+    });
+
+    it('moves replacement level with the league', () => {
+      const twelve = service.getReplacementLevel('WR')!;
+      service.setLeagueShape(leagueShape({ teams: 8 }));
+
+      // Eight teams roster fewer receivers, so the last one worth owning is
+      // a better player.
+      expect(service.getReplacementLevel('WR')!).toBeGreaterThan(twelve);
+    });
+
+    it('enforces the new roster limits', () => {
+      service.setLeagueShape(leagueShape({ rosterSize: 2, starters: 1 }));
+      const [a, b, c] = service.getAvailablePlayers().filter((p) => p.position === 'WR');
+
+      expect(service.draftPlayer(a.id, 'team-1', 1)).toBe(true);
+      expect(service.draftPlayer(b.id, 'team-1', 1)).toBe(true);
+      expect(service.draftPlayer(c.id, 'team-1', 1)).toBe(false);
+      expect(service.validateBid(c.id, 'team-1', 1)).toMatchObject({ code: 'roster-full' });
+    });
+
+    it('reports no change when the shape is the same', () => {
+      expect(service.setLeagueShape(service.getLeagueShape())).toBe(false);
+    });
+
+    it('clears a draft in progress, whose bids were made at other prices', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 30);
+      expect(service.getDraftedPlayers()).toHaveLength(1);
+
+      service.setLeagueShape(leagueShape({ budget: 250 }));
+      expect(service.getDraftedPlayers()).toHaveLength(0);
+      expect(service.getTeams()[0].remaining).toBe(250);
+    });
+
+    it('remembers the league across a reload', () => {
+      service.setLeagueShape(leagueShape({ teams: 14, budget: 260 }));
+
+      const reloaded = new AuctionDraftService();
+      expect(reloaded.getLeagueShape().teams).toBe(14);
+      expect(reloaded.getTeams()).toHaveLength(14);
+    });
+
+    it('refuses to replay a draft bid in a different league', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 30);
+
+      // A pick log says nothing about the prices it was made at, so replaying it
+      // under another league would build a roster nobody could have bought.
+      const elsewhere = new AuctionDraftService(leagueShape({ budget: 500 }));
+      expect(elsewhere.restore()).toBe(0);
+    });
+
+    it('clamps a league nobody could draft in', () => {
+      service.setLeagueShape(leagueShape({ teams: 1, budget: 0, rosterSize: 0 }));
+      const league = service.getLeagueShape();
+
+      expect(league.teams).toBeGreaterThanOrEqual(2);
+      expect(league.budget).toBeGreaterThanOrEqual(10);
+      expect(league.rosterSize).toBeGreaterThanOrEqual(1);
+      expect(service.getPlayers().every((p) => Number.isInteger(p.estimatedValue))).toBe(true);
     });
   });
 });

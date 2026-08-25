@@ -2897,3 +2897,89 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   League settings
+
+   The panel that changes what every price on the board means. It is laid out
+   as a form rather than a dashboard because it is the one screen in the app
+   where a number is typed in rather than read out.
+   --------------------------------------------------------------------------- */
+
+.dr-league {
+  width: min(620px, 100%);
+}
+
+.dr-league-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px 14px;
+  margin-top: 10px;
+}
+
+.dr-league-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dr-league-field .dr-input {
+  width: 100%;
+}
+
+.dr-league-field .dr-meter-note {
+  margin: 0;
+}
+
+.dr-league-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px 16px;
+  margin: 10px 0;
+}
+
+.dr-league-summary dt {
+  font: 600 10px/1.2 var(--dr-font-mono, monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-league-summary dd {
+  margin: 3px 0 0;
+  font: 600 18px/1.1 var(--dr-font-mono, monospace);
+  color: var(--dr-ink);
+}
+
+.dr-league-problems {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--dr-danger);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dr-league-warning {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--dr-danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dr-danger) 34%, transparent);
+  color: var(--dr-ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* The stage's primary button is full-width by design; in this row it sits
+   beside a cancel, so it takes its natural share instead. */
+.dr-league .dr-results-actions {
+  padding: 14px 16px;
+  border-top: 1px solid var(--dr-line);
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.dr-league .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}

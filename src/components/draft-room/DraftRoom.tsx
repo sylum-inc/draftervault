@@ -22,7 +22,9 @@ import { DraftBoard } from './DraftBoard';
 import { BudgetPlanner } from './BudgetPlanner';
 import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
+import { LeagueSettings } from './LeagueSettings';
 import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
+import type { LeagueShape } from '@/lib/valuation';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -59,6 +61,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [resultsOpen, setResultsOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [leagueOpen, setLeagueOpen] = useState(false);
   const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
     useDraftPreferences();
 
@@ -157,6 +160,24 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     sync();
   }, [draftService, sync]);
 
+  /**
+   * A league change re-prices every player and rebuilds the teams, so the
+   * selection, the bid in progress and the resume notice all refer to a board
+   * that no longer exists.
+   */
+  const applyLeague = useCallback(
+    (next: LeagueShape) => {
+      draftService.setLeagueShape(next);
+      setLeagueOpen(false);
+      setResumed(0);
+      setSelected(null);
+      setTeamId('');
+      setBid('');
+      sync();
+    },
+    [draftService, sync]
+  );
+
   // players and teams are the change signal, not inputs: the service holds the
   // state and hands out fresh arrays on every sync, which the rule cannot see
   // through a method call.
@@ -167,6 +188,11 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rotates with each pick
     [draftService, players]
   );
+
+  // Re-read on every sync: a league change replaces the teams array, which is
+  // the signal that these numbers moved.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const league = useMemo(() => draftService.getLeagueShape(), [draftService, teams]);
 
   const activeTeam = teams.find((team) => team.id === teamId);
 
@@ -259,6 +285,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           disabled={!drafted.length}
         >
           Results
+        </button>
+        <button
+          className="dr-button"
+          onClick={() => setLeagueOpen(true)}
+          title="Teams, budget and roster shape — every price is computed from them"
+        >
+          {league.teams} × ${league.budget}
         </button>
         <button className="dr-button" onClick={reset} disabled={!drafted.length}>
           Reset
@@ -488,6 +521,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
       {resultsOpen && (
         <DraftResults players={players} teams={teams} onClose={() => setResultsOpen(false)} />
+      )}
+
+      {leagueOpen && (
+        <LeagueSettings
+          league={league}
+          poolLeague={draftService.getPoolLeagueShape()}
+          draftedCount={drafted.length}
+          onApply={applyLeague}
+          onClose={() => setLeagueOpen(false)}
+        />
       )}
 
       {profileOpen && selected && (

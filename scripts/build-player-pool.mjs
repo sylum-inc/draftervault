@@ -32,6 +32,10 @@ import { fileURLToPath } from 'node:url';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { gunzipSync } from 'node:zlib';
+// The league shape and the points-to-dollars maths live in the client tree so
+// that the browser and this script cannot disagree about what a player is
+// worth. Node strips the types on import (v22.18+); CI pins that version.
+import { DEFAULT_LEAGUE, pricePool } from '../src/lib/valuation.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'src/data/nfl');
@@ -81,16 +85,12 @@ const TEAM_ALIASES = { LA: 'LAR', JAC: 'JAX', AZ: 'ARI', WAS: 'WSH', SD: 'LAC', 
 const canonicalTeam = (abbr) => TEAM_ALIASES[abbr] ?? abbr;
 
 /**
- * League shape the valuations assume. Twelve teams, $200 each, sixteen roster
- * spots. Change these and the dollar values change with them.
+ * League shape the shipped valuations assume: twelve teams, $200 each, sixteen
+ * roster spots. It is imported rather than declared here — src/lib/valuation.ts
+ * is the only definition, and the client recomputes from it, so a league the
+ * pool was not built for still prices correctly.
  */
-const LEAGUE = {
-  teams: 12,
-  budget: 200,
-  rosterSize: 16,
-  /** How many of each position the league actually rosters, which sets replacement level. */
-  rostered: { QB: 20, RB: 48, WR: 60, TE: 18, K: 12, DST: 12 },
-};
+const LEAGUE = DEFAULT_LEAGUE;
 
 /** Scoring for kickers, who carry no PPR value in the source data. */
 const kickerPoints = (row) => {
@@ -1161,37 +1161,18 @@ const main = async () => {
   for (const weeks of Object.values(schedule)) weeks.sort((a, b) => a.week - b.week);
 
   // --- auction values ------------------------------------------------------
-  // Value over replacement, converted to dollars. Replacement level is the
-  // last player at each position the league actually rosters; the budget left
-  // after every roster spot is covered by a dollar is shared out in proportion
-  // to each player's VORP.
-  const byPosition = new Map();
-  for (const player of chosen) {
-    if (!byPosition.has(player.position)) byPosition.set(player.position, []);
-    byPosition.get(player.position).push(player);
-  }
-  const replacement = new Map();
-  for (const [position, list] of byPosition) {
-    list.sort((a, b) => b.projection.points - a.projection.points);
-    const index = Math.min(list.length - 1, (LEAGUE.rostered[position] ?? 12) - 1);
-    replacement.set(position, list[index]?.projection.points ?? 0);
-  }
-  for (const player of chosen) {
-    player.vorp = Math.round(
-      Math.max(0, player.projection.points - (replacement.get(player.position) ?? 0)) * 10
-    ) / 10;
-  }
-
-  const rosterSlots = LEAGUE.teams * LEAGUE.rosterSize;
-  const discretionary = LEAGUE.teams * LEAGUE.budget - rosterSlots;
-  const drafted = [...chosen].sort((a, b) => b.vorp - a.vorp).slice(0, rosterSlots);
-  const totalVorp = drafted.reduce((total, player) => total + player.vorp, 0) || 1;
-  const draftedIds = new Set(drafted.map((player) => player.gsis));
-  for (const player of chosen) {
-    player.auctionValue = draftedIds.has(player.gsis) && player.vorp > 0
-      ? Math.max(1, Math.round(1 + (player.vorp / totalVorp) * discretionary))
-      : 1;
-  }
+  // Value over replacement, converted to dollars, by the shared module the
+  // draft room runs too. The numbers written below are what a default league
+  // sees; the client re-prices from `projection.points` for any other shape.
+  const { replacement: replacementLevel, priced } = pricePool(
+    chosen.map((player) => ({ position: player.position, points: player.projection.points })),
+    LEAGUE
+  );
+  chosen.forEach((player, index) => {
+    player.vorp = priced[index].vorp;
+    player.auctionValue = priced[index].auctionValue;
+  });
+  const replacement = new Map(Object.entries(replacementLevel));
 
   console.log(`\n  pool: ${chosen.length} skill players`);
   console.log('  by position:', Object.fromEntries([...counts].sort()));
