@@ -17,7 +17,12 @@
  *             snap_counts_2025.csv        snap share, keyed by pfr id
  *             injuries_2025.csv           games missed
  *             draft_picks.csv             draft capital, for rookies with no tape
- *   Sleeper   players/nfl                 trending adds/drops
+ *             play_by_play_2025.csv.gz    red-zone usage, team pace and pass rate
+ *             injuries_2023-25.csv        games missed, three seasons deep
+ *   Sleeper   players/nfl                 market rank, depth chart order
+ *   DynastyProcess
+ *             db_playerids.csv            gsis <-> sleeper <-> fantasypros
+ *             db_fpecr_latest.csv         FantasyPros expert consensus rank
  *
  * Writes src/data/nfl/pool.json and src/data/nfl/player-history.json.
  */
@@ -26,10 +31,12 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { gunzipSync } from 'node:zlib';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'src/data/nfl');
 const NFLVERSE = 'https://github.com/nflverse/nflverse-data/releases/download';
+const DYNASTYPROCESS = 'https://github.com/dynastyprocess/data/raw/master/files';
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -42,6 +49,8 @@ const POOL_SIZE = Number(flag('size', 600));
 
 /** The seasons that inform a projection. Older tape exists but stops mattering. */
 const SEASONS = [2023, 2024, 2025];
+/** Injury history reaches back further: durability is a slower-moving trait. */
+const INJURY_SEASONS = [2023, 2024, 2025];
 const CURRENT_SEASON = 2026;
 
 const SOURCES = {
@@ -51,10 +60,20 @@ const SOURCES = {
   'stats_2025.csv': `${NFLVERSE}/stats_player/stats_player_week_2025.csv`,
   'snaps_2025.csv': `${NFLVERSE}/snap_counts/snap_counts_2025.csv`,
   'injuries_2025.csv': `${NFLVERSE}/injuries/injuries_2025.csv`,
+  'injuries_2024.csv': `${NFLVERSE}/injuries/injuries_2024.csv`,
+  'injuries_2023.csv': `${NFLVERSE}/injuries/injuries_2023.csv`,
+  // Play-by-play is the only source for where on the field a touch happened and
+  // for what a team's play-calling looks like. 19MB gzipped for one season.
+  'pbp_2025.csv.gz': `${NFLVERSE}/pbp/play_by_play_2025.csv.gz`,
   'draft_picks.csv': `${NFLVERSE}/draft_picks/draft_picks.csv`,
   'team_2025.csv': `${NFLVERSE}/stats_team/stats_team_reg_2025.csv`,
   'games.csv': `${NFLVERSE}/schedules/games.csv`,
   'sleeper.json': 'https://api.sleeper.app/v1/players/nfl',
+  // nflverse's crosswalk stops at ESPN and PFR. DynastyProcess maintains the
+  // fantasy-side one — Sleeper and FantasyPros ids keyed by gsis — which is the
+  // only way to reach either market without matching on names.
+  'db_playerids.csv': `${DYNASTYPROCESS}/db_playerids.csv`,
+  'db_fpecr_latest.csv': `${DYNASTYPROCESS}/db_fpecr_latest.csv`,
 };
 
 /** nflverse spells a few teams differently from ESPN. */
@@ -104,12 +123,19 @@ const cached = async (name) => {
 
 /**
  * Minimal RFC 4180 reader. These files quote any field containing a comma —
- * college names and injury descriptions both do — so splitting on commas
- * silently corrupts rows.
+ * college names, injury descriptions and every play-by-play description do —
+ * so splitting on commas silently corrupts rows.
+ *
+ * `wanted` narrows each record to a handful of columns. Play-by-play carries
+ * 372 of them across ~50k rows; materialising all of it is 18M property writes
+ * and gigabytes of strings for the dozen fields anything here actually reads.
  */
-function* readCsv(path) {
-  const text = readFileSync(path, 'utf8');
+function* readCsv(path, wanted) {
+  const text = path.endsWith('.gz')
+    ? gunzipSync(readFileSync(path)).toString('utf8')
+    : readFileSync(path, 'utf8');
   const header = [];
+  let keep = null;
   let field = '';
   let row = [];
   let quoted = false;
@@ -124,9 +150,14 @@ function* readCsv(path) {
     if (isHeader) {
       header.push(...row);
       isHeader = false;
+      if (wanted) {
+        const set = new Set(wanted);
+        keep = header.map((name, index) => (set.has(name) ? index : -1)).filter((i) => i >= 0);
+      }
     } else if (row.length > 1) {
       const record = {};
-      for (let i = 0; i < header.length; i++) record[header[i]] = row[i] ?? '';
+      if (keep) for (const i of keep) record[header[i]] = row[i] ?? '';
+      else for (let i = 0; i < header.length; i++) record[header[i]] = row[i] ?? '';
       return record;
     }
     row = [];
@@ -192,6 +223,12 @@ const normalizeWeek = (row) => ({
   targetShare: num(row.target_share),
   airYardsShare: num(row.air_yards_share),
   wopr: num(row.wopr),
+  racr: num(row.racr),
+  receivingEpa: num(row.receiving_epa),
+  rushingEpa: num(row.rushing_epa),
+  passingEpa: num(row.passing_epa),
+  receivingFirstDowns: num(row.receiving_first_downs),
+  rushingFirstDowns: num(row.rushing_first_downs),
   fantasyPointsPpr: row.position === 'K' ? kickerPoints(row) : num(row.fantasy_points_ppr),
 });
 
@@ -267,6 +304,177 @@ const rookieBaselines = (draftPicks, seasonsByPlayer) => {
 };
 
 // ---------------------------------------------------------------------------
+// play-by-play: where a touch happened, and what a team likes to do
+//
+// Two things no aggregate can answer. A running back's carry count does not say
+// how many came from the two-yard line, and a receiver's target count does not
+// say whether his offense throws at all. Both decide what a player is worth,
+// and both need the plays themselves.
+// ---------------------------------------------------------------------------
+
+const PBP_COLUMNS = [
+  'game_id',
+  'posteam',
+  'play_type',
+  'yardline_100',
+  'rusher_player_id',
+  'receiver_player_id',
+  'pass_attempt',
+  'rush_attempt',
+  'sack',
+  'pass_oe',
+  'score_differential',
+  'qtr',
+  'fixed_drive',
+  'game_seconds_remaining',
+  'epa',
+];
+
+const RED_ZONE = 20;
+const GOAL_LINE = 5;
+
+const readPlayByPlay = (path) => {
+  /** gsis -> red-zone and goal-line touches */
+  const players = new Map();
+  /** team -> play-calling and tempo */
+  const teams = new Map();
+
+  const playerEntry = (id) => {
+    let entry = players.get(id);
+    if (!entry) {
+      entry = { rzCarries: 0, rzTargets: 0, goalLineCarries: 0, goalLineTargets: 0 };
+      players.set(id, entry);
+    }
+    return entry;
+  };
+
+  const teamEntry = (abbr) => {
+    let entry = teams.get(abbr);
+    if (!entry) {
+      entry = {
+        plays: 0,
+        passPlays: 0,
+        dropbacks: 0,
+        sacks: 0,
+        neutralPlays: 0,
+        neutralPass: 0,
+        passOeSum: 0,
+        passOeCount: 0,
+        paceSum: 0,
+        paceCount: 0,
+        epaSum: 0,
+        rzCarries: 0,
+        rzTargets: 0,
+        games: new Set(),
+        drives: new Set(),
+        rzDrives: new Set(),
+      };
+      teams.set(abbr, entry);
+    }
+    return entry;
+  };
+
+  // Pace is the gap between one snap and the next inside a single drive. Across
+  // a drive boundary the clock stops for the change of possession, so those gaps
+  // measure the broadcast and not the offense.
+  let lastDrive = '';
+  let lastClock = 0;
+
+  for (const row of readCsv(path, PBP_COLUMNS)) {
+    const type = row.play_type;
+    if (type !== 'run' && type !== 'pass') continue;
+    const team = canonicalTeam(row.posteam);
+    if (!team) continue;
+
+    const entry = teamEntry(team);
+    const driveKey = `${row.game_id}:${row.fixed_drive}`;
+    const yardline = num(row.yardline_100);
+    const isPass = type === 'pass';
+    const sacked = num(row.sack) === 1;
+
+    entry.plays += 1;
+    entry.games.add(row.game_id);
+    entry.drives.add(driveKey);
+    entry.epaSum += num(row.epa);
+    if (isPass) {
+      entry.passPlays += 1;
+      entry.dropbacks += 1;
+      if (sacked) entry.sacks += 1;
+    }
+
+    // Trailing by three scores, a team throws because it has to. Play-calling
+    // identity only shows up while the game is still in the balance.
+    if (Math.abs(num(row.score_differential)) <= 7 && num(row.qtr) <= 3) {
+      entry.neutralPlays += 1;
+      if (isPass) entry.neutralPass += 1;
+    }
+
+    const passOe = Number.parseFloat(row.pass_oe);
+    if (Number.isFinite(passOe)) {
+      entry.passOeSum += passOe;
+      entry.passOeCount += 1;
+    }
+
+    const clock = num(row.game_seconds_remaining);
+    if (driveKey === lastDrive) {
+      const delta = lastClock - clock;
+      if (delta > 0 && delta <= 60) {
+        entry.paceSum += delta;
+        entry.paceCount += 1;
+      }
+    }
+    lastDrive = driveKey;
+    lastClock = clock;
+
+    if (yardline > 0 && yardline <= RED_ZONE) {
+      entry.rzDrives.add(driveKey);
+      const rusher = row.rusher_player_id;
+      const receiver = row.receiver_player_id;
+      if (rusher) {
+        entry.rzCarries += 1;
+        const p = playerEntry(rusher);
+        p.rzCarries += 1;
+        if (yardline <= GOAL_LINE) p.goalLineCarries += 1;
+      }
+      if (receiver) {
+        entry.rzTargets += 1;
+        const p = playerEntry(receiver);
+        p.rzTargets += 1;
+        if (yardline <= GOAL_LINE) p.goalLineTargets += 1;
+      }
+    }
+  }
+
+  const environment = new Map();
+  for (const [team, e] of teams) {
+    const games = e.games.size || 17;
+    environment.set(team, {
+      playsPerGame: Math.round((e.plays / games) * 10) / 10,
+      // Seconds between snaps inside a drive: low is fast.
+      secondsPerPlay: e.paceCount ? Math.round((e.paceSum / e.paceCount) * 10) / 10 : null,
+      passRate: e.plays ? Math.round((e.passPlays / e.plays) * 1000) / 10 : null,
+      neutralPassRate: e.neutralPlays
+        ? Math.round((e.neutralPass / e.neutralPlays) * 1000) / 10
+        : null,
+      // Pass rate over expected: how much more a team throws than its game
+      // situations call for. Positive is a pass-first identity, not a scoreboard.
+      passRateOverExpected: e.passOeCount
+        ? Math.round((e.passOeSum / e.passOeCount) * 10) / 10
+        : null,
+      // Sacks per dropback is the cleanest free proxy for pass protection.
+      sackRateAllowed: e.dropbacks ? Math.round((e.sacks / e.dropbacks) * 1000) / 10 : null,
+      epaPerPlay: e.plays ? Math.round((e.epaSum / e.plays) * 1000) / 1000 : null,
+      redZoneTripsPerGame: Math.round((e.rzDrives.size / games) * 10) / 10,
+      redZoneCarries: e.rzCarries,
+      redZoneTargets: e.rzTargets,
+      games,
+    });
+  }
+
+  return { players, environment };
+};
+
+// ---------------------------------------------------------------------------
 
 const main = async () => {
   console.log('Draft Vault — building the player pool from real data\n');
@@ -301,6 +509,8 @@ const main = async () => {
 
   // --- weekly production, both schemas -------------------------------------
   const seasonsByPlayer = new Map(); // gsis -> Map(season -> totals)
+  /** `TEAM:season` -> team-wide carries, so a back's share has a denominator. */
+  const teamTouches = new Map();
   const addWeek = (week) => {
     if (week.seasonType && week.seasonType !== 'REG') return;
     if (!week.playerId) return;
@@ -327,9 +537,23 @@ const main = async () => {
         yac: 0,
         targetShareSum: 0,
         targetShareWeeks: 0,
+        airYardsShareSum: 0,
+        woprSum: 0,
+        shareWeeks: 0,
+        receivingEpa: 0,
+        rushingEpa: 0,
+        passingEpa: 0,
+        firstDowns: 0,
         weekly: [],
       };
       seasons.set(week.season, totals);
+    }
+    if (week.team) {
+      const key = `${canonicalTeam(week.team)}:${week.season}`;
+      const touches = teamTouches.get(key) ?? { carries: 0, targets: 0 };
+      touches.carries += week.carries;
+      touches.targets += week.targets;
+      teamTouches.set(key, touches);
     }
     totals.games += 1;
     totals.weekly.push(week.fantasyPointsPpr);
@@ -347,9 +571,16 @@ const main = async () => {
     totals.interceptions += week.interceptions;
     totals.airYards += week.receivingAirYards;
     totals.yac += week.yardsAfterCatch;
+    totals.receivingEpa += week.receivingEpa;
+    totals.rushingEpa += week.rushingEpa;
+    totals.passingEpa += week.passingEpa;
+    totals.firstDowns += week.receivingFirstDowns + week.rushingFirstDowns;
     if (week.targetShare > 0) {
       totals.targetShareSum += week.targetShare;
       totals.targetShareWeeks += 1;
+      totals.airYardsShareSum += week.airYardsShare;
+      totals.woprSum += week.wopr;
+      totals.shareWeeks += 1;
     }
   };
 
@@ -370,14 +601,38 @@ const main = async () => {
     snapsByGsis.set(gsis, entry);
   }
 
-  // --- games missed to injury ----------------------------------------------
-  const missedByGsis = new Map();
-  for (const row of readCsv(paths['injuries_2025.csv'])) {
-    if (row.report_status !== 'Out' && row.game_status !== 'Out') continue;
-    const gsis = row.gsis_id;
-    if (!gsis) continue;
-    missedByGsis.set(gsis, (missedByGsis.get(gsis) ?? 0) + 1);
+  // --- games missed to injury, three seasons deep ---------------------------
+  // One season says whether a player was hurt; three say whether he is the kind
+  // of player who gets hurt. The report is weekly, so an 'Out' row is a game.
+  const missedBySeason = new Map(); // gsis -> Map(season -> games missed)
+  const injuryBodyParts = new Map(); // gsis -> Map(part -> weeks reported)
+  for (const season of INJURY_SEASONS) {
+    for (const row of readCsv(paths[`injuries_${season}.csv`])) {
+      const gsis = row.gsis_id;
+      if (!gsis) continue;
+      const part = (row.report_primary_injury || row.practice_primary_injury || '').trim();
+      // The report is also where teams log veterans' rest days, which is not an
+      // injury and must not read as one on a durability tab.
+      if (part && !/not injury related|resting|coach|personal|illness/i.test(part)) {
+        if (!injuryBodyParts.has(gsis)) injuryBodyParts.set(gsis, new Map());
+        const parts = injuryBodyParts.get(gsis);
+        parts.set(part, (parts.get(part) ?? 0) + 1);
+      }
+      if (row.report_status !== 'Out' && row.game_status !== 'Out') continue;
+      if (!missedBySeason.has(gsis)) missedBySeason.set(gsis, new Map());
+      const bySeason = missedBySeason.get(gsis);
+      bySeason.set(season, (bySeason.get(season) ?? 0) + 1);
+    }
   }
+  const missedByGsis = new Map();
+  for (const [gsis, bySeason] of missedBySeason) missedByGsis.set(gsis, bySeason.get(2025) ?? 0);
+
+  // --- play-by-play: red-zone usage and team play-calling --------------------
+  process.stdout.write('  reading play-by-play… ');
+  const { players: redZoneByGsis, environment: teamEnvironment } = readPlayByPlay(
+    paths['pbp_2025.csv.gz']
+  );
+  console.log(`${teamEnvironment.size} offenses, ${redZoneByGsis.size} players with red-zone work`);
 
   // --- draft capital --------------------------------------------------------
   const draftPicks = [...readCsv(paths['draft_picks.csv'])];
@@ -385,11 +640,31 @@ const main = async () => {
   for (const pick of draftPicks) if (pick.gsis_id) draftByGsis.set(pick.gsis_id, pick);
   const rookieCurve = rookieBaselines(draftPicks, seasonsByPlayer);
 
-  // --- Sleeper: what the market is doing right now --------------------------
+  // --- the fantasy-side id crosswalk ----------------------------------------
+  // Sleeper carries a gsis_id for only 3,893 of its 12,224 players, and almost
+  // none of the ones who matter — Ja'Marr Chase and Jahmyr Gibbs both have a
+  // null. Joining on it directly resolved 61 of 567. This map is the fix, and
+  // it also unlocks FantasyPros, which has no nflverse id at all.
+  const fantasyIds = new Map(); // gsis -> { sleeper, fantasypros }
+  for (const row of readCsv(paths['db_playerids.csv'])) {
+    if (!row.gsis_id) continue;
+    fantasyIds.set(row.gsis_id, {
+      sleeper: row.sleeper_id || null,
+      fantasypros: row.fantasypros_id || null,
+    });
+  }
+
+  // --- Sleeper: what the casual room is looking up --------------------------
   const sleeper = JSON.parse(readFileSync(paths['sleeper.json'], 'utf8'));
+  const sleeperById = new Map(Object.entries(sleeper));
   const sleeperByGsis = new Map();
   for (const entry of Object.values(sleeper)) {
     if (entry?.gsis_id) sleeperByGsis.set(entry.gsis_id, entry);
+  }
+  for (const [gsis, ids] of fantasyIds) {
+    if (sleeperByGsis.has(gsis) || !ids.sleeper) continue;
+    const entry = sleeperById.get(ids.sleeper);
+    if (entry) sleeperByGsis.set(gsis, entry);
   }
 
   console.log(
@@ -507,6 +782,23 @@ const main = async () => {
       };
     }).filter(Boolean);
 
+    // The whole arc, not just the tape that feeds the projection. Three seasons
+    // answer "is he good now"; the career answers "what shape is he on" — a
+    // twenty-eight-year-old's third straight decline reads differently from a
+    // second-year jump, and the projection alone cannot show either.
+    const birthYear = identity.birth_date ? new Date(identity.birth_date).getFullYear() : null;
+    const career = [...(seasons?.values() ?? [])]
+      .filter((totals) => totals.games > 0)
+      .sort((a, b) => a.season - b.season)
+      .map((totals) => ({
+        season: totals.season,
+        team: totals.team,
+        games: totals.games,
+        pprPoints: Math.round(totals.pprPoints * 10) / 10,
+        pointsPerGame: Math.round((totals.pprPoints / totals.games) * 10) / 10,
+        age: birthYear ? totals.season - birthYear : null,
+      }));
+
     // A real trend, from real points per game, replacing the invented arrow.
     let trend = 'STABLE';
     if (history.length >= 2) {
@@ -548,6 +840,8 @@ const main = async () => {
         gamesObserved: projection.games,
       },
       history,
+      career,
+      breakoutSeason: career.find((row) => row.games >= 8 && row.pointsPerGame >= 12)?.season ?? null,
       sleeperId: sleeperByGsis.get(gsis)?.player_id ?? null,
     });
   }
@@ -655,6 +949,97 @@ const main = async () => {
             : share >= 40
               ? 'TIMESHARE'
               : 'COMMITTEE';
+
+    // --- how the touches were earned ---------------------------------------
+    // Volume is the projection; this is the shape of it. A back with 200 carries
+    // and no goal-line work is a different asset from one with 160 and all of it,
+    // and the point totals do not distinguish them until December.
+    const redZone = redZoneByGsis.get(player.gsis);
+    const environment = teamEnvironment.get(player.team);
+    if (sample) {
+      const denominator = teamTouches.get(`${sample.team ? canonicalTeam(sample.team) : player.team}:${sample.season}`);
+      const rate = (value, per) => (per ? Math.round((value / per) * 1000) / 10 : null);
+      const perGame = (value) => Math.round((value / sample.games) * 10) / 10;
+      const rzTouches = (redZone?.rzCarries ?? 0) + (redZone?.rzTargets ?? 0);
+      const teamRzTouches = (environment?.redZoneCarries ?? 0) + (environment?.redZoneTargets ?? 0);
+
+      player.usage = {
+        season: sample.season,
+        games: sample.games,
+        targetShare: sample.shareWeeks
+          ? Math.round((sample.targetShareSum / sample.shareWeeks) * 1000) / 10
+          : null,
+        airYardsShare: sample.shareWeeks
+          ? Math.round((sample.airYardsShareSum / sample.shareWeeks) * 1000) / 10
+          : null,
+        // Weighted opportunity: targets and air yards in the proportion that
+        // actually predicts receiving points.
+        wopr: sample.shareWeeks
+          ? Math.round((sample.woprSum / sample.shareWeeks) * 100) / 100
+          : null,
+        // Average depth of target — a slot receiver and a field-stretcher can
+        // share a target count and share nothing else.
+        adot: sample.targets ? Math.round((sample.airYards / sample.targets) * 10) / 10 : null,
+        yacPerReception: sample.receptions
+          ? Math.round((sample.yac / sample.receptions) * 10) / 10
+          : null,
+        carryShare: rate(sample.carries, denominator?.carries),
+        touchesPerGame: perGame(sample.carries + sample.receptions),
+        targetsPerGame: perGame(sample.targets),
+        redZoneTouches: rzTouches,
+        redZoneShare: teamRzTouches ? Math.round((rzTouches / teamRzTouches) * 1000) / 10 : null,
+        goalLineTouches: (redZone?.goalLineCarries ?? 0) + (redZone?.goalLineTargets ?? 0),
+        firstDownsPerGame: perGame(sample.firstDowns),
+        epaPerTouch:
+          sample.carries + sample.targets > 0
+            ? Math.round(
+                ((sample.rushingEpa + sample.receivingEpa) / (sample.carries + sample.targets)) *
+                  1000
+              ) / 1000
+            : null,
+        passingEpa: sample.passingEpa ? Math.round(sample.passingEpa * 10) / 10 : null,
+      };
+    } else {
+      player.usage = null;
+    }
+
+    // --- the offense he plays in -------------------------------------------
+    // Opportunity is granted by a team before it is earned by a player: the same
+    // target share is worth more on an offense that runs 68 plays a game.
+    player.context = environment
+      ? {
+          playsPerGame: environment.playsPerGame,
+          secondsPerPlay: environment.secondsPerPlay,
+          neutralPassRate: environment.neutralPassRate,
+          passRateOverExpected: environment.passRateOverExpected,
+          sackRateAllowed: environment.sackRateAllowed,
+          epaPerPlay: environment.epaPerPlay,
+          redZoneTripsPerGame: environment.redZoneTripsPerGame,
+        }
+      : null;
+
+    // --- durability, three seasons of it ------------------------------------
+    const missedSeasons = missedBySeason.get(player.gsis);
+    const missedByYear = INJURY_SEASONS.map((season) => ({
+      season,
+      missed: missedSeasons?.get(season) ?? 0,
+    }));
+    const totalMissed = missedByYear.reduce((total, row) => total + row.missed, 0);
+    const parts = injuryBodyParts.get(player.gsis);
+    player.durability = {
+      seasons: missedByYear,
+      totalMissed,
+      // Weeks spent on the injury report, which is not the same as games missed:
+      // a player can be listed all season and start every game. Shown as what it
+      // is — what he has been treated for — never as a count of absences.
+      reported: parts
+        ? [...parts.entries()]
+            .filter(([, weeks]) => weeks >= 4)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([part, weeks]) => ({ part, weeks }))
+        : [],
+    };
   }
 
   // --- team defenses -------------------------------------------------------
@@ -728,6 +1113,8 @@ const main = async () => {
           : null,
       },
       history: [],
+      career: [],
+      breakoutSeason: null,
       sleeperId: null,
     });
   }
@@ -817,10 +1204,22 @@ const main = async () => {
     ['points', (p) => p.projection.points],
     ['pointsPerGame', (p) => p.projection.pointsPerGame],
     ['snapShare', (p) => p.snapShare],
-    ['targetShare', (p) => p.targetShare],
+    ['targetShare', (p) => p.usage?.targetShare ?? p.targetShare],
     ['consistency', (p) => p.consistency],
     ['ceiling', (p) => p.ceiling],
     ['floor', (p) => p.floor],
+    ['airYardsShare', (p) => p.usage?.airYardsShare],
+    ['wopr', (p) => p.usage?.wopr],
+    ['adot', (p) => p.usage?.adot],
+    ['yacPerReception', (p) => p.usage?.yacPerReception],
+    ['carryShare', (p) => p.usage?.carryShare],
+    ['touchesPerGame', (p) => p.usage?.touchesPerGame],
+    ['targetsPerGame', (p) => p.usage?.targetsPerGame],
+    ['redZoneTouches', (p) => p.usage?.redZoneTouches],
+    ['redZoneShare', (p) => p.usage?.redZoneShare],
+    ['goalLineTouches', (p) => p.usage?.goalLineTouches],
+    ['firstDownsPerGame', (p) => p.usage?.firstDownsPerGame],
+    ['epaPerTouch', (p) => p.usage?.epaPerTouch],
   ];
 
   const byPositionForRanking = new Map();
@@ -833,6 +1232,10 @@ const main = async () => {
       const values = group.map(read).filter((value) => value != null && Number.isFinite(value));
       if (values.length < 4) continue;
       values.sort((a, b) => a - b);
+      // A field every player at the position shares — targets for quarterbacks,
+      // carries for tight ends — has no distribution to rank within. Emitting a
+      // percentile there would print a confident 0 next to a meaningless number.
+      if (values[0] === values[values.length - 1]) continue;
       for (const player of group) {
         const value = read(player);
         if (value == null || !Number.isFinite(value)) continue;
@@ -856,10 +1259,128 @@ const main = async () => {
     if (!player.role) player.role = 'COMMITTEE';
   });
 
+  // --- depth chart competition ---------------------------------------------
+  // A projection already accounts for the touches a player is expected to get.
+  // What it cannot show is how contested they are: the same 12 points a game is
+  // a very different bet behind a healthy starter than in front of nobody.
+  const teammates = new Map();
+  for (const player of chosen) {
+    const key = `${player.team}:${player.position}`;
+    if (!teammates.has(key)) teammates.set(key, []);
+    teammates.get(key).push(player);
+  }
+  for (const group of teammates.values()) {
+    group.sort((a, b) => b.projection.points - a.projection.points);
+    group.forEach((player, index) => {
+      const next = group[index + 1];
+      const ahead = group[index - 1];
+      player.competition = {
+        depth: index + 1,
+        roomSize: group.length,
+        // The gap to the man behind is how safe the role is; the gap to the man
+        // ahead is how far there is to climb if it opens up.
+        aheadBy: next
+          ? Math.round((player.projection.pointsPerGame - next.projection.pointsPerGame) * 10) / 10
+          : null,
+        behindBy: ahead
+          ? Math.round((ahead.projection.pointsPerGame - player.projection.pointsPerGame) * 10) / 10
+          : null,
+        nextUp: next?.name ?? null,
+        starterAhead: ahead?.name ?? null,
+      };
+    });
+  }
+
+  // --- what the market thinks ----------------------------------------------
+  // Two independent reads, because they answer different questions. FantasyPros'
+  // expert consensus is where a player is actually being drafted, and it ships
+  // its own disagreement — best, worst and the spread between them — which is a
+  // measure of consensus no single rank can carry. Sleeper's search rank is
+  // popularity: what the casual room is looking up this week.
+  const ecrByFpId = new Map();
+  const ecrByTeam = new Map();
+  for (const row of readCsv(paths['db_fpecr_latest.csv'])) {
+    if (row.ecr_type !== 'ro') continue; // redraft, overall
+    const record = {
+      ecr: num(row.ecr),
+      spread: Number.parseFloat(row.sd),
+      best: num(row.best),
+      worst: num(row.worst),
+      ownership: Number.parseFloat(row.player_owned_avg),
+      scrapedAt: row.scrape_date,
+    };
+    if (row.pos === 'DST') ecrByTeam.set(canonicalTeam(row.tm), record);
+    else if (row.id) ecrByFpId.set(String(row.id), record);
+  }
+
+  const marketOf = (player) => {
+    if (player.position === 'DST') return ecrByTeam.get(player.team) ?? null;
+    const ids = fantasyIds.get(player.gsis);
+    return ids?.fantasypros ? (ecrByFpId.get(ids.fantasypros) ?? null) : null;
+  };
+
+  const withEcr = chosen.map((player) => ({ player, ecr: marketOf(player) })).filter((row) => row.ecr);
+  withEcr.sort((a, b) => a.ecr.ecr - b.ecr.ecr);
+  const marketPositionCount = new Map();
+  withEcr.forEach((row, index) => {
+    const positionRank = (marketPositionCount.get(row.player.position) ?? 0) + 1;
+    marketPositionCount.set(row.player.position, positionRank);
+    const sleeperEntry = sleeperByGsis.get(row.player.gsis);
+    row.player.market = {
+      // Rank among this pool, not FantasyPros' own numbering, so it is directly
+      // comparable to the model's rank sitting next to it.
+      consensusRank: index + 1,
+      positionRank,
+      rawEcr: row.ecr.ecr,
+      // How much the experts disagree. A wide band is a player the room has not
+      // made its mind up about, which is where an auction is won.
+      best: row.ecr.best,
+      worst: row.ecr.worst,
+      spread: Number.isFinite(row.ecr.spread) ? Math.round(row.ecr.spread * 10) / 10 : null,
+      ownership: Number.isFinite(row.ecr.ownership) ? Math.round(row.ecr.ownership * 10) / 10 : null,
+      searchRank: Number.isFinite(sleeperEntry?.search_rank) ? sleeperEntry.search_rank : null,
+      depthChartOrder: sleeperEntry?.depth_chart_order ?? null,
+      source: 'FantasyPros expert consensus',
+      asOf: row.ecr.scrapedAt,
+    };
+  });
+  for (const player of chosen) {
+    if (!player.market) {
+      const sleeperEntry = sleeperByGsis.get(player.gsis);
+      player.market = {
+        consensusRank: null,
+        positionRank: null,
+        rawEcr: null,
+        best: null,
+        worst: null,
+        spread: null,
+        ownership: null,
+        searchRank: Number.isFinite(sleeperEntry?.search_rank) ? sleeperEntry.search_rank : null,
+        depthChartOrder: sleeperEntry?.depth_chart_order ?? null,
+        source: 'FantasyPros expert consensus',
+        asOf: null,
+      };
+    }
+    // Positive means the room is drafting him later than the model ranks him:
+    // our edge, and the number the bargain board sorts on.
+    player.market.edge =
+      player.market.consensusRank != null ? player.market.consensusRank - player.rank : null;
+  }
+  console.log(
+    `  market: ${withEcr.length}/${chosen.length} matched to FantasyPros consensus (${
+      withEcr[0]?.ecr.scrapedAt ?? 'n/a'
+    })`
+  );
+
 
   mkdirSync(OUT, { recursive: true });
   const meta = {
-    source: 'nflverse + Sleeper + ESPN',
+    source: 'nflverse + Sleeper + ESPN + FantasyPros',
+    // Emitted rather than re-declared in the client: replacement level falls out
+    // of LEAGUE.rostered, and CLAUDE.md's warning about those two copies drifting
+    // applies just as much to a third one in the UI.
+    replacement: Object.fromEntries([...replacement].map(([pos, points]) => [pos, Math.round(points)])),
+    league: LEAGUE,
     seasons: SEASONS,
     projectionModel: 'recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted',
     generatedAt: new Date().toISOString(),
@@ -867,7 +1388,11 @@ const main = async () => {
 
   writeFileSync(
     join(OUT, 'pool.json'),
-    JSON.stringify({ ...meta, players: chosen.map(({ history, ...rest }) => rest) }, null, 2) + '\n'
+    JSON.stringify(
+      { ...meta, players: chosen.map(({ history, career, ...rest }) => rest) },
+      null,
+      2
+    ) + '\n'
   );
   writeFileSync(
     join(OUT, 'schedule.json'),
@@ -876,10 +1401,22 @@ const main = async () => {
   writeFileSync(
     join(OUT, 'player-history.json'),
     JSON.stringify(
-      { ...meta, history: Object.fromEntries(chosen.map((p) => [p.gsis, p.history])) },
+      {
+        ...meta,
+        history: Object.fromEntries(chosen.map((p) => [p.gsis, p.history])),
+        // The full arc lives beside the recent tape, in the same lazy chunk: it
+        // is only ever read when a profile is open, and it would double the
+        // board's payload for a number no board column shows.
+        career: Object.fromEntries(chosen.filter((p) => p.career?.length).map((p) => [p.gsis, p.career])),
+      },
       null,
       2
     ) + '\n'
+  );
+  writeFileSync(
+    join(OUT, 'team-context.json'),
+    JSON.stringify({ ...meta, season: 2025, teams: Object.fromEntries(teamEnvironment) }, null, 2) +
+      '\n'
   );
 
   const priciest = ranked;

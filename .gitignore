@@ -30,3 +30,6 @@ coverage
 *.sln
 *.sw?
 .cache/
+
+# TypeScript incremental build state
+*.tsbuildinfo

@@ -126,7 +126,9 @@ export const allTeams = (): NflTeam[] => [...teams.values()];
 export const getIdentity = (poolId: string): PlayerIdentity | undefined => {
   const base = identities.get(poolId);
   if (!base) return undefined;
-  const live = liveOverrides.get(base.espnId);
+  // Team defenses have no ESPN athlete id, so there is never a live override
+  // for them and the lookup must not be attempted with a null key.
+  const live = base.espnId ? liveOverrides.get(base.espnId) : undefined;
   return live ? { ...base, ...live } : base;
 };
 
@@ -171,7 +173,9 @@ export const headshotUrl = (identity: Pick<PlayerIdentity, 'espnId'>, width = 20
  */
 export const loadDefenseUnits = async (abbr: string): Promise<DefenseUnits | undefined> => {
   const module = await import('@/data/nfl/defense-units.json');
-  const byTeam = (module.default ?? module).teams as Record<string, DefenseUnits>;
+  // The generated JSON is structurally a DefenseUnits map but TypeScript widens
+  // every null literal in it, so the shapes never formally overlap.
+  const byTeam = (module.default ?? module).teams as unknown as Record<string, DefenseUnits>;
   return byTeam[canonicalTeam(abbr)];
 };
 
@@ -246,6 +250,7 @@ export const refreshIdentity = async (): Promise<number> => {
     for (const player of identities.values()) {
       const team = getTeam(player.team);
       if (!team) continue;
+      if (!player.espnId) continue;
       const bucket = wanted.get(team.espnId) ?? new Set<string>();
       bucket.add(player.espnId);
       wanted.set(team.espnId, bucket);

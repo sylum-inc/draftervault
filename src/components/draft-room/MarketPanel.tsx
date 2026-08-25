@@ -1,20 +1,4 @@
-import type { Team } from '@/services/auctionDraftService';
-
-interface MarketState {
-  inflation: number;
-  premium: number | null;
-  moneyLeft: number;
-  valueLeft: number;
-  scarcity: Array<{
-    position: string;
-    gone: number;
-    total: number;
-    tierOneLeft: number;
-    premium: number | null;
-    sold: number;
-    cliff: number;
-  }>;
-}
+import type { MarketState, Team } from '@/services/auctionDraftService';
 
 interface MarketPanelProps {
   market: MarketState;

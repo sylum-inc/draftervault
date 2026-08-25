@@ -17,15 +17,26 @@ export interface DraftPreferences {
   queue: string[];
   /** Seconds allowed per nomination; 0 turns the clock off. */
   clockSeconds: number;
+  /** Player ids pinned into the comparison tray. Two to four is the useful range. */
+  pinned: string[];
+  /** Whether the opinion layer is showing. Off until asked for. */
+  advisor: boolean;
+  /** Which column set the dense board is showing. */
+  columns: 'value' | 'production' | 'usage' | 'market';
 }
 
 const STORAGE_KEY = 'draft-vault:preferences:v1';
+
+const MAX_PINNED = 4;
 
 const DEFAULTS: DraftPreferences = {
   view: 'cards',
   watchlist: [],
   queue: [],
   clockSeconds: 30,
+  pinned: [],
+  advisor: false,
+  columns: 'value',
 };
 
 const read = (): DraftPreferences => {
@@ -77,6 +88,30 @@ export const useDraftPreferences = () => {
     }));
   }, []);
 
+  const togglePin = useCallback((playerId: string) => {
+    setPreferences((current) => {
+      if (current.pinned.includes(playerId)) {
+        return { ...current, pinned: current.pinned.filter((id) => id !== playerId) };
+      }
+      // Past four columns the comparison stops being readable on any screen, so
+      // the oldest pin drops out rather than the new one being refused.
+      const pinned = [...current.pinned, playerId].slice(-MAX_PINNED);
+      return { ...current, pinned };
+    });
+  }, []);
+
+  const clearPins = useCallback(() => {
+    setPreferences((current) => ({ ...current, pinned: [] }));
+  }, []);
+
+  const setAdvisor = useCallback((advisor: boolean) => {
+    setPreferences((current) => ({ ...current, advisor }));
+  }, []);
+
+  const setColumns = useCallback((columns: DraftPreferences['columns']) => {
+    setPreferences((current) => ({ ...current, columns }));
+  }, []);
+
   const removeFromQueue = useCallback((playerId: string) => {
     setPreferences((current) => ({
       ...current,
@@ -91,5 +126,9 @@ export const useDraftPreferences = () => {
     toggleWatch,
     toggleQueue,
     removeFromQueue,
+    togglePin,
+    clearPins,
+    setAdvisor,
+    setColumns,
   };
 };

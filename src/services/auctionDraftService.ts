@@ -24,8 +24,15 @@ interface PoolEntry {
   ageRisk: 'LOW' | 'MEDIUM' | 'HIGH';
   role: 'LOCKED_STARTER' | 'MINOR_COMPETITION' | 'TIMESHARE' | 'COMMITTEE';
   trend: 'RISING' | 'STABLE' | 'DECLINING' | 'UNPROVEN';
-  projection: { points: number };
+  projection: { points: number; pointsPerGame: number; expectedGames: number };
   percentiles?: Record<string, number>;
+  usage?: PlayerUsage | null;
+  context?: TeamContext | null;
+  durability?: Durability;
+  competition?: DepthCompetition;
+  market?: MarketRead;
+  breakoutSeason?: number | null;
+  draft?: { year: number; round: number; pick: number; team: string } | null;
   defense?: {
     sacks: number;
     interceptions: number;
@@ -80,6 +87,15 @@ export interface Player {
   ceilingWeeks?: number; // Number of weeks hitting ceiling
   /** Where each headline number sits among players at the same position, 0-100. */
   percentiles?: Record<string, number>;
+  pointsPerGame?: number;
+  expectedGames?: number;
+  usage?: PlayerUsage | null;
+  teamContext?: TeamContext | null;
+  durability?: Durability;
+  competition?: DepthCompetition;
+  market?: MarketRead;
+  breakoutSeason?: number | null;
+  draftCapital?: { year: number; round: number; pick: number; team: string } | null;
   /** Team defense season totals. Present only for DST entries. */
   defense?: {
     sacks: number;
@@ -93,6 +109,72 @@ export interface Player {
   draftedBy?: string;
   draftCost?: number;
   pickNumber?: number;
+}
+
+/** How a player's touches were earned, from the most recent season with a real
+ *  sample. Volume is the projection; this is the shape of it. */
+export interface PlayerUsage {
+  season: number;
+  games: number;
+  targetShare: number | null;
+  airYardsShare: number | null;
+  wopr: number | null;
+  adot: number | null;
+  yacPerReception: number | null;
+  carryShare: number | null;
+  touchesPerGame: number | null;
+  targetsPerGame: number | null;
+  redZoneTouches: number;
+  redZoneShare: number | null;
+  goalLineTouches: number;
+  firstDownsPerGame: number | null;
+  epaPerTouch: number | null;
+  passingEpa: number | null;
+}
+
+/** The offence a player lines up in. Opportunity is granted by a team before it
+ *  is earned by a player. */
+export interface TeamContext {
+  playsPerGame: number;
+  secondsPerPlay: number | null;
+  neutralPassRate: number | null;
+  passRateOverExpected: number | null;
+  sackRateAllowed: number | null;
+  epaPerPlay: number | null;
+  redZoneTripsPerGame: number;
+}
+
+export interface Durability {
+  seasons: Array<{ season: number; missed: number }>;
+  totalMissed: number;
+  /** Weeks on the injury report by body part — treatment, not absences. */
+  reported: Array<{ part: string; weeks: number }>;
+}
+
+export interface DepthCompetition {
+  depth: number;
+  roomSize: number;
+  aheadBy: number | null;
+  behindBy: number | null;
+  nextUp: string | null;
+  starterAhead: string | null;
+}
+
+/** FantasyPros expert consensus, which ships its own disagreement. */
+export interface MarketRead {
+  consensusRank: number | null;
+  positionRank: number | null;
+  rawEcr: number | null;
+  best: number | null;
+  worst: number | null;
+  spread: number | null;
+  ownership: number | null;
+  searchRank: number | null;
+  depthChartOrder: number | null;
+  source: string;
+  asOf: string | null;
+  /** Consensus rank minus our rank. Positive means the room is sleeping on him. */
+  edge: number | null;
 }
 
 export type PlayerPosition = 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'DST';
@@ -159,6 +241,25 @@ export interface DraftAnalytics {
   backupTargets?: string[];
   idealDraftPosition?: string;
   rosterId: string;
+}
+
+/** What the room is doing with its money, derived entirely from the pick log. */
+export interface MarketState {
+  inflation: number;
+  premium: number | null;
+  moneyLeft: number;
+  valueLeft: number;
+  scarcity: Array<{
+    position: PlayerPosition;
+    gone: number;
+    total: number;
+    tierOneLeft: number;
+    /** What the room paid against our list at this position, once two have sold. */
+    premium: number | null;
+    sold: number;
+    /** Points between the best player left here and the fifth: the cost of waiting. */
+    cliff: number;
+  }>;
 }
 
 export interface DraftState {
@@ -284,6 +385,15 @@ export class AuctionDraftService {
       targetShare: entry.targetShare ?? undefined,
       recentTrends: entry.trend === 'UNPROVEN' ? 'STABLE' : entry.trend,
       percentiles: entry.percentiles,
+      pointsPerGame: entry.projection.pointsPerGame,
+      expectedGames: entry.projection.expectedGames,
+      usage: entry.usage ?? null,
+      teamContext: entry.context ?? null,
+      durability: entry.durability,
+      competition: entry.competition,
+      market: entry.market,
+      breakoutSeason: entry.breakoutSeason ?? null,
+      draftCapital: entry.draft ?? null,
       defense: entry.defense,
       isDrafted: false,
     }));
@@ -467,13 +577,7 @@ export class AuctionDraftService {
    * The premium is what has actually happened so far: what the room paid
    * divided by what we said those players were worth.
    */
-  getMarketState(): {
-    inflation: number;
-    premium: number | null;
-    moneyLeft: number;
-    valueLeft: number;
-    scarcity: Array<{ position: PlayerPosition; gone: number; total: number; tierOneLeft: number }>;
-  } {
+  getMarketState(): MarketState {
     const drafted = this.players.filter((p) => p.isDrafted);
     const spent = drafted.reduce((total, p) => total + (p.draftCost ?? 0), 0);
     const listed = drafted.reduce((total, p) => total + p.estimatedValue, 0);
@@ -520,6 +624,121 @@ export class AuctionDraftService {
     };
   }
 
+  /**
+   * Replacement level per position, straight from the generated pool.
+   *
+   * Deliberately read rather than recomputed: it falls out of the league shape
+   * in scripts/build-player-pool.mjs, and a second definition here would be a
+   * third copy of LEAGUE to keep in step.
+   */
+  getReplacementLevel(position: PlayerPosition): number | null {
+    const table = (poolData as { replacement?: Record<string, number> }).replacement;
+    return table?.[position] ?? null;
+  }
+
+  getLeagueShape(): { teams: number; budget: number; rosterSize: number } {
+    const league = (poolData as { league?: { teams: number; budget: number; rosterSize: number } })
+      .league;
+    return league ?? { teams: 12, budget: 200, rosterSize: 16 };
+  }
+
+  /**
+   * What a hypothetical purchase does to the rest of a roster.
+   *
+   * The number that actually decides a bid is not the price — it is what is left
+   * per slot afterwards, and whether that still buys starters. This answers it
+   * without committing anything.
+   */
+  simulateSpend(
+    teamId: string,
+    cost: number
+  ): {
+    remaining: number;
+    slotsLeft: number;
+    perSlot: number;
+    /** Slots that must be filled at a dollar to stay legal. */
+    minimumHold: number;
+    /** True only when the amount is a real bid the reserve rules would allow. */
+    /** Best player still on the board that the leftover budget could afford. */
+    affordable: Player | null;
+    legal: boolean;
+  } | null {
+    const team = this.teams.find((t) => t.id === teamId);
+    if (!team) return null;
+
+    const filled = Object.values(team.roster).reduce((a, b) => a + b, 0);
+    const slotsLeft = Math.max(0, MAX_ROSTER_SIZE - filled - 1);
+    const remaining = team.remaining - cost;
+    // Every unfilled starting slot still needs a dollar in reserve, exactly as
+    // validateBid enforces it.
+    const minimumHold = Math.max(0, STARTING_LINEUP_SIZE - filled - 1);
+    const spendable = remaining - minimumHold;
+    const affordable =
+      spendable > 0
+        ? (this.players
+            .filter((p) => !p.isDrafted && p.id !== undefined && p.estimatedValue <= spendable)
+            .sort((a, b) => b.projectedPoints - a.projectedPoints)[0] ?? null)
+        : null;
+
+    return {
+      remaining,
+      slotsLeft,
+      perSlot: slotsLeft > 0 ? Math.max(0, remaining - minimumHold) / slotsLeft : 0,
+      minimumHold,
+      affordable,
+      legal: remaining >= minimumHold && cost >= 1,
+    };
+  }
+
+  /**
+   * Where our board and the market's disagree, in dollars.
+   *
+   * `market.edge` is a difference of ranks; this converts it into what it is
+   * worth tonight by pricing each player at the room's current inflation. A
+   * player the consensus ranks 40 spots below us is only a bargain if he is
+   * still going to be cheap when he comes up.
+   */
+  getBargains(limit = 24): Array<{
+    player: Player;
+    edge: number;
+    listed: number;
+    projectedCost: number;
+    saving: number;
+  }> {
+    const inflation = this.calculateMarketInflation();
+    return this.players
+      .filter((p) => !p.isDrafted && p.market?.consensusRank != null && p.estimatedValue > 1)
+      .map((player) => {
+        const listed = player.estimatedValue;
+        // The room bids off consensus, so the expected price tracks the market
+        // rank, not ours; inflation moves both.
+        const projectedCost = Math.max(1, Math.round(listed * inflation));
+        return {
+          player,
+          edge: player.market?.edge ?? 0,
+          listed,
+          projectedCost,
+          saving: Math.round(listed - projectedCost + (player.market?.edge ?? 0) * 0.12),
+        };
+      })
+      .sort((a, b) => b.edge - a.edge || b.listed - a.listed)
+      .slice(0, limit);
+  }
+
+  /** Every pick so far, grouped for the league board. */
+  getDraftBoard(): Array<{
+    team: Team;
+    picks: Array<{ player: Player; cost: number; pickNumber: number }>;
+  }> {
+    return this.teams.map((team) => ({
+      team,
+      picks: this.players
+        .filter((p) => p.draftedBy === team.id)
+        .map((p) => ({ player: p, cost: p.draftCost ?? 0, pickNumber: p.pickNumber ?? 0 }))
+        .sort((a, b) => a.pickNumber - b.pickNumber),
+    }));
+  }
+
   canUndo(): boolean {
     return this.history.length > 0;
   }
@@ -549,7 +768,7 @@ export class AuctionDraftService {
     }, 0);
 
     // Calculate injury insurance (handcuff value)
-    team.injuryInsurance = teamPlayers.reduce((sum, p) => sum + p.handcuffValue, 0) / 100;
+    team.injuryInsurance = teamPlayers.reduce((sum, p) => sum + (p.handcuffValue ?? 0), 0) / 100;
   }
 
   /** Starting slots a team must fill, which is what makes a position urgent. */

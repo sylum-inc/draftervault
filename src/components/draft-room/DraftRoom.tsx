@@ -17,6 +17,12 @@ import { MarketPanel } from './MarketPanel';
 import { NominationClock } from './NominationClock';
 import { DraftResults } from './DraftResults';
 import { PlayerProfile } from './PlayerProfile';
+import { CompareTray, CompareView } from './CompareTray';
+import { DraftBoard } from './DraftBoard';
+import { BudgetPlanner } from './BudgetPlanner';
+import { BargainBoard } from './BargainBoard';
+import { AdvisorPanel } from './AdvisorPanel';
+import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -47,9 +53,14 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [tableSort, setTableSort] = useState<TableSort>('rank');
   const [tableDescending, setTableDescending] = useState(false);
   const [watchedOnly, setWatchedOnly] = useState(false);
-  const [asidePanel, setAsidePanel] = useState<'budgets' | 'rosters' | 'market'>('budgets');
+  const [asidePanel, setAsidePanel] = useState<
+    'budgets' | 'rosters' | 'market' | 'bargains' | 'plan'
+  >('budgets');
   const [resultsOpen, setResultsOpen] = useState(false);
-  const { preferences, setView, toggleWatch } = useDraftPreferences();
+  const [boardOpen, setBoardOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
+    useDraftPreferences();
 
   const sync = useCallback(() => {
     setPlayers(draftService.getPlayers());
@@ -157,6 +168,35 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     [draftService, players]
   );
 
+  const activeTeam = teams.find((team) => team.id === teamId);
+
+  // The opinion layer is computed only when it is switched on: it is the one
+  // part of the app that is not a measurement, and it should cost nothing when
+  // nobody has asked for it.
+  const advice = useMemo(
+    () =>
+      preferences.advisor && selected
+        ? adviseOnBid(selected, activeTeam, analytics, draftService, Number.parseInt(bid, 10) || 0)
+        : null,
+    [preferences.advisor, selected, activeTeam, analytics, draftService, bid]
+  );
+
+  const alerts = useMemo(
+    () => (preferences.advisor ? buildAlerts(players, activeTeam, draftService) : []),
+    [preferences.advisor, players, activeTeam, draftService]
+  );
+
+  const nominationAdvice = useMemo(() => {
+    if (!preferences.advisor) return null;
+    const suggestion = adviseOnNomination(players, activeTeam, draftService);
+    return suggestion
+      ? {
+          name: getIdentity(suggestion.player.id)?.name ?? suggestion.player.name,
+          reason: suggestion.reason,
+        }
+      : null;
+  }, [preferences.advisor, players, activeTeam, draftService]);
+
   const spent = teams.reduce((total, team) => total + team.spent, 0);
   const progress = players.length ? (drafted.length / players.length) * 100 : 0;
   const { season } = snapshotMeta();
@@ -201,6 +241,17 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
         <button className="dr-button" onClick={undo} disabled={!draftService.canUndo()}>
           Undo pick
+        </button>
+        <button className="dr-button" onClick={() => setBoardOpen(true)} disabled={!drafted.length}>
+          The room
+        </button>
+        <button
+          className="dr-button"
+          aria-pressed={preferences.advisor}
+          onClick={() => setAdvisor(!preferences.advisor)}
+          title="An opinion layer, kept separate from the numbers"
+        >
+          Advisor {preferences.advisor ? 'on' : 'off'}
         </button>
         <button
           className="dr-button"
@@ -309,6 +360,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               }}
               onSelect={nominate}
               onToggleWatch={toggleWatch}
+              onTogglePin={togglePin}
+              pinned={preferences.pinned}
+              columns={preferences.columns}
+              onColumns={setColumns}
             />
           ) : (
             <div className="dr-grid">
@@ -320,6 +375,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                   watched={preferences.watchlist.includes(player.id)}
                   onSelect={nominate}
                   onToggleWatch={toggleWatch}
+                  onTogglePin={togglePin}
+                  pinned={preferences.pinned.includes(player.id)}
                 />
               ))}
             </div>
@@ -339,8 +396,17 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             onConfirm={confirm}
             onOpenProfile={() => setProfileOpen(true)}
           />
+          {preferences.advisor && (
+            <AdvisorPanel
+              advice={advice}
+              alerts={alerts}
+              nomination={nominationAdvice}
+              onDismiss={() => setAdvisor(false)}
+            />
+          )}
+
           <div className="dr-segmented dr-aside-tabs" role="group" aria-label="Side panel">
-            {(['budgets', 'rosters', 'market'] as const).map((panel) => (
+            {(['budgets', 'rosters', 'market', 'bargains', 'plan'] as const).map((panel) => (
               <button
                 key={panel}
                 type="button"
@@ -362,6 +428,18 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             />
           )}
           {asidePanel === 'market' && <MarketPanel market={market} teams={teams} />}
+          {asidePanel === 'bargains' && (
+            <BargainBoard service={draftService} players={players} onSelect={nominate} />
+          )}
+          {asidePanel === 'plan' && (
+            <BudgetPlanner
+              service={draftService}
+              team={activeTeam}
+              player={selected}
+              bid={bid}
+              players={players}
+            />
+          )}
         </aside>
       </div>
 
@@ -382,6 +460,32 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         )}
       </footer>
 
+      <CompareTray
+        players={players}
+        pinned={preferences.pinned}
+        onUnpin={togglePin}
+        onClear={clearPins}
+        onOpen={() => setCompareOpen(true)}
+      />
+
+      {compareOpen && (
+        <CompareView
+          players={players}
+          pinned={preferences.pinned}
+          onClose={() => setCompareOpen(false)}
+          onUnpin={togglePin}
+        />
+      )}
+
+      {boardOpen && (
+        <DraftBoard
+          service={draftService}
+          players={players}
+          teams={teams}
+          onClose={() => setBoardOpen(false)}
+        />
+      )}
+
       {resultsOpen && (
         <DraftResults players={players} teams={teams} onClose={() => setResultsOpen(false)} />
       )}
@@ -390,6 +494,11 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         <PlayerProfile
           player={selected}
           analytics={analytics}
+          players={players}
+          replacement={draftService.getReplacementLevel(selected.position)}
+          currentBid={Number.parseInt(bid, 10) || undefined}
+          pinned={preferences.pinned.includes(selected.id)}
+          onTogglePin={() => togglePin(selected.id)}
           onClose={() => setProfileOpen(false)}
         />
       )}

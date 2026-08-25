@@ -1,8 +1,29 @@
 {
-  "source": "nflverse + Sleeper + ESPN",
+  "source": "nflverse + Sleeper + ESPN + FantasyPros",
+  "replacement": {
+    "QB": 241,
+    "RB": 114,
+    "WR": 117,
+    "TE": 128,
+    "K": 111,
+    "DST": 87
+  },
+  "league": {
+    "teams": 12,
+    "budget": 200,
+    "rosterSize": 16,
+    "rostered": {
+      "QB": 20,
+      "RB": 48,
+      "WR": 60,
+      "TE": 18,
+      "K": 12,
+      "DST": 12
+    }
+  },
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-25T06:27:18.825Z",
+  "generatedAt": "2026-08-25T07:01:10.919Z",
   "season": 2026,
   "teams": {
     "SEA": [

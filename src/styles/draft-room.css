@@ -1894,3 +1894,1006 @@
   font-size: 13px;
   color: var(--dr-ink);
 }
+
+/* --------------------------------------------------------------------------
+   position palette
+   Six hues at one job: tinting a mark that ALWAYS carries its position letter.
+   Constructed in OKLCH inside the dark-mode lightness band and checked with the
+   dataviz validator (adjacent-pair CVD deltaE 16.0, normal-vision 18.2). Six
+   categorical hues cannot clear the deltaE 8 target across *all* pairs, which is
+   exactly why the letter is the encoding and the colour only reinforces it.
+   -------------------------------------------------------------------------- */
+
+.draft-room {
+  --dr-pos-qb: #597bd6;
+  --dr-pos-rb: #47a47d;
+  --dr-pos-wr: #8e5100;
+  --dr-pos-te: #794c8d;
+  --dr-pos-k: #00a3bb;
+  --dr-pos-dst: #ab5a48;
+}
+
+/* --------------------------------------------------------------------------
+   charts: shared furniture
+   -------------------------------------------------------------------------- */
+
+.dr-axis-title,
+.dr-quadrant,
+.dr-consensus-tick {
+  font-family: var(--dr-mono);
+  font-size: 8px;
+  fill: var(--dr-ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.dr-quadrant {
+  font-family: var(--dr-sans);
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  fill: var(--dr-ink-faint);
+  opacity: 0.75;
+}
+
+.dr-consensus-tick {
+  fill: var(--dr-ink-muted);
+}
+
+/* distribution ----------------------------------------------------------- */
+
+.dr-swarm {
+  margin: 0 0 14px;
+}
+
+.dr-swarm-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.dr-swarm-readout {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--dr-ink-muted);
+  min-width: 0;
+}
+
+.dr-swarm-readout strong {
+  color: var(--dr-ink);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-swarm-readout strong.is-subject {
+  color: var(--dr-value);
+}
+
+.dr-swarm svg circle {
+  transition: r 90ms ease;
+}
+
+.dr-swarm-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-swarm-axis em {
+  font-style: normal;
+  color: var(--dr-caution);
+}
+
+/* uncertainty ------------------------------------------------------------ */
+
+.dr-curve,
+.dr-consensus,
+.dr-arc,
+.dr-flow,
+.dr-scatter {
+  margin: 10px 0 0;
+}
+
+.dr-curve-key,
+.dr-consensus-key,
+.dr-arc-key,
+.dr-flow-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 4px;
+}
+
+.dr-curve-key span,
+.dr-consensus-key span,
+.dr-arc-key span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dr-curve-key em,
+.dr-consensus-key em,
+.dr-arc-key em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-curve-key strong,
+.dr-consensus-key strong,
+.dr-arc-key strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* scatter ---------------------------------------------------------------- */
+
+.dr-scatter svg {
+  display: block;
+  background: color-mix(in srgb, var(--dr-ground) 55%, transparent);
+  border-radius: var(--dr-radius-sm);
+}
+
+.dr-scatter-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+  min-height: 18px;
+}
+
+.dr-scatter-readout strong {
+  color: var(--dr-ink);
+}
+
+.dr-pos-chip {
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+}
+
+/* flow and depletion ----------------------------------------------------- */
+
+.dr-flow-key {
+  align-items: center;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-flow-total {
+  color: var(--dr-value);
+  font-size: 12px;
+}
+
+.dr-runs {
+  margin-top: 10px;
+}
+
+.dr-runs-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.dr-run-cell {
+  width: 17px;
+  height: 17px;
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  /* A 2px ground gap so adjacent cells never merge into one block. */
+  outline: 2px solid var(--dr-surface);
+  outline-offset: -1px;
+}
+
+.dr-depletion {
+  display: grid;
+  gap: 6px;
+}
+
+.dr-depletion-row {
+  display: grid;
+  grid-template-columns: 34px 1fr 54px;
+  align-items: center;
+  gap: 8px;
+}
+
+.dr-depletion-position {
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-depletion-track {
+  position: relative;
+  display: flex;
+  height: 14px;
+  gap: 2px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dr-depletion-ghost {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--dr-raised);
+  border-radius: 3px;
+}
+
+.dr-depletion-seg {
+  position: relative;
+  background: var(--dr-value);
+  border-radius: 2px;
+  min-width: 0;
+}
+
+.dr-depletion-count {
+  font-size: 11px;
+  text-align: right;
+  color: var(--dr-ink);
+}
+
+.dr-depletion-count em {
+  font-style: normal;
+  color: var(--dr-ink-faint);
+}
+
+/* career arc ------------------------------------------------------------- */
+
+.dr-arc svg {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   compare tray and head-to-head
+   -------------------------------------------------------------------------- */
+
+.dr-tray {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--dr-surface) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--dr-line-strong);
+}
+
+.dr-tray-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.dr-tray-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 3px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+  border: 1px solid var(--dr-line);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dr-tray-chip:hover {
+  border-color: var(--dr-line-strong);
+}
+
+.dr-tray-face {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dr-tray-chip em {
+  font-style: normal;
+  color: var(--dr-ink-faint);
+}
+
+.dr-compare {
+  width: min(1080px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 18px;
+}
+
+.dr-compare-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dr-compare-head h2 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.dr-compare-players,
+.dr-compare-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 168px) repeat(var(--dr-compare-count, 2), minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+.dr-compare-players {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 0 10px;
+  background: var(--dr-surface);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-compare-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  min-width: 0;
+}
+
+.dr-compare-face {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--dr-raised);
+}
+
+.dr-compare-player strong {
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.dr-compare-meta {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-compare-body section {
+  margin-top: 14px;
+}
+
+.dr-compare-body section h3 {
+  margin: 0 0 4px;
+}
+
+.dr-compare-row {
+  padding: 3px 0;
+  border-top: 1px solid color-mix(in srgb, var(--dr-line) 60%, transparent);
+}
+
+.dr-compare-label {
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-compare-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dr-compare-bar {
+  position: absolute;
+  inset: 2px auto 2px 0;
+  background: color-mix(in srgb, var(--dr-value) 20%, transparent);
+  border-radius: 2px;
+}
+
+.dr-compare-value {
+  position: relative;
+  font-size: 12px;
+}
+
+.dr-compare-value.is-best {
+  color: var(--dr-value);
+  font-weight: 600;
+}
+
+.dr-linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dr-linkish:hover {
+  color: var(--dr-ink-muted);
+}
+
+/* --------------------------------------------------------------------------
+   the room: league draft board
+   -------------------------------------------------------------------------- */
+
+.dr-boardview {
+  width: min(1240px, 97vw);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 18px;
+}
+
+.dr-boardview-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.dr-boardview-charts h3 {
+  margin: 0 0 6px;
+}
+
+.dr-gridboard {
+  overflow-x: auto;
+}
+
+.dr-gridboard-head,
+.dr-gridboard-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(124px, 1fr);
+  gap: 4px;
+}
+
+.dr-gridboard-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-bottom: 6px;
+  background: var(--dr-surface);
+}
+
+.dr-gridboard-team {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 6px;
+  border-bottom: 2px solid var(--dr-line-strong);
+  font-size: 11px;
+}
+
+.dr-gridboard-team span {
+  color: var(--dr-value);
+  font-size: 12px;
+}
+
+.dr-gridboard-body {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.dr-gridboard-pick {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 5px;
+  border-left: 3px solid var(--dr-line-strong);
+  border-radius: 3px;
+  background: var(--dr-raised);
+  font-size: 11px;
+}
+
+.dr-gridboard-pick em {
+  font-style: normal;
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-gridboard-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-gridboard-empty {
+  display: block;
+  height: 23px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--dr-raised) 45%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   budget planner and bargain board
+   -------------------------------------------------------------------------- */
+
+.dr-planner {
+  padding: 12px;
+}
+
+.dr-planner-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dr-planner-amount {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--dr-ink);
+}
+
+.dr-planner-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 10px;
+}
+
+.dr-planner-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.dr-planner-grid dt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-planner-grid dd {
+  margin: 1px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.dr-planner-bar {
+  position: relative;
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-planner-spent {
+  background: var(--dr-value);
+}
+
+.dr-planner-reserve {
+  background: repeating-linear-gradient(45deg, var(--dr-caution) 0 3px, transparent 3px 6px);
+  margin-left: 2px;
+}
+
+.dr-planner-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-bargains {
+  padding: 10px;
+}
+
+.dr-bargains-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dr-bargain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.dr-bargain {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 4px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--dr-line) 55%, transparent);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dr-bargain:hover {
+  background: var(--dr-raised);
+}
+
+.dr-bargain-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-bargain-name strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-bargain-name em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-bargain-gap {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-bargain-fill {
+  display: block;
+  height: 100%;
+  background: var(--dr-value);
+  border-radius: 3px;
+}
+
+.dr-bargain-fill.is-negative {
+  background: var(--dr-caution);
+}
+
+.dr-bargain-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-bargain-numbers em {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-bargain-edge {
+  min-width: 26px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.dr-bargain-price {
+  color: var(--dr-value);
+}
+
+/* --------------------------------------------------------------------------
+   the advisor
+   Deliberately unlike everything else on screen. A dashed border and a badge,
+   because this is the one panel that holds an opinion rather than a measurement
+   and the difference has to survive a glance.
+   -------------------------------------------------------------------------- */
+
+.dr-advisor {
+  border: 1px dashed var(--dr-caution);
+  border-radius: var(--dr-radius);
+  background: color-mix(in srgb, var(--dr-caution) 6%, var(--dr-surface));
+  padding: 10px 12px;
+}
+
+.dr-advisor-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dr-advisor-badge {
+  font-family: var(--dr-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dr-ground);
+  background: var(--dr-caution);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.dr-advisor-caveat {
+  flex: 1;
+  font-size: 10px;
+  font-style: italic;
+  color: var(--dr-ink-faint);
+}
+
+.dr-advice-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dr-advice-verdict strong {
+  font-family: var(--dr-display);
+  font-size: 21px;
+  letter-spacing: 0.01em;
+}
+
+.dr-advice-verdict span {
+  font-size: 12px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-headline {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  color: var(--dr-ink);
+}
+
+.dr-advice-reasons {
+  margin: 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 3px;
+}
+
+.dr-advice-reasons li {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-nomination {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--dr-caution) 25%, transparent);
+}
+
+.dr-advice-nomination strong {
+  display: block;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+.dr-advice-nomination p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advisor-idle {
+  margin: 0;
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-advisor-alerts {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.dr-advisor-alerts li {
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 4px 7px;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+}
+
+.dr-advisor-alerts li.is-warning {
+  color: var(--dr-caution);
+  background: color-mix(in srgb, var(--dr-caution) 12%, var(--dr-raised));
+}
+
+/* --------------------------------------------------------------------------
+   denser card and table
+   -------------------------------------------------------------------------- */
+
+.dr-card-pin {
+  position: absolute;
+  top: 6px;
+  right: 28px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--dr-ink-faint);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.dr-card-pin:hover,
+.dr-card-pin.is-pinned {
+  color: var(--dr-value);
+  background: color-mix(in srgb, var(--dr-value) 14%, transparent);
+}
+
+.dr-card-signals {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.dr-card-signal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 3px 5px 5px;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-card-signal em {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-card-signal span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* The bar is the percentile within the position; the number above is the raw
+   figure, so neither is ever the only evidence. */
+.dr-card-signal-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--dr-value);
+  opacity: 0.75;
+}
+
+.dr-card-edge {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.dr-table-sets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 8px;
+  flex-wrap: wrap;
+}
+
+.dr-table td {
+  position: relative;
+}
+
+.dr-cell-bar {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  background: color-mix(in srgb, var(--dr-value) 15%, transparent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.dr-cell-value {
+  position: relative;
+}
+
+.dr-pin {
+  color: var(--dr-ink-faint);
+}
+
+.dr-pin.is-pinned {
+  color: var(--dr-value);
+}
+
+.dr-profile-pin {
+  margin-left: auto;
+}
+
+.dr-facts-note {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-facts-list {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+/* --------------------------------------------------------------------------
+   narrow screens
+   The tray, the compare grid and the league board are the three surfaces that
+   would otherwise force the page to scroll sideways on a phone.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  .dr-compare-players,
+  .dr-compare-row {
+    grid-template-columns: 92px repeat(var(--dr-compare-count, 2), minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .dr-compare-label {
+    font-size: 10px;
+  }
+
+  .dr-compare-value {
+    font-size: 11px;
+  }
+
+  .dr-boardview-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .dr-planner-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dr-tray {
+    padding: 6px 10px;
+  }
+
+  .dr-card-signals {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

@@ -9,6 +9,8 @@ interface PlayerCardProps {
   watched: boolean;
   onSelect: (player: Player) => void;
   onToggleWatch: (playerId: string) => void;
+  onTogglePin: (playerId: string) => void;
+  pinned: boolean;
 }
 
 /** Readable ink for a team color, so light jerseys don't get white-on-white. */
@@ -30,13 +32,54 @@ export const PlayerCard = ({
   player,
   selected,
   watched,
+  pinned,
   onSelect,
   onToggleWatch,
+  onTogglePin,
 }: PlayerCardProps) => {
   const identity = getIdentity(player.id);
   const team = identity?.team ?? player.team;
   const { primary } = teamColors(team);
   const logo = teamLogo(team);
+
+  const percentiles = player.percentiles ?? {};
+  const usage = player.usage;
+  const edge = player.market?.edge ?? null;
+
+  // Receivers and backs earn their touches differently, so the card shows the
+  // measure that actually describes the role rather than a fixed trio.
+  const signals: Array<{ label: string; value: string; percentile?: number; title: string }> = [];
+  if (player.snapPercentage != null) {
+    signals.push({
+      label: 'Snaps',
+      value: `${Math.round(player.snapPercentage)}%`,
+      percentile: percentiles.snapShare,
+      title: `${Math.round(player.snapPercentage)}% of offensive snaps${percentiles.snapShare != null ? ` — ${percentiles.snapShare}th percentile among ${player.position}s` : ''}`,
+    });
+  }
+  if (usage?.targetShare != null && player.position !== 'RB') {
+    signals.push({
+      label: 'Tgt%',
+      value: `${usage.targetShare}%`,
+      percentile: percentiles.targetShare,
+      title: `${usage.targetShare}% of his team's targets${percentiles.targetShare != null ? ` — ${percentiles.targetShare}th percentile` : ''}`,
+    });
+  } else if (usage?.carryShare != null) {
+    signals.push({
+      label: 'Car%',
+      value: `${usage.carryShare}%`,
+      percentile: percentiles.carryShare,
+      title: `${usage.carryShare}% of his team's carries${percentiles.carryShare != null ? ` — ${percentiles.carryShare}th percentile` : ''}`,
+    });
+  }
+  if (usage?.redZoneTouches) {
+    signals.push({
+      label: 'RZ',
+      value: String(usage.redZoneTouches),
+      percentile: percentiles.redZoneTouches,
+      title: `${usage.redZoneTouches} red-zone touches in ${usage.season}${percentiles.redZoneTouches != null ? ` — ${percentiles.redZoneTouches}th percentile` : ''}`,
+    });
+  }
 
   const style = {
     '--dr-accent': primary,
@@ -71,6 +114,27 @@ export const PlayerCard = ({
         }}
       >
         {watched ? '★' : '☆'}
+      </span>
+      <span
+        className={`dr-card-pin${pinned ? ' is-pinned' : ''}`}
+        role="button"
+        tabIndex={0}
+        aria-pressed={pinned}
+        aria-label={pinned ? `Unpin ${player.name}` : `Pin ${player.name} to compare`}
+        title={pinned ? 'Pinned for comparison' : 'Pin to compare'}
+        onClick={(event) => {
+          event.stopPropagation();
+          onTogglePin(player.id);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            onTogglePin(player.id);
+          }
+        }}
+      >
+        ⇄
       </span>
 
       <div className="dr-card-head">
@@ -109,6 +173,38 @@ export const PlayerCard = ({
           <dd>{player.adp}</dd>
         </div>
       </dl>
+
+      {/* The three numbers that explain the projection, each with its standing
+          in the position — a share means nothing without one. */}
+      <div className="dr-card-signals">
+        {signals.map((signal) => (
+          <span className="dr-card-signal" key={signal.label} title={signal.title}>
+            <em>{signal.label}</em>
+            <span className="dr-num">{signal.value}</span>
+            <span
+              className="dr-card-signal-bar"
+              aria-hidden="true"
+              style={{ width: `${signal.percentile ?? 0}%` }}
+            />
+          </span>
+        ))}
+      </div>
+
+      {edge != null && Math.abs(edge) >= 8 && (
+        <span
+          className="dr-card-edge"
+          style={{ color: edge > 0 ? 'var(--dr-value)' : 'var(--dr-caution)' }}
+          title={
+            edge > 0
+              ? `Expert consensus ranks him ${edge} spots below our board`
+              : `Expert consensus ranks him ${Math.abs(edge)} spots above our board`
+          }
+        >
+          {edge > 0
+            ? `${edge} spots cheaper than consensus`
+            : `${Math.abs(edge)} spots hotter than us`}
+        </span>
+      )}
     </button>
   );
 };
