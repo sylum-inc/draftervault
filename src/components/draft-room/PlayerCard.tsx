@@ -77,7 +77,7 @@ export const PlayerCard = ({ player, selected, onSelect }: PlayerCardProps) => {
           <dd>{player.projectedPoints}</dd>
         </div>
         <div className="dr-card-stat">
-          <dt>ADP</dt>
+          <dt>Rank</dt>
           <dd>{player.adp}</dd>
         </div>
       </dl>

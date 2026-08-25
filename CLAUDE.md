@@ -12,7 +12,8 @@ npm run validate     # type-check + lint + tests
 npm run test:run
 npm run build && npm run serve   # production bundle on :4173
 npm run build:single # one self-contained HTML file in dist-single/
-npm run fetch:nfl    # regenerate the NFL data snapshot from ESPN
+npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
+npm run build:pool   # rebuild the 599-player pool from nflverse production data
 docker compose up -d --build     # nginx on :8080
 ```
 
@@ -27,10 +28,12 @@ src/pages/Index.tsx
         ├── PlayerProfile.tsx     full profile modal
         └── Headshot.tsx          photo with monogram fallback
 
-src/services/auctionDraftService.ts   the draft engine (pool, teams, rules)
-src/services/nflIdentity.ts           real player/team identity
-src/data/nfl/*.json                   curated ESPN snapshot (generated)
-scripts/fetch-nfl-data.mjs            regenerates that snapshot
+src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
+src/services/nflIdentity.ts           team colors, crests, headshots
+src/data/nfl/pool.json                599 players: projections, values (generated)
+src/data/nfl/player-history.json      per-player season history (lazy loaded)
+scripts/build-player-pool.mjs         builds the pool from nflverse
+scripts/fetch-nfl-data.mjs            builds team identity from ESPN
 src/styles/draft-room.css             design tokens + component styles
 ```
 
@@ -52,19 +55,25 @@ snapshot on any failure.
 
 ## Data provenance
 
-Everything in `src/data/nfl/` comes from ESPN's public API via `npm run fetch:nfl`.
-59 of the 60 pool entries resolve to real athletes. The matcher reports the rest
-rather than guessing, and the app shows a "roster mismatch" banner on them:
+Three free sources, joined on nflverse's id crosswalk, which resolves all 599
+players with no name matching: **ESPN** for team colors, crests and headshots,
+**nflverse** for rosters and production, **Sleeper** for market signal.
 
-- `P. Nuka` → Puka Nacua and `J. Connor` → James Conner are pool misspellings.
-- A.J. Brown, Kenneth Walker III, Davante Adams, Mike Evans and DJ Moore are
-  listed on the wrong teams — the pool was built on rosters two seasons old.
-- `T. Hill (MIA)` matches no player on any current roster.
+**The pool is generated, not typed.** `scripts/build-player-pool.mjs` builds 599
+players from nflverse: 2023-2025 weekly production, 2026 rosters, snap counts,
+injuries, draft capital and the published schedule. Projections come from the
+model documented in that file — recency-weighted points per game, shrunk toward
+a positional baseline by sample size, age-adjusted, times expected games. Dollar
+values are value over replacement converted to a share of the league's budget.
+Kickers and defenses are regressed hard because their scoring barely predicts
+itself year to year, which is why they price out at a dollar or two.
 
-**The valuation numbers are not real.** `estimatedValue`, `projectedPoints`, `adp`
-and VORP are hand-typed values from the original pool. Several services under
-`src/services/` named `real*` generate their "analytics" with `Math.random()`.
-Don't present those as fact, and don't build on them without replacing them.
+Everything a player card shows traces to an observation: bye weeks from the 2026
+schedule, floor and ceiling from that player's own weekly distribution,
+consistency from its variance, injury risk from games actually missed.
+
+Legacy services under `src/services/` named `real*` still generate numbers with
+`Math.random()`. Nothing live reads them. Don't build on them.
 
 ## Conventions
 
@@ -80,23 +89,34 @@ Don't present those as fact, and don't build on them without replacing them.
 
 ## State of the work
 
-Done: the draft room UI, real identity data, bid validation, undo, persistence,
-Docker/nginx deployment, a single-file build, and 15 engine tests (55 total).
+Done: the draft room UI, a 599-player pool built from real production with
+projections and auction values, real identity data, bid validation, undo,
+persistence, Docker/nginx deployment, a single-file build, 55 tests.
 
 Open, roughly in order of value:
 
-1. **Pool is not draftable.** 60 players, no kickers, no defenses, only 3 TEs.
-   `src/data/nfl/defense-units.json` already holds real defensive personnel for all
-   32 teams, and `PlayerInsights.tsx:319` has a defense-specific profile that
-   nothing can currently reach because no DST exists in the pool.
-2. **Replace the fabricated valuations** with real projections and ADP.
+1. **The defense profile still isn't wired up.** `defense-units.json` holds real
+   DL/LB/DB for all 32 teams and `nflIdentity.loadDefenseUnits()` exports it, but
+   nothing calls it. Defenses are in the pool now, so a defense section in
+   `PlayerProfile.tsx` would finally have somewhere to live. Ignore
+   `PlayerInsights.tsx` — its panel is hardcoded to the Browns and unrouted.
+2. **Show the history that already exists.** `player-history.json` carries three
+   seasons per player — games, targets, yards, touchdowns, target share — and no
+   screen displays it. The profile modal is the obvious home.
 3. **The old tabs** — AI Insights, Team Builder, Analytics — still exist as
    components but are no longer routed, and need the draft-room design treatment.
-4. **Dead code**: ~59k lines unreachable from `main.tsx`. About 40k of that is
-   `src/data/playerDatabase/`, which is raw material worth wiring in rather than
-   deleting; the Bloomberg interface, the orphaned AI stack and unused shadcn
-   components are genuinely removable.
-5. **No CI.** `npm run validate` gates nothing on push.
+   The draft room also has no per-team roster view, nomination clock, pick
+   history, or end-of-draft summary.
+4. **League configuration.** Twelve teams at $200 with a fixed roster shape is
+   hardcoded in both the engine and the pool builder's `LEAGUE` constant. The
+   dollar values depend on it, so the two must stay in step.
+5. **Dead code**: ~59k lines unreachable from `main.tsx`, about 40k of it
+   `src/data/playerDatabase/`. Now that the pool comes from nflverse, that tree is
+   genuinely redundant rather than salvageable — as are the Bloomberg interface,
+   the orphaned AI stack and the unused shadcn components.
+6. **No CI.** `npm run validate` gates nothing on push. Also `@sentry/react` and
+   `web-vitals` are imported by `src` but declared as devDependencies, and
+   `index.html` references `/icons/*` files that do not exist.
 
 ## Related
 

@@ -17,12 +17,12 @@ interface DraftRoomProps {
   draftService: AuctionDraftService;
 }
 
-type SortKey = 'adp' | 'value' | 'projected';
+type SortKey = 'rank' | 'value' | 'projected';
 
-const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE'] as const;
+const POSITIONS = ['ALL', 'QB', 'RB', 'WR', 'TE', 'K', 'DST'] as const;
 
 const SORTS: Record<SortKey, (a: Player, b: Player) => number> = {
-  adp: (a, b) => a.adp - b.adp,
+  rank: (a, b) => a.adp - b.adp,
   value: (a, b) => b.estimatedValue - a.estimatedValue,
   projected: (a, b) => b.projectedPoints - a.projectedPoints,
 };
@@ -35,7 +35,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [bid, setBid] = useState('');
   const [query, setQuery] = useState('');
   const [position, setPosition] = useState<(typeof POSITIONS)[number]>('ALL');
-  const [sort, setSort] = useState<SortKey>('adp');
+  const [sort, setSort] = useState<SortKey>('rank');
   const [profileOpen, setProfileOpen] = useState(false);
   const [resumed, setResumed] = useState(0);
 
@@ -214,7 +214,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               onChange={(event) => setSort(event.target.value as SortKey)}
               aria-label="Sort players"
             >
-              <option value="adp">By ADP</option>
+              <option value="rank">By our rank</option>
               <option value="value">By value</option>
               <option value="projected">By projection</option>
             </select>
