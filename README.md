@@ -1,9 +1,9 @@
 # Draft Vault
 
-A Bloomberg-terminal-style fantasy football **auction draft** board: 60 ranked
-players with valuation analytics, 12 team budgets, live bid execution, and an
-auto-draft simulator. It is a pure front-end app — a static bundle with no
-backend, no database, and no API keys required to run it.
+A fantasy football **auction draft** board: 60 ranked players with valuation
+analytics, 12 team budgets, live bid execution, and an auto-draft simulator. It
+is a pure front-end app — a static bundle with no backend, no database, and no
+API keys required to run it.
 
 ---
 
@@ -100,16 +100,15 @@ Docker `--build-arg` values, which are baked in at build time.
 
 ---
 
-## Using the terminal
+## Using the draft board
 
-|                    |                                                                                                                                                                 |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Draft a player** | Click any row → pick a team → set the bid → `EXECUTE DRAFT`                                                                                                     |
-| **Command bar**    | Type and press Enter: `POS QB`, `TIER 1`, `SIM`, `COMPARE`, `CLEAR` — anything else searches player and team names                                              |
-| **Panels**         | The header buttons switch panels: HELP, NEWS, CHART, ALERT, DRAFT, TEAMS, ANAL, TRADE (they are labelled F1–F8, but the function keys themselves are not bound) |
-| **Filters**        | `ALL / QB / RB / WR / TE` and `T1–T4` tier buttons; click a column header to sort                                                                               |
-| **Watchlist**      | The `★` cell on each row                                                                                                                                        |
-| **Auto-draft**     | `START SIMULATION` (or the `SIM` command) drafts a player every 1.2s                                                                                            |
+|                    |                                                                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Draft a player** | `Select for Auction` on any card → the Player Analytics dialog opens → choose a team → enter a bid → `Confirm Pick`                                                    |
+| **Tabs**           | Draft Board, AI Insights (draft phase and strategic targets), Team Builder, Analytics (value vs ADP, scarcity, efficiency, risk/reward, trends, projections), Settings |
+| **Filters**        | Search by player or team, the `All Pos` and `All Tiers` dropdowns, and the `Available` / `Drafted` toggle                                                              |
+| **Auto-draft**     | `Simulate Auction` runs the draft on its own                                                                                                                           |
+| **Player detail**  | The analytics dialog's Overview selector switches between deeper metric groups                                                                                         |
 
 Draft state lives in memory only: reloading the page starts a fresh draft.
 
