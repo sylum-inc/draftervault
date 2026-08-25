@@ -23,7 +23,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "validate": "npm run type-check && npm run lint && npm run test:run"
+    "validate": "npm run type-check && npm run lint && npm run test:run",
+    "build:artifact": "npm run build:single && node scripts/build-artifact.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -12,6 +12,7 @@ npm run validate     # type-check + lint + tests
 npm run test:run
 npm run build && npm run serve   # production bundle on :4173
 npm run build:single # one self-contained HTML file in dist-single/
+npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 599-player pool from nflverse production data
 docker compose up -d --build     # nginx on :8080
@@ -200,7 +201,18 @@ Open, roughly in order of value:
 ## Related
 
 The published preview artifact lives at
-https://claude.ai/code/artifact/7e72b3fa-0f58-46c9-8246-f3231e16849e — republish it
-by passing that URL to the Artifact tool so the link stays stable. It embeds
-headshots as data URIs because its sandbox blocks external hosts; the app itself
-hotlinks the ESPN CDN and commits no images.
+https://claude.ai/code/artifact/7e72b3fa-0f58-46c9-8246-f3231e16849e — build it with
+`npm run build:artifact` and republish by passing that URL to the Artifact tool so
+the link stays stable. `scripts/build-artifact.mjs` embeds the 260 most valuable
+players' faces and all 32 crests as data URIs (the CSP blocks external hosts),
+strips the document shell, and adds the viewport meta the viewer's head lacks.
+
+Two traps that file exists to remember. Vite puts the module script in `<head>`,
+and the single-file build inlines the whole 2 MB bundle there — extracting only
+`<body>` yields a page containing an empty `<div id="root">` and nothing else.
+And the bundle registers a service worker, which is useless in a self-contained
+page and logs a CSP error on every load, so the prelude shadows
+`navigator.serviceWorker` before the bundle runs.
+
+The app itself hotlinks the ESPN CDN and commits no images; `.cache/images/`
+holds what the artifact build has already fetched.
