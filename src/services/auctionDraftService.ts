@@ -25,6 +25,14 @@ interface PoolEntry {
   role: 'LOCKED_STARTER' | 'MINOR_COMPETITION' | 'TIMESHARE' | 'COMMITTEE';
   trend: 'RISING' | 'STABLE' | 'DECLINING' | 'UNPROVEN';
   projection: { points: number };
+  defense?: {
+    sacks: number;
+    interceptions: number;
+    fumbleRecoveries: number;
+    touchdowns: number;
+    safeties: number;
+    pointsAllowedPerGame: number | null;
+  };
 }
 
 export interface Player {
@@ -69,6 +77,15 @@ export interface Player {
   fantasyRelevantWeeks?: number; // Weeks likely to be fantasy relevant
   floorWeeks?: number; // Number of weeks hitting floor
   ceilingWeeks?: number; // Number of weeks hitting ceiling
+  /** Team defense season totals. Present only for DST entries. */
+  defense?: {
+    sacks: number;
+    interceptions: number;
+    fumbleRecoveries: number;
+    touchdowns: number;
+    safeties: number;
+    pointsAllowedPerGame: number | null;
+  };
   isDrafted: boolean;
   draftedBy?: string;
   draftCost?: number;
@@ -263,6 +280,7 @@ export class AuctionDraftService {
       snapPercentage: entry.snapShare ?? undefined,
       targetShare: entry.targetShare ?? undefined,
       recentTrends: entry.trend === 'UNPROVEN' ? 'STABLE' : entry.trend,
+      defense: entry.defense,
       isDrafted: false,
     }));
   }
@@ -415,6 +433,87 @@ export class AuctionDraftService {
     this.persist();
 
     return { player, team, cost: last.cost };
+  }
+
+  /**
+   * Whose turn it is to nominate.
+   *
+   * Derived from the number of picks made rather than stored, so it can never
+   * drift out of step with the draft and needs nothing extra synchronised if
+   * this ever runs on more than one screen.
+   */
+  getNominatingTeam(): Team | undefined {
+    if (!this.teams.length) return undefined;
+    return this.teams[this.draftedCount % this.teams.length];
+  }
+
+  /** Nomination order from here, starting with whoever is up. */
+  getNominationOrder(count = 4): Team[] {
+    return Array.from(
+      { length: Math.min(count, this.teams.length) },
+      (_, offset) => this.teams[(this.draftedCount + offset) % this.teams.length]
+    );
+  }
+
+  /**
+   * How the room is behaving, as numbers a bidder can act on.
+   *
+   * Inflation above 1 means more money is chasing less value than the list
+   * prices assume, so everything left will go for more than it says on the tin.
+   * The premium is what has actually happened so far: what the room paid
+   * divided by what we said those players were worth.
+   */
+  getMarketState(): {
+    inflation: number;
+    premium: number | null;
+    moneyLeft: number;
+    valueLeft: number;
+    scarcity: Array<{ position: PlayerPosition; gone: number; total: number; tierOneLeft: number }>;
+  } {
+    const drafted = this.players.filter((p) => p.isDrafted);
+    const spent = drafted.reduce((total, p) => total + (p.draftCost ?? 0), 0);
+    const listed = drafted.reduce((total, p) => total + p.estimatedValue, 0);
+
+    const positions: PlayerPosition[] = ['QB', 'RB', 'WR', 'TE', 'K', 'DST'];
+    const scarcity = positions.map((position) => {
+      const startable = this.players.filter((p) => p.position === position && p.estimatedValue > 1);
+      const sold = drafted.filter((p) => p.position === position);
+      const soldFor = sold.reduce((total, p) => total + (p.draftCost ?? 0), 0);
+      const soldList = sold.reduce((total, p) => total + p.estimatedValue, 0);
+
+      // The drop from the best player left to the fifth-best: how much it costs
+      // to wait. A big cliff is why a position becomes urgent.
+      const remaining = startable
+        .filter((p) => !p.isDrafted)
+        .sort((a, b) => b.projectedPoints - a.projectedPoints);
+      const cliff =
+        remaining.length > 4
+          ? Math.round(remaining[0].projectedPoints - remaining[4].projectedPoints)
+          : 0;
+
+      return {
+        position,
+        gone: startable.filter((p) => p.isDrafted).length,
+        total: startable.length,
+        tierOneLeft: this.players.filter(
+          (p) => p.position === position && p.tier === 1 && !p.isDrafted
+        ).length,
+        /** What the room paid for this position against our list, once two have sold. */
+        premium: sold.length >= 2 && soldList > 0 ? soldFor / soldList : null,
+        sold: sold.length,
+        cliff,
+      };
+    });
+
+    return {
+      inflation: this.calculateMarketInflation(),
+      premium: listed > 0 ? spent / listed : null,
+      moneyLeft: this.teams.reduce((total, team) => total + team.remaining, 0),
+      valueLeft: this.players
+        .filter((p) => !p.isDrafted && p.estimatedValue > 1)
+        .reduce((total, p) => total + p.estimatedValue, 0),
+      scarcity,
+    };
   }
 
   canUndo(): boolean {

@@ -23,10 +23,18 @@ docker compose up -d --build     # nginx on :8080
 src/pages/Index.tsx
   └── components/draft-room/DraftRoom.tsx     layout, filters, draft flow
         ├── PlayerCard.tsx        board card: headshot, team color, tier
+        ├── PlayerTable.tsx       dense sortable board for 599 players
         ├── NominationStage.tsx   player on the block + bid controls
+        ├── NominationClock.tsx   whose turn, how long they have had
         ├── BudgetRail.tsx        money left per team
-        ├── PlayerProfile.tsx     full profile modal
+        ├── TeamsPanel.tsx        every roster and its open slots
+        ├── MarketPanel.tsx       inflation, supply, what the room pays
+        ├── PlayerProfile.tsx     history, sparkline, defensive personnel
+        ├── DraftResults.tsx      grades and export
+        ├── Sparkline.tsx         one season, game by game
         └── Headshot.tsx          photo with monogram fallback
+
+src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/nflIdentity.ts           team colors, crests, headshots
@@ -42,6 +50,13 @@ UI renders verbatim; `draftPlayer()` re-checks it. Bids must be whole dollars �
 within budget minus a $1 reserve per unfilled starting slot, and inside the
 position and roster limits. Picks persist to `localStorage` and replay on load —
 only the picks are stored, so derived numbers always come from current logic.
+
+**The draft is the only shared fact.** Everything a second screen would need to
+agree on lives in the engine and is derived from the pick log — including whose
+turn it is to nominate, which is `draftedCount % teams.length` rather than
+stored state. Per-person choices (board layout, watchlist, queue, clock length)
+live in `use-draft-preferences` and would never need to synchronise. Keep that
+line where it is; it is what makes a shared-view mode tractable later.
 
 `getPlayers()` and `getTeams()` return **fresh arrays** deliberately. An earlier
 interface handed back the same array reference and mutated it in place, so React
@@ -89,32 +104,27 @@ Legacy services under `src/services/` named `real*` still generate numbers with
 
 ## State of the work
 
-Done: the draft room UI, a 599-player pool built from real production with
-projections and auction values, real identity data, bid validation, undo,
-persistence, Docker/nginx deployment, a single-file build, 55 tests.
+Done: the draft room (card and table boards, nomination clock, bid validation,
+undo, persistence), a 599-player pool built from real production with
+projections and auction values, player profiles with three seasons and a weekly
+sparkline, defensive personnel for all 32 teams, a live market read, roster and
+needs tracking, results with grades and export, Docker/nginx deployment, a
+single-file build, 55 tests.
+
+The one caveat worth knowing: the CSV **download** works in a browser but does
+nothing inside the published artifact preview, whose sandbox blocks
+page-initiated downloads. Copy CSV and Print work everywhere.
 
 Open, roughly in order of value:
 
-1. **The defense profile still isn't wired up.** `defense-units.json` holds real
-   DL/LB/DB for all 32 teams and `nflIdentity.loadDefenseUnits()` exports it, but
-   nothing calls it. Defenses are in the pool now, so a defense section in
-   `PlayerProfile.tsx` would finally have somewhere to live. Ignore
-   `PlayerInsights.tsx` — its panel is hardcoded to the Browns and unrouted.
-2. **Show the history that already exists.** `player-history.json` carries three
-   seasons per player — games, targets, yards, touchdowns, target share — and no
-   screen displays it. The profile modal is the obvious home.
-3. **The old tabs** — AI Insights, Team Builder, Analytics — still exist as
-   components but are no longer routed, and need the draft-room design treatment.
-   The draft room also has no per-team roster view, nomination clock, pick
-   history, or end-of-draft summary.
-4. **League configuration.** Twelve teams at $200 with a fixed roster shape is
+1. **League configuration.** Twelve teams at $200 with a fixed roster shape is
    hardcoded in both the engine and the pool builder's `LEAGUE` constant. The
    dollar values depend on it, so the two must stay in step.
-5. **Dead code**: ~59k lines unreachable from `main.tsx`, about 40k of it
+2. **Dead code**: ~59k lines unreachable from `main.tsx`, about 40k of it
    `src/data/playerDatabase/`. Now that the pool comes from nflverse, that tree is
    genuinely redundant rather than salvageable — as are the Bloomberg interface,
    the orphaned AI stack and the unused shadcn components.
-6. **No CI.** `npm run validate` gates nothing on push. Also `@sentry/react` and
+3. **No CI.** `npm run validate` gates nothing on push. Also `@sentry/react` and
    `web-vitals` are imported by `src` but declared as devDependencies, and
    `index.html` references `/icons/*` files that do not exist.
 

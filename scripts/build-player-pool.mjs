@@ -499,6 +499,9 @@ const main = async () => {
         targetShare: totals.targetShareWeeks
           ? Math.round((totals.targetShareSum / totals.targetShareWeeks) * 1000) / 10
           : null,
+        // Week-by-week scoring, so the profile can draw the real shape of a
+        // season instead of three season totals pretending to be a trend.
+        weekly: totals.weekly.map((points) => Math.round(points * 10) / 10),
         airYards: Math.round(totals.airYards),
         yardsAfterCatch: Math.round(totals.yac),
       };
@@ -592,9 +595,6 @@ const main = async () => {
   }
 
   // --- distributional and risk fields, all derived from real observations ---
-  const percentile = (sorted, p) =>
-    sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * p))] : 0;
-
   for (const player of chosen) {
     const seasons = seasonsByPlayer.get(player.gsis);
     // Prefer the most recent season with a real sample for shape statistics.
@@ -608,15 +608,22 @@ const main = async () => {
     }
 
     if (sample) {
-      const weekly = [...sample.weekly].sort((a, b) => a - b);
       const mean = sample.pprPoints / sample.games;
       const variance =
         sample.weekly.reduce((total, points) => total + (points - mean) ** 2, 0) / sample.games;
-      const cv = mean > 0 ? Math.sqrt(variance) / mean : 1.2;
+      const weeklyDeviation = Math.sqrt(variance);
+      const cv = mean > 0 ? weeklyDeviation / mean : 1.2;
       // A tighter week-to-week spread is a more dependable starter.
       player.consistency = Math.max(1, Math.min(10, Math.round(10 - (cv - 0.3) * 10)));
-      player.floor = Math.round(percentile(weekly, 0.2) * player.projection.expectedGames);
-      player.ceiling = Math.round(percentile(weekly, 0.8) * player.projection.expectedGames);
+
+      // A season is a sum of games, so its spread grows with the square root of
+      // the number of them — not linearly. Multiplying a good week by seventeen
+      // would describe a season where every week is a good week, which is not a
+      // ceiling anyone reaches.
+      const games = player.projection.expectedGames;
+      const seasonDeviation = weeklyDeviation * Math.sqrt(games);
+      player.floor = Math.max(0, Math.round(player.projection.points - seasonDeviation));
+      player.ceiling = Math.round(player.projection.points + seasonDeviation);
     } else {
       player.consistency = null;
       player.floor = Math.round(player.projection.points * 0.65);

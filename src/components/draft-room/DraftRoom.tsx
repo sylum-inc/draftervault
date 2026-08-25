@@ -7,9 +7,15 @@ import {
   type Team,
 } from '@/services/auctionDraftService';
 import { getIdentity, refreshIdentity, snapshotMeta } from '@/services/nflIdentity';
+import { useDraftPreferences } from '@/hooks/use-draft-preferences';
 import { PlayerCard } from './PlayerCard';
+import { PlayerTable, type TableSort } from './PlayerTable';
 import { NominationStage } from './NominationStage';
 import { BudgetRail } from './BudgetRail';
+import { TeamsPanel } from './TeamsPanel';
+import { MarketPanel } from './MarketPanel';
+import { NominationClock } from './NominationClock';
+import { DraftResults } from './DraftResults';
 import { PlayerProfile } from './PlayerProfile';
 import '@/styles/draft-room.css';
 
@@ -38,6 +44,12 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [sort, setSort] = useState<SortKey>('rank');
   const [profileOpen, setProfileOpen] = useState(false);
   const [resumed, setResumed] = useState(0);
+  const [tableSort, setTableSort] = useState<TableSort>('rank');
+  const [tableDescending, setTableDescending] = useState(false);
+  const [watchedOnly, setWatchedOnly] = useState(false);
+  const [asidePanel, setAsidePanel] = useState<'budgets' | 'rosters' | 'market'>('budgets');
+  const [resultsOpen, setResultsOpen] = useState(false);
+  const { preferences, setView, toggleWatch } = useDraftPreferences();
 
   const sync = useCallback(() => {
     setPlayers(draftService.getPlayers());
@@ -61,6 +73,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     return players
       .filter((player) => !player.isDrafted)
       .filter((player) => position === 'ALL' || player.position === position)
+      .filter((player) => !watchedOnly || preferences.watchlist.includes(player.id))
       .filter((player) => {
         if (!needle) return true;
         const identity = getIdentity(player.id);
@@ -71,7 +84,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         );
       })
       .sort(SORTS[sort]);
-  }, [players, query, position, sort]);
+  }, [players, query, position, sort, watchedOnly, preferences.watchlist]);
 
   const drafted = useMemo(
     () =>
@@ -133,6 +146,17 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     sync();
   }, [draftService, sync]);
 
+  // players and teams are the change signal, not inputs: the service holds the
+  // state and hands out fresh arrays on every sync, which the rule cannot see
+  // through a method call.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const market = useMemo(() => draftService.getMarketState(), [draftService, players, teams]);
+  const nominator = useMemo(
+    () => draftService.getNominatingTeam(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rotates with each pick
+    [draftService, players]
+  );
+
   const spent = teams.reduce((total, team) => total + team.spent, 0);
   const progress = players.length ? (drafted.length / players.length) * 100 : 0;
   const { season } = snapshotMeta();
@@ -169,8 +193,21 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           </span>
         </div>
 
+        <NominationClock
+          nominator={nominator}
+          player={selected}
+          seconds={preferences.clockSeconds}
+        />
+
         <button className="dr-button" onClick={undo} disabled={!draftService.canUndo()}>
           Undo pick
+        </button>
+        <button
+          className="dr-button"
+          onClick={() => setResultsOpen(true)}
+          disabled={!drafted.length}
+        >
+          Results
         </button>
         <button className="dr-button" onClick={reset} disabled={!drafted.length}>
           Reset
@@ -208,16 +245,45 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                 {pos}
               </button>
             ))}
-            <select
+            {preferences.view === 'cards' && (
+              <select
+                className="dr-chip"
+                value={sort}
+                onChange={(event) => setSort(event.target.value as SortKey)}
+                aria-label="Sort players"
+              >
+                <option value="rank">By our rank</option>
+                <option value="value">By value</option>
+                <option value="projected">By projection</option>
+              </select>
+            )}
+
+            <button
+              type="button"
               className="dr-chip"
-              value={sort}
-              onChange={(event) => setSort(event.target.value as SortKey)}
-              aria-label="Sort players"
+              aria-pressed={watchedOnly}
+              onClick={() => setWatchedOnly((current) => !current)}
+              title="Show only players you are watching"
             >
-              <option value="rank">By our rank</option>
-              <option value="value">By value</option>
-              <option value="projected">By projection</option>
-            </select>
+              ★ {preferences.watchlist.length}
+            </button>
+
+            <div className="dr-segmented" role="group" aria-label="Board layout">
+              <button
+                type="button"
+                aria-pressed={preferences.view === 'cards'}
+                onClick={() => setView('cards')}
+              >
+                Cards
+              </button>
+              <button
+                type="button"
+                aria-pressed={preferences.view === 'table'}
+                onClick={() => setView('table')}
+              >
+                Table
+              </button>
+            </div>
           </div>
 
           {available.length === 0 ? (
@@ -225,6 +291,25 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               No players match that filter.
               {query && ' Try clearing the search.'}
             </p>
+          ) : preferences.view === 'table' ? (
+            <PlayerTable
+              players={available}
+              selectedId={selected?.id}
+              watchlist={preferences.watchlist}
+              sort={tableSort}
+              descending={tableDescending}
+              onSort={(next) => {
+                // Clicking the active column flips direction; a new column starts
+                // in the direction that puts the best players first.
+                if (next === tableSort) setTableDescending((current) => !current);
+                else {
+                  setTableSort(next);
+                  setTableDescending(next !== 'rank' && next !== 'bye' && next !== 'name');
+                }
+              }}
+              onSelect={nominate}
+              onToggleWatch={toggleWatch}
+            />
           ) : (
             <div className="dr-grid">
               {available.map((player) => (
@@ -232,7 +317,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                   key={player.id}
                   player={player}
                   selected={selected?.id === player.id}
+                  watched={preferences.watchlist.includes(player.id)}
                   onSelect={nominate}
+                  onToggleWatch={toggleWatch}
                 />
               ))}
             </div>
@@ -252,7 +339,29 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             onConfirm={confirm}
             onOpenProfile={() => setProfileOpen(true)}
           />
-          <BudgetRail teams={teams} activeTeamId={teamId} />
+          <div className="dr-segmented dr-aside-tabs" role="group" aria-label="Side panel">
+            {(['budgets', 'rosters', 'market'] as const).map((panel) => (
+              <button
+                key={panel}
+                type="button"
+                aria-pressed={asidePanel === panel}
+                onClick={() => setAsidePanel(panel)}
+              >
+                {panel}
+              </button>
+            ))}
+          </div>
+
+          {asidePanel === 'budgets' && <BudgetRail teams={teams} activeTeamId={teamId} />}
+          {asidePanel === 'rosters' && (
+            <TeamsPanel
+              teams={teams}
+              players={players}
+              activeTeamId={teamId}
+              onSelectTeam={setTeamId}
+            />
+          )}
+          {asidePanel === 'market' && <MarketPanel market={market} teams={teams} />}
         </aside>
       </div>
 
@@ -272,6 +381,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           ))
         )}
       </footer>
+
+      {resultsOpen && (
+        <DraftResults players={players} teams={teams} onClose={() => setResultsOpen(false)} />
+      )}
 
       {profileOpen && selected && (
         <PlayerProfile

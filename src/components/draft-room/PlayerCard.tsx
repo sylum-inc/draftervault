@@ -6,7 +6,9 @@ import { Headshot } from './Headshot';
 interface PlayerCardProps {
   player: Player;
   selected: boolean;
+  watched: boolean;
   onSelect: (player: Player) => void;
+  onToggleWatch: (playerId: string) => void;
 }
 
 /** Readable ink for a team color, so light jerseys don't get white-on-white. */
@@ -24,7 +26,13 @@ const RISK_COLOR: Record<Player['injuryRisk'], string> = {
   HIGH: 'var(--dr-danger)',
 };
 
-export const PlayerCard = ({ player, selected, onSelect }: PlayerCardProps) => {
+export const PlayerCard = ({
+  player,
+  selected,
+  watched,
+  onSelect,
+  onToggleWatch,
+}: PlayerCardProps) => {
   const identity = getIdentity(player.id);
   const team = identity?.team ?? player.team;
   const { primary } = teamColors(team);
@@ -44,6 +52,26 @@ export const PlayerCard = ({ player, selected, onSelect }: PlayerCardProps) => {
       onClick={() => onSelect(player)}
     >
       <span className="dr-tier dr-num">T{player.tier}</span>
+      <span
+        className="dr-card-star dr-star"
+        role="button"
+        tabIndex={0}
+        aria-pressed={watched}
+        aria-label={watched ? `Stop watching ${player.name}` : `Watch ${player.name}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggleWatch(player.id);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            onToggleWatch(player.id);
+          }
+        }}
+      >
+        {watched ? '★' : '☆'}
+      </span>
 
       <div className="dr-card-head">
         {logo && <img className="dr-card-logo" src={logo} alt="" aria-hidden="true" />}
