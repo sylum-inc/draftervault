@@ -9,6 +9,7 @@ import {
   sameLeague,
   type LeagueShape,
 } from '@/lib/valuation';
+import type { RankingOverride } from '@/lib/rankingsCsv';
 
 interface PoolEntry {
   gsis: string;
@@ -59,6 +60,14 @@ export interface Player {
   tier: 1 | 2 | 3 | 4;
   baseValue: number;
   estimatedValue: number;
+  /**
+   * What our own model says, kept even when an imported ranking has replaced
+   * the value everything else reads. Facts and opinions stay distinguishable:
+   * the board can show whose number it is showing.
+   */
+  modelValue: number;
+  /** Present only when an imported ranking is overriding this player. */
+  customRanking?: RankingOverride;
   projectedPoints: number;
   adp: number; // Average Draft Position
   injuryRisk: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -377,6 +386,34 @@ const writeStoredLeague = (league: LeagueShape): void => {
   }
 };
 
+/**
+ * Somebody else's rankings, laid over ours.
+ *
+ * An import is an opinion — the whole point of it is to disagree with the
+ * model — so it is stored apart from both the pick log and the league, and the
+ * model's own number survives underneath it on every player.
+ */
+const RANKINGS_STORAGE_KEY = 'draft-vault:custom-rankings:v1';
+
+const readStoredOverrides = (): Record<string, RankingOverride> => {
+  try {
+    const raw = localStorage.getItem(RANKINGS_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Record<string, RankingOverride>) : null;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeStoredOverrides = (overrides: Record<string, RankingOverride>): void => {
+  try {
+    if (!Object.keys(overrides).length) localStorage.removeItem(RANKINGS_STORAGE_KEY);
+    else localStorage.setItem(RANKINGS_STORAGE_KEY, JSON.stringify(overrides));
+  } catch {
+    /* storage unavailable — the import simply won't survive a reload */
+  }
+};
+
 const EMPTY_ROSTER = (): RosterCounts => ({ QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DST: 0 });
 
 const rosterSize = (roster: RosterCounts): number =>
@@ -395,6 +432,8 @@ export class AuctionDraftService {
   private league: LeagueShape = POOL_LEAGUE;
   /** Replacement points per position under the active league. */
   private replacement: Record<string, number> = {};
+  /** Imported rankings, by player id. Empty unless somebody has imported some. */
+  private overrides: Record<string, RankingOverride> = readStoredOverrides();
 
   constructor(league: LeagueShape = readStoredLeague()) {
     this.league = normaliseLeague(league);
@@ -421,20 +460,35 @@ export class AuctionDraftService {
     );
     this.replacement = replacement;
 
-    this.players = entries.map((entry, index) => ({
+    this.players = entries.map((entry, index) => this.buildPlayer(entry, priced[index]));
+  }
+
+  /**
+   * One pool entry, priced for this league and then overlaid with any imported
+   * ranking. The model's number stays on `modelValue` either way, so nothing
+   * downstream has to choose between showing ours and showing theirs.
+   */
+  private buildPlayer(entry: PoolEntry, priced: { vorp: number; auctionValue: number }): Player {
+    const override = this.overrides[entry.gsis];
+    const value = override?.value ?? priced.auctionValue;
+
+    return {
       id: entry.gsis,
       name: entry.name,
       position: entry.position as PlayerPosition,
       team: entry.team,
-      tier: entry.tier as 1 | 2 | 3 | 4,
-      baseValue: priced[index].auctionValue,
-      estimatedValue: priced[index].auctionValue,
+      tier: (override?.tier ?? entry.tier) as 1 | 2 | 3 | 4,
+      // Both follow the import: an opinion nobody's advice reflects is decoration.
+      baseValue: value,
+      estimatedValue: value,
+      modelValue: priced.auctionValue,
+      customRanking: override,
       projectedPoints: Math.round(entry.projection.points),
       // Rank by our own valuation. It is not an average draft position and is
       // not labelled as one.
-      adp: entry.rank,
+      adp: override?.rank ?? entry.rank,
       injuryRisk: entry.injuryRisk,
-      valueOverReplacement: Math.round(priced[index].vorp),
+      valueOverReplacement: Math.round(priced.vorp),
       upside: entry.ceiling,
       floor: entry.floor,
       consistency: entry.consistency,
@@ -459,7 +513,7 @@ export class AuctionDraftService {
       draftCapital: entry.draft ?? null,
       defense: entry.defense,
       isDrafted: false,
-    }));
+    };
   }
 
   private initializeTeams(): void {
@@ -714,6 +768,68 @@ export class AuctionDraftService {
       positionLimits: { ...POOL_LEAGUE.positionLimits },
       rostered: { ...POOL_LEAGUE.rostered },
     };
+  }
+
+  /** The imported rankings in force, by player id. */
+  getCustomRankings(): Record<string, RankingOverride> {
+    return { ...this.overrides };
+  }
+
+  /** How many players an import is currently speaking for. */
+  getCustomRankingCount(): number {
+    return Object.keys(this.overrides).length;
+  }
+
+  /**
+   * Lay an imported ranking over the board.
+   *
+   * Unlike a league change this does not invalidate picks already made — the
+   * money spent is still the money spent — so a draft in progress survives it.
+   * Only what the remaining players are said to be worth moves.
+   */
+  setCustomRankings(overrides: Record<string, RankingOverride>): void {
+    this.overrides = { ...overrides };
+    writeStoredOverrides(this.overrides);
+    this.repriceInPlace();
+  }
+
+  /** Drop the import and go back to what the model says. */
+  clearCustomRankings(): void {
+    if (!Object.keys(this.overrides).length) return;
+    this.overrides = {};
+    writeStoredOverrides(this.overrides);
+    this.repriceInPlace();
+  }
+
+  /**
+   * Rebuild the pool's valuations while keeping the draft that is under way.
+   *
+   * Rebuilding outright would drop who owns whom, so each player is rebuilt
+   * from the pool and then has its draft state copied back on.
+   */
+  private repriceInPlace(): void {
+    const state = new Map(
+      this.players.map((player) => [
+        player.id,
+        {
+          isDrafted: player.isDrafted,
+          draftedBy: player.draftedBy,
+          draftCost: player.draftCost,
+          pickNumber: player.pickNumber,
+        },
+      ])
+    );
+
+    this.initializePlayers();
+
+    for (const player of this.players) {
+      const previous = state.get(player.id);
+      if (!previous?.isDrafted) continue;
+      player.isDrafted = true;
+      player.draftedBy = previous.draftedBy;
+      player.draftCost = previous.draftCost;
+      player.pickNumber = previous.pickNumber;
+    }
   }
 
   /**

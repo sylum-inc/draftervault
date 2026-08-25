@@ -164,6 +164,85 @@ describe('AuctionDraftService', () => {
     });
   });
 
+  describe('custom rankings', () => {
+    it('starts with nothing imported', () => {
+      expect(service.getCustomRankingCount()).toBe(0);
+      expect(service.getPlayers().every((p) => p.customRanking === undefined)).toBe(true);
+    });
+
+    it('replaces the value everything downstream reads', () => {
+      const player = firstAvailable(service);
+      service.setCustomRankings({ [player.id]: { value: 77 } });
+
+      const updated = service.getPlayers().find((p) => p.id === player.id)!;
+      expect(updated.estimatedValue).toBe(77);
+      // Advice has to follow the import, or an imported opinion is decoration.
+      expect(updated.baseValue).toBe(77);
+    });
+
+    it('keeps our own number alongside theirs', () => {
+      const player = firstAvailable(service);
+      const ours = player.estimatedValue;
+      service.setCustomRankings({ [player.id]: { value: ours + 40 } });
+
+      const updated = service.getPlayers().find((p) => p.id === player.id)!;
+      expect(updated.modelValue).toBe(ours);
+      expect(updated.customRanking).toEqual({ value: ours + 40 });
+    });
+
+    it('leaves players the import did not mention alone', () => {
+      const [first, second] = service.getAvailablePlayers();
+      const untouched = second.estimatedValue;
+      service.setCustomRankings({ [first.id]: { value: 5 } });
+
+      expect(service.getPlayers().find((p) => p.id === second.id)!.estimatedValue).toBe(untouched);
+    });
+
+    it('overrides rank and tier as well as value', () => {
+      const player = firstAvailable(service);
+      service.setCustomRankings({ [player.id]: { rank: 300, tier: 4 } });
+
+      const updated = service.getPlayers().find((p) => p.id === player.id)!;
+      expect(updated.adp).toBe(300);
+      expect(updated.tier).toBe(4);
+    });
+
+    it('does not disturb a draft already under way', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-2', 40);
+      const other = service.getAvailablePlayers()[0];
+      service.setCustomRankings({ [other.id]: { value: 60 } });
+
+      // The money spent is still spent: an opinion about what is left cannot
+      // reach back and change what a pick cost.
+      const drafted = service.getDraftedPlayers();
+      expect(drafted).toHaveLength(1);
+      expect(drafted[0].id).toBe(player.id);
+      expect(drafted[0].draftCost).toBe(40);
+      expect(service.getTeams()[1].remaining).toBe(160);
+    });
+
+    it('goes back to our numbers when cleared', () => {
+      const player = firstAvailable(service);
+      const ours = player.estimatedValue;
+      service.setCustomRankings({ [player.id]: { value: ours + 25 } });
+      service.clearCustomRankings();
+
+      const updated = service.getPlayers().find((p) => p.id === player.id)!;
+      expect(updated.estimatedValue).toBe(ours);
+      expect(updated.customRanking).toBeUndefined();
+      expect(service.getCustomRankingCount()).toBe(0);
+    });
+
+    it('survives a reload', () => {
+      const player = firstAvailable(service);
+      service.setCustomRankings({ [player.id]: { value: 88 } });
+
+      const reloaded = new AuctionDraftService();
+      expect(reloaded.getPlayers().find((p) => p.id === player.id)!.estimatedValue).toBe(88);
+    });
+  });
+
   describe('league configuration', () => {
     it('defaults to the league the shipped pool was priced for', () => {
       expect(service.getLeagueShape()).toEqual(service.getPoolLeagueShape());
@@ -237,6 +316,14 @@ describe('AuctionDraftService', () => {
       // under another league would build a roster nobody could have bought.
       const elsewhere = new AuctionDraftService(leagueShape({ budget: 500 }));
       expect(elsewhere.restore()).toBe(0);
+    });
+
+    it('keeps an import across a league change', () => {
+      const player = firstAvailable(service);
+      service.setCustomRankings({ [player.id]: { value: 99 } });
+      service.setLeagueShape(leagueShape({ budget: 250 }));
+
+      expect(service.getPlayers().find((p) => p.id === player.id)!.estimatedValue).toBe(99);
     });
 
     it('clamps a league nobody could draft in', () => {

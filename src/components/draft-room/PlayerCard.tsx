@@ -162,7 +162,15 @@ export const PlayerCard = ({
       <dl className="dr-card-stats">
         <div className="dr-card-stat">
           <dt>Value</dt>
-          <dd style={{ color: 'var(--dr-value)' }}>${player.estimatedValue}</dd>
+          <dd
+            style={{ color: 'var(--dr-value)' }}
+            className={player.customRanking ? 'dr-custom-value' : undefined}
+            title={
+              player.customRanking ? `Your ranking. Ours says $${player.modelValue}.` : undefined
+            }
+          >
+            ${player.estimatedValue}
+          </dd>
         </div>
         <div className="dr-card-stat">
           <dt>Proj</dt>

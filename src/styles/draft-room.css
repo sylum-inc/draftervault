@@ -2983,3 +2983,97 @@
   width: auto;
   flex: 1 1 auto;
 }
+
+/* ---------------------------------------------------------------------------
+   Rankings import
+
+   A preview screen more than a form: what it shows before you press the button
+   is the point, because a file that imports cleanly against the wrong players
+   is worse than one that fails.
+   --------------------------------------------------------------------------- */
+
+.dr-import {
+  width: min(660px, 100%);
+}
+
+.dr-import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dr-import-paste {
+  display: block;
+}
+
+.dr-import-textarea {
+  width: 100%;
+  margin-top: 5px;
+  resize: vertical;
+  font-family: var(--dr-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.dr-import-rows {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dr-import-rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.dr-import-rows strong {
+  font-weight: 600;
+  color: var(--dr-ink);
+}
+
+.dr-import-rows .dr-meter-note {
+  margin: 0;
+}
+
+.dr-import-line {
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+  min-width: 52px;
+}
+
+.dr-import .dr-results-actions {
+  padding: 14px 16px;
+  border-top: 1px solid var(--dr-line);
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.dr-import .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}
+
+/* A value somebody imported is theirs, and says so rather than passing for
+   ours. The marker is deliberately quiet: it should read as provenance, not
+   as an alert. */
+.dr-custom-value {
+  position: relative;
+  border-bottom: 1px dotted currentColor;
+}
+
+.dr-custom-value::after {
+  content: '·';
+  margin-left: 2px;
+  color: var(--dr-accent);
+  font-weight: 700;
+}

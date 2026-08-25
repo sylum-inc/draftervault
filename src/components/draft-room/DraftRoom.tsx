@@ -23,8 +23,10 @@ import { BudgetPlanner } from './BudgetPlanner';
 import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
 import { LeagueSettings } from './LeagueSettings';
+import { RankingsImport } from './RankingsImport';
 import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
 import type { LeagueShape } from '@/lib/valuation';
+import type { RankingOverride } from '@/lib/rankingsCsv';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -62,6 +64,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
     useDraftPreferences();
 
@@ -189,10 +192,31 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     [draftService, players]
   );
 
+  /**
+   * An import re-prices the board but does not invalidate money already spent,
+   * so unlike a league change it leaves the draft alone.
+   */
+  const applyRankings = useCallback(
+    (overrides: Record<string, RankingOverride>) => {
+      draftService.setCustomRankings(overrides);
+      setImportOpen(false);
+      sync();
+    },
+    [draftService, sync]
+  );
+
+  const clearRankings = useCallback(() => {
+    draftService.clearCustomRankings();
+    setImportOpen(false);
+    sync();
+  }, [draftService, sync]);
+
   // Re-read on every sync: a league change replaces the teams array, which is
   // the signal that these numbers moved.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const league = useMemo(() => draftService.getLeagueShape(), [draftService, teams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const customCount = useMemo(() => draftService.getCustomRankingCount(), [draftService, players]);
 
   const activeTeam = teams.find((team) => team.id === teamId);
 
@@ -285,6 +309,14 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           disabled={!drafted.length}
         >
           Results
+        </button>
+        <button
+          className="dr-button"
+          aria-pressed={customCount > 0}
+          onClick={() => setImportOpen(true)}
+          title="Use your own rankings instead of ours"
+        >
+          {customCount > 0 ? `Your ranks (${customCount})` : 'Import ranks'}
         </button>
         <button
           className="dr-button"
@@ -521,6 +553,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
       {resultsOpen && (
         <DraftResults players={players} teams={teams} onClose={() => setResultsOpen(false)} />
+      )}
+
+      {importOpen && (
+        <RankingsImport
+          players={players}
+          activeCount={customCount}
+          onImport={applyRankings}
+          onClear={clearRankings}
+          onClose={() => setImportOpen(false)}
+        />
       )}
 
       {leagueOpen && (
