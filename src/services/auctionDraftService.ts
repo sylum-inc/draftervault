@@ -25,6 +25,7 @@ interface PoolEntry {
   role: 'LOCKED_STARTER' | 'MINOR_COMPETITION' | 'TIMESHARE' | 'COMMITTEE';
   trend: 'RISING' | 'STABLE' | 'DECLINING' | 'UNPROVEN';
   projection: { points: number };
+  percentiles?: Record<string, number>;
   defense?: {
     sacks: number;
     interceptions: number;
@@ -77,6 +78,8 @@ export interface Player {
   fantasyRelevantWeeks?: number; // Weeks likely to be fantasy relevant
   floorWeeks?: number; // Number of weeks hitting floor
   ceilingWeeks?: number; // Number of weeks hitting ceiling
+  /** Where each headline number sits among players at the same position, 0-100. */
+  percentiles?: Record<string, number>;
   /** Team defense season totals. Present only for DST entries. */
   defense?: {
     sacks: number;
@@ -280,6 +283,7 @@ export class AuctionDraftService {
       snapPercentage: entry.snapShare ?? undefined,
       targetShare: entry.targetShare ?? undefined,
       recentTrends: entry.trend === 'UNPROVEN' ? 'STABLE' : entry.trend,
+      percentiles: entry.percentiles,
       defense: entry.defense,
       isDrafted: false,
     }));

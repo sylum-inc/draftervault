@@ -2,7 +2,7 @@
   "source": "nflverse + Sleeper + ESPN",
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-25T06:13:44.432Z",
+  "generatedAt": "2026-08-25T06:27:18.825Z",
   "history": {
     "00-0034857": [
       {

@@ -744,6 +744,35 @@ const main = async () => {
   chosen.push(...defenses);
   counts.set('DST', defenses.length);
 
+  // --- the season each team actually faces ---------------------------------
+  // Difficulty is the opponent's 2025 points allowed per game: the only
+  // forward-looking read available before a snap has been played in 2026, and
+  // labelled as last season's defense wherever it is shown.
+  const allowedPerGame = new Map();
+  for (const [team, scores] of allowedByTeam) {
+    if (scores.length) allowedPerGame.set(team, scores.reduce((a, b) => a + b, 0) / scores.length);
+  }
+  const allowedValues = [...allowedPerGame.values()].sort((a, b) => a - b);
+  const difficultyOf = (opponent) => {
+    const pa = allowedPerGame.get(opponent);
+    if (pa == null) return null;
+    // Rank among the 32 defenses: 0 is the stingiest, 1 the most generous.
+    const rank = allowedValues.filter((value) => value < pa).length / (allowedValues.length - 1);
+    return Math.round(rank * 100) / 100;
+  };
+
+  const schedule = {};
+  for (const game of readCsv(paths['games.csv'])) {
+    if (num(game.season) !== CURRENT_SEASON) continue;
+    if ((game.game_type ?? game.season_type) !== 'REG') continue;
+    const week = num(game.week);
+    const home = canonicalTeam(game.home_team);
+    const away = canonicalTeam(game.away_team);
+    (schedule[home] ??= []).push({ week, opponent: away, home: true, difficulty: difficultyOf(away) });
+    (schedule[away] ??= []).push({ week, opponent: home, home: false, difficulty: difficultyOf(home) });
+  }
+  for (const weeks of Object.values(schedule)) weeks.sort((a, b) => a.week - b.week);
+
   // --- auction values ------------------------------------------------------
   // Value over replacement, converted to dollars. Replacement level is the
   // last player at each position the league actually rosters; the budget left
@@ -780,6 +809,39 @@ const main = async () => {
   console.log(`\n  pool: ${chosen.length} skill players`);
   console.log('  by position:', Object.fromEntries([...counts].sort()));
 
+  // --- how good a number is for the position -------------------------------
+  // A raw stat means little on its own: 60% snap share is a bench role for a
+  // running back and heavy usage for a tight end. Every headline number gets a
+  // percentile among the players it should be compared with.
+  const PERCENTILE_FIELDS = [
+    ['points', (p) => p.projection.points],
+    ['pointsPerGame', (p) => p.projection.pointsPerGame],
+    ['snapShare', (p) => p.snapShare],
+    ['targetShare', (p) => p.targetShare],
+    ['consistency', (p) => p.consistency],
+    ['ceiling', (p) => p.ceiling],
+    ['floor', (p) => p.floor],
+  ];
+
+  const byPositionForRanking = new Map();
+  for (const player of chosen) {
+    if (!byPositionForRanking.has(player.position)) byPositionForRanking.set(player.position, []);
+    byPositionForRanking.get(player.position).push(player);
+  }
+  for (const [, group] of byPositionForRanking) {
+    for (const [field, read] of PERCENTILE_FIELDS) {
+      const values = group.map(read).filter((value) => value != null && Number.isFinite(value));
+      if (values.length < 4) continue;
+      values.sort((a, b) => a - b);
+      for (const player of group) {
+        const value = read(player);
+        if (value == null || !Number.isFinite(value)) continue;
+        const below = values.filter((other) => other < value).length;
+        (player.percentiles ??= {})[field] = Math.round((below / (values.length - 1)) * 100);
+      }
+    }
+  }
+
   // Rank and tier come from the model's own dollar values, so they cannot drift
   // away from the prices shown next to them.
   const ranked = [...chosen].sort((a, b) => b.auctionValue - a.auctionValue || b.vorp - a.vorp);
@@ -806,6 +868,10 @@ const main = async () => {
   writeFileSync(
     join(OUT, 'pool.json'),
     JSON.stringify({ ...meta, players: chosen.map(({ history, ...rest }) => rest) }, null, 2) + '\n'
+  );
+  writeFileSync(
+    join(OUT, 'schedule.json'),
+    JSON.stringify({ ...meta, season: CURRENT_SEASON, teams: schedule }, null, 2) + '\n'
   );
   writeFileSync(
     join(OUT, 'player-history.json'),

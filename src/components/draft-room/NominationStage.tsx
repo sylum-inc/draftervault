@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import type { BidCheck, DraftAnalytics, Player, Team } from '@/services/auctionDraftService';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
 import { Headshot } from './Headshot';
+import { RangeBar } from './charts/RangeBar';
 
 interface NominationStageProps {
   player: Player | null;
@@ -112,6 +113,52 @@ export const NominationStage = ({
           <dd>{player.valueOverReplacement}</dd>
         </div>
       </dl>
+
+      <div className="dr-stage-range">
+        <RangeBar
+          floor={player.floor}
+          projection={player.projectedPoints}
+          ceiling={player.upside}
+          replacement={player.projectedPoints - player.valueOverReplacement || undefined}
+        />
+        <div className="dr-stage-signals">
+          {player.percentiles?.points != null && (
+            <span title={`${player.percentiles.points}th percentile among ${player.position}s`}>
+              <em>vs {player.position}</em>
+              <strong className="dr-num">{player.percentiles.points}th</strong>
+            </span>
+          )}
+          <span>
+            <em>Consistency</em>
+            <strong className="dr-num">{player.consistency ?? '—'}/10</strong>
+          </span>
+          <span>
+            <em>Snap</em>
+            <strong className="dr-num">
+              {player.snapPercentage != null ? `${Math.round(player.snapPercentage)}%` : '—'}
+            </strong>
+          </span>
+          <span>
+            <em>Trend</em>
+            <strong
+              style={{
+                color:
+                  player.recentTrends === 'RISING'
+                    ? 'var(--dr-value)'
+                    : player.recentTrends === 'DECLINING'
+                      ? 'var(--dr-danger)'
+                      : 'var(--dr-ink-muted)',
+              }}
+            >
+              {player.recentTrends === 'RISING'
+                ? '▲'
+                : player.recentTrends === 'DECLINING'
+                  ? '▼'
+                  : '–'}
+            </strong>
+          </span>
+        </div>
+      </div>
 
       <form
         className="dr-stage-form"

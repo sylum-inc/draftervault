@@ -1,0 +1,3337 @@
+{
+  "source": "nflverse + Sleeper + ESPN",
+  "seasons": [2023, 2024, 2025],
+  "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
+  "generatedAt": "2026-08-25T06:27:18.825Z",
+  "season": 2026,
+  "teams": {
+    "SEA": [
+      {
+        "week": 1,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 2,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 3,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 4,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 5,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      },
+      {
+        "week": 6,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      },
+      {
+        "week": 7,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 8,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      },
+      {
+        "week": 9,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 10,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 12,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 13,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      },
+      {
+        "week": 14,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 15,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 16,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 17,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 18,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      }
+    ],
+    "NE": [
+      {
+        "week": 1,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 2,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 3,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 4,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      },
+      {
+        "week": 5,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 6,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 7,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 8,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 9,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 10,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 12,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 13,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 14,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 15,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      },
+      {
+        "week": 16,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 17,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 18,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      }
+    ],
+    "LAR": [
+      {
+        "week": 1,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      },
+      {
+        "week": 2,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 3,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      },
+      {
+        "week": 4,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 5,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 6,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 7,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 8,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 9,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 10,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 12,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 13,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 14,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 15,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      },
+      {
+        "week": 16,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 17,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 18,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      }
+    ],
+    "SF": [
+      {
+        "week": 1,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 2,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 3,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 4,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 5,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 6,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 7,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 9,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 10,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 11,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 12,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      },
+      {
+        "week": 13,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 14,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 15,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 16,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      },
+      {
+        "week": 17,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      },
+      {
+        "week": 18,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      }
+    ],
+    "CAR": [
+      {
+        "week": 1,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      },
+      {
+        "week": 2,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 3,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 4,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      },
+      {
+        "week": 6,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 7,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      },
+      {
+        "week": 8,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 9,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 10,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 11,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 12,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 13,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 14,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 15,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 16,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 17,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      },
+      {
+        "week": 18,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      }
+    ],
+    "CHI": [
+      {
+        "week": 1,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 2,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 3,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      },
+      {
+        "week": 4,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 5,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 6,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 7,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 8,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 9,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      },
+      {
+        "week": 11,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 12,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 13,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 14,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 15,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      },
+      {
+        "week": 16,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 17,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      },
+      {
+        "week": 18,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      }
+    ],
+    "CIN": [
+      {
+        "week": 1,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      },
+      {
+        "week": 2,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      },
+      {
+        "week": 3,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 4,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 5,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 7,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      },
+      {
+        "week": 8,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 9,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 10,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 11,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 12,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 13,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 14,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 15,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 16,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      },
+      {
+        "week": 17,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 18,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      }
+    ],
+    "TB": [
+      {
+        "week": 1,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      },
+      {
+        "week": 2,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 3,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 4,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 5,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 6,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 7,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 8,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      },
+      {
+        "week": 9,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 11,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 12,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 13,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 14,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      },
+      {
+        "week": 15,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 16,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 17,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 18,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      }
+    ],
+    "DET": [
+      {
+        "week": 1,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 2,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      },
+      {
+        "week": 3,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 4,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 5,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 7,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 8,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 9,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 10,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 11,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      },
+      {
+        "week": 12,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      },
+      {
+        "week": 13,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 14,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 15,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 16,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 17,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 18,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      }
+    ],
+    "NO": [
+      {
+        "week": 1,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 2,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      },
+      {
+        "week": 3,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 4,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      },
+      {
+        "week": 5,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 6,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 7,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 9,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 10,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 11,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 12,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      },
+      {
+        "week": 13,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 14,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 15,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 16,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 17,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 18,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      }
+    ],
+    "HOU": [
+      {
+        "week": 1,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 2,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 3,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      },
+      {
+        "week": 4,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      },
+      {
+        "week": 5,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 6,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 7,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 9,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 10,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 11,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 12,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 13,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 14,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 15,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 16,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 17,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 18,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      }
+    ],
+    "BUF": [
+      {
+        "week": 1,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      },
+      {
+        "week": 2,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      },
+      {
+        "week": 3,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 4,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 5,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 6,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 8,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 9,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 10,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 11,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 12,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 13,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      },
+      {
+        "week": 14,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 15,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      },
+      {
+        "week": 16,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      },
+      {
+        "week": 17,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 18,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      }
+    ],
+    "IND": [
+      {
+        "week": 1,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 2,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      },
+      {
+        "week": 3,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 4,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 5,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 6,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 7,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 8,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 9,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      },
+      {
+        "week": 10,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 11,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      },
+      {
+        "week": 12,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 14,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 15,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 16,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 17,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 18,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      }
+    ],
+    "BAL": [
+      {
+        "week": 1,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      },
+      {
+        "week": 2,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 3,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 4,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 5,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 6,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 7,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 8,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      },
+      {
+        "week": 9,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 10,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 11,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 12,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      },
+      {
+        "week": 14,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      },
+      {
+        "week": 15,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 16,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 17,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      },
+      {
+        "week": 18,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      }
+    ],
+    "JAX": [
+      {
+        "week": 1,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 2,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      },
+      {
+        "week": 3,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 4,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      },
+      {
+        "week": 5,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      },
+      {
+        "week": 6,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 8,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 9,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      },
+      {
+        "week": 10,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 11,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 12,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 13,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 14,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 15,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      },
+      {
+        "week": 16,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 17,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 18,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      }
+    ],
+    "CLE": [
+      {
+        "week": 1,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 2,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 3,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 4,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 5,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 6,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 7,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 8,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 9,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 10,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 12,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 13,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 14,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      },
+      {
+        "week": 15,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 16,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      },
+      {
+        "week": 17,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 18,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      }
+    ],
+    "PIT": [
+      {
+        "week": 1,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      },
+      {
+        "week": 2,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      },
+      {
+        "week": 3,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 4,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 5,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 6,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 7,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 8,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 10,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      },
+      {
+        "week": 11,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 12,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 13,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 14,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 15,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 16,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 17,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 18,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      }
+    ],
+    "ATL": [
+      {
+        "week": 1,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 2,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 3,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 4,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 5,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 6,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      },
+      {
+        "week": 7,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      },
+      {
+        "week": 8,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 9,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 10,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 12,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 13,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      },
+      {
+        "week": 14,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 15,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 16,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      },
+      {
+        "week": 17,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 18,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      }
+    ],
+    "TEN": [
+      {
+        "week": 1,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 2,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      },
+      {
+        "week": 3,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 4,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      },
+      {
+        "week": 5,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 6,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      },
+      {
+        "week": 7,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 8,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      },
+      {
+        "week": 10,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 11,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 12,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 13,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 14,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 15,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 16,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 17,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 18,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      }
+    ],
+    "NYJ": [
+      {
+        "week": 1,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 2,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 3,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 4,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 5,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 6,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      },
+      {
+        "week": 7,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 8,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 9,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      },
+      {
+        "week": 10,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 11,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 12,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 14,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 15,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 16,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 17,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 18,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      }
+    ],
+    "LAC": [
+      {
+        "week": 1,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 2,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 3,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      },
+      {
+        "week": 4,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 5,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 6,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      },
+      {
+        "week": 8,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 9,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 10,
+        "opponent": "BAL",
+        "home": false,
+        "difficulty": 0.55
+      },
+      {
+        "week": 11,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 12,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 13,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 14,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 15,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      },
+      {
+        "week": 16,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 17,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 18,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      }
+    ],
+    "ARI": [
+      {
+        "week": 1,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 2,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      },
+      {
+        "week": 3,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 4,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 5,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      },
+      {
+        "week": 6,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 7,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 8,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 9,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 10,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 11,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      },
+      {
+        "week": 12,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 13,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      },
+      {
+        "week": 15,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 16,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 17,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 18,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      }
+    ],
+    "LV": [
+      {
+        "week": 1,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 2,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 3,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 4,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 5,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      },
+      {
+        "week": 6,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 7,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 8,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 9,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 10,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      },
+      {
+        "week": 11,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      },
+      {
+        "week": 12,
+        "opponent": "CLE",
+        "home": false,
+        "difficulty": 0.42
+      },
+      {
+        "week": 14,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 15,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 16,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 17,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 18,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      }
+    ],
+    "MIA": [
+      {
+        "week": 1,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 2,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 3,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 4,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 5,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 7,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 8,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 9,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      },
+      {
+        "week": 10,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      },
+      {
+        "week": 11,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      },
+      {
+        "week": 12,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 13,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      },
+      {
+        "week": 14,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      },
+      {
+        "week": 15,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 16,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 17,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 18,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      }
+    ],
+    "MIN": [
+      {
+        "week": 1,
+        "opponent": "GB",
+        "home": true,
+        "difficulty": 0.32
+      },
+      {
+        "week": 2,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 3,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 4,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 5,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 7,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 8,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 9,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 10,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 11,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 12,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      },
+      {
+        "week": 13,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 14,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      },
+      {
+        "week": 15,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      },
+      {
+        "week": 16,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 17,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 18,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      }
+    ],
+    "GB": [
+      {
+        "week": 1,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 2,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 3,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      },
+      {
+        "week": 4,
+        "opponent": "TB",
+        "home": false,
+        "difficulty": 0.61
+      },
+      {
+        "week": 5,
+        "opponent": "CHI",
+        "home": true,
+        "difficulty": 0.71
+      },
+      {
+        "week": 6,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      },
+      {
+        "week": 7,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 8,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 9,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      },
+      {
+        "week": 10,
+        "opponent": "MIN",
+        "home": true,
+        "difficulty": 0.19
+      },
+      {
+        "week": 12,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 13,
+        "opponent": "NO",
+        "home": false,
+        "difficulty": 0.48
+      },
+      {
+        "week": 14,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 15,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 16,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 17,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 18,
+        "opponent": "DET",
+        "home": true,
+        "difficulty": 0.68
+      }
+    ],
+    "PHI": [
+      {
+        "week": 1,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 2,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 3,
+        "opponent": "CHI",
+        "home": false,
+        "difficulty": 0.71
+      },
+      {
+        "week": 4,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 5,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 6,
+        "opponent": "CAR",
+        "home": true,
+        "difficulty": 0.45
+      },
+      {
+        "week": 7,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      },
+      {
+        "week": 8,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 9,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 11,
+        "opponent": "PIT",
+        "home": true,
+        "difficulty": 0.52
+      },
+      {
+        "week": 12,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 13,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 14,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 15,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      },
+      {
+        "week": 16,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 17,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 18,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      }
+    ],
+    "WSH": [
+      {
+        "week": 1,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 2,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 3,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      },
+      {
+        "week": 4,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 5,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 6,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 8,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      },
+      {
+        "week": 9,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 10,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 11,
+        "opponent": "CIN",
+        "home": true,
+        "difficulty": 0.94
+      },
+      {
+        "week": 12,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 13,
+        "opponent": "TEN",
+        "home": false,
+        "difficulty": 0.87
+      },
+      {
+        "week": 14,
+        "opponent": "HOU",
+        "home": true,
+        "difficulty": 0.03
+      },
+      {
+        "week": 15,
+        "opponent": "ATL",
+        "home": true,
+        "difficulty": 0.58
+      },
+      {
+        "week": 16,
+        "opponent": "MIN",
+        "home": false,
+        "difficulty": 0.19
+      },
+      {
+        "week": 17,
+        "opponent": "JAX",
+        "home": false,
+        "difficulty": 0.23
+      },
+      {
+        "week": 18,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      }
+    ],
+    "NYG": [
+      {
+        "week": 1,
+        "opponent": "DAL",
+        "home": true,
+        "difficulty": 1
+      },
+      {
+        "week": 2,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 3,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 4,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 5,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      },
+      {
+        "week": 6,
+        "opponent": "NO",
+        "home": true,
+        "difficulty": 0.48
+      },
+      {
+        "week": 7,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      },
+      {
+        "week": 9,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 10,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 11,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 12,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      },
+      {
+        "week": 13,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      },
+      {
+        "week": 14,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 15,
+        "opponent": "CLE",
+        "home": true,
+        "difficulty": 0.42
+      },
+      {
+        "week": 16,
+        "opponent": "DET",
+        "home": false,
+        "difficulty": 0.68
+      },
+      {
+        "week": 17,
+        "opponent": "DAL",
+        "home": false,
+        "difficulty": 1
+      },
+      {
+        "week": 18,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      }
+    ],
+    "DAL": [
+      {
+        "week": 1,
+        "opponent": "NYG",
+        "home": false,
+        "difficulty": 0.81
+      },
+      {
+        "week": 2,
+        "opponent": "WSH",
+        "home": true,
+        "difficulty": 0.84
+      },
+      {
+        "week": 3,
+        "opponent": "BAL",
+        "home": true,
+        "difficulty": 0.55
+      },
+      {
+        "week": 4,
+        "opponent": "HOU",
+        "home": false,
+        "difficulty": 0.03
+      },
+      {
+        "week": 5,
+        "opponent": "TB",
+        "home": true,
+        "difficulty": 0.61
+      },
+      {
+        "week": 6,
+        "opponent": "GB",
+        "home": false,
+        "difficulty": 0.32
+      },
+      {
+        "week": 7,
+        "opponent": "PHI",
+        "home": false,
+        "difficulty": 0.13
+      },
+      {
+        "week": 8,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 9,
+        "opponent": "IND",
+        "home": false,
+        "difficulty": 0.65
+      },
+      {
+        "week": 10,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      },
+      {
+        "week": 11,
+        "opponent": "TEN",
+        "home": true,
+        "difficulty": 0.87
+      },
+      {
+        "week": 12,
+        "opponent": "PHI",
+        "home": true,
+        "difficulty": 0.13
+      },
+      {
+        "week": 13,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 15,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 16,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 17,
+        "opponent": "NYG",
+        "home": true,
+        "difficulty": 0.81
+      },
+      {
+        "week": 18,
+        "opponent": "WSH",
+        "home": false,
+        "difficulty": 0.84
+      }
+    ],
+    "KC": [
+      {
+        "week": 1,
+        "opponent": "DEN",
+        "home": true,
+        "difficulty": 0.06
+      },
+      {
+        "week": 2,
+        "opponent": "IND",
+        "home": true,
+        "difficulty": 0.65
+      },
+      {
+        "week": 3,
+        "opponent": "MIA",
+        "home": false,
+        "difficulty": 0.74
+      },
+      {
+        "week": 4,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 6,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      },
+      {
+        "week": 7,
+        "opponent": "SEA",
+        "home": false,
+        "difficulty": 0
+      },
+      {
+        "week": 8,
+        "opponent": "DEN",
+        "home": false,
+        "difficulty": 0.06
+      },
+      {
+        "week": 9,
+        "opponent": "NYJ",
+        "home": true,
+        "difficulty": 0.97
+      },
+      {
+        "week": 10,
+        "opponent": "ATL",
+        "home": false,
+        "difficulty": 0.58
+      },
+      {
+        "week": 11,
+        "opponent": "ARI",
+        "home": true,
+        "difficulty": 0.9
+      },
+      {
+        "week": 12,
+        "opponent": "BUF",
+        "home": false,
+        "difficulty": 0.35
+      },
+      {
+        "week": 13,
+        "opponent": "LAR",
+        "home": false,
+        "difficulty": 0.29
+      },
+      {
+        "week": 14,
+        "opponent": "CIN",
+        "home": false,
+        "difficulty": 0.94
+      },
+      {
+        "week": 15,
+        "opponent": "NE",
+        "home": true,
+        "difficulty": 0.1
+      },
+      {
+        "week": 16,
+        "opponent": "SF",
+        "home": true,
+        "difficulty": 0.39
+      },
+      {
+        "week": 17,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 18,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      }
+    ],
+    "DEN": [
+      {
+        "week": 1,
+        "opponent": "KC",
+        "home": false,
+        "difficulty": 0.16
+      },
+      {
+        "week": 2,
+        "opponent": "JAX",
+        "home": true,
+        "difficulty": 0.23
+      },
+      {
+        "week": 3,
+        "opponent": "LAR",
+        "home": true,
+        "difficulty": 0.29
+      },
+      {
+        "week": 4,
+        "opponent": "SF",
+        "home": false,
+        "difficulty": 0.39
+      },
+      {
+        "week": 5,
+        "opponent": "LAC",
+        "home": false,
+        "difficulty": 0.26
+      },
+      {
+        "week": 6,
+        "opponent": "SEA",
+        "home": true,
+        "difficulty": 0
+      },
+      {
+        "week": 7,
+        "opponent": "ARI",
+        "home": false,
+        "difficulty": 0.9
+      },
+      {
+        "week": 8,
+        "opponent": "KC",
+        "home": true,
+        "difficulty": 0.16
+      },
+      {
+        "week": 9,
+        "opponent": "CAR",
+        "home": false,
+        "difficulty": 0.45
+      },
+      {
+        "week": 11,
+        "opponent": "LV",
+        "home": true,
+        "difficulty": 0.77
+      },
+      {
+        "week": 12,
+        "opponent": "PIT",
+        "home": false,
+        "difficulty": 0.52
+      },
+      {
+        "week": 13,
+        "opponent": "MIA",
+        "home": true,
+        "difficulty": 0.74
+      },
+      {
+        "week": 14,
+        "opponent": "NYJ",
+        "home": false,
+        "difficulty": 0.97
+      },
+      {
+        "week": 15,
+        "opponent": "LV",
+        "home": false,
+        "difficulty": 0.77
+      },
+      {
+        "week": 16,
+        "opponent": "BUF",
+        "home": true,
+        "difficulty": 0.35
+      },
+      {
+        "week": 17,
+        "opponent": "NE",
+        "home": false,
+        "difficulty": 0.1
+      },
+      {
+        "week": 18,
+        "opponent": "LAC",
+        "home": true,
+        "difficulty": 0.26
+      }
+    ]
+  }
+}

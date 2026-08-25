@@ -29,7 +29,10 @@ src/pages/Index.tsx
         ├── BudgetRail.tsx        money left per team
         ├── TeamsPanel.tsx        every roster and its open slots
         ├── MarketPanel.tsx       inflation, supply, what the room pays
-        ├── PlayerProfile.tsx     history, sparkline, defensive personnel
+        ├── PlayerProfile.tsx     five tabs: overview, production, usage,
+        │                         schedule, value (unit, for defenses)
+        ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
+        │                         ScheduleStrip, BidLadder
         ├── DraftResults.tsx      grades and export
         ├── Sparkline.tsx         one season, game by game
         └── Headshot.tsx          photo with monogram fallback
@@ -39,7 +42,8 @@ src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/nflIdentity.ts           team colors, crests, headshots
 src/data/nfl/pool.json                599 players: projections, values (generated)
-src/data/nfl/player-history.json      per-player season history (lazy loaded)
+src/data/nfl/player-history.json      per-player season and weekly scoring (lazy)
+src/data/nfl/schedule.json            2026 season by team, with matchup difficulty
 scripts/build-player-pool.mjs         builds the pool from nflverse
 scripts/fetch-nfl-data.mjs            builds team identity from ESPN
 src/styles/draft-room.css             design tokens + component styles
@@ -83,9 +87,14 @@ values are value over replacement converted to a share of the league's budget.
 Kickers and defenses are regressed hard because their scoring barely predicts
 itself year to year, which is why they price out at a dollar or two.
 
-Everything a player card shows traces to an observation: bye weeks from the 2026
-schedule, floor and ceiling from that player's own weekly distribution,
-consistency from its variance, injury risk from games actually missed.
+Everything a player card shows traces to an observation: bye weeks and matchup
+difficulty from the 2026 schedule, floor and ceiling from one standard deviation
+of the season total, consistency from weekly variance, injury risk from games
+actually missed, and percentiles from the position's own distribution.
+
+**Percentiles are how a number becomes meaningful.** Sixty per cent of snaps is a
+committee back and a workhorse tight end, so every headline figure carries its
+rank within its position.
 
 Legacy services under `src/services/` named `real*` still generate numbers with
 `Math.random()`. Nothing live reads them. Don't build on them.
@@ -101,6 +110,9 @@ Legacy services under `src/services/` named `real*` still generate numbers with
   event, so an unreachable font host leaves the app on its loading screen forever.
   That bug was real; the comment in `bloomberg-terminal.css` explains it.
 - `VITE_*` values are compiled into the bundle and readable by anyone. No secrets.
+- The published artifact's `<head>` is not ours, so the single-file page carries
+  its own `<meta name="viewport">`. Without it a phone assumes a 980px page and
+  scales the whole app into a letterbox — which is exactly what happened once.
 
 ## State of the work
 

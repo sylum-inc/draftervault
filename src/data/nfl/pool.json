@@ -2,7 +2,7 @@
   "source": "nflverse + Sleeper + ESPN",
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-25T06:13:44.432Z",
+  "generatedAt": "2026-08-25T06:27:18.825Z",
   "players": [
     {
       "gsis": "00-0034857",
@@ -43,6 +43,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 131,
       "auctionValue": 37,
+      "percentiles": {
+        "points": 100,
+        "pointsPerGame": 100,
+        "snapShare": 42,
+        "consistency": 55,
+        "ceiling": 100,
+        "floor": 100
+      },
       "rank": 11,
       "tier": 1
     },
@@ -85,6 +93,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 85.2,
       "auctionValue": 24,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 95,
+        "snapShare": 85,
+        "consistency": 55,
+        "ceiling": 97,
+        "floor": 97
+      },
       "rank": 30,
       "tier": 2
     },
@@ -127,6 +143,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 198.2,
       "auctionValue": 55,
+      "percentiles": {
+        "points": 100,
+        "pointsPerGame": 99,
+        "snapShare": 93,
+        "targetShare": 95,
+        "consistency": 59,
+        "ceiling": 100,
+        "floor": 99
+      },
       "rank": 1,
       "tier": 1
     },
@@ -169,6 +194,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 70.5,
       "auctionValue": 20,
+      "percentiles": {
+        "points": 95,
+        "pointsPerGame": 92,
+        "snapShare": 82,
+        "targetShare": 43,
+        "consistency": 55,
+        "ceiling": 92,
+        "floor": 95
+      },
       "rank": 45,
       "tier": 2
     },
@@ -211,6 +245,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 192.1,
       "auctionValue": 53,
+      "percentiles": {
+        "points": 100,
+        "pointsPerGame": 100,
+        "snapShare": 99,
+        "targetShare": 99,
+        "consistency": 81,
+        "ceiling": 100,
+        "floor": 100
+      },
       "rank": 2,
       "tier": 1
     },
@@ -253,6 +296,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 191.4,
       "auctionValue": 53,
+      "percentiles": {
+        "points": 99,
+        "pointsPerGame": 99,
+        "snapShare": 97,
+        "targetShare": 99,
+        "consistency": 76,
+        "ceiling": 99,
+        "floor": 100
+      },
       "rank": 3,
       "tier": 1
     },
@@ -295,6 +347,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 59.6,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 92,
+        "pointsPerGame": 82,
+        "snapShare": 55,
+        "consistency": 55,
+        "ceiling": 82,
+        "floor": 87
+      },
       "rank": 51,
       "tier": 2
     },
@@ -337,6 +397,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 57.4,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 90,
+        "pointsPerGame": 77,
+        "snapShare": 70,
+        "consistency": 55,
+        "ceiling": 82,
+        "floor": 85
+      },
       "rank": 57,
       "tier": 2
     },
@@ -379,6 +447,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 181.2,
       "auctionValue": 50,
+      "percentiles": {
+        "points": 100,
+        "pointsPerGame": 100,
+        "snapShare": 71,
+        "targetShare": 96,
+        "consistency": 95,
+        "ceiling": 99,
+        "floor": 100
+      },
       "rank": 4,
       "tier": 1
     },
@@ -421,6 +498,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 55.8,
       "auctionValue": 16,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 74,
+        "snapShare": 88,
+        "consistency": 55,
+        "ceiling": 79,
+        "floor": 87
+      },
       "rank": 59,
       "tier": 2
     },
@@ -463,6 +548,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 177.6,
       "auctionValue": 49,
+      "percentiles": {
+        "points": 99,
+        "pointsPerGame": 99,
+        "snapShare": 90,
+        "targetShare": 98,
+        "consistency": 68,
+        "ceiling": 100,
+        "floor": 99
+      },
       "rank": 6,
       "tier": 1
     },
@@ -505,6 +599,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 53.1,
       "auctionValue": 15,
+      "percentiles": {
+        "points": 85,
+        "pointsPerGame": 69,
+        "snapShare": 79,
+        "consistency": 55,
+        "ceiling": 72,
+        "floor": 92
+      },
       "rank": 62,
       "tier": 2
     },
@@ -547,6 +649,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 179.8,
       "auctionValue": 50,
+      "percentiles": {
+        "points": 99,
+        "pointsPerGame": 98,
+        "snapShare": 100,
+        "targetShare": 79,
+        "consistency": 59,
+        "ceiling": 99,
+        "floor": 98
+      },
       "rank": 5,
       "tier": 1
     },
@@ -589,6 +700,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 51,
       "auctionValue": 15,
+      "percentiles": {
+        "points": 82,
+        "pointsPerGame": 67,
+        "snapShare": 76,
+        "consistency": 55,
+        "ceiling": 74,
+        "floor": 79
+      },
       "rank": 67,
       "tier": 2
     },
@@ -631,6 +750,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 173.9,
       "auctionValue": 48,
+      "percentiles": {
+        "points": 98,
+        "pointsPerGame": 98,
+        "snapShare": 95,
+        "targetShare": 98,
+        "consistency": 98,
+        "ceiling": 98,
+        "floor": 99
+      },
       "rank": 7,
       "tier": 1
     },
@@ -673,6 +801,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 42.2,
       "auctionValue": 13,
+      "percentiles": {
+        "points": 79,
+        "pointsPerGame": 82,
+        "snapShare": 64,
+        "targetShare": 0,
+        "consistency": 97,
+        "ceiling": 56,
+        "floor": 82
+      },
       "rank": 79,
       "tier": 3
     },
@@ -715,6 +852,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 41.8,
       "auctionValue": 12,
+      "percentiles": {
+        "points": 77,
+        "pointsPerGame": 62,
+        "snapShare": 91,
+        "consistency": 55,
+        "ceiling": 62,
+        "floor": 77
+      },
       "rank": 81,
       "tier": 3
     },
@@ -757,6 +902,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 40.2,
       "auctionValue": 12,
+      "percentiles": {
+        "points": 74,
+        "pointsPerGame": 77,
+        "snapShare": 100,
+        "targetShare": 29,
+        "consistency": 26,
+        "ceiling": 69,
+        "floor": 74
+      },
       "rank": 83,
       "tier": 3
     },
@@ -799,6 +953,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 37.1,
       "auctionValue": 11,
+      "percentiles": {
+        "points": 72,
+        "pointsPerGame": 64,
+        "snapShare": 97,
+        "targetShare": 100,
+        "consistency": 55,
+        "ceiling": 62,
+        "floor": 72
+      },
       "rank": 86,
       "tier": 3
     },
@@ -841,6 +1004,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 33.9,
       "auctionValue": 10,
+      "percentiles": {
+        "points": 69,
+        "pointsPerGame": 97,
+        "snapShare": 36,
+        "consistency": 26,
+        "ceiling": 59,
+        "floor": 67
+      },
       "rank": 90,
       "tier": 3
     },
@@ -883,6 +1054,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 158,
       "auctionValue": 44,
+      "percentiles": {
+        "points": 98,
+        "pointsPerGame": 100,
+        "snapShare": 99,
+        "targetShare": 100,
+        "consistency": 98,
+        "ceiling": 98,
+        "floor": 98
+      },
       "rank": 8,
       "tier": 1
     },
@@ -925,6 +1105,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 29.9,
       "auctionValue": 9,
+      "percentiles": {
+        "points": 67,
+        "pointsPerGame": 90,
+        "snapShare": 24,
+        "consistency": 26,
+        "ceiling": 54,
+        "floor": 64
+      },
       "rank": 96,
       "tier": 3
     },
@@ -967,6 +1155,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 29.3,
       "auctionValue": 9,
+      "percentiles": {
+        "points": 64,
+        "pointsPerGame": 69,
+        "snapShare": 91,
+        "consistency": 97,
+        "ceiling": 49,
+        "floor": 67
+      },
       "rank": 97,
       "tier": 3
     },
@@ -1009,6 +1205,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 19.5,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 62,
+        "pointsPerGame": 54,
+        "snapShare": 30,
+        "consistency": 55,
+        "ceiling": 41,
+        "floor": 62
+      },
       "rank": 105,
       "tier": 3
     },
@@ -1051,6 +1255,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 144.4,
       "auctionValue": 40,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 96,
+        "snapShare": 92,
+        "targetShare": 50,
+        "consistency": 89,
+        "ceiling": 97,
+        "floor": 97
+      },
       "rank": 9,
       "tier": 1
     },
@@ -1093,6 +1306,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 17,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 59,
+        "pointsPerGame": 56,
+        "snapShare": 52,
+        "consistency": 26,
+        "ceiling": 38,
+        "floor": 59
+      },
       "rank": 111,
       "tier": 3
     },
@@ -1135,6 +1356,15 @@
       "role": "TIMESHARE",
       "vorp": 143.8,
       "auctionValue": 40,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 95,
+        "snapShare": 82,
+        "targetShare": 68,
+        "consistency": 76,
+        "ceiling": 97,
+        "floor": 97
+      },
       "rank": 10,
       "tier": 1
     },
@@ -1177,6 +1407,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 7,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 56,
+        "pointsPerGame": 46,
+        "snapShare": 12,
+        "consistency": 26,
+        "ceiling": 36,
+        "floor": 56
+      },
       "rank": 130,
       "tier": 4
     },
@@ -1219,6 +1457,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 129.6,
       "auctionValue": 36,
+      "percentiles": {
+        "points": 99,
+        "pointsPerGame": 98,
+        "snapShare": 79,
+        "targetShare": 100,
+        "consistency": 100,
+        "ceiling": 99,
+        "floor": 99
+      },
       "rank": 12,
       "tier": 1
     },
@@ -1261,6 +1508,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 117.1,
       "auctionValue": 33,
+      "percentiles": {
+        "points": 100,
+        "pointsPerGame": 100,
+        "snapShare": 98,
+        "targetShare": 100,
+        "consistency": 96,
+        "ceiling": 100,
+        "floor": 100
+      },
       "rank": 13,
       "tier": 2
     },
@@ -1303,6 +1559,12 @@
       "role": "COMMITTEE",
       "vorp": 3.2,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 54,
+        "pointsPerGame": 44,
+        "ceiling": 95,
+        "floor": 18
+      },
       "rank": 148,
       "tier": 4
     },
@@ -1345,6 +1607,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 51,
+        "pointsPerGame": 41,
+        "targetShare": 57,
+        "consistency": 6,
+        "ceiling": 33,
+        "floor": 49
+      },
       "rank": 163,
       "tier": 4
     },
@@ -1387,6 +1657,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 49,
+        "pointsPerGame": 38,
+        "snapShare": 18,
+        "consistency": 55,
+        "ceiling": 31,
+        "floor": 54
+      },
       "rank": 164,
       "tier": 4
     },
@@ -1429,6 +1707,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 46,
+        "pointsPerGame": 36,
+        "snapShare": 58,
+        "consistency": 6,
+        "ceiling": 26,
+        "floor": 51
+      },
       "rank": 165,
       "tier": 4
     },
@@ -1471,6 +1757,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 44,
+        "pointsPerGame": 33,
+        "snapShare": 61,
+        "consistency": 6,
+        "ceiling": 28,
+        "floor": 46
+      },
       "rank": 166,
       "tier": 4
     },
@@ -1513,6 +1807,13 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 41,
+        "pointsPerGame": 31,
+        "snapShare": 45,
+        "ceiling": 90,
+        "floor": 15
+      },
       "rank": 167,
       "tier": 4
     },
@@ -1555,6 +1856,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 115.6,
       "auctionValue": 33,
+      "percentiles": {
+        "points": 98,
+        "pointsPerGame": 96,
+        "snapShare": 99,
+        "targetShare": 97,
+        "consistency": 81,
+        "ceiling": 97,
+        "floor": 98
+      },
       "rank": 15,
       "tier": 2
     },
@@ -1592,6 +1902,13 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 38,
+        "pointsPerGame": 28,
+        "snapShare": 3,
+        "ceiling": 87,
+        "floor": 13
+      },
       "rank": 168,
       "tier": 4
     },
@@ -1634,6 +1951,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 116.1,
       "auctionValue": 33,
+      "percentiles": {
+        "points": 96,
+        "pointsPerGame": 94,
+        "snapShare": 91,
+        "targetShare": 93,
+        "consistency": 89,
+        "ceiling": 95,
+        "floor": 96
+      },
       "rank": 14,
       "tier": 2
     },
@@ -1676,6 +2002,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 111.8,
       "auctionValue": 31,
+      "percentiles": {
+        "points": 98,
+        "pointsPerGame": 97,
+        "snapShare": 75,
+        "targetShare": 93,
+        "consistency": 95,
+        "ceiling": 98,
+        "floor": 98
+      },
       "rank": 18,
       "tier": 2
     },
@@ -1718,6 +2053,15 @@
       "role": "TIMESHARE",
       "vorp": 114.7,
       "auctionValue": 32,
+      "percentiles": {
+        "points": 95,
+        "pointsPerGame": 95,
+        "snapShare": 84,
+        "targetShare": 73,
+        "consistency": 59,
+        "ceiling": 96,
+        "floor": 95
+      },
       "rank": 16,
       "tier": 2
     },
@@ -1760,6 +2104,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 110.8,
       "auctionValue": 31,
+      "percentiles": {
+        "points": 98,
+        "pointsPerGame": 95,
+        "snapShare": 85,
+        "targetShare": 83,
+        "consistency": 81,
+        "ceiling": 98,
+        "floor": 96
+      },
       "rank": 19,
       "tier": 2
     },
@@ -1802,6 +2155,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 110.2,
       "auctionValue": 31,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 97,
+        "snapShare": 98,
+        "targetShare": 93,
+        "consistency": 68,
+        "ceiling": 98,
+        "floor": 97
+      },
       "rank": 20,
       "tier": 2
     },
@@ -1844,6 +2206,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 109.5,
       "auctionValue": 31,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 99,
+        "snapShare": 75,
+        "targetShare": 90,
+        "consistency": 95,
+        "ceiling": 97,
+        "floor": 98
+      },
       "rank": 21,
       "tier": 2
     },
@@ -1886,6 +2257,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 112.5,
       "auctionValue": 32,
+      "percentiles": {
+        "points": 95,
+        "pointsPerGame": 97,
+        "snapShare": 98,
+        "targetShare": 88,
+        "consistency": 76,
+        "ceiling": 95,
+        "floor": 95
+      },
       "rank": 17,
       "tier": 2
     },
@@ -1923,6 +2303,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 36,
+        "pointsPerGame": 21,
+        "ceiling": 77,
+        "floor": 10
+      },
       "rank": 169,
       "tier": 4
     },
@@ -1965,6 +2351,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 33,
+        "pointsPerGame": 21,
+        "snapShare": 45,
+        "consistency": 26,
+        "ceiling": 21,
+        "floor": 44
+      },
       "rank": 170,
       "tier": 4
     },
@@ -2007,6 +2401,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 31,
+        "pointsPerGame": 59,
+        "snapShare": 15,
+        "consistency": 6,
+        "ceiling": 23,
+        "floor": 38
+      },
       "rank": 171,
       "tier": 4
     },
@@ -2049,6 +2451,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 28,
+        "pointsPerGame": 21,
+        "snapShare": 70,
+        "consistency": 26,
+        "ceiling": 13,
+        "floor": 41
+      },
       "rank": 172,
       "tier": 4
     },
@@ -2091,6 +2501,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 100.1,
       "auctionValue": 28,
+      "percentiles": {
+        "points": 96,
+        "pointsPerGame": 98,
+        "snapShare": 77,
+        "targetShare": 88,
+        "consistency": 95,
+        "ceiling": 96,
+        "floor": 97
+      },
       "rank": 22,
       "tier": 2
     },
@@ -2133,6 +2552,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 26,
+        "pointsPerGame": 87,
+        "snapShare": 67,
+        "consistency": 26,
+        "ceiling": 15,
+        "floor": 36
+      },
       "rank": 173,
       "tier": 4
     },
@@ -2175,6 +2602,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 23,
+        "pointsPerGame": 13,
+        "ceiling": 67,
+        "floor": 8
+      },
       "rank": 174,
       "tier": 4
     },
@@ -2217,6 +2650,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 96.8,
       "auctionValue": 27,
+      "percentiles": {
+        "points": 96,
+        "pointsPerGame": 95,
+        "snapShare": 88,
+        "targetShare": 94,
+        "consistency": 81,
+        "ceiling": 96,
+        "floor": 96
+      },
       "rank": 25,
       "tier": 2
     },
@@ -2259,6 +2701,15 @@
       "role": "TIMESHARE",
       "vorp": 98.6,
       "auctionValue": 28,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 92,
+        "snapShare": 85,
+        "targetShare": 65,
+        "consistency": 76,
+        "ceiling": 94,
+        "floor": 94
+      },
       "rank": 23,
       "tier": 2
     },
@@ -2301,6 +2752,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 98.4,
       "auctionValue": 28,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 94,
+        "snapShare": 90,
+        "targetShare": 77,
+        "consistency": 59,
+        "ceiling": 94,
+        "floor": 94
+      },
       "rank": 24,
       "tier": 2
     },
@@ -2343,6 +2803,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 21,
+        "pointsPerGame": 51,
+        "snapShare": 27,
+        "targetShare": 86,
+        "consistency": 6,
+        "ceiling": 15,
+        "floor": 26
+      },
       "rank": 175,
       "tier": 4
     },
@@ -2385,6 +2854,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 92.7,
       "auctionValue": 26,
+      "percentiles": {
+        "points": 96,
+        "pointsPerGame": 93,
+        "snapShare": 94,
+        "targetShare": 95,
+        "consistency": 81,
+        "ceiling": 95,
+        "floor": 96
+      },
       "rank": 26,
       "tier": 2
     },
@@ -2427,6 +2905,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 91.1,
       "auctionValue": 26,
+      "percentiles": {
+        "points": 95,
+        "pointsPerGame": 96,
+        "snapShare": 83,
+        "targetShare": 99,
+        "consistency": 95,
+        "ceiling": 95,
+        "floor": 95
+      },
       "rank": 27,
       "tier": 2
     },
@@ -2464,6 +2951,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 10,
+        "snapShare": 6,
+        "targetShare": 14,
+        "consistency": 26,
+        "ceiling": 8,
+        "floor": 28
+      },
       "rank": 176,
       "tier": 4
     },
@@ -2506,6 +3002,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 88.2,
       "auctionValue": 25,
+      "percentiles": {
+        "points": 95,
+        "pointsPerGame": 93,
+        "snapShare": 89,
+        "targetShare": 89,
+        "consistency": 68,
+        "ceiling": 95,
+        "floor": 94
+      },
       "rank": 28,
       "tier": 2
     },
@@ -2548,6 +3053,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 15,
+        "pointsPerGame": 8,
+        "ceiling": 49,
+        "floor": 3
+      },
       "rank": 177,
       "tier": 4
     },
@@ -2590,6 +3101,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 13,
+        "pointsPerGame": 3,
+        "ceiling": 46,
+        "floor": 3
+      },
       "rank": 178,
       "tier": 4
     },
@@ -2632,6 +3149,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 3,
+        "snapShare": 9,
+        "targetShare": 57,
+        "consistency": 6,
+        "ceiling": 3,
+        "floor": 31
+      },
       "rank": 179,
       "tier": 4
     },
@@ -2674,6 +3200,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 8,
+        "pointsPerGame": 15,
+        "snapShare": 33,
+        "consistency": 0,
+        "ceiling": 10,
+        "floor": 21
+      },
       "rank": 180,
       "tier": 4
     },
@@ -2716,6 +3250,13 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 0,
+        "snapShare": 0,
+        "ceiling": 44,
+        "floor": 0
+      },
       "rank": 181,
       "tier": 4
     },
@@ -2758,6 +3299,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 3,
+        "pointsPerGame": 49,
+        "snapShare": 39,
+        "consistency": 55,
+        "ceiling": 0,
+        "floor": 31
+      },
       "rank": 182,
       "tier": 4
     },
@@ -2800,6 +3349,14 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 18,
+        "snapShare": 21,
+        "consistency": 3,
+        "ceiling": 5,
+        "floor": 23
+      },
       "rank": 183,
       "tier": 4
     },
@@ -2842,6 +3399,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 83.5,
       "auctionValue": 24,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 92,
+        "snapShare": 95,
+        "targetShare": 83,
+        "consistency": 81,
+        "ceiling": 93,
+        "floor": 95
+      },
       "rank": 33,
       "tier": 2
     },
@@ -2884,6 +3450,15 @@
       "role": "TIMESHARE",
       "vorp": 86.2,
       "auctionValue": 24,
+      "percentiles": {
+        "points": 93,
+        "pointsPerGame": 90,
+        "snapShare": 66,
+        "targetShare": 54,
+        "consistency": 59,
+        "ceiling": 93,
+        "floor": 93
+      },
       "rank": 29,
       "tier": 2
     },
@@ -2926,6 +3501,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 85.1,
       "auctionValue": 24,
+      "percentiles": {
+        "points": 93,
+        "pointsPerGame": 90,
+        "snapShare": 96,
+        "targetShare": 94,
+        "consistency": 59,
+        "ceiling": 93,
+        "floor": 92
+      },
       "rank": 31,
       "tier": 2
     },
@@ -2968,6 +3552,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 81.5,
       "auctionValue": 23,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 98,
+        "snapShare": 74,
+        "targetShare": 90,
+        "consistency": 95,
+        "ceiling": 93,
+        "floor": 94
+      },
       "rank": 34,
       "tier": 2
     },
@@ -3010,6 +3603,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 81.3,
       "auctionValue": 23,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 94,
+        "snapShare": 84,
+        "targetShare": 72,
+        "consistency": 68,
+        "ceiling": 94,
+        "floor": 93
+      },
       "rank": 35,
       "tier": 2
     },
@@ -3052,6 +3654,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 81.2,
       "auctionValue": 23,
+      "percentiles": {
+        "points": 93,
+        "pointsPerGame": 91,
+        "snapShare": 87,
+        "targetShare": 62,
+        "consistency": 39,
+        "ceiling": 94,
+        "floor": 93
+      },
       "rank": 36,
       "tier": 2
     },
@@ -3094,6 +3705,15 @@
       "role": "TIMESHARE",
       "vorp": 83.9,
       "auctionValue": 24,
+      "percentiles": {
+        "points": 92,
+        "pointsPerGame": 91,
+        "snapShare": 82,
+        "targetShare": 61,
+        "consistency": 76,
+        "ceiling": 92,
+        "floor": 93
+      },
       "rank": 32,
       "tier": 2
     },
@@ -3136,6 +3756,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 65.9,
       "auctionValue": 19,
+      "percentiles": {
+        "points": 98,
+        "pointsPerGame": 98,
+        "snapShare": 78,
+        "targetShare": 91,
+        "consistency": 76,
+        "ceiling": 98,
+        "floor": 98
+      },
       "rank": 47,
       "tier": 2
     },
@@ -3178,6 +3807,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 74.5,
       "auctionValue": 21,
+      "percentiles": {
+        "points": 93,
+        "pointsPerGame": 89,
+        "snapShare": 82,
+        "targetShare": 81,
+        "consistency": 68,
+        "ceiling": 91,
+        "floor": 93
+      },
       "rank": 37,
       "tier": 2
     },
@@ -3220,6 +3858,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 74.4,
       "auctionValue": 21,
+      "percentiles": {
+        "points": 92,
+        "pointsPerGame": 89,
+        "snapShare": 91,
+        "targetShare": 80,
+        "consistency": 68,
+        "ceiling": 93,
+        "floor": 92
+      },
       "rank": 38,
       "tier": 2
     },
@@ -3262,6 +3909,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 74.4,
       "auctionValue": 21,
+      "percentiles": {
+        "points": 92,
+        "pointsPerGame": 89,
+        "snapShare": 96,
+        "targetShare": 74,
+        "consistency": 52,
+        "ceiling": 94,
+        "floor": 91
+      },
       "rank": 39,
       "tier": 2
     },
@@ -3304,6 +3960,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 74.2,
       "auctionValue": 21,
+      "percentiles": {
+        "points": 92,
+        "pointsPerGame": 93,
+        "snapShare": 92,
+        "targetShare": 81,
+        "consistency": 68,
+        "ceiling": 92,
+        "floor": 91
+      },
       "rank": 40,
       "tier": 2
     },
@@ -3346,6 +4011,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 72,
       "auctionValue": 21,
+      "percentiles": {
+        "points": 91,
+        "pointsPerGame": 94,
+        "snapShare": 94,
+        "targetShare": 92,
+        "consistency": 81,
+        "ceiling": 91,
+        "floor": 92
+      },
       "rank": 43,
       "tier": 2
     },
@@ -3383,6 +4057,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 70.9,
       "auctionValue": 20,
+      "percentiles": {
+        "points": 91,
+        "pointsPerGame": 91,
+        "snapShare": 91,
+        "targetShare": 84,
+        "consistency": 95,
+        "ceiling": 89,
+        "floor": 94
+      },
       "rank": 44,
       "tier": 2
     },
@@ -3425,6 +4108,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 72.2,
       "auctionValue": 21,
+      "percentiles": {
+        "points": 91,
+        "pointsPerGame": 89,
+        "snapShare": 94,
+        "targetShare": 57,
+        "consistency": 89,
+        "ceiling": 90,
+        "floor": 91
+      },
       "rank": 41,
       "tier": 2
     },
@@ -3467,6 +4159,15 @@
       "role": "TIMESHARE",
       "vorp": 72.1,
       "auctionValue": 21,
+      "percentiles": {
+        "points": 91,
+        "pointsPerGame": 86,
+        "snapShare": 74,
+        "targetShare": 88,
+        "consistency": 76,
+        "ceiling": 91,
+        "floor": 90
+      },
       "rank": 42,
       "tier": 2
     },
@@ -3509,6 +4210,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 68.4,
       "auctionValue": 20,
+      "percentiles": {
+        "points": 91,
+        "pointsPerGame": 88,
+        "snapShare": 81,
+        "targetShare": 85,
+        "consistency": 81,
+        "ceiling": 91,
+        "floor": 91
+      },
       "rank": 46,
       "tier": 2
     },
@@ -3551,6 +4261,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 63.5,
       "auctionValue": 18,
+      "percentiles": {
+        "points": 90,
+        "pointsPerGame": 96,
+        "snapShare": 97,
+        "targetShare": 95,
+        "consistency": 52,
+        "ceiling": 92,
+        "floor": 88
+      },
       "rank": 49,
       "tier": 2
     },
@@ -3593,6 +4312,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 51.6,
       "auctionValue": 15,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 97,
+        "snapShare": 90,
+        "targetShare": 98,
+        "consistency": 35,
+        "ceiling": 97,
+        "floor": 97
+      },
       "rank": 66,
       "tier": 2
     },
@@ -3635,6 +4363,15 @@
       "role": "TIMESHARE",
       "vorp": 65.2,
       "auctionValue": 19,
+      "percentiles": {
+        "points": 90,
+        "pointsPerGame": 83,
+        "snapShare": 71,
+        "targetShare": 46,
+        "consistency": 59,
+        "ceiling": 88,
+        "floor": 91
+      },
       "rank": 48,
       "tier": 2
     },
@@ -3677,6 +4414,14 @@
       "role": "COMMITTEE",
       "vorp": 60.5,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 90,
+        "pointsPerGame": 87,
+        "targetShare": 72,
+        "consistency": 68,
+        "ceiling": 89,
+        "floor": 90
+      },
       "rank": 50,
       "tier": 2
     },
@@ -3719,6 +4464,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 58.1,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 89,
+        "pointsPerGame": 88,
+        "snapShare": 90,
+        "targetShare": 70,
+        "consistency": 68,
+        "ceiling": 88,
+        "floor": 90
+      },
       "rank": 54,
       "tier": 2
     },
@@ -3761,6 +4515,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 57.6,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 89,
+        "pointsPerGame": 88,
+        "snapShare": 97,
+        "targetShare": 97,
+        "consistency": 68,
+        "ceiling": 90,
+        "floor": 89
+      },
       "rank": 56,
       "tier": 2
     },
@@ -3803,6 +4566,15 @@
       "role": "TIMESHARE",
       "vorp": 58.9,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 90,
+        "pointsPerGame": 82,
+        "snapShare": 58,
+        "targetShare": 71,
+        "consistency": 59,
+        "ceiling": 89,
+        "floor": 89
+      },
       "rank": 52,
       "tier": 2
     },
@@ -3845,6 +4617,15 @@
       "role": "TIMESHARE",
       "vorp": 58.6,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 89,
+        "pointsPerGame": 82,
+        "snapShare": 57,
+        "targetShare": 76,
+        "consistency": 33,
+        "ceiling": 90,
+        "floor": 86
+      },
       "rank": 53,
       "tier": 2
     },
@@ -3887,6 +4668,15 @@
       "role": "TIMESHARE",
       "vorp": 58.1,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 89,
+        "pointsPerGame": 97,
+        "snapShare": 76,
+        "targetShare": 28,
+        "consistency": 59,
+        "ceiling": 91,
+        "floor": 84
+      },
       "rank": 55,
       "tier": 2
     },
@@ -3929,6 +4719,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 54.2,
       "auctionValue": 16,
+      "percentiles": {
+        "points": 89,
+        "pointsPerGame": 86,
+        "snapShare": 78,
+        "targetShare": 78,
+        "consistency": 81,
+        "ceiling": 89,
+        "floor": 88
+      },
       "rank": 60,
       "tier": 2
     },
@@ -3966,6 +4765,15 @@
       "role": "TIMESHARE",
       "vorp": 57.4,
       "auctionValue": 17,
+      "percentiles": {
+        "points": 88,
+        "pointsPerGame": 84,
+        "snapShare": 69,
+        "targetShare": 73,
+        "consistency": 89,
+        "ceiling": 86,
+        "floor": 90
+      },
       "rank": 58,
       "tier": 2
     },
@@ -4008,6 +4816,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 52.1,
       "auctionValue": 15,
+      "percentiles": {
+        "points": 88,
+        "pointsPerGame": 85,
+        "snapShare": 86,
+        "targetShare": 75,
+        "consistency": 39,
+        "ceiling": 90,
+        "floor": 85
+      },
       "rank": 65,
       "tier": 2
     },
@@ -4050,6 +4867,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 39.9,
       "auctionValue": 12,
+      "percentiles": {
+        "points": 95,
+        "pointsPerGame": 91,
+        "snapShare": 92,
+        "targetShare": 83,
+        "consistency": 56,
+        "ceiling": 95,
+        "floor": 94
+      },
       "rank": 84,
       "tier": 3
     },
@@ -4092,6 +4918,15 @@
       "role": "TIMESHARE",
       "vorp": 54,
       "auctionValue": 16,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 81,
+        "snapShare": 69,
+        "targetShare": 63,
+        "consistency": 76,
+        "ceiling": 86,
+        "floor": 88
+      },
       "rank": 61,
       "tier": 2
     },
@@ -4134,6 +4969,15 @@
       "role": "COMMITTEE",
       "vorp": 52.6,
       "auctionValue": 15,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 89,
+        "snapShare": 51,
+        "targetShare": 22,
+        "consistency": 40,
+        "ceiling": 86,
+        "floor": 87
+      },
       "rank": 63,
       "tier": 2
     },
@@ -4171,6 +5015,15 @@
       "role": "TIMESHARE",
       "vorp": 52.4,
       "auctionValue": 15,
+      "percentiles": {
+        "points": 86,
+        "pointsPerGame": 83,
+        "snapShare": 78,
+        "targetShare": 79,
+        "consistency": 40,
+        "ceiling": 89,
+        "floor": 83
+      },
       "rank": 64,
       "tier": 2
     },
@@ -4213,6 +5066,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 35.7,
       "auctionValue": 11,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 94,
+        "snapShare": 97,
+        "targetShare": 81,
+        "consistency": 76,
+        "ceiling": 92,
+        "floor": 95
+      },
       "rank": 89,
       "tier": 3
     },
@@ -4255,6 +5117,15 @@
       "role": "TIMESHARE",
       "vorp": 50.1,
       "auctionValue": 15,
+      "percentiles": {
+        "points": 86,
+        "pointsPerGame": 80,
+        "snapShare": 63,
+        "targetShare": 41,
+        "consistency": 59,
+        "ceiling": 84,
+        "floor": 86
+      },
       "rank": 68,
       "tier": 2
     },
@@ -4297,6 +5168,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 46.4,
       "auctionValue": 14,
+      "percentiles": {
+        "points": 88,
+        "pointsPerGame": 86,
+        "snapShare": 87,
+        "targetShare": 77,
+        "consistency": 81,
+        "ceiling": 87,
+        "floor": 88
+      },
       "rank": 72,
       "tier": 3
     },
@@ -4339,6 +5219,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 45.5,
       "auctionValue": 13,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 83,
+        "snapShare": 79,
+        "targetShare": 74,
+        "consistency": 52,
+        "ceiling": 88,
+        "floor": 87
+      },
       "rank": 73,
       "tier": 3
     },
@@ -4381,6 +5270,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 45.1,
       "auctionValue": 13,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 82,
+        "snapShare": 64,
+        "targetShare": 81,
+        "consistency": 81,
+        "ceiling": 86,
+        "floor": 87
+      },
       "rank": 74,
       "tier": 3
     },
@@ -4423,6 +5321,15 @@
       "role": "TIMESHARE",
       "vorp": 47.7,
       "auctionValue": 14,
+      "percentiles": {
+        "points": 85,
+        "pointsPerGame": 84,
+        "snapShare": 81,
+        "targetShare": 83,
+        "consistency": 76,
+        "ceiling": 84,
+        "floor": 84
+      },
       "rank": 69,
       "tier": 3
     },
@@ -4465,6 +5372,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 47.3,
       "auctionValue": 14,
+      "percentiles": {
+        "points": 84,
+        "pointsPerGame": 87,
+        "snapShare": 88,
+        "targetShare": 50,
+        "consistency": 76,
+        "ceiling": 82,
+        "floor": 87
+      },
       "rank": 70,
       "tier": 3
     },
@@ -4507,6 +5423,15 @@
       "role": "TIMESHARE",
       "vorp": 47.2,
       "auctionValue": 14,
+      "percentiles": {
+        "points": 84,
+        "pointsPerGame": 93,
+        "snapShare": 67,
+        "targetShare": 78,
+        "consistency": 76,
+        "ceiling": 85,
+        "floor": 83
+      },
       "rank": 71,
       "tier": 3
     },
@@ -4549,6 +5474,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 43.7,
       "auctionValue": 13,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 89,
+        "snapShare": 81,
+        "targetShare": 77,
+        "consistency": 81,
+        "ceiling": 85,
+        "floor": 88
+      },
       "rank": 75,
       "tier": 3
     },
@@ -4591,6 +5525,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 31.2,
       "auctionValue": 10,
+      "percentiles": {
+        "points": 92,
+        "pointsPerGame": 88,
+        "snapShare": 95,
+        "targetShare": 96,
+        "consistency": 15,
+        "ceiling": 94,
+        "floor": 86
+      },
       "rank": 94,
       "tier": 3
     },
@@ -4633,6 +5576,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 40.5,
       "auctionValue": 12,
+      "percentiles": {
+        "points": 86,
+        "pointsPerGame": 87,
+        "snapShare": 95,
+        "targetShare": 91,
+        "consistency": 81,
+        "ceiling": 87,
+        "floor": 85
+      },
       "rank": 82,
       "tier": 3
     },
@@ -4675,6 +5627,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 43.6,
       "auctionValue": 13,
+      "percentiles": {
+        "points": 83,
+        "pointsPerGame": 88,
+        "snapShare": 87,
+        "targetShare": 65,
+        "consistency": 33,
+        "ceiling": 87,
+        "floor": 81
+      },
       "rank": 76,
       "tier": 3
     },
@@ -4717,6 +5678,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 28.4,
       "auctionValue": 9,
+      "percentiles": {
+        "points": 91,
+        "pointsPerGame": 84,
+        "snapShare": 68,
+        "targetShare": 69,
+        "consistency": 56,
+        "ceiling": 91,
+        "floor": 91
+      },
       "rank": 100,
       "tier": 3
     },
@@ -4759,6 +5729,15 @@
       "role": "TIMESHARE",
       "vorp": 42.4,
       "auctionValue": 13,
+      "percentiles": {
+        "points": 83,
+        "pointsPerGame": 80,
+        "snapShare": 76,
+        "targetShare": 85,
+        "consistency": 40,
+        "ceiling": 83,
+        "floor": 82
+      },
       "rank": 77,
       "tier": 3
     },
@@ -4801,6 +5780,15 @@
       "role": "TIMESHARE",
       "vorp": 42.3,
       "auctionValue": 13,
+      "percentiles": {
+        "points": 82,
+        "pointsPerGame": 87,
+        "snapShare": 71,
+        "targetShare": 9,
+        "consistency": 98,
+        "ceiling": 81,
+        "floor": 88
+      },
       "rank": 78,
       "tier": 3
     },
@@ -4843,6 +5831,15 @@
       "role": "TIMESHARE",
       "vorp": 42.1,
       "auctionValue": 12,
+      "percentiles": {
+        "points": 82,
+        "pointsPerGame": 83,
+        "snapShare": 64,
+        "targetShare": 54,
+        "consistency": 40,
+        "ceiling": 82,
+        "floor": 85
+      },
       "rank": 80,
       "tier": 3
     },
@@ -4885,6 +5882,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 37.8,
       "auctionValue": 11,
+      "percentiles": {
+        "points": 86,
+        "pointsPerGame": 83,
+        "snapShare": 81,
+        "targetShare": 86,
+        "consistency": 52,
+        "ceiling": 87,
+        "floor": 84
+      },
       "rank": 85,
       "tier": 3
     },
@@ -4927,6 +5933,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 36.2,
       "auctionValue": 11,
+      "percentiles": {
+        "points": 85,
+        "pointsPerGame": 80,
+        "snapShare": 89,
+        "targetShare": 79,
+        "consistency": 52,
+        "ceiling": 84,
+        "floor": 87
+      },
       "rank": 87,
       "tier": 3
     },
@@ -4964,6 +5979,15 @@
       "role": "TIMESHARE",
       "vorp": 36.1,
       "auctionValue": 11,
+      "percentiles": {
+        "points": 85,
+        "pointsPerGame": 80,
+        "snapShare": 63,
+        "targetShare": 64,
+        "consistency": 52,
+        "ceiling": 85,
+        "floor": 86
+      },
       "rank": 88,
       "tier": 3
     },
@@ -5006,6 +6030,15 @@
       "role": "TIMESHARE",
       "vorp": 32,
       "auctionValue": 10,
+      "percentiles": {
+        "points": 85,
+        "pointsPerGame": 87,
+        "snapShare": 43,
+        "targetShare": 64,
+        "consistency": 52,
+        "ceiling": 86,
+        "floor": 83
+      },
       "rank": 92,
       "tier": 3
     },
@@ -5048,6 +6081,15 @@
       "role": "TIMESHARE",
       "vorp": 31.8,
       "auctionValue": 10,
+      "percentiles": {
+        "points": 84,
+        "pointsPerGame": 81,
+        "snapShare": 61,
+        "targetShare": 67,
+        "consistency": 81,
+        "ceiling": 83,
+        "floor": 86
+      },
       "rank": 93,
       "tier": 3
     },
@@ -5085,6 +6127,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 18.9,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 89,
+        "pointsPerGame": 78,
+        "snapShare": 73,
+        "targetShare": 80,
+        "consistency": 96,
+        "ceiling": 83,
+        "floor": 91
+      },
       "rank": 106,
       "tier": 3
     },
@@ -5127,6 +6178,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 18.6,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 88,
+        "pointsPerGame": 75,
+        "snapShare": 70,
+        "targetShare": 85,
+        "consistency": 76,
+        "ceiling": 84,
+        "floor": 89
+      },
       "rank": 107,
       "tier": 3
     },
@@ -5169,6 +6229,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 18.5,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 86,
+        "pointsPerGame": 92,
+        "snapShare": 88,
+        "targetShare": 89,
+        "consistency": 56,
+        "ceiling": 89,
+        "floor": 86
+      },
       "rank": 108,
       "tier": 3
     },
@@ -5211,6 +6280,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 29.2,
       "auctionValue": 9,
+      "percentiles": {
+        "points": 84,
+        "pointsPerGame": 81,
+        "snapShare": 65,
+        "targetShare": 75,
+        "consistency": 68,
+        "ceiling": 85,
+        "floor": 83
+      },
       "rank": 98,
       "tier": 3
     },
@@ -5253,6 +6331,15 @@
       "role": "TIMESHARE",
       "vorp": 32.3,
       "auctionValue": 10,
+      "percentiles": {
+        "points": 81,
+        "pointsPerGame": 79,
+        "snapShare": 67,
+        "targetShare": 96,
+        "consistency": 40,
+        "ceiling": 83,
+        "floor": 78
+      },
       "rank": 91,
       "tier": 3
     },
@@ -5295,6 +6382,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 28.6,
       "auctionValue": 9,
+      "percentiles": {
+        "points": 83,
+        "pointsPerGame": 84,
+        "snapShare": 70,
+        "targetShare": 79,
+        "consistency": 81,
+        "ceiling": 84,
+        "floor": 83
+      },
       "rank": 99,
       "tier": 3
     },
@@ -5337,6 +6433,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 26.7,
       "auctionValue": 8,
+      "percentiles": {
+        "points": 83,
+        "pointsPerGame": 94,
+        "snapShare": 67,
+        "targetShare": 89,
+        "consistency": 81,
+        "ceiling": 82,
+        "floor": 85
+      },
       "rank": 101,
       "tier": 3
     },
@@ -5379,6 +6484,15 @@
       "role": "TIMESHARE",
       "vorp": 30,
       "auctionValue": 9,
+      "percentiles": {
+        "points": 80,
+        "pointsPerGame": 78,
+        "snapShare": 62,
+        "targetShare": 90,
+        "consistency": 59,
+        "ceiling": 80,
+        "floor": 82
+      },
       "rank": 95,
       "tier": 3
     },
@@ -5421,6 +6535,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 15.3,
       "auctionValue": 5,
+      "percentiles": {
+        "points": 84,
+        "pointsPerGame": 80,
+        "snapShare": 58,
+        "targetShare": 72,
+        "consistency": 9,
+        "ceiling": 86,
+        "floor": 84
+      },
       "rank": 114,
       "tier": 3
     },
@@ -5463,6 +6586,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 25,
       "auctionValue": 8,
+      "percentiles": {
+        "points": 83,
+        "pointsPerGame": 82,
+        "snapShare": 93,
+        "targetShare": 68,
+        "consistency": 52,
+        "ceiling": 83,
+        "floor": 82
+      },
       "rank": 102,
       "tier": 3
     },
@@ -5505,6 +6637,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 13.9,
       "auctionValue": 5,
+      "percentiles": {
+        "points": 83,
+        "pointsPerGame": 83,
+        "snapShare": 82,
+        "targetShare": 76,
+        "consistency": 35,
+        "ceiling": 86,
+        "floor": 80
+      },
       "rank": 116,
       "tier": 3
     },
@@ -5547,6 +6688,15 @@
       "role": "TIMESHARE",
       "vorp": 22.5,
       "auctionValue": 7,
+      "percentiles": {
+        "points": 80,
+        "pointsPerGame": 78,
+        "snapShare": 75,
+        "targetShare": 39,
+        "consistency": 40,
+        "ceiling": 80,
+        "floor": 79
+      },
       "rank": 103,
       "tier": 3
     },
@@ -5589,6 +6739,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 7.9,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 81,
+        "pointsPerGame": 95,
+        "snapShare": 85,
+        "targetShare": 87,
+        "consistency": 76,
+        "ceiling": 81,
+        "floor": 77
+      },
       "rank": 129,
       "tier": 4
     },
@@ -5631,6 +6790,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 18,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 82,
+        "pointsPerGame": 82,
+        "snapShare": 76,
+        "targetShare": 62,
+        "consistency": 81,
+        "ceiling": 80,
+        "floor": 84
+      },
       "rank": 110,
       "tier": 3
     },
@@ -5673,6 +6841,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 20.9,
       "auctionValue": 7,
+      "percentiles": {
+        "points": 79,
+        "pointsPerGame": 91,
+        "snapShare": 86,
+        "targetShare": 84,
+        "consistency": 89,
+        "ceiling": 76,
+        "floor": 80
+      },
       "rank": 104,
       "tier": 3
     },
@@ -5715,6 +6892,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 6.4,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 80,
+        "pointsPerGame": 81,
+        "snapShare": 87,
+        "targetShare": 91,
+        "consistency": 96,
+        "ceiling": 75,
+        "floor": 83
+      },
       "rank": 133,
       "tier": 4
     },
@@ -5757,6 +6943,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 6.1,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 78,
+        "pointsPerGame": 69,
+        "snapShare": 100,
+        "targetShare": 76,
+        "consistency": 35,
+        "ceiling": 80,
+        "floor": 77
+      },
       "rank": 135,
       "tier": 4
     },
@@ -5799,6 +6994,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 16.6,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 82,
+        "pointsPerGame": 78,
+        "snapShare": 100,
+        "targetShare": 75,
+        "consistency": 26,
+        "ceiling": 83,
+        "floor": 79
+      },
       "rank": 112,
       "tier": 3
     },
@@ -5841,6 +7045,15 @@
       "role": "TIMESHARE",
       "vorp": 15.9,
       "auctionValue": 5,
+      "percentiles": {
+        "points": 81,
+        "pointsPerGame": 79,
+        "snapShare": 55,
+        "targetShare": 54,
+        "consistency": 68,
+        "ceiling": 81,
+        "floor": 82
+      },
       "rank": 113,
       "tier": 3
     },
@@ -5883,6 +7096,15 @@
       "role": "TIMESHARE",
       "vorp": 18.2,
       "auctionValue": 6,
+      "percentiles": {
+        "points": 79,
+        "pointsPerGame": 77,
+        "snapShare": 55,
+        "targetShare": 34,
+        "consistency": 40,
+        "ceiling": 79,
+        "floor": 78
+      },
       "rank": 109,
       "tier": 3
     },
@@ -5925,6 +7147,15 @@
       "role": "TIMESHARE",
       "vorp": 2.7,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 77,
+        "pointsPerGame": 67,
+        "snapShare": 42,
+        "targetShare": 39,
+        "consistency": 15,
+        "ceiling": 78,
+        "floor": 72
+      },
       "rank": 150,
       "tier": 4
     },
@@ -5967,6 +7198,15 @@
       "role": "TIMESHARE",
       "vorp": 13.6,
       "auctionValue": 5,
+      "percentiles": {
+        "points": 81,
+        "pointsPerGame": 79,
+        "snapShare": 53,
+        "targetShare": 53,
+        "consistency": 39,
+        "ceiling": 82,
+        "floor": 80
+      },
       "rank": 118,
       "tier": 3
     },
@@ -6009,6 +7249,15 @@
       "role": "COMMITTEE",
       "vorp": 1.2,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 75,
+        "pointsPerGame": 75,
+        "snapShare": 18,
+        "targetShare": 57,
+        "consistency": 56,
+        "ceiling": 75,
+        "floor": 72
+      },
       "rank": 158,
       "tier": 4
     },
@@ -6046,6 +7295,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 11.2,
       "auctionValue": 4,
+      "percentiles": {
+        "points": 81,
+        "pointsPerGame": 77,
+        "snapShare": 73,
+        "targetShare": 60,
+        "consistency": 52,
+        "ceiling": 80,
+        "floor": 81
+      },
       "rank": 121,
       "tier": 4
     },
@@ -6088,6 +7346,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 73,
+        "pointsPerGame": 73,
+        "snapShare": 80,
+        "targetShare": 67,
+        "consistency": 76,
+        "ceiling": 72,
+        "floor": 80
+      },
       "rank": 184,
       "tier": 4
     },
@@ -6130,6 +7397,15 @@
       "role": "COMMITTEE",
       "vorp": 13.8,
       "auctionValue": 5,
+      "percentiles": {
+        "points": 78,
+        "pointsPerGame": 76,
+        "snapShare": 53,
+        "targetShare": 12,
+        "consistency": 22,
+        "ceiling": 79,
+        "floor": 76
+      },
       "rank": 117,
       "tier": 3
     },
@@ -6172,6 +7448,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 8.1,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 80,
+        "pointsPerGame": 82,
+        "snapShare": 93,
+        "targetShare": 86,
+        "consistency": 52,
+        "ceiling": 81,
+        "floor": 77
+      },
       "rank": 128,
       "tier": 4
     },
@@ -6214,6 +7499,15 @@
       "role": "COMMITTEE",
       "vorp": 10.7,
       "auctionValue": 4,
+      "percentiles": {
+        "points": 78,
+        "pointsPerGame": 75,
+        "snapShare": 19,
+        "targetShare": 5,
+        "consistency": 33,
+        "ceiling": 72,
+        "floor": 80
+      },
       "rank": 123,
       "tier": 4
     },
@@ -6251,6 +7545,13 @@
       "role": "COMMITTEE",
       "vorp": 12.8,
       "auctionValue": 4,
+      "percentiles": {
+        "points": 100,
+        "pointsPerGame": 97,
+        "consistency": 74,
+        "ceiling": 90,
+        "floor": 100
+      },
       "rank": 119,
       "tier": 4
     },
@@ -6293,6 +7594,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 6.6,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 80,
+        "pointsPerGame": 80,
+        "snapShare": 72,
+        "targetShare": 62,
+        "consistency": 68,
+        "ceiling": 76,
+        "floor": 81
+      },
       "rank": 132,
       "tier": 4
     },
@@ -6330,6 +7640,15 @@
       "role": "TIMESHARE",
       "vorp": 9,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 77,
+        "pointsPerGame": 76,
+        "snapShare": 56,
+        "targetShare": 26,
+        "consistency": 40,
+        "ceiling": 75,
+        "floor": 76
+      },
       "rank": 126,
       "tier": 4
     },
@@ -6367,6 +7686,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 72,
+        "pointsPerGame": 61,
+        "snapShare": 15,
+        "targetShare": 50,
+        "consistency": 35,
+        "ceiling": 73,
+        "floor": 64
+      },
       "rank": 185,
       "tier": 4
     },
@@ -6409,6 +7737,15 @@
       "role": "TIMESHARE",
       "vorp": 5.1,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 80,
+        "pointsPerGame": 85,
+        "snapShare": 58,
+        "targetShare": 87,
+        "consistency": 68,
+        "ceiling": 79,
+        "floor": 77
+      },
       "rank": 139,
       "tier": 4
     },
@@ -6451,6 +7788,15 @@
       "role": "COMMITTEE",
       "vorp": 8.5,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 76,
+        "pointsPerGame": 75,
+        "snapShare": 47,
+        "targetShare": 50,
+        "consistency": 22,
+        "ceiling": 71,
+        "floor": 79
+      },
       "rank": 127,
       "tier": 4
     },
@@ -6493,6 +7839,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 4.7,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 79,
+        "pointsPerGame": 85,
+        "snapShare": 74,
+        "targetShare": 70,
+        "consistency": 68,
+        "ceiling": 77,
+        "floor": 79
+      },
       "rank": 141,
       "tier": 4
     },
@@ -6535,6 +7890,15 @@
       "role": "TIMESHARE",
       "vorp": 4.5,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 79,
+        "pointsPerGame": 75,
+        "snapShare": 50,
+        "targetShare": 52,
+        "consistency": 26,
+        "ceiling": 78,
+        "floor": 77
+      },
       "rank": 142,
       "tier": 4
     },
@@ -6577,6 +7941,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 4.4,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 78,
+        "pointsPerGame": 92,
+        "snapShare": 71,
+        "targetShare": 85,
+        "consistency": 95,
+        "ceiling": 74,
+        "floor": 81
+      },
       "rank": 143,
       "tier": 4
     },
@@ -6614,6 +7987,13 @@
       "role": "COMMITTEE",
       "vorp": 9.5,
       "auctionValue": 4,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 94,
+        "consistency": 26,
+        "ceiling": 87,
+        "floor": 84
+      },
       "rank": 125,
       "tier": 4
     },
@@ -6656,6 +8036,15 @@
       "role": "TIMESHARE",
       "vorp": 6.2,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 76,
+        "pointsPerGame": 74,
+        "snapShare": 80,
+        "targetShare": 28,
+        "consistency": 22,
+        "ceiling": 77,
+        "floor": 71
+      },
       "rank": 134,
       "tier": 4
     },
@@ -6698,6 +8087,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 70,
+        "pointsPerGame": 70,
+        "snapShare": 22,
+        "targetShare": 52,
+        "consistency": 56,
+        "ceiling": 66,
+        "floor": 72
+      },
       "rank": 186,
       "tier": 4
     },
@@ -6740,6 +8138,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 2.4,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 78,
+        "pointsPerGame": 78,
+        "snapShare": 66,
+        "targetShare": 66,
+        "consistency": 52,
+        "ceiling": 76,
+        "floor": 78
+      },
       "rank": 153,
       "tier": 4
     },
@@ -6782,6 +8189,15 @@
       "role": "COMMITTEE",
       "vorp": 2.2,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 78,
+        "pointsPerGame": 74,
+        "snapShare": 23,
+        "targetShare": 38,
+        "consistency": 39,
+        "ceiling": 76,
+        "floor": 80
+      },
       "rank": 155,
       "tier": 4
     },
@@ -6824,6 +8240,15 @@
       "role": "TIMESHARE",
       "vorp": 4.9,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 75,
+        "pointsPerGame": 78,
+        "snapShare": 73,
+        "targetShare": 65,
+        "consistency": 59,
+        "ceiling": 69,
+        "floor": 77
+      },
       "rank": 140,
       "tier": 4
     },
@@ -6866,6 +8291,15 @@
       "role": "COMMITTEE",
       "vorp": 4.4,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 75,
+        "pointsPerGame": 72,
+        "snapShare": 43,
+        "targetShare": 20,
+        "consistency": 40,
+        "ceiling": 73,
+        "floor": 75
+      },
       "rank": 144,
       "tier": 4
     },
@@ -6908,6 +8342,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0.2,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 77,
+        "pointsPerGame": 89,
+        "snapShare": 73,
+        "targetShare": 68,
+        "consistency": 52,
+        "ceiling": 74,
+        "floor": 78
+      },
       "rank": 162,
       "tier": 4
     },
@@ -6950,6 +8393,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 77,
+        "pointsPerGame": 73,
+        "snapShare": 62,
+        "targetShare": 59,
+        "consistency": 39,
+        "ceiling": 76,
+        "floor": 76
+      },
       "rank": 187,
       "tier": 4
     },
@@ -6992,6 +8444,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 76,
+        "pointsPerGame": 77,
+        "snapShare": 59,
+        "targetShare": 70,
+        "consistency": 52,
+        "ceiling": 78,
+        "floor": 74
+      },
       "rank": 188,
       "tier": 4
     },
@@ -7029,6 +8490,13 @@
       "role": "COMMITTEE",
       "vorp": 5.7,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 90,
+        "consistency": 74,
+        "ceiling": 84,
+        "floor": 90
+      },
       "rank": 136,
       "tier": 4
     },
@@ -7071,6 +8539,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 76,
+        "pointsPerGame": 76,
+        "snapShare": 86,
+        "targetShare": 64,
+        "consistency": 52,
+        "ceiling": 69,
+        "floor": 80
+      },
       "rank": 189,
       "tier": 4
     },
@@ -7113,6 +8590,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 69,
+        "pointsPerGame": 64,
+        "snapShare": 75,
+        "targetShare": 65,
+        "consistency": 76,
+        "ceiling": 64,
+        "floor": 67
+      },
       "rank": 190,
       "tier": 4
     },
@@ -7150,6 +8636,15 @@
       "role": "COMMITTEE",
       "vorp": 2.3,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 74,
+        "pointsPerGame": 72,
+        "snapShare": 54,
+        "targetShare": 48,
+        "consistency": 40,
+        "ceiling": 73,
+        "floor": 74
+      },
       "rank": 154,
       "tier": 4
     },
@@ -7192,6 +8687,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 67,
+        "pointsPerGame": 89,
+        "snapShare": 65,
+        "targetShare": 44,
+        "consistency": 56,
+        "ceiling": 59,
+        "floor": 70
+      },
       "rank": 191,
       "tier": 4
     },
@@ -7234,6 +8738,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 66,
+        "pointsPerGame": 56,
+        "snapShare": 63,
+        "targetShare": 61,
+        "consistency": 56,
+        "ceiling": 63,
+        "floor": 64
+      },
       "rank": 192,
       "tier": 4
     },
@@ -7276,6 +8789,13 @@
       "role": "COMMITTEE",
       "vorp": 3.3,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 90,
+        "pointsPerGame": 77,
+        "consistency": 26,
+        "ceiling": 65,
+        "floor": 84
+      },
       "rank": 147,
       "tier": 4
     },
@@ -7318,6 +8838,13 @@
       "role": "COMMITTEE",
       "vorp": 3.2,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 84,
+        "consistency": 26,
+        "ceiling": 77,
+        "floor": 71
+      },
       "rank": 149,
       "tier": 4
     },
@@ -7360,6 +8887,15 @@
       "role": "TIMESHARE",
       "vorp": 0.4,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 74,
+        "pointsPerGame": 71,
+        "snapShare": 60,
+        "targetShare": 72,
+        "consistency": 59,
+        "ceiling": 69,
+        "floor": 74
+      },
       "rank": 161,
       "tier": 4
     },
@@ -7397,6 +8933,13 @@
       "role": "COMMITTEE",
       "vorp": 2.6,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 84,
+        "pointsPerGame": 77,
+        "consistency": 7,
+        "ceiling": 81,
+        "floor": 58
+      },
       "rank": 151,
       "tier": 4
     },
@@ -7439,6 +8982,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 73,
+        "pointsPerGame": 86,
+        "snapShare": 79,
+        "targetShare": 91,
+        "consistency": 89,
+        "ceiling": 67,
+        "floor": 75
+      },
       "rank": 193,
       "tier": 4
     },
@@ -7476,6 +9028,13 @@
       "role": "COMMITTEE",
       "vorp": 1.7,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 81,
+        "pointsPerGame": 58,
+        "consistency": 74,
+        "ceiling": 48,
+        "floor": 90
+      },
       "rank": 156,
       "tier": 4
     },
@@ -7518,6 +9077,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 64,
+        "pointsPerGame": 86,
+        "snapShare": 77,
+        "targetShare": 94,
+        "consistency": 76,
+        "ceiling": 66,
+        "floor": 63
+      },
       "rank": 194,
       "tier": 4
     },
@@ -7555,6 +9123,13 @@
       "role": "COMMITTEE",
       "vorp": 1.5,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 77,
+        "pointsPerGame": 58,
+        "consistency": 26,
+        "ceiling": 65,
+        "floor": 61
+      },
       "rank": 157,
       "tier": 4
     },
@@ -7597,6 +9172,13 @@
       "role": "COMMITTEE",
       "vorp": 1.1,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 74,
+        "pointsPerGame": 58,
+        "consistency": 74,
+        "ceiling": 48,
+        "floor": 77
+      },
       "rank": 159,
       "tier": 4
     },
@@ -7639,6 +9221,13 @@
       "role": "COMMITTEE",
       "vorp": 1,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 71,
+        "pointsPerGame": 58,
+        "consistency": 100,
+        "ceiling": 35,
+        "floor": 90
+      },
       "rank": 160,
       "tier": 4
     },
@@ -7681,6 +9270,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 76,
+        "pointsPerGame": 73,
+        "snapShare": 60,
+        "targetShare": 47,
+        "consistency": 52,
+        "ceiling": 72,
+        "floor": 76
+      },
       "rank": 195,
       "tier": 4
     },
@@ -7723,6 +9321,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 75,
+        "pointsPerGame": 71,
+        "targetShare": 14,
+        "consistency": 39,
+        "ceiling": 73,
+        "floor": 74
+      },
       "rank": 196,
       "tier": 4
     },
@@ -7765,6 +9371,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 52,
+        "consistency": 74,
+        "ceiling": 42,
+        "floor": 77
+      },
       "rank": 197,
       "tier": 4
     },
@@ -7807,6 +9420,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 58,
+        "consistency": 26,
+        "ceiling": 48,
+        "floor": 71
+      },
       "rank": 198,
       "tier": 4
     },
@@ -7844,6 +9464,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 100,
+        "consistency": 74,
+        "ceiling": 65,
+        "floor": 35
+      },
       "rank": 199,
       "tier": 4
     },
@@ -7886,6 +9513,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 63,
+        "pointsPerGame": 58,
+        "snapShare": 72,
+        "targetShare": 28,
+        "consistency": 56,
+        "ceiling": 53,
+        "floor": 67
+      },
       "rank": 200,
       "tier": 4
     },
@@ -7928,6 +9564,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 72,
+        "pointsPerGame": 70,
+        "snapShare": 48,
+        "targetShare": 1,
+        "consistency": 59,
+        "ceiling": 66,
+        "floor": 73
+      },
       "rank": 201,
       "tier": 4
     },
@@ -7970,6 +9615,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 58,
+        "pointsPerGame": 23,
+        "consistency": 0,
+        "ceiling": 74,
+        "floor": 23
+      },
       "rank": 202,
       "tier": 4
     },
@@ -8012,6 +9664,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 75,
+        "pointsPerGame": 77,
+        "snapShare": 69,
+        "targetShare": 44,
+        "consistency": 39,
+        "ceiling": 74,
+        "floor": 72
+      },
       "rank": 203,
       "tier": 4
     },
@@ -8049,6 +9710,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 55,
+        "pointsPerGame": 23,
+        "consistency": 7,
+        "ceiling": 58,
+        "floor": 35
+      },
       "rank": 204,
       "tier": 4
     },
@@ -8091,6 +9759,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 52,
+        "snapShare": 62,
+        "targetShare": 41,
+        "consistency": 15,
+        "ceiling": 69,
+        "floor": 59
+      },
       "rank": 205,
       "tier": 4
     },
@@ -8128,6 +9805,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 48,
+        "pointsPerGame": 23,
+        "consistency": 26,
+        "ceiling": 29,
+        "floor": 61
+      },
       "rank": 206,
       "tier": 4
     },
@@ -8165,6 +9849,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 48,
+        "pointsPerGame": 23,
+        "ceiling": 100,
+        "floor": 10
+      },
       "rank": 207,
       "tier": 4
     },
@@ -8202,6 +9892,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 45,
+        "pointsPerGame": 23,
+        "consistency": 26,
+        "ceiling": 42,
+        "floor": 48
+      },
       "rank": 208,
       "tier": 4
     },
@@ -8244,6 +9941,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 42,
+        "pointsPerGame": 23,
+        "consistency": 7,
+        "ceiling": 61,
+        "floor": 32
+      },
       "rank": 209,
       "tier": 4
     },
@@ -8281,6 +9985,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 39,
+        "pointsPerGame": 23,
+        "consistency": 26,
+        "ceiling": 23,
+        "floor": 61
+      },
       "rank": 210,
       "tier": 4
     },
@@ -8323,6 +10034,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 59,
+        "pointsPerGame": 72,
+        "snapShare": 67,
+        "targetShare": 70,
+        "consistency": 15,
+        "ceiling": 70,
+        "floor": 50
+      },
       "rank": 211,
       "tier": 4
     },
@@ -8360,6 +10080,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 74,
+        "pointsPerGame": 69,
+        "snapShare": 28,
+        "ceiling": 81,
+        "floor": 64
+      },
       "rank": 212,
       "tier": 4
     },
@@ -8402,6 +10129,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 35,
+        "pointsPerGame": 23,
+        "consistency": 26,
+        "ceiling": 29,
+        "floor": 48
+      },
       "rank": 213,
       "tier": 4
     },
@@ -8444,6 +10178,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 72,
+        "pointsPerGame": 69,
+        "snapShare": 59,
+        "targetShare": 44,
+        "consistency": 40,
+        "ceiling": 63,
+        "floor": 71
+      },
       "rank": 214,
       "tier": 4
     },
@@ -8486,6 +10229,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 74,
+        "pointsPerGame": 68,
+        "snapShare": 46,
+        "targetShare": 49,
+        "consistency": 26,
+        "ceiling": 73,
+        "floor": 67
+      },
       "rank": 215,
       "tier": 4
     },
@@ -8528,6 +10280,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 71,
+        "pointsPerGame": 68,
+        "ceiling": 78,
+        "floor": 67
+      },
       "rank": 216,
       "tier": 4
     },
@@ -8565,6 +10323,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 32,
+        "pointsPerGame": 13,
+        "ceiling": 97,
+        "floor": 6
+      },
       "rank": 217,
       "tier": 4
     },
@@ -8602,6 +10366,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 71,
+        "pointsPerGame": 68,
+        "ceiling": 77,
+        "floor": 67
+      },
       "rank": 218,
       "tier": 4
     },
@@ -8639,6 +10409,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 73,
+        "pointsPerGame": 72,
+        "snapShare": 57,
+        "targetShare": 40,
+        "consistency": 19,
+        "ceiling": 72,
+        "floor": 68
+      },
       "rank": 219,
       "tier": 4
     },
@@ -8681,6 +10460,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 73,
+        "pointsPerGame": 68,
+        "snapShare": 77,
+        "targetShare": 37,
+        "consistency": 39,
+        "ceiling": 66,
+        "floor": 73
+      },
       "rank": 220,
       "tier": 4
     },
@@ -8723,6 +10511,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 29,
+        "pointsPerGame": 13,
+        "consistency": 26,
+        "ceiling": 13,
+        "floor": 35
+      },
       "rank": 221,
       "tier": 4
     },
@@ -8765,6 +10560,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 73,
+        "pointsPerGame": 71,
+        "snapShare": 67,
+        "targetShare": 55,
+        "consistency": 12,
+        "ceiling": 70,
+        "floor": 69
+      },
       "rank": 222,
       "tier": 4
     },
@@ -8802,6 +10606,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 26,
+        "pointsPerGame": 58,
+        "consistency": 26,
+        "ceiling": 23,
+        "floor": 23
+      },
       "rank": 223,
       "tier": 4
     },
@@ -8844,6 +10655,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 58,
+        "pointsPerGame": 59,
+        "snapShare": 83,
+        "targetShare": 56,
+        "consistency": 35,
+        "ceiling": 58,
+        "floor": 58
+      },
       "rank": 224,
       "tier": 4
     },
@@ -8881,6 +10701,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 72,
+        "pointsPerGame": 68,
+        "targetShare": 33,
+        "consistency": 26,
+        "ceiling": 70,
+        "floor": 68
+      },
       "rank": 225,
       "tier": 4
     },
@@ -8918,6 +10746,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 19,
+        "pointsPerGame": 52,
+        "consistency": 7,
+        "ceiling": 35,
+        "floor": 19
+      },
       "rank": 226,
       "tier": 4
     },
@@ -8955,6 +10790,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 19,
+        "pointsPerGame": 3,
+        "consistency": 26,
+        "ceiling": 6,
+        "floor": 48
+      },
       "rank": 227,
       "tier": 4
     },
@@ -8992,6 +10834,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 16,
+        "pointsPerGame": 3,
+        "consistency": 0,
+        "ceiling": 19,
+        "floor": 23
+      },
       "rank": 228,
       "tier": 4
     },
@@ -9034,6 +10883,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 72,
+        "pointsPerGame": 66,
+        "ceiling": 80,
+        "floor": 63
+      },
       "rank": 229,
       "tier": 4
     },
@@ -9076,6 +10931,13 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 72,
+        "pointsPerGame": 75,
+        "snapShare": 68,
+        "ceiling": 79,
+        "floor": 62
+      },
       "rank": 230,
       "tier": 4
     },
@@ -9118,6 +10980,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 71,
+        "pointsPerGame": 66,
+        "snapShare": 58,
+        "targetShare": 56,
+        "consistency": 81,
+        "ceiling": 61,
+        "floor": 76
+      },
       "rank": 231,
       "tier": 4
     },
@@ -9160,6 +11031,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 70,
+        "pointsPerGame": 70,
+        "snapShare": 23,
+        "ceiling": 76,
+        "floor": 64
+      },
       "rank": 232,
       "tier": 4
     },
@@ -9202,6 +11080,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 71,
+        "pointsPerGame": 66,
+        "snapShare": 66,
+        "targetShare": 42,
+        "consistency": 12,
+        "ceiling": 69,
+        "floor": 67
+      },
       "rank": 233,
       "tier": 4
     },
@@ -9239,6 +11126,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 13,
+        "pointsPerGame": 3,
+        "ceiling": 94,
+        "floor": 3
+      },
       "rank": 234,
       "tier": 4
     },
@@ -9276,6 +11169,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 70,
+        "pointsPerGame": 66,
+        "snapShare": 51,
+        "targetShare": 58,
+        "consistency": 52,
+        "ceiling": 63,
+        "floor": 73
+      },
       "rank": 235,
       "tier": 4
     },
@@ -9318,6 +11220,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 70,
+        "pointsPerGame": 70,
+        "snapShare": 42,
+        "ceiling": 75,
+        "floor": 64
+      },
       "rank": 236,
       "tier": 4
     },
@@ -9360,6 +11269,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 23,
+        "consistency": 74,
+        "ceiling": 3,
+        "floor": 35
+      },
       "rank": 237,
       "tier": 4
     },
@@ -9402,6 +11318,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 68,
+        "pointsPerGame": 93,
+        "snapShare": 89,
+        "targetShare": 79,
+        "consistency": 76,
+        "ceiling": 57,
+        "floor": 71
+      },
       "rank": 238,
       "tier": 4
     },
@@ -9444,6 +11369,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 68,
+        "pointsPerGame": 67,
+        "snapShare": 61,
+        "targetShare": 13,
+        "consistency": 33,
+        "ceiling": 55,
+        "floor": 72
+      },
       "rank": 239,
       "tier": 4
     },
@@ -9486,6 +11420,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 70,
+        "pointsPerGame": 65,
+        "targetShare": 54,
+        "consistency": 52,
+        "ceiling": 66,
+        "floor": 69
+      },
       "rank": 240,
       "tier": 4
     },
@@ -9528,6 +11470,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 56,
+        "pointsPerGame": 64,
+        "snapShare": 57,
+        "targetShare": 54,
+        "consistency": 15,
+        "ceiling": 59,
+        "floor": 45
+      },
       "rank": 241,
       "tier": 4
     },
@@ -9570,6 +11521,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 68,
+        "pointsPerGame": 73,
+        "snapShare": 38,
+        "targetShare": 33,
+        "consistency": 16,
+        "ceiling": 62,
+        "floor": 69
+      },
       "rank": 242,
       "tier": 4
     },
@@ -9607,6 +11567,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 6,
+        "pointsPerGame": 84,
+        "consistency": 26,
+        "ceiling": 16,
+        "floor": 13
+      },
       "rank": 243,
       "tier": 4
     },
@@ -9649,6 +11616,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 55,
+        "pointsPerGame": 61,
+        "snapShare": 93,
+        "targetShare": 74,
+        "consistency": 35,
+        "ceiling": 53,
+        "floor": 59
+      },
       "rank": 244,
       "tier": 4
     },
@@ -9691,6 +11667,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 70,
+        "pointsPerGame": 76,
+        "snapShare": 39,
+        "targetShare": 50,
+        "consistency": 26,
+        "ceiling": 68,
+        "floor": 66
+      },
       "rank": 245,
       "tier": 4
     },
@@ -9733,6 +11718,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 69,
+        "pointsPerGame": 63,
+        "snapShare": 25,
+        "targetShare": 18,
+        "consistency": 19,
+        "ceiling": 59,
+        "floor": 75
+      },
       "rank": 246,
       "tier": 4
     },
@@ -9775,6 +11769,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 69,
+        "pointsPerGame": 63,
+        "ceiling": 77,
+        "floor": 59
+      },
       "rank": 247,
       "tier": 4
     },
@@ -9817,6 +11817,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 69,
+        "pointsPerGame": 63,
+        "snapShare": 23,
+        "targetShare": 1,
+        "consistency": 0,
+        "ceiling": 65,
+        "floor": 69
+      },
       "rank": 248,
       "tier": 4
     },
@@ -9859,6 +11868,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 53,
+        "pointsPerGame": 55,
+        "snapShare": 37,
+        "targetShare": 43,
+        "consistency": 15,
+        "ceiling": 56,
+        "floor": 55
+      },
       "rank": 249,
       "tier": 4
     },
@@ -9901,6 +11919,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 3,
+        "pointsPerGame": 19,
+        "consistency": 7,
+        "ceiling": 10,
+        "floor": 13
+      },
       "rank": 250,
       "tier": 4
     },
@@ -9943,6 +11968,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 68,
+        "pointsPerGame": 74,
+        "snapShare": 85,
+        "targetShare": 61,
+        "consistency": 68,
+        "ceiling": 60,
+        "floor": 73
+      },
       "rank": 251,
       "tier": 4
     },
@@ -9985,6 +12019,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 68,
+        "pointsPerGame": 62,
+        "snapShare": 53,
+        "targetShare": 23,
+        "consistency": 12,
+        "ceiling": 61,
+        "floor": 72
+      },
       "rank": 252,
       "tier": 4
     },
@@ -10027,6 +12070,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 67,
+        "pointsPerGame": 70,
+        "snapShare": 70,
+        "targetShare": 43,
+        "consistency": 12,
+        "ceiling": 60,
+        "floor": 71
+      },
       "rank": 253,
       "tier": 4
     },
@@ -10069,6 +12121,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 67,
+        "pointsPerGame": 61,
+        "snapShare": 65,
+        "targetShare": 39,
+        "consistency": 26,
+        "ceiling": 61,
+        "floor": 69
+      },
       "rank": 254,
       "tier": 4
     },
@@ -10111,6 +12172,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 67,
+        "pointsPerGame": 73,
+        "snapShare": 47,
+        "targetShare": 46,
+        "consistency": 19,
+        "ceiling": 68,
+        "floor": 61
+      },
       "rank": 255,
       "tier": 4
     },
@@ -10153,6 +12223,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 52,
+        "pointsPerGame": 48,
+        "snapShare": 10,
+        "targetShare": 44,
+        "consistency": 15,
+        "ceiling": 52,
+        "floor": 48
+      },
       "rank": 256,
       "tier": 4
     },
@@ -10195,6 +12274,15 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 66,
+        "pointsPerGame": 72,
+        "snapShare": 83,
+        "targetShare": 73,
+        "consistency": 68,
+        "ceiling": 57,
+        "floor": 71
+      },
       "rank": 257,
       "tier": 4
     },
@@ -10237,6 +12325,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 50,
+        "pointsPerGame": 50,
+        "snapShare": 17,
+        "targetShare": 31,
+        "consistency": 9,
+        "ceiling": 48,
+        "floor": 50
+      },
       "rank": 258,
       "tier": 4
     },
@@ -10279,6 +12376,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 67,
+        "pointsPerGame": 63,
+        "snapShare": 44,
+        "targetShare": 10,
+        "consistency": 22,
+        "ceiling": 60,
+        "floor": 68
+      },
       "rank": 259,
       "tier": 4
     },
@@ -10321,6 +12427,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 66,
+        "pointsPerGame": 63,
+        "snapShare": 45,
+        "targetShare": 30,
+        "consistency": 19,
+        "ceiling": 65,
+        "floor": 64
+      },
       "rank": 260,
       "tier": 4
     },
@@ -10363,6 +12478,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 61,
+        "ceiling": 75,
+        "floor": 56
+      },
       "rank": 261,
       "tier": 4
     },
@@ -10400,6 +12521,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 67,
+        "pointsPerGame": 62,
+        "snapShare": 35,
+        "ceiling": 73,
+        "floor": 59
+      },
       "rank": 262,
       "tier": 4
     },
@@ -10437,6 +12565,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 66,
+        "pointsPerGame": 67,
+        "ceiling": 72,
+        "floor": 59
+      },
       "rank": 263,
       "tier": 4
     },
@@ -10474,6 +12608,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 63,
+        "snapShare": 31,
+        "targetShare": 23,
+        "consistency": 26,
+        "ceiling": 62,
+        "floor": 65
+      },
       "rank": 264,
       "tier": 4
     },
@@ -10516,6 +12659,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 66,
+        "pointsPerGame": 66,
+        "snapShare": 28,
+        "targetShare": 6,
+        "consistency": 33,
+        "ceiling": 54,
+        "floor": 68
+      },
       "rank": 265,
       "tier": 4
     },
@@ -10553,6 +12705,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 59,
+        "snapShare": 22,
+        "targetShare": 16,
+        "consistency": 0,
+        "ceiling": 62,
+        "floor": 58
+      },
       "rank": 266,
       "tier": 4
     },
@@ -10595,6 +12756,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 60,
+        "ceiling": 73,
+        "floor": 55
+      },
       "rank": 267,
       "tier": 4
     },
@@ -10632,6 +12799,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 64,
+        "pointsPerGame": 59,
+        "snapShare": 16,
+        "targetShare": 2,
+        "consistency": 40,
+        "ceiling": 16,
+        "floor": 70
+      },
       "rank": 268,
       "tier": 4
     },
@@ -10669,6 +12845,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 64,
+        "pointsPerGame": 59,
+        "snapShare": 44,
+        "targetShare": 27,
+        "consistency": 0,
+        "ceiling": 58,
+        "floor": 64
+      },
       "rank": 269,
       "tier": 4
     },
@@ -10711,6 +12896,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 47,
+        "pointsPerGame": 44,
+        "snapShare": 53,
+        "targetShare": 35,
+        "consistency": 15,
+        "ceiling": 47,
+        "floor": 45
+      },
       "rank": 270,
       "tier": 4
     },
@@ -10753,6 +12947,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 47,
+        "pointsPerGame": 44,
+        "snapShare": 23,
+        "targetShare": 63,
+        "consistency": 76,
+        "ceiling": 44,
+        "floor": 56
+      },
       "rank": 271,
       "tier": 4
     },
@@ -10790,6 +12993,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 63,
+        "pointsPerGame": 59,
+        "snapShare": 7,
+        "ceiling": 71,
+        "floor": 56
+      },
       "rank": 272,
       "tier": 4
     },
@@ -10827,6 +13037,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 63,
+        "pointsPerGame": 59,
+        "ceiling": 70,
+        "floor": 56
+      },
       "rank": 273,
       "tier": 4
     },
@@ -10869,6 +13085,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 64,
+        "pointsPerGame": 80,
+        "snapShare": 79,
+        "targetShare": 69,
+        "consistency": 68,
+        "ceiling": 57,
+        "floor": 65
+      },
       "rank": 274,
       "tier": 4
     },
@@ -10911,6 +13136,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 64,
+        "pointsPerGame": 70,
+        "snapShare": 37,
+        "targetShare": 40,
+        "consistency": 39,
+        "ceiling": 57,
+        "floor": 65
+      },
       "rank": 275,
       "tier": 4
     },
@@ -10953,6 +13187,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 63,
+        "pointsPerGame": 76,
+        "snapShare": 51,
+        "targetShare": 57,
+        "consistency": 26,
+        "ceiling": 53,
+        "floor": 67
+      },
       "rank": 276,
       "tier": 4
     },
@@ -10995,6 +13238,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 62,
+        "pointsPerGame": 74,
+        "snapShare": 51,
+        "targetShare": 87,
+        "consistency": 0,
+        "ceiling": 61,
+        "floor": 56
+      },
       "rank": 277,
       "tier": 4
     },
@@ -11032,6 +13284,13 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 63,
+        "pointsPerGame": 59,
+        "snapShare": 41,
+        "ceiling": 70,
+        "floor": 51
+      },
       "rank": 278,
       "tier": 4
     },
@@ -11069,6 +13328,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 63,
+        "pointsPerGame": 59,
+        "snapShare": 30,
+        "ceiling": 70,
+        "floor": 51
+      },
       "rank": 279,
       "tier": 4
     },
@@ -11106,6 +13372,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 58,
+        "ceiling": 68,
+        "floor": 53
+      },
       "rank": 280,
       "tier": 4
     },
@@ -11143,6 +13415,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 56,
+        "snapShare": 21,
+        "targetShare": 43,
+        "consistency": 40,
+        "ceiling": 16,
+        "floor": 70
+      },
       "rank": 281,
       "tier": 4
     },
@@ -11180,6 +13461,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 60,
+        "pointsPerGame": 56,
+        "snapShare": 6,
+        "ceiling": 68,
+        "floor": 53
+      },
       "rank": 282,
       "tier": 4
     },
@@ -11222,6 +13510,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 62,
+        "pointsPerGame": 72,
+        "snapShare": 69,
+        "targetShare": 64,
+        "consistency": 81,
+        "ceiling": 53,
+        "floor": 66
+      },
       "rank": 283,
       "tier": 4
     },
@@ -11264,6 +13561,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 60,
+        "pointsPerGame": 56,
+        "snapShare": 32,
+        "ceiling": 67,
+        "floor": 53
+      },
       "rank": 284,
       "tier": 4
     },
@@ -11301,6 +13605,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 58,
+        "ceiling": 69,
+        "floor": 51
+      },
       "rank": 285,
       "tier": 4
     },
@@ -11338,6 +13648,13 @@
       "role": "LOCKED_STARTER",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 58,
+        "snapShare": 98,
+        "ceiling": 69,
+        "floor": 51
+      },
       "rank": 286,
       "tier": 4
     },
@@ -11380,6 +13697,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 65,
+        "snapShare": 46,
+        "targetShare": 18,
+        "consistency": 52,
+        "ceiling": 48,
+        "floor": 68
+      },
       "rank": 287,
       "tier": 4
     },
@@ -11417,6 +13743,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 59,
+        "pointsPerGame": 56,
+        "snapShare": 3,
+        "ceiling": 66,
+        "floor": 51
+      },
       "rank": 288,
       "tier": 4
     },
@@ -11454,6 +13787,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 58,
+        "snapShare": 42,
+        "targetShare": 16,
+        "consistency": 12,
+        "ceiling": 43,
+        "floor": 72
+      },
       "rank": 289,
       "tier": 4
     },
@@ -11496,6 +13838,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 60,
+        "pointsPerGame": 65,
+        "snapShare": 56,
+        "targetShare": 50,
+        "consistency": 26,
+        "ceiling": 56,
+        "floor": 63
+      },
       "rank": 290,
       "tier": 4
     },
@@ -11538,6 +13889,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 45,
+        "pointsPerGame": 52,
+        "snapShare": 48,
+        "targetShare": 48,
+        "consistency": 15,
+        "ceiling": 39,
+        "floor": 50
+      },
       "rank": 291,
       "tier": 4
     },
@@ -11580,6 +13940,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 58,
+        "pointsPerGame": 53,
+        "ceiling": 64,
+        "floor": 51
+      },
       "rank": 292,
       "tier": 4
     },
@@ -11617,6 +13983,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 60,
+        "pointsPerGame": 56,
+        "snapShare": 7,
+        "ceiling": 68,
+        "floor": 50
+      },
       "rank": 293,
       "tier": 4
     },
@@ -11654,6 +14027,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 58,
+        "pointsPerGame": 53,
+        "snapShare": 0,
+        "ceiling": 64,
+        "floor": 51
+      },
       "rank": 294,
       "tier": 4
     },
@@ -11696,6 +14076,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 59,
+        "pointsPerGame": 69,
+        "snapShare": 43,
+        "targetShare": 49,
+        "consistency": 0,
+        "ceiling": 59,
+        "floor": 58
+      },
       "rank": 295,
       "tier": 4
     },
@@ -11733,6 +14122,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 59,
+        "pointsPerGame": 56,
+        "snapShare": 42,
+        "targetShare": 31,
+        "consistency": 81,
+        "ceiling": 43,
+        "floor": 72
+      },
       "rank": 296,
       "tier": 4
     },
@@ -11775,6 +14173,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 44,
+        "pointsPerGame": 47,
+        "snapShare": 13,
+        "targetShare": 26,
+        "consistency": 15,
+        "ceiling": 42,
+        "floor": 44
+      },
       "rank": 297,
       "tier": 4
     },
@@ -11817,6 +14224,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 59,
+        "pointsPerGame": 56,
+        "ceiling": 67,
+        "floor": 50
+      },
       "rank": 298,
       "tier": 4
     },
@@ -11854,6 +14267,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 57,
+        "pointsPerGame": 53,
+        "snapShare": 39,
+        "ceiling": 63,
+        "floor": 51
+      },
       "rank": 299,
       "tier": 4
     },
@@ -11896,6 +14316,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 57,
+        "pointsPerGame": 53,
+        "snapShare": 17,
+        "targetShare": 16,
+        "consistency": 0,
+        "ceiling": 53,
+        "floor": 61
+      },
       "rank": 300,
       "tier": 4
     },
@@ -11938,6 +14367,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 58,
+        "pointsPerGame": 60,
+        "snapShare": 37,
+        "targetShare": 4,
+        "consistency": 19,
+        "ceiling": 56,
+        "floor": 61
+      },
       "rank": 301,
       "tier": 4
     },
@@ -11980,6 +14418,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 58,
+        "pointsPerGame": 56,
+        "ceiling": 67,
+        "floor": 48
+      },
       "rank": 302,
       "tier": 4
     },
@@ -12022,6 +14466,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 57,
+        "pointsPerGame": 68,
+        "snapShare": 48,
+        "targetShare": 37,
+        "consistency": 52,
+        "ceiling": 46,
+        "floor": 67
+      },
       "rank": 303,
       "tier": 4
     },
@@ -12059,6 +14512,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 57,
+        "pointsPerGame": 53,
+        "ceiling": 66,
+        "floor": 48
+      },
       "rank": 304,
       "tier": 4
     },
@@ -12101,6 +14560,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 57,
+        "pointsPerGame": 59,
+        "snapShare": 36,
+        "targetShare": 33,
+        "consistency": 39,
+        "ceiling": 54,
+        "floor": 59
+      },
       "rank": 305,
       "tier": 4
     },
@@ -12143,6 +14611,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 56,
+        "pointsPerGame": 53,
+        "snapShare": 38,
+        "targetShare": 20,
+        "consistency": 0,
+        "ceiling": 52,
+        "floor": 61
+      },
       "rank": 306,
       "tier": 4
     },
@@ -12185,6 +14662,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 56,
+        "pointsPerGame": 49,
+        "snapShare": 20,
+        "targetShare": 4,
+        "consistency": 0,
+        "ceiling": 22,
+        "floor": 63
+      },
       "rank": 307,
       "tier": 4
     },
@@ -12222,6 +14708,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 56,
+        "pointsPerGame": 63,
+        "snapShare": 31,
+        "targetShare": 12,
+        "consistency": 39,
+        "ceiling": 48,
+        "floor": 62
+      },
       "rank": 308,
       "tier": 4
     },
@@ -12264,6 +14759,12 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 56,
+        "pointsPerGame": 49,
+        "ceiling": 61,
+        "floor": 49
+      },
       "rank": 309,
       "tier": 4
     },
@@ -12306,6 +14807,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 55,
+        "pointsPerGame": 53,
+        "snapShare": 34,
+        "ceiling": 60,
+        "floor": 49
+      },
       "rank": 310,
       "tier": 4
     },
@@ -12343,6 +14851,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 56,
+        "pointsPerGame": 50,
+        "snapShare": 5,
+        "ceiling": 65,
+        "floor": 46
+      },
       "rank": 311,
       "tier": 4
     },
@@ -12385,6 +14900,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 55,
+        "pointsPerGame": 50,
+        "snapShare": 45,
+        "targetShare": 55,
+        "consistency": 26,
+        "ceiling": 50,
+        "floor": 56
+      },
       "rank": 312,
       "tier": 4
     },
@@ -12422,6 +14946,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 54,
+        "pointsPerGame": 50,
+        "ceiling": 63,
+        "floor": 43
+      },
       "rank": 313,
       "tier": 4
     },
@@ -12459,6 +14989,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 54,
+        "pointsPerGame": 50,
+        "snapShare": 11,
+        "ceiling": 63,
+        "floor": 43
+      },
       "rank": 314,
       "tier": 4
     },
@@ -12501,6 +15038,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 55,
+        "pointsPerGame": 66,
+        "snapShare": 36,
+        "targetShare": 70,
+        "consistency": 22,
+        "ceiling": 16,
+        "floor": 61
+      },
       "rank": 315,
       "tier": 4
     },
@@ -12538,6 +15084,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 54,
+        "pointsPerGame": 47,
+        "ceiling": 58,
+        "floor": 48
+      },
       "rank": 316,
       "tier": 4
     },
@@ -12580,6 +15132,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 53,
+        "pointsPerGame": 63,
+        "snapShare": 8,
+        "ceiling": 58,
+        "floor": 48
+      },
       "rank": 317,
       "tier": 4
     },
@@ -12622,6 +15181,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 54,
+        "pointsPerGame": 50,
+        "snapShare": 12,
+        "ceiling": 63,
+        "floor": 43
+      },
       "rank": 318,
       "tier": 4
     },
@@ -12664,6 +15230,13 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 42,
+        "pointsPerGame": 36,
+        "snapShare": 32,
+        "ceiling": 50,
+        "floor": 23
+      },
       "rank": 319,
       "tier": 4
     },
@@ -12701,6 +15274,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 54,
+        "pointsPerGame": 53,
+        "snapShare": 18,
+        "ceiling": 63,
+        "floor": 43
+      },
       "rank": 320,
       "tier": 4
     },
@@ -12743,6 +15323,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 53,
+        "pointsPerGame": 50,
+        "snapShare": 30,
+        "targetShare": 19,
+        "consistency": 0,
+        "ceiling": 52,
+        "floor": 51
+      },
       "rank": 321,
       "tier": 4
     },
@@ -12785,6 +15374,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 53,
+        "pointsPerGame": 63,
+        "snapShare": 41,
+        "targetShare": 56,
+        "consistency": 22,
+        "ceiling": 16,
+        "floor": 59
+      },
       "rank": 322,
       "tier": 4
     },
@@ -12822,6 +15420,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 53,
+        "pointsPerGame": 47,
+        "snapShare": 54,
+        "targetShare": 35,
+        "consistency": 26,
+        "ceiling": 46,
+        "floor": 59
+      },
       "rank": 323,
       "tier": 4
     },
@@ -12859,6 +15466,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 52,
+        "pointsPerGame": 52,
+        "ceiling": 57,
+        "floor": 47
+      },
       "rank": 324,
       "tier": 4
     },
@@ -12901,6 +15514,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 52,
+        "pointsPerGame": 49,
+        "snapShare": 30,
+        "targetShare": 23,
+        "consistency": 16,
+        "ceiling": 14,
+        "floor": 58
+      },
       "rank": 325,
       "tier": 4
     },
@@ -12943,6 +15565,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 52,
+        "pointsPerGame": 53,
+        "snapShare": 25,
+        "targetShare": 10,
+        "consistency": 0,
+        "ceiling": 50,
+        "floor": 48
+      },
       "rank": 326,
       "tier": 4
     },
@@ -12985,6 +15616,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 52,
+        "pointsPerGame": 47,
+        "snapShare": 33,
+        "targetShare": 26,
+        "consistency": 26,
+        "ceiling": 48,
+        "floor": 55
+      },
       "rank": 327,
       "tier": 4
     },
@@ -13027,6 +15667,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 52,
+        "pointsPerGame": 61,
+        "snapShare": 41,
+        "targetShare": 43,
+        "consistency": 52,
+        "ceiling": 43,
+        "floor": 59
+      },
       "rank": 328,
       "tier": 4
     },
@@ -13064,6 +15713,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 51,
+        "pointsPerGame": 45,
+        "snapShare": 22,
+        "targetShare": 23,
+        "consistency": 26,
+        "ceiling": 43,
+        "floor": 61
+      },
       "rank": 329,
       "tier": 4
     },
@@ -13106,6 +15764,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 51,
+        "pointsPerGame": 45,
+        "snapShare": 5,
+        "ceiling": 61,
+        "floor": 42
+      },
       "rank": 330,
       "tier": 4
     },
@@ -13148,6 +15813,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 51,
+        "pointsPerGame": 65,
+        "snapShare": 65,
+        "targetShare": 10,
+        "consistency": 22,
+        "ceiling": 9,
+        "floor": 64
+      },
       "rank": 331,
       "tier": 4
     },
@@ -13185,6 +15859,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 50,
+        "pointsPerGame": 52,
+        "snapShare": 38,
+        "targetShare": 26,
+        "consistency": 0,
+        "ceiling": 48,
+        "floor": 54
+      },
       "rank": 332,
       "tier": 4
     },
@@ -13222,6 +15905,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 51,
+        "pointsPerGame": 44,
+        "snapShare": 13,
+        "ceiling": 56,
+        "floor": 45
+      },
       "rank": 333,
       "tier": 4
     },
@@ -13264,6 +15954,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 50,
+        "pointsPerGame": 44,
+        "ceiling": 55,
+        "floor": 45
+      },
       "rank": 334,
       "tier": 4
     },
@@ -13306,6 +16002,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 50,
+        "pointsPerGame": 56,
+        "snapShare": 55,
+        "targetShare": 47,
+        "consistency": 39,
+        "ceiling": 45,
+        "floor": 56
+      },
       "rank": 335,
       "tier": 4
     },
@@ -13348,6 +16053,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 49,
+        "pointsPerGame": 49,
+        "snapShare": 11,
+        "targetShare": 37,
+        "consistency": 89,
+        "ceiling": 9,
+        "floor": 63
+      },
       "rank": 336,
       "tier": 4
     },
@@ -13390,6 +16104,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 49,
+        "pointsPerGame": 44,
+        "ceiling": 54,
+        "floor": 43
+      },
       "rank": 337,
       "tier": 4
     },
@@ -13432,6 +16152,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 41,
+        "pointsPerGame": 27,
+        "snapShare": 55,
+        "targetShare": 24,
+        "consistency": 4,
+        "ceiling": 30,
+        "floor": 34
+      },
       "rank": 338,
       "tier": 4
     },
@@ -13474,6 +16203,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 48,
+        "pointsPerGame": 47,
+        "snapShare": 39,
+        "targetShare": 48,
+        "consistency": 12,
+        "ceiling": 13,
+        "floor": 53
+      },
       "rank": 339,
       "tier": 4
     },
@@ -13511,6 +16249,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 50,
+        "pointsPerGame": 43,
+        "snapShare": 6,
+        "ceiling": 59,
+        "floor": 40
+      },
       "rank": 340,
       "tier": 4
     },
@@ -13553,6 +16298,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 49,
+        "pointsPerGame": 47,
+        "snapShare": 59,
+        "targetShare": 30,
+        "consistency": 26,
+        "ceiling": 42,
+        "floor": 56
+      },
       "rank": 341,
       "tier": 4
     },
@@ -13595,6 +16349,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 39,
+        "pointsPerGame": 27,
+        "snapShare": 12,
+        "targetShare": 28,
+        "consistency": 35,
+        "ceiling": 30,
+        "floor": 27
+      },
       "rank": 342,
       "tier": 4
     },
@@ -13637,6 +16400,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 48,
+        "pointsPerGame": 62,
+        "ceiling": 53,
+        "floor": 43
+      },
       "rank": 343,
       "tier": 4
     },
@@ -13679,6 +16448,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 38,
+        "pointsPerGame": 27,
+        "targetShare": 15,
+        "consistency": 76,
+        "ceiling": 19,
+        "floor": 41
+      },
       "rank": 344,
       "tier": 4
     },
@@ -13721,6 +16498,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 49,
+        "pointsPerGame": 47,
+        "targetShare": 5,
+        "consistency": 26,
+        "ceiling": 39,
+        "floor": 58
+      },
       "rank": 345,
       "tier": 4
     },
@@ -13758,6 +16543,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 36,
+        "pointsPerGame": 27,
+        "snapShare": 0,
+        "ceiling": 45,
+        "floor": 17
+      },
       "rank": 346,
       "tier": 4
     },
@@ -13800,6 +16592,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 48,
+        "pointsPerGame": 43,
+        "ceiling": 57,
+        "floor": 38
+      },
       "rank": 347,
       "tier": 4
     },
@@ -13842,6 +16640,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 48,
+        "pointsPerGame": 43,
+        "ceiling": 57,
+        "floor": 38
+      },
       "rank": 348,
       "tier": 4
     },
@@ -13884,6 +16688,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 48,
+        "pointsPerGame": 41,
+        "snapShare": 78,
+        "targetShare": 22,
+        "consistency": 19,
+        "ceiling": 41,
+        "floor": 54
+      },
       "rank": 349,
       "tier": 4
     },
@@ -13926,6 +16739,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 47,
+        "pointsPerGame": 47,
+        "snapShare": 52,
+        "targetShare": 60,
+        "consistency": 0,
+        "ceiling": 49,
+        "floor": 38
+      },
       "rank": 350,
       "tier": 4
     },
@@ -13968,6 +16790,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 34,
+        "pointsPerGame": 22,
+        "targetShare": 20,
+        "consistency": 76,
+        "ceiling": 16,
+        "floor": 42
+      },
       "rank": 351,
       "tier": 4
     },
@@ -14005,6 +16835,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 47,
+        "pointsPerGame": 41,
+        "snapShare": 50,
+        "targetShare": 57,
+        "consistency": 12,
+        "ceiling": 41,
+        "floor": 51
+      },
       "rank": 352,
       "tier": 4
     },
@@ -14042,6 +16881,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 47,
+        "pointsPerGame": 45,
+        "targetShare": 28,
+        "consistency": 40,
+        "ceiling": 3,
+        "floor": 66
+      },
       "rank": 353,
       "tier": 4
     },
@@ -14084,6 +16931,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 46,
+        "pointsPerGame": 45,
+        "snapShare": 49,
+        "targetShare": 29,
+        "consistency": 68,
+        "ceiling": 36,
+        "floor": 59
+      },
       "rank": 354,
       "tier": 4
     },
@@ -14126,6 +16982,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 47,
+        "pointsPerGame": 41,
+        "targetShare": 62,
+        "consistency": 12,
+        "ceiling": 52,
+        "floor": 1
+      },
       "rank": 355,
       "tier": 4
     },
@@ -14163,6 +17027,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 46,
+        "pointsPerGame": 41,
+        "snapShare": 22,
+        "ceiling": 56,
+        "floor": 35
+      },
       "rank": 356,
       "tier": 4
     },
@@ -14205,6 +17076,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 46,
+        "pointsPerGame": 41,
+        "snapShare": 14,
+        "targetShare": 6,
+        "consistency": 0,
+        "ceiling": 23,
+        "floor": 2
+      },
       "rank": 357,
       "tier": 4
     },
@@ -14247,6 +17127,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 45,
+        "pointsPerGame": 37,
+        "ceiling": 54,
+        "floor": 35
+      },
       "rank": 358,
       "tier": 4
     },
@@ -14284,6 +17170,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 45,
+        "pointsPerGame": 37,
+        "snapShare": 0,
+        "ceiling": 54,
+        "floor": 35
+      },
       "rank": 359,
       "tier": 4
     },
@@ -14321,6 +17214,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 360,
       "tier": 4
     },
@@ -14358,6 +17257,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "snapShare": 3,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 361,
       "tier": 4
     },
@@ -14395,6 +17301,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 362,
       "tier": 4
     },
@@ -14432,6 +17344,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 363,
       "tier": 4
     },
@@ -14469,6 +17387,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 364,
       "tier": 4
     },
@@ -14506,6 +17430,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 365,
       "tier": 4
     },
@@ -14543,6 +17473,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 366,
       "tier": 4
     },
@@ -14580,6 +17516,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 367,
       "tier": 4
     },
@@ -14617,6 +17559,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 368,
       "tier": 4
     },
@@ -14654,6 +17602,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 369,
       "tier": 4
     },
@@ -14691,6 +17645,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 370,
       "tier": 4
     },
@@ -14728,6 +17688,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 371,
       "tier": 4
     },
@@ -14765,6 +17731,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 372,
       "tier": 4
     },
@@ -14802,6 +17774,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 373,
       "tier": 4
     },
@@ -14839,6 +17817,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 374,
       "tier": 4
     },
@@ -14876,6 +17860,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 375,
       "tier": 4
     },
@@ -14913,6 +17903,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 376,
       "tier": 4
     },
@@ -14950,6 +17946,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 377,
       "tier": 4
     },
@@ -14987,6 +17989,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 378,
       "tier": 4
     },
@@ -15024,6 +18032,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 379,
       "tier": 4
     },
@@ -15061,6 +18075,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 380,
       "tier": 4
     },
@@ -15098,6 +18118,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 381,
       "tier": 4
     },
@@ -15135,6 +18161,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 382,
       "tier": 4
     },
@@ -15172,6 +18204,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 383,
       "tier": 4
     },
@@ -15209,6 +18247,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 384,
       "tier": 4
     },
@@ -15246,6 +18290,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 385,
       "tier": 4
     },
@@ -15283,6 +18333,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 386,
       "tier": 4
     },
@@ -15320,6 +18376,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 387,
       "tier": 4
     },
@@ -15357,6 +18419,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 388,
       "tier": 4
     },
@@ -15394,6 +18462,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 389,
       "tier": 4
     },
@@ -15431,6 +18505,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 390,
       "tier": 4
     },
@@ -15468,6 +18548,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 391,
       "tier": 4
     },
@@ -15505,6 +18591,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 392,
       "tier": 4
     },
@@ -15542,6 +18634,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 393,
       "tier": 4
     },
@@ -15579,6 +18677,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 394,
       "tier": 4
     },
@@ -15616,6 +18720,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 395,
       "tier": 4
     },
@@ -15653,6 +18763,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 396,
       "tier": 4
     },
@@ -15690,6 +18806,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 397,
       "tier": 4
     },
@@ -15727,6 +18849,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 398,
       "tier": 4
     },
@@ -15764,6 +18892,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 399,
       "tier": 4
     },
@@ -15801,6 +18935,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 400,
       "tier": 4
     },
@@ -15838,6 +18978,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 401,
       "tier": 4
     },
@@ -15875,6 +19021,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 402,
       "tier": 4
     },
@@ -15912,6 +19064,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 403,
       "tier": 4
     },
@@ -15949,6 +19107,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 404,
       "tier": 4
     },
@@ -15986,6 +19150,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 405,
       "tier": 4
     },
@@ -16023,6 +19193,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 406,
       "tier": 4
     },
@@ -16060,6 +19236,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 407,
       "tier": 4
     },
@@ -16097,6 +19279,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 18,
+        "pointsPerGame": 6,
+        "ceiling": 24,
+        "floor": 13
+      },
       "rank": 408,
       "tier": 4
     },
@@ -16134,6 +19322,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 44,
+        "pointsPerGame": 37,
+        "ceiling": 54,
+        "floor": 35
+      },
       "rank": 409,
       "tier": 4
     },
@@ -16171,6 +19365,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 44,
+        "pointsPerGame": 37,
+        "snapShare": 0,
+        "ceiling": 54,
+        "floor": 35
+      },
       "rank": 410,
       "tier": 4
     },
@@ -16213,6 +19414,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 33,
+        "pointsPerGame": 42,
+        "snapShare": 47,
+        "targetShare": 33,
+        "consistency": 35,
+        "ceiling": 20,
+        "floor": 31
+      },
       "rank": 411,
       "tier": 4
     },
@@ -16255,6 +19465,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 44,
+        "pointsPerGame": 37,
+        "snapShare": 62,
+        "targetShare": 44,
+        "consistency": 39,
+        "ceiling": 45,
+        "floor": 43
+      },
       "rank": 412,
       "tier": 4
     },
@@ -16297,6 +19516,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 17,
+        "pointsPerGame": 6,
+        "snapShare": 18,
+        "targetShare": 60,
+        "consistency": 16,
+        "ceiling": 6,
+        "floor": 53
+      },
       "rank": 413,
       "tier": 4
     },
@@ -16339,6 +19567,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 44,
+        "pointsPerGame": 47,
+        "snapShare": 29,
+        "targetShare": 50,
+        "consistency": 39,
+        "ceiling": 42,
+        "floor": 43
+      },
       "rank": 414,
       "tier": 4
     },
@@ -16381,6 +19618,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 43,
+        "pointsPerGame": 37,
+        "snapShare": 34,
+        "targetShare": 41,
+        "consistency": 12,
+        "ceiling": 42,
+        "floor": 42
+      },
       "rank": 415,
       "tier": 4
     },
@@ -16423,6 +19669,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 17,
+        "pointsPerGame": 6,
+        "snapShare": 12,
+        "ceiling": 23,
+        "floor": 12
+      },
       "rank": 416,
       "tier": 4
     },
@@ -16465,6 +19718,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 43,
+        "pointsPerGame": 37,
+        "snapShare": 57,
+        "targetShare": 28,
+        "consistency": 19,
+        "ceiling": 36,
+        "floor": 54
+      },
       "rank": 417,
       "tier": 4
     },
@@ -16507,6 +19769,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 16,
+        "pointsPerGame": 49,
+        "snapShare": 49,
+        "targetShare": 45,
+        "consistency": 16,
+        "ceiling": 3,
+        "floor": 59
+      },
       "rank": 418,
       "tier": 4
     },
@@ -16549,6 +19820,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 31,
+        "pointsPerGame": 19,
+        "snapShare": 40,
+        "targetShare": 9,
+        "consistency": 0,
+        "ceiling": 27,
+        "floor": 20
+      },
       "rank": 419,
       "tier": 4
     },
@@ -16591,6 +19871,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 43,
+        "pointsPerGame": 36,
+        "snapShare": 24,
+        "targetShare": 6,
+        "consistency": 19,
+        "ceiling": 39,
+        "floor": 48
+      },
       "rank": 420,
       "tier": 4
     },
@@ -16628,6 +19917,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 30,
+        "pointsPerGame": 39,
+        "snapShare": 7,
+        "targetShare": 6,
+        "consistency": 56,
+        "ceiling": 13,
+        "floor": 34
+      },
       "rank": 421,
       "tier": 4
     },
@@ -16670,6 +19968,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 28,
+        "pointsPerGame": 36,
+        "snapShare": 30,
+        "targetShare": 7,
+        "consistency": 4,
+        "ceiling": 23,
+        "floor": 25
+      },
       "rank": 422,
       "tier": 4
     },
@@ -16707,6 +20014,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 42,
+        "pointsPerGame": 45,
+        "snapShare": 54,
+        "targetShare": 36,
+        "consistency": 12,
+        "ceiling": 39,
+        "floor": 46
+      },
       "rank": 423,
       "tier": 4
     },
@@ -16744,6 +20060,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 16,
+        "pointsPerGame": 41,
+        "snapShare": 24,
+        "targetShare": 24,
+        "consistency": 0,
+        "ceiling": 6,
+        "floor": 49
+      },
       "rank": 424,
       "tier": 4
     },
@@ -16786,6 +20111,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 42,
+        "pointsPerGame": 41,
+        "snapShare": 21,
+        "targetShare": 21,
+        "consistency": 0,
+        "ceiling": 40,
+        "floor": 42
+      },
       "rank": 425,
       "tier": 4
     },
@@ -16823,6 +20157,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 15,
+        "pointsPerGame": 47,
+        "snapShare": 26,
+        "targetShare": 38,
+        "consistency": 12,
+        "ceiling": 6,
+        "floor": 48
+      },
       "rank": 426,
       "tier": 4
     },
@@ -16860,6 +20203,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 14,
+        "pointsPerGame": 45,
+        "snapShare": 5,
+        "ceiling": 22,
+        "floor": 11
+      },
       "rank": 427,
       "tier": 4
     },
@@ -16897,6 +20247,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 41,
+        "pointsPerGame": 37,
+        "snapShare": 6,
+        "ceiling": 50,
+        "floor": 31
+      },
       "rank": 428,
       "tier": 4
     },
@@ -16934,6 +20291,13 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 23,
+        "pointsPerGame": 22,
+        "snapShare": 33,
+        "ceiling": 41,
+        "floor": 14
+      },
       "rank": 429,
       "tier": 4
     },
@@ -16976,6 +20340,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 23,
+        "pointsPerGame": 22,
+        "snapShare": 45,
+        "targetShare": 22,
+        "consistency": 35,
+        "ceiling": 5,
+        "floor": 39
+      },
       "rank": 430,
       "tier": 4
     },
@@ -17018,6 +20391,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 23,
+        "pointsPerGame": 16,
+        "snapShare": 28,
+        "targetShare": 2,
+        "consistency": 56,
+        "ceiling": 11,
+        "floor": 38
+      },
       "rank": 431,
       "tier": 4
     },
@@ -17055,6 +20437,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 41,
+        "pointsPerGame": 53,
+        "snapShare": 16,
+        "ceiling": 50,
+        "floor": 31
+      },
       "rank": 432,
       "tier": 4
     },
@@ -17092,6 +20481,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 41,
+        "pointsPerGame": 35,
+        "snapShare": 6,
+        "ceiling": 49,
+        "floor": 31
+      },
       "rank": 433,
       "tier": 4
     },
@@ -17134,6 +20530,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 40,
+        "pointsPerGame": 37,
+        "snapShare": 3,
+        "ceiling": 49,
+        "floor": 29
+      },
       "rank": 434,
       "tier": 4
     },
@@ -17176,6 +20579,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "ceiling": 16,
+        "floor": 6
+      },
       "rank": 435,
       "tier": 4
     },
@@ -17213,6 +20622,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "ceiling": 16,
+        "floor": 6
+      },
       "rank": 436,
       "tier": 4
     },
@@ -17250,6 +20665,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "ceiling": 16,
+        "floor": 6
+      },
       "rank": 437,
       "tier": 4
     },
@@ -17287,6 +20708,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "ceiling": 16,
+        "floor": 6
+      },
       "rank": 438,
       "tier": 4
     },
@@ -17324,6 +20751,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "ceiling": 16,
+        "floor": 6
+      },
       "rank": 439,
       "tier": 4
     },
@@ -17361,6 +20794,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "ceiling": 16,
+        "floor": 6
+      },
       "rank": 440,
       "tier": 4
     },
@@ -17398,6 +20837,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "ceiling": 16,
+        "floor": 6
+      },
       "rank": 441,
       "tier": 4
     },
@@ -17440,6 +20885,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 6,
+        "snapShare": 14,
+        "ceiling": 15,
+        "floor": 6
+      },
       "rank": 442,
       "tier": 4
     },
@@ -17482,6 +20934,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 22,
+        "pointsPerGame": 34,
+        "snapShare": 37,
+        "targetShare": 11,
+        "consistency": 56,
+        "ceiling": 8,
+        "floor": 31
+      },
       "rank": 443,
       "tier": 4
     },
@@ -17524,6 +20985,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 20,
+        "pointsPerGame": 20,
+        "snapShare": 52,
+        "targetShare": 37,
+        "consistency": 76,
+        "ceiling": 8,
+        "floor": 27
+      },
       "rank": 444,
       "tier": 4
     },
@@ -17566,6 +21036,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 9,
+        "pointsPerGame": 41,
+        "snapShare": 8,
+        "targetShare": 16,
+        "consistency": 0,
+        "ceiling": 8,
+        "floor": 13
+      },
       "rank": 445,
       "tier": 4
     },
@@ -17608,6 +21087,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 40,
+        "pointsPerGame": 45,
+        "snapShare": 49,
+        "targetShare": 23,
+        "consistency": 26,
+        "ceiling": 13,
+        "floor": 50
+      },
       "rank": 446,
       "tier": 4
     },
@@ -17645,6 +21133,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 8,
+        "pointsPerGame": 6,
+        "ceiling": 14,
+        "floor": 6
+      },
       "rank": 447,
       "tier": 4
     },
@@ -17687,6 +21181,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 8,
+        "pointsPerGame": 6,
+        "snapShare": 27,
+        "targetShare": 40,
+        "consistency": 16,
+        "ceiling": 6,
+        "floor": 13
+      },
       "rank": 448,
       "tier": 4
     },
@@ -17729,6 +21232,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 39,
+        "pointsPerGame": 41,
+        "snapShare": 61,
+        "targetShare": 44,
+        "consistency": 52,
+        "ceiling": 13,
+        "floor": 48
+      },
       "rank": 449,
       "tier": 4
     },
@@ -17771,6 +21283,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 19,
+        "pointsPerGame": 9,
+        "snapShare": 25,
+        "targetShare": 19,
+        "consistency": 35,
+        "ceiling": 5,
+        "floor": 27
+      },
       "rank": 450,
       "tier": 4
     },
@@ -17813,6 +21334,14 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 39,
+        "pointsPerGame": 53,
+        "targetShare": 16,
+        "consistency": 26,
+        "ceiling": 7,
+        "floor": 57
+      },
       "rank": 451,
       "tier": 4
     },
@@ -17850,6 +21379,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 17,
+        "pointsPerGame": 9,
+        "ceiling": 38,
+        "floor": 9
+      },
       "rank": 452,
       "tier": 4
     },
@@ -17892,6 +21427,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 39,
+        "pointsPerGame": 35,
+        "snapShare": 26,
+        "targetShare": 8,
+        "consistency": 0,
+        "ceiling": 37,
+        "floor": 33
+      },
       "rank": 453,
       "tier": 4
     },
@@ -17934,6 +21478,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 38,
+        "pointsPerGame": 31,
+        "snapShare": 2,
+        "ceiling": 46,
+        "floor": 27
+      },
       "rank": 454,
       "tier": 4
     },
@@ -17971,6 +21522,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 38,
+        "pointsPerGame": 31,
+        "snapShare": 4,
+        "ceiling": 46,
+        "floor": 27
+      },
       "rank": 455,
       "tier": 4
     },
@@ -18013,6 +21571,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 7,
+        "pointsPerGame": 47,
+        "snapShare": 0,
+        "targetShare": 57,
+        "consistency": 40,
+        "ceiling": 3,
+        "floor": 45
+      },
       "rank": 456,
       "tier": 4
     },
@@ -18050,6 +21617,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 7,
+        "pointsPerGame": 3,
+        "snapShare": 31,
+        "ceiling": 13,
+        "floor": 5
+      },
       "rank": 457,
       "tier": 4
     },
@@ -18087,6 +21661,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 6,
+        "pointsPerGame": 6,
+        "ceiling": 12,
+        "floor": 5
+      },
       "rank": 458,
       "tier": 4
     },
@@ -18124,6 +21704,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 37,
+        "pointsPerGame": 53,
+        "snapShare": 34,
+        "targetShare": 17,
+        "consistency": 19,
+        "ceiling": 35,
+        "floor": 38
+      },
       "rank": 459,
       "tier": 4
     },
@@ -18161,6 +21750,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 37,
+        "pointsPerGame": 52,
+        "snapShare": 27,
+        "targetShare": 7,
+        "consistency": 0,
+        "ceiling": 37,
+        "floor": 29
+      },
       "rank": 460,
       "tier": 4
     },
@@ -18203,6 +21801,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 16,
+        "pointsPerGame": 6,
+        "ceiling": 34,
+        "floor": 6
+      },
       "rank": 461,
       "tier": 4
     },
@@ -18245,6 +21849,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 14,
+        "pointsPerGame": 6,
+        "snapShare": 5,
+        "ceiling": 34,
+        "floor": 6
+      },
       "rank": 462,
       "tier": 4
     },
@@ -18282,6 +21893,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 37,
+        "pointsPerGame": 31,
+        "snapShare": 20,
+        "ceiling": 46,
+        "floor": 27
+      },
       "rank": 463,
       "tier": 4
     },
@@ -18319,6 +21937,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 36,
+        "pointsPerGame": 30,
+        "targetShare": 2,
+        "consistency": 0,
+        "ceiling": 14,
+        "floor": 38
+      },
       "rank": 464,
       "tier": 4
     },
@@ -18361,6 +21987,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 36,
+        "pointsPerGame": 33,
+        "snapShare": 33,
+        "targetShare": 32,
+        "consistency": 39,
+        "ceiling": 7,
+        "floor": 47
+      },
       "rank": 465,
       "tier": 4
     },
@@ -18398,6 +22033,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 52,
+        "snapShare": 33,
+        "targetShare": 13,
+        "consistency": 33,
+        "ceiling": 1,
+        "floor": 45
+      },
       "rank": 466,
       "tier": 4
     },
@@ -18440,6 +22084,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 37,
+        "ceiling": 11,
+        "floor": 2
+      },
       "rank": 467,
       "tier": 4
     },
@@ -18482,6 +22133,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 44,
+        "ceiling": 11,
+        "floor": 2
+      },
       "rank": 468,
       "tier": 4
     },
@@ -18524,6 +22182,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 35,
+        "pointsPerGame": 43,
+        "snapShare": 35,
+        "targetShare": 10,
+        "consistency": 39,
+        "ceiling": 8,
+        "floor": 42
+      },
       "rank": 469,
       "tier": 4
     },
@@ -18566,6 +22233,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 35,
+        "pointsPerGame": 35,
+        "snapShare": 39,
+        "targetShare": 7,
+        "consistency": 26,
+        "ceiling": 6,
+        "floor": 50
+      },
       "rank": 470,
       "tier": 4
     },
@@ -18608,6 +22284,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 13,
+        "pointsPerGame": 3,
+        "snapShare": 2,
+        "ceiling": 30,
+        "floor": 3
+      },
       "rank": 471,
       "tier": 4
     },
@@ -18650,6 +22333,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 35,
+        "pointsPerGame": 33,
+        "snapShare": 13,
+        "ceiling": 43,
+        "floor": 26
+      },
       "rank": 472,
       "tier": 4
     },
@@ -18692,6 +22382,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 4,
+        "pointsPerGame": 5,
+        "ceiling": 10,
+        "floor": 2
+      },
       "rank": 473,
       "tier": 4
     },
@@ -18729,6 +22425,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 11,
+        "pointsPerGame": 3,
+        "snapShare": 3,
+        "ceiling": 28,
+        "floor": 3
+      },
       "rank": 474,
       "tier": 4
     },
@@ -18771,6 +22474,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 34,
+        "pointsPerGame": 41,
+        "snapShare": 31,
+        "targetShare": 21,
+        "consistency": 39,
+        "ceiling": 14,
+        "floor": 33
+      },
       "rank": 475,
       "tier": 4
     },
@@ -18813,6 +22525,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 9,
+        "pointsPerGame": 39,
+        "snapShare": 60,
+        "targetShare": 57,
+        "consistency": 9,
+        "ceiling": 16,
+        "floor": 13
+      },
       "rank": 476,
       "tier": 4
     },
@@ -18855,6 +22576,14 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 33,
+        "pointsPerGame": 30,
+        "targetShare": 42,
+        "consistency": 12,
+        "ceiling": 35,
+        "floor": 29
+      },
       "rank": 477,
       "tier": 4
     },
@@ -18897,6 +22626,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 3,
+        "pointsPerGame": 4,
+        "snapShare": 29,
+        "targetShare": 0,
+        "consistency": 0,
+        "ceiling": 2,
+        "floor": 12
+      },
       "rank": 478,
       "tier": 4
     },
@@ -18939,6 +22677,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 33,
+        "pointsPerGame": 33,
+        "snapShare": 17,
+        "targetShare": 13,
+        "consistency": 68,
+        "ceiling": 4,
+        "floor": 51
+      },
       "rank": 479,
       "tier": 4
     },
@@ -18981,6 +22728,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 6,
+        "pointsPerGame": 9,
+        "snapShare": 35,
+        "targetShare": 4,
+        "consistency": 35,
+        "ceiling": 2,
+        "floor": 22
+      },
       "rank": 480,
       "tier": 4
     },
@@ -19023,6 +22779,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 6,
+        "pointsPerGame": 33,
+        "snapShare": 20,
+        "targetShare": 11,
+        "consistency": 4,
+        "ceiling": 13,
+        "floor": 9
+      },
       "rank": 481,
       "tier": 4
     },
@@ -19060,6 +22825,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 9,
+        "snapShare": 7,
+        "ceiling": 25,
+        "floor": 2
+      },
       "rank": 482,
       "tier": 4
     },
@@ -19097,6 +22869,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 33,
+        "pointsPerGame": 30,
+        "snapShare": 17,
+        "targetShare": 9,
+        "consistency": 0,
+        "ceiling": 11,
+        "floor": 33
+      },
       "rank": 483,
       "tier": 4
     },
@@ -19139,6 +22920,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 3,
+        "pointsPerGame": 3,
+        "snapShare": 2,
+        "ceiling": 9,
+        "floor": 1
+      },
       "rank": 484,
       "tier": 4
     },
@@ -19181,6 +22969,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 2,
+        "pointsPerGame": 59,
+        "snapShare": 50,
+        "targetShare": 21,
+        "consistency": 22,
+        "ceiling": 1,
+        "floor": 6
+      },
       "rank": 485,
       "tier": 4
     },
@@ -19223,6 +23020,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 33,
+        "pointsPerGame": 30,
+        "snapShare": 40,
+        "targetShare": 31,
+        "consistency": 19,
+        "ceiling": 7,
+        "floor": 40
+      },
       "rank": 486,
       "tier": 4
     },
@@ -19265,6 +23071,15 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 32,
+        "pointsPerGame": 31,
+        "snapShare": 63,
+        "targetShare": 48,
+        "consistency": 39,
+        "ceiling": 6,
+        "floor": 40
+      },
       "rank": 487,
       "tier": 4
     },
@@ -19307,6 +23122,12 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 32,
+        "pointsPerGame": 37,
+        "ceiling": 40,
+        "floor": 26
+      },
       "rank": 488,
       "tier": 4
     },
@@ -19349,6 +23170,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 31,
+        "pointsPerGame": 45,
+        "snapShare": 15,
+        "ceiling": 39,
+        "floor": 26
+      },
       "rank": 489,
       "tier": 4
     },
@@ -19391,6 +23219,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 0,
+        "snapShare": 50,
+        "targetShare": 0,
+        "consistency": 15,
+        "ceiling": 0,
+        "floor": 19
+      },
       "rank": 490,
       "tier": 4
     },
@@ -19428,6 +23265,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 31,
+        "pointsPerGame": 28,
+        "snapShare": 21,
+        "targetShare": 15,
+        "consistency": 0,
+        "ceiling": 7,
+        "floor": 33
+      },
       "rank": 491,
       "tier": 4
     },
@@ -19470,6 +23316,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 0,
+        "snapShare": 27,
+        "targetShare": 17,
+        "consistency": 0,
+        "ceiling": 3,
+        "floor": 14
+      },
       "rank": 492,
       "tier": 4
     },
@@ -19507,6 +23362,13 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 16,
+        "snapShare": 43,
+        "ceiling": 20,
+        "floor": 0
+      },
       "rank": 493,
       "tier": 4
     },
@@ -19549,6 +23411,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 31,
+        "pointsPerGame": 28,
+        "targetShare": 35,
+        "consistency": 39,
+        "ceiling": 3,
+        "floor": 43
+      },
       "rank": 494,
       "tier": 4
     },
@@ -19591,6 +23461,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 30,
+        "pointsPerGame": 28,
+        "snapShare": 13,
+        "targetShare": 13,
+        "consistency": 52,
+        "ceiling": 2,
+        "floor": 47
+      },
       "rank": 495,
       "tier": 4
     },
@@ -19633,6 +23512,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 2,
+        "pointsPerGame": 1,
+        "snapShare": 25,
+        "ceiling": 5,
+        "floor": 0
+      },
       "rank": 496,
       "tier": 4
     },
@@ -19675,6 +23561,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 30,
+        "pointsPerGame": 30,
+        "snapShare": 27,
+        "targetShare": 10,
+        "consistency": 12,
+        "ceiling": 5,
+        "floor": 40
+      },
       "rank": 497,
       "tier": 4
     },
@@ -19712,6 +23607,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 1,
+        "pointsPerGame": 4,
+        "snapShare": 10,
+        "ceiling": 5,
+        "floor": 0
+      },
       "rank": 498,
       "tier": 4
     },
@@ -19754,6 +23656,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 1,
+        "pointsPerGame": 1,
+        "targetShare": 34,
+        "consistency": 22,
+        "ceiling": 1,
+        "floor": 13
+      },
       "rank": 499,
       "tier": 4
     },
@@ -19791,6 +23701,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 30,
+        "pointsPerGame": 27,
+        "snapShare": 9,
+        "ceiling": 37,
+        "floor": 25
+      },
       "rank": 500,
       "tier": 4
     },
@@ -19828,6 +23745,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 29,
+        "pointsPerGame": 27,
+        "snapShare": 19,
+        "ceiling": 37,
+        "floor": 25
+      },
       "rank": 501,
       "tier": 4
     },
@@ -19870,6 +23794,14 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 29,
+        "pointsPerGame": 27,
+        "targetShare": 23,
+        "consistency": 12,
+        "ceiling": 6,
+        "floor": 31
+      },
       "rank": 502,
       "tier": 4
     },
@@ -19907,6 +23839,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 0,
+        "targetShare": 32,
+        "consistency": 0,
+        "ceiling": 0,
+        "floor": 43
+      },
       "rank": 503,
       "tier": 4
     },
@@ -19949,6 +23889,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 28,
+        "pointsPerGame": 50,
+        "snapShare": 9,
+        "ceiling": 36,
+        "floor": 24
+      },
       "rank": 504,
       "tier": 4
     },
@@ -19986,6 +23933,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 28,
+        "pointsPerGame": 25,
+        "snapShare": 29,
+        "targetShare": 14,
+        "consistency": 0,
+        "ceiling": 5,
+        "floor": 31
+      },
       "rank": 505,
       "tier": 4
     },
@@ -20028,6 +23984,14 @@
       "role": "MINOR_COMPETITION",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 28,
+        "pointsPerGame": 28,
+        "targetShare": 26,
+        "consistency": 0,
+        "ceiling": 3,
+        "floor": 31
+      },
       "rank": 506,
       "tier": 4
     },
@@ -20070,6 +24034,14 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 27,
+        "pointsPerGame": 25,
+        "targetShare": 3,
+        "consistency": 0,
+        "ceiling": 2,
+        "floor": 33
+      },
       "rank": 507,
       "tier": 4
     },
@@ -20112,6 +24084,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 27,
+        "pointsPerGame": 35,
+        "snapShare": 35,
+        "ceiling": 35,
+        "floor": 4
+      },
       "rank": 508,
       "tier": 4
     },
@@ -20149,6 +24128,15 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 26,
+        "pointsPerGame": 36,
+        "snapShare": 47,
+        "targetShare": 34,
+        "consistency": 39,
+        "ceiling": 3,
+        "floor": 29
+      },
       "rank": 509,
       "tier": 4
     },
@@ -20191,6 +24179,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 26,
+        "pointsPerGame": 1,
+        "snapShare": 18,
+        "targetShare": 28,
+        "consistency": 26,
+        "ceiling": 0,
+        "floor": 35
+      },
       "rank": 510,
       "tier": 4
     },
@@ -20228,6 +24225,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 10,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 511,
       "tier": 4
     },
@@ -20265,6 +24269,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 512,
       "tier": 4
     },
@@ -20302,6 +24312,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 513,
       "tier": 4
     },
@@ -20339,6 +24355,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 514,
       "tier": 4
     },
@@ -20376,6 +24398,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 0,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 515,
       "tier": 4
     },
@@ -20418,6 +24447,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 26,
+        "targetShare": 9,
+        "consistency": 52,
+        "ceiling": 0,
+        "floor": 35
+      },
       "rank": 516,
       "tier": 4
     },
@@ -20455,6 +24493,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 14,
+        "targetShare": 0,
+        "consistency": 0,
+        "ceiling": 2,
+        "floor": 29
+      },
       "rank": 517,
       "tier": 4
     },
@@ -20492,6 +24539,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 518,
       "tier": 4
     },
@@ -20534,6 +24587,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 519,
       "tier": 4
     },
@@ -20571,6 +24630,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 520,
       "tier": 4
     },
@@ -20608,6 +24673,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 521,
       "tier": 4
     },
@@ -20645,6 +24716,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 522,
       "tier": 4
     },
@@ -20682,6 +24759,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 523,
       "tier": 4
     },
@@ -20719,6 +24802,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 524,
       "tier": 4
     },
@@ -20756,6 +24845,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 525,
       "tier": 4
     },
@@ -20793,6 +24888,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 526,
       "tier": 4
     },
@@ -20830,6 +24931,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 527,
       "tier": 4
     },
@@ -20867,6 +24974,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 528,
       "tier": 4
     },
@@ -20904,6 +25017,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 0,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 529,
       "tier": 4
     },
@@ -20941,6 +25061,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 530,
       "tier": 4
     },
@@ -20978,6 +25104,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 531,
       "tier": 4
     },
@@ -21015,6 +25147,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 532,
       "tier": 4
     },
@@ -21052,6 +25190,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 533,
       "tier": 4
     },
@@ -21089,6 +25233,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 534,
       "tier": 4
     },
@@ -21126,6 +25276,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 535,
       "tier": 4
     },
@@ -21163,6 +25319,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 536,
       "tier": 4
     },
@@ -21200,6 +25362,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 537,
       "tier": 4
     },
@@ -21237,6 +25405,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 538,
       "tier": 4
     },
@@ -21274,6 +25448,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 539,
       "tier": 4
     },
@@ -21311,6 +25491,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "snapShare": 3,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 540,
       "tier": 4
     },
@@ -21348,6 +25535,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 541,
       "tier": 4
     },
@@ -21385,6 +25578,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 542,
       "tier": 4
     },
@@ -21422,6 +25621,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 543,
       "tier": 4
     },
@@ -21459,6 +25664,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 544,
       "tier": 4
     },
@@ -21496,6 +25707,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 545,
       "tier": 4
     },
@@ -21533,6 +25750,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 546,
       "tier": 4
     },
@@ -21570,6 +25793,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 547,
       "tier": 4
     },
@@ -21607,6 +25836,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 548,
       "tier": 4
     },
@@ -21644,6 +25879,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 549,
       "tier": 4
     },
@@ -21681,6 +25922,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 550,
       "tier": 4
     },
@@ -21718,6 +25965,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 551,
       "tier": 4
     },
@@ -21755,6 +26008,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 552,
       "tier": 4
     },
@@ -21792,6 +26051,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 553,
       "tier": 4
     },
@@ -21829,6 +26094,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 554,
       "tier": 4
     },
@@ -21866,6 +26137,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 555,
       "tier": 4
     },
@@ -21903,6 +26180,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 556,
       "tier": 4
     },
@@ -21940,6 +26223,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 557,
       "tier": 4
     },
@@ -21977,6 +26266,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 558,
       "tier": 4
     },
@@ -22014,6 +26309,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 559,
       "tier": 4
     },
@@ -22051,6 +26352,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 560,
       "tier": 4
     },
@@ -22088,6 +26395,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 561,
       "tier": 4
     },
@@ -22125,6 +26438,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 562,
       "tier": 4
     },
@@ -22162,6 +26481,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 1,
+        "ceiling": 14,
+        "floor": 4
+      },
       "rank": 563,
       "tier": 4
     },
@@ -22204,6 +26529,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 5,
+        "pointsPerGame": 33,
+        "snapShare": 14,
+        "targetShare": 5,
+        "consistency": 52,
+        "ceiling": 2,
+        "floor": 28
+      },
       "rank": 564,
       "tier": 4
     },
@@ -22241,6 +26575,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 4,
+        "pointsPerGame": 25,
+        "snapShare": 14,
+        "ceiling": 13,
+        "floor": 4
+      },
       "rank": 565,
       "tier": 4
     },
@@ -22278,6 +26619,13 @@
       "role": "TIMESHARE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 4,
+        "pointsPerGame": 25,
+        "snapShare": 44,
+        "ceiling": 11,
+        "floor": 0
+      },
       "rank": 566,
       "tier": 4
     },
@@ -22315,6 +26663,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 4,
+        "pointsPerGame": 0,
+        "snapShare": 10,
+        "ceiling": 11,
+        "floor": 0
+      },
       "rank": 567,
       "tier": 4
     },
@@ -22352,6 +26707,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 3,
+        "pointsPerGame": 0,
+        "snapShare": 8,
+        "targetShare": 3,
+        "consistency": 19,
+        "ceiling": 0,
+        "floor": 31
+      },
       "rank": 568,
       "tier": 4
     },
@@ -22394,6 +26758,15 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 0,
+        "snapShare": 19,
+        "targetShare": 1,
+        "consistency": 0,
+        "ceiling": 1,
+        "floor": 26
+      },
       "rank": 569,
       "tier": 4
     },
@@ -22436,6 +26809,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 1,
+        "ceiling": 8,
+        "floor": 0
+      },
       "rank": 570,
       "tier": 4
     },
@@ -22478,6 +26857,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 1,
+        "ceiling": 8,
+        "floor": 0
+      },
       "rank": 571,
       "tier": 4
     },
@@ -22515,6 +26900,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 1,
+        "ceiling": 8,
+        "floor": 0
+      },
       "rank": 572,
       "tier": 4
     },
@@ -22552,6 +26943,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 1,
+        "ceiling": 8,
+        "floor": 0
+      },
       "rank": 573,
       "tier": 4
     },
@@ -22589,6 +26986,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 1,
+        "ceiling": 8,
+        "floor": 0
+      },
       "rank": 574,
       "tier": 4
     },
@@ -22626,6 +27029,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 1,
+        "ceiling": 8,
+        "floor": 0
+      },
       "rank": 575,
       "tier": 4
     },
@@ -22668,6 +27077,13 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 1,
+        "snapShare": 11,
+        "ceiling": 8,
+        "floor": 0
+      },
       "rank": 576,
       "tier": 4
     },
@@ -22710,6 +27126,12 @@
       "role": "COMMITTEE",
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 0,
+        "ceiling": 0,
+        "floor": 0
+      },
       "rank": 577,
       "tier": 4
     },
@@ -22746,6 +27168,10 @@
       "sleeperId": null,
       "vorp": 14,
       "auctionValue": 5,
+      "percentiles": {
+        "points": 100,
+        "pointsPerGame": 100
+      },
       "rank": 115,
       "tier": 3,
       "byeWeek": 10,
@@ -22787,6 +27213,10 @@
       "sleeperId": null,
       "vorp": 12.3,
       "auctionValue": 4,
+      "percentiles": {
+        "points": 97,
+        "pointsPerGame": 97
+      },
       "rank": 120,
       "tier": 4,
       "byeWeek": 11,
@@ -22828,6 +27258,10 @@
       "sleeperId": null,
       "vorp": 10.9,
       "auctionValue": 4,
+      "percentiles": {
+        "points": 94,
+        "pointsPerGame": 94
+      },
       "rank": 122,
       "tier": 4,
       "byeWeek": 8,
@@ -22869,6 +27303,10 @@
       "sleeperId": null,
       "vorp": 9.8,
       "auctionValue": 4,
+      "percentiles": {
+        "points": 90,
+        "pointsPerGame": 90
+      },
       "rank": 124,
       "tier": 4,
       "byeWeek": 11,
@@ -22910,6 +27348,10 @@
       "sleeperId": null,
       "vorp": 6.7,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 87,
+        "pointsPerGame": 81
+      },
       "rank": 131,
       "tier": 4,
       "byeWeek": 7,
@@ -22951,6 +27393,10 @@
       "sleeperId": null,
       "vorp": 5.6,
       "auctionValue": 3,
+      "percentiles": {
+        "points": 84,
+        "pointsPerGame": 81
+      },
       "rank": 137,
       "tier": 4,
       "byeWeek": 10,
@@ -22992,6 +27438,10 @@
       "sleeperId": null,
       "vorp": 5.3,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 81,
+        "pointsPerGame": 81
+      },
       "rank": 138,
       "tier": 4,
       "byeWeek": 11,
@@ -23033,6 +27483,10 @@
       "sleeperId": null,
       "vorp": 4.2,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 77,
+        "pointsPerGame": 77
+      },
       "rank": 145,
       "tier": 4,
       "byeWeek": 11,
@@ -23074,6 +27528,10 @@
       "sleeperId": null,
       "vorp": 3.5,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 74,
+        "pointsPerGame": 71
+      },
       "rank": 146,
       "tier": 4,
       "byeWeek": 6,
@@ -23115,6 +27573,10 @@
       "sleeperId": null,
       "vorp": 2.5,
       "auctionValue": 2,
+      "percentiles": {
+        "points": 71,
+        "pointsPerGame": 71
+      },
       "rank": 152,
       "tier": 4,
       "byeWeek": 7,
@@ -23156,6 +27618,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 61
+      },
       "rank": 578,
       "tier": 4,
       "byeWeek": 5,
@@ -23197,6 +27663,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 65,
+        "pointsPerGame": 61
+      },
       "rank": 579,
       "tier": 4,
       "byeWeek": 9,
@@ -23238,6 +27708,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 61,
+        "pointsPerGame": 61
+      },
       "rank": 580,
       "tier": 4,
       "byeWeek": 10,
@@ -23279,6 +27753,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 55,
+        "pointsPerGame": 52
+      },
       "rank": 581,
       "tier": 4,
       "byeWeek": 7,
@@ -23320,6 +27798,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 55,
+        "pointsPerGame": 52
+      },
       "rank": 582,
       "tier": 4,
       "byeWeek": 11,
@@ -23361,6 +27843,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 52,
+        "pointsPerGame": 52
+      },
       "rank": 583,
       "tier": 4,
       "byeWeek": 8,
@@ -23402,6 +27888,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 45,
+        "pointsPerGame": 42
+      },
       "rank": 584,
       "tier": 4,
       "byeWeek": 5,
@@ -23443,6 +27933,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 45,
+        "pointsPerGame": 42
+      },
       "rank": 585,
       "tier": 4,
       "byeWeek": 10,
@@ -23484,6 +27978,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 42,
+        "pointsPerGame": 42
+      },
       "rank": 586,
       "tier": 4,
       "byeWeek": 13,
@@ -23525,6 +28023,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 39,
+        "pointsPerGame": 39
+      },
       "rank": 587,
       "tier": 4,
       "byeWeek": 6,
@@ -23566,6 +28068,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 35,
+        "pointsPerGame": 35
+      },
       "rank": 588,
       "tier": 4,
       "byeWeek": 13,
@@ -23607,6 +28113,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 32,
+        "pointsPerGame": 32
+      },
       "rank": 589,
       "tier": 4,
       "byeWeek": 11,
@@ -23648,6 +28158,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 29,
+        "pointsPerGame": 26
+      },
       "rank": 590,
       "tier": 4,
       "byeWeek": 7,
@@ -23689,6 +28203,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 26,
+        "pointsPerGame": 26
+      },
       "rank": 591,
       "tier": 4,
       "byeWeek": 6,
@@ -23730,6 +28248,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 23,
+        "pointsPerGame": 23
+      },
       "rank": 592,
       "tier": 4,
       "byeWeek": 13,
@@ -23771,6 +28293,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 19,
+        "pointsPerGame": 16
+      },
       "rank": 593,
       "tier": 4,
       "byeWeek": 8,
@@ -23812,6 +28338,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 16,
+        "pointsPerGame": 16
+      },
       "rank": 594,
       "tier": 4,
       "byeWeek": 9,
@@ -23853,6 +28383,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 13,
+        "pointsPerGame": 10
+      },
       "rank": 595,
       "tier": 4,
       "byeWeek": 8,
@@ -23894,6 +28428,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 10,
+        "pointsPerGame": 10
+      },
       "rank": 596,
       "tier": 4,
       "byeWeek": 6,
@@ -23935,6 +28473,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 6,
+        "pointsPerGame": 6
+      },
       "rank": 597,
       "tier": 4,
       "byeWeek": 14,
@@ -23976,6 +28518,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 3,
+        "pointsPerGame": 3
+      },
       "rank": 598,
       "tier": 4,
       "byeWeek": 14,
@@ -24017,6 +28563,10 @@
       "sleeperId": null,
       "vorp": 0,
       "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 0
+      },
       "rank": 599,
       "tier": 4,
       "byeWeek": 13,

@@ -1415,3 +1415,482 @@
     box-shadow: none;
   }
 }
+
+/* --------------------------------------------------------------------------
+   profile: tabs and the charts inside them
+   -------------------------------------------------------------------------- */
+
+.dr-profile {
+  width: min(760px, 100%);
+}
+
+.dr-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--dr-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.dr-tab {
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--dr-ink-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease;
+}
+
+.dr-tab:hover {
+  color: var(--dr-ink-muted);
+}
+
+.dr-tab[aria-selected='true'] {
+  color: var(--dr-ink);
+  border-bottom-color: var(--dr-accent);
+}
+
+.dr-tabpanel {
+  animation: dr-fade-in 180ms ease;
+}
+
+@keyframes dr-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.dr-profile-tiles {
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-verdict-line {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--dr-ink);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* --- likely season ------------------------------------------------------- */
+
+.dr-range {
+  margin-top: 10px;
+}
+
+.dr-range-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+}
+
+.dr-range-span {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--dr-value) 25%, transparent),
+    color-mix(in srgb, var(--dr-value) 70%, transparent)
+  );
+}
+
+.dr-range-point {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 20px;
+  margin-left: -1.5px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--dr-ink);
+}
+
+.dr-range-replacement {
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 16px;
+  background: var(--dr-ink-faint);
+}
+
+.dr-range-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px;
+}
+
+.dr-range-labels span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-range-labels em {
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-range-labels strong {
+  font-size: 14px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-range-mid {
+  align-items: center;
+}
+
+.dr-range-mid strong {
+  color: var(--dr-ink);
+}
+
+.dr-range-end {
+  align-items: flex-end;
+}
+
+/* --- percentiles --------------------------------------------------------- */
+
+.dr-percentiles {
+  margin-top: 8px;
+}
+
+.dr-percentile {
+  display: grid;
+  grid-template-columns: 108px 1fr 46px 40px;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 0;
+}
+
+.dr-percentile-label {
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-percentile-track {
+  position: relative;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-percentile-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--dr-value);
+  transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dr-percentile-median {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background: var(--dr-ground);
+}
+
+.dr-percentile-value {
+  font-size: 12px;
+  text-align: right;
+  color: var(--dr-ink);
+}
+
+.dr-percentile-rank {
+  font-size: 11px;
+  text-align: right;
+  color: var(--dr-ink-faint);
+}
+
+.dr-percentile-rank em {
+  font-style: normal;
+  font-size: 8px;
+}
+
+/* --- season small multiples ---------------------------------------------- */
+
+.dr-multiples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.dr-multiple {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-ground);
+}
+
+.dr-multiple figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-multiple figcaption strong {
+  color: var(--dr-ink-faint);
+  font-weight: 600;
+}
+
+.dr-multiple figcaption em {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+/* --- schedule ------------------------------------------------------------ */
+
+.dr-schedule-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  gap: 3px;
+  margin-top: 8px;
+}
+
+.dr-week {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  font-size: 10px;
+}
+
+.dr-week-number {
+  font-size: 8px;
+  /* Sits on a tinted fill, so it needs more than the faint ink. */
+  color: var(--dr-ink-muted);
+  mix-blend-mode: screen;
+}
+
+.dr-week-opponent {
+  color: var(--dr-ink);
+  font-weight: 600;
+}
+
+.dr-week.is-bye {
+  border-style: dashed;
+}
+
+.dr-week.is-bye .dr-week-opponent {
+  color: var(--dr-ink-faint);
+}
+
+/* The weeks a fantasy season is decided in. */
+.dr-week.is-playoff {
+  border-color: var(--dr-line-strong);
+  box-shadow: inset 0 -2px 0 var(--dr-caution);
+}
+
+.dr-schedule-key {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-schedule-ramp {
+  flex: none;
+  width: 56px;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--dr-value) 12%, transparent),
+    color-mix(in srgb, var(--dr-value) 74%, transparent)
+  );
+}
+
+.dr-schedule-bye {
+  margin-left: auto;
+}
+
+/* --- yards split --------------------------------------------------------- */
+
+.dr-split {
+  display: flex;
+  gap: 2px;
+  margin-top: 8px;
+}
+
+.dr-split-part {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-value) 55%, transparent);
+  color: var(--dr-ground);
+  min-width: 74px;
+}
+
+.dr-split-part.is-secondary {
+  flex: 1;
+  background: var(--dr-raised);
+  color: var(--dr-ink);
+}
+
+.dr-split-part em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.dr-split-part strong {
+  font-size: 14px;
+}
+
+/* --- bid ladder ---------------------------------------------------------- */
+
+.dr-ladder {
+  margin-top: 16px;
+}
+
+.dr-ladder-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+}
+
+.dr-ladder-band {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: color-mix(in srgb, var(--dr-value) 45%, transparent);
+}
+
+.dr-ladder-band.is-premium {
+  background: color-mix(in srgb, var(--dr-caution) 45%, transparent);
+}
+
+.dr-ladder-tick {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 18px;
+  background: var(--dr-ink-muted);
+}
+
+.dr-ladder-tick.is-limit {
+  background: var(--dr-danger);
+}
+
+.dr-ladder-live {
+  position: absolute;
+  top: -26px;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--dr-ink);
+  color: var(--dr-ground);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dr-ladder-live::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 2px;
+  height: 9px;
+  margin-left: -1px;
+  background: var(--dr-ink);
+}
+
+.dr-ladder-live.is-over {
+  background: var(--dr-danger);
+  color: #fff;
+}
+
+.dr-ladder-live.is-over::after {
+  background: var(--dr-danger);
+}
+
+.dr-ladder-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 11px;
+}
+
+.dr-ladder-labels span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-ladder-labels em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-ladder-labels strong {
+  font-size: 14px;
+  color: var(--dr-ink);
+}
+
+.dr-stage-range {
+  padding: 12px 14px 0;
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-stage-signals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.dr-stage-signals span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-stage-signals em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-stage-signals strong {
+  font-size: 13px;
+  color: var(--dr-ink);
+}
