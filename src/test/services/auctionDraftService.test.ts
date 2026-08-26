@@ -243,6 +243,149 @@ describe('AuctionDraftService', () => {
     });
   });
 
+  describe('following another window', () => {
+    /**
+     * A second window is a second service over the same localStorage. These
+     * exercise exactly that: one drafts, the other is told to reload.
+     */
+    const secondWindow = () => new AuctionDraftService();
+
+    it('announces a pick to whoever is listening', () => {
+      let announced = 0;
+      service.setChangeListener(() => announced++);
+
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 10);
+      expect(announced).toBeGreaterThan(0);
+    });
+
+    it('stops announcing once the listener is dropped', () => {
+      let announced = 0;
+      service.setChangeListener(() => announced++);
+      service.setChangeListener(null);
+
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 10);
+      expect(announced).toBe(0);
+    });
+
+    /**
+     * The announcement is what actually drives a second window, and these are
+     * the cases that shipped broken: `persist` returned early when the draft
+     * emptied, so undo-to-zero, reset and a league change went unannounced —
+     * every test above passed because it called `reloadFromStorage` itself.
+     */
+    it('announces an undo that empties the draft', () => {
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 10);
+
+      let announced = 0;
+      service.setChangeListener(() => announced++);
+      service.undoLastPick();
+      expect(announced).toBeGreaterThan(0);
+    });
+
+    it('announces a reset', () => {
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 10);
+
+      let announced = 0;
+      service.setChangeListener(() => announced++);
+      service.resetDraft();
+      expect(announced).toBeGreaterThan(0);
+    });
+
+    it('announces a league change', () => {
+      let announced = 0;
+      service.setChangeListener(() => announced++);
+      service.setLeagueShape(leagueShape({ budget: 260 }));
+      expect(announced).toBeGreaterThan(0);
+    });
+
+    it('announces an imported ranking, and its removal', () => {
+      const player = firstAvailable(service);
+      let announced = 0;
+      service.setChangeListener(() => announced++);
+
+      service.setCustomRankings({ [player.id]: { value: 40 } });
+      expect(announced).toBeGreaterThan(0);
+
+      announced = 0;
+      service.clearCustomRankings();
+      expect(announced).toBeGreaterThan(0);
+    });
+
+    it('picks up a pick another window made', () => {
+      const board = secondWindow();
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-3', 25);
+
+      expect(board.getDraftedPlayers()).toHaveLength(0);
+      board.reloadFromStorage();
+
+      const drafted = board.getDraftedPlayers();
+      expect(drafted).toHaveLength(1);
+      expect(drafted[0].id).toBe(player.id);
+      expect(board.getTeams()[2].remaining).toBe(175);
+    });
+
+    it('picks up an undo', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 25);
+
+      const board = secondWindow();
+      board.reloadFromStorage();
+      expect(board.getDraftedPlayers()).toHaveLength(1);
+
+      service.undoLastPick();
+      board.reloadFromStorage();
+      expect(board.getDraftedPlayers()).toHaveLength(0);
+      expect(board.getTeams()[0].remaining).toBe(200);
+    });
+
+    it('picks up a reset', () => {
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 25);
+      const board = secondWindow();
+      board.reloadFromStorage();
+
+      service.resetDraft();
+      board.reloadFromStorage();
+      expect(board.getDraftedPlayers()).toHaveLength(0);
+    });
+
+    it('picks up a league change, re-priced', () => {
+      const board = secondWindow();
+      const before = board.getPlayers()[0].estimatedValue;
+
+      service.setLeagueShape(leagueShape({ teams: 10, budget: 300 }));
+      board.reloadFromStorage();
+
+      expect(board.getTeams()).toHaveLength(10);
+      expect(board.getLeagueShape().budget).toBe(300);
+      expect(board.getPlayers()[0].estimatedValue).not.toBe(before);
+    });
+
+    it('picks up an imported ranking', () => {
+      const player = firstAvailable(service);
+      service.setCustomRankings({ [player.id]: { value: 91 } });
+
+      const board = secondWindow();
+      board.reloadFromStorage();
+      expect(board.getPlayers().find((p) => p.id === player.id)!.estimatedValue).toBe(91);
+    });
+
+    it('does not announce while following, so two windows cannot loop', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 25);
+
+      const board = secondWindow();
+      let announced = 0;
+      board.setChangeListener(() => announced++);
+      board.reloadFromStorage();
+
+      // Replaying writes to storage on every pick. If those counted as this
+      // window's own changes, the two would rebuild each other forever.
+      expect(announced).toBe(0);
+      expect(board.getDraftedPlayers()).toHaveLength(1);
+    });
+  });
+
   describe('league configuration', () => {
     it('defaults to the league the shipped pool was priced for', () => {
       expect(service.getLeagueShape()).toEqual(service.getPoolLeagueShape());

@@ -25,6 +25,7 @@ import { AdvisorPanel } from './AdvisorPanel';
 import { LeagueSettings } from './LeagueSettings';
 import { RankingsImport } from './RankingsImport';
 import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
+import { openDraftSync } from '@/services/draftSync';
 import type { LeagueShape } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import '@/styles/draft-room.css';
@@ -65,6 +66,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [compareOpen, setCompareOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [followedAt, setFollowedAt] = useState(0);
   const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
     useDraftPreferences();
 
@@ -181,6 +183,33 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     [draftService, sync]
   );
 
+  /**
+   * Keep other windows of this draft in step.
+   *
+   * One person runs the auction while the room watches a board on a second
+   * screen; both are this app, in the same browser, on the same storage. The
+   * engine announces anything that reached storage and rebuilds from it when
+   * another window says it moved — no draft state crosses the channel, so the
+   * two screens cannot end up believing different things.
+   */
+  useEffect(() => {
+    const channel = openDraftSync(() => {
+      draftService.reloadFromStorage();
+      // The selection may refer to a player another window has just bought.
+      setSelected((current) =>
+        current ? (draftService.getPlayers().find((p) => p.id === current.id) ?? null) : null
+      );
+      setFollowedAt((count) => count + 1);
+      sync();
+    });
+
+    draftService.setChangeListener(channel.publish);
+    return () => {
+      draftService.setChangeListener(null);
+      channel.close();
+    };
+  }, [draftService, sync]);
+
   // players and teams are the change signal, not inputs: the service holds the
   // state and hands out fresh arrays on every sync, which the rule cannot see
   // through a method call.
@@ -282,6 +311,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             ${spent}
           </span>
         </div>
+
+        {followedAt > 0 && (
+          <span
+            className="dr-synced"
+            key={followedAt}
+            title="Another window of this draft made that change"
+          >
+            synced
+          </span>
+        )}
 
         <NominationClock
           nominator={nominator}

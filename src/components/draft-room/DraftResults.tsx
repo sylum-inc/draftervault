@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player, PlayerPosition, Team } from '@/services/auctionDraftService';
+import { saveTextFile } from '@/lib/saveFile';
 
 interface DraftResultsProps {
   players: Player[];
@@ -93,6 +94,7 @@ const toCsv = (results: TeamResult[]): string => {
 export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [copied, setCopied] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -139,14 +141,19 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
     }
   };
 
-  const download = () => {
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'draft-vault-results.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+  /**
+   * Hand the results over as a file.
+   *
+   * A plain `download` link does nothing inside the published Artifact, whose
+   * sandbox blocks any save a page starts itself — so this goes through the
+   * viewer's own save prompt where one exists, and stays an anchor everywhere
+   * else. Only a real failure is worth reporting; a viewer who declines the
+   * prompt has already said what they wanted.
+   */
+  const download = async () => {
+    setSaveError(null);
+    const outcome = await saveTextFile('draft-vault-results.csv', csv);
+    if (outcome.status === 'failed') setSaveError('Could not save the file — use Copy CSV.');
   };
 
   return (
@@ -188,13 +195,19 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
               <button type="button" className="dr-button" onClick={copy}>
                 {copied ? 'Copied' : 'Copy CSV'}
               </button>
-              <button type="button" className="dr-button" onClick={download}>
+              <button type="button" className="dr-button" onClick={() => void download()}>
                 Download CSV
               </button>
               <button type="button" className="dr-button" onClick={() => window.print()}>
                 Print
               </button>
             </div>
+
+            {saveError && (
+              <p className="dr-meter-note" role="status" style={{ color: 'var(--dr-danger)' }}>
+                {saveError}
+              </p>
+            )}
 
             <div className="dr-table-wrap">
               <table className="dr-table dr-table-compact">

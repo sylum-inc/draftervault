@@ -53,9 +53,11 @@ src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
+src/lib/saveFile.ts                   hands over a file, in browser or artifact
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/draftAdvisor.ts          the opinion layer, deliberately separate
 src/services/nflIdentity.ts           team colors, crests, headshots
+src/services/draftSync.ts             tells other windows the draft moved
 src/data/nfl/pool.json                628 players: projections, values (generated)
 src/data/nfl/player-history.json      per-player season and weekly scoring (lazy)
 src/data/nfl/schedule.json            2026 season by team, with matchup difficulty
@@ -116,6 +118,21 @@ collide on first-initial-plus-surname — "B. Robinson" is Bijan ($54) or Brian
 bound silently and wrongly. Imported values replace ours everywhere including
 in the advice, because an opinion nothing acts on is decoration; ours survives
 on `player.modelValue` and the board marks whose number it is showing.
+
+**A second window follows; it does not receive.** `draftSync.ts` posts one
+thing on a `BroadcastChannel` — that the draft moved — and the receiving window
+rebuilds from the same localStorage the sender just wrote. No draft state
+crosses the channel, so two screens cannot come to believe different things; a
+message that carried the change could arrive out of order and they would. This
+is what the pick-log-is-the-only-shared-fact rule was being kept for. It is
+same-browser only: a draft across twelve houses needs a server, and there
+isn't one.
+
+`persist()` announces on **every** path including the empty one. It used to
+`return` early when the draft emptied, so a second window followed picks but
+never followed an undo back to zero, a reset, or a league change — all three
+land on that branch. Unit tests missed it because they called
+`reloadFromStorage()` themselves; driving two real windows caught it.
 
 **Identity is two-tiered.** The bundled snapshot in `src/data/nfl/` paints first
 with real names, colors and faces and needs no network; `refreshIdentity()` then
@@ -230,11 +247,14 @@ budget simulator; a bargain board; a separated advisor layer; defensive
 personnel for all 32 teams; results with grades and export; Docker/nginx
 deployment; a single-file build; a configurable league that re-prices the whole
 board; a custom-rankings import that refuses to guess; app icons and a manifest
-that describe what actually exists; CI gating `npm run validate`; 133 tests.
+that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; 166 tests.
 
-The one caveat worth knowing: the CSV **download** works in a browser but does
-nothing inside the published artifact preview, whose sandbox blocks
-page-initiated downloads. Copy CSV and Print work everywhere.
+The CSV download used to do nothing inside the published artifact, whose
+sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
+through the viewer's `downloads` capability where there is one and stays an
+anchor everywhere else, so one call site serves both. `csv` is in that
+capability's extended set and can be refused, in which case the same bytes go
+out as `.txt`.
 
 Open, roughly in order of value:
 
@@ -249,12 +269,11 @@ Open, roughly in order of value:
    `src/hooks/use-mobile.tsx`, or those 89 plus `sidebar.tsx`. The 43 unused
    shadcn primitives are a separate call: they are a vendored library, and
    people add components from it later.
-2. **A shared draft room.** The engine was built for it — the pick log is the
-   only shared fact, and per-person state already lives apart in
-   `use-draft-preferences` — but one person still operates the board for
-   twelve. This is the open item with the most product in it, and the one that
-   needs a decision first: the repo is deliberately backend-free, so the sync
-   has to come from somewhere that does not change that.
+2. **A draft shared beyond one browser.** Two windows on one machine now stay
+   in step (`draftSync.ts`), which covers the laptop-and-television case. Twelve
+   people in twelve houses is a different problem and needs a server; the
+   Artifact runtime offers no cross-viewer state, so there is no way to get it
+   without changing what this repo is.
 
 ## Related
 

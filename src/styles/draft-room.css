@@ -3077,3 +3077,34 @@
   color: var(--dr-accent);
   font-weight: 700;
 }
+
+/* A change that came from another window of the same draft. Keyed on the
+   change count so it replays per pick; quiet enough to ignore on the board
+   screen, present enough to prove the two windows are talking. */
+.dr-synced {
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-value);
+  opacity: 0;
+  animation: dr-synced-pulse 2.4s ease-out;
+  white-space: nowrap;
+}
+
+@keyframes dr-synced-pulse {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dr-synced {
+    animation: none;
+    opacity: 0.75;
+  }
+}

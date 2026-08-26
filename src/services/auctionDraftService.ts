@@ -446,6 +446,16 @@ export class AuctionDraftService {
   }
   /** Imported rankings, by player id. Empty unless somebody has imported some. */
   private overrides: Record<string, RankingOverride> = readStoredOverrides();
+  /** Told after every change that reached storage, so other windows can follow. */
+  private onChanged: (() => void) | null = null;
+  /**
+   * True while rebuilding from a change another window made.
+   *
+   * Replaying a saved draft writes to storage on every pick, so without this
+   * the rebuild would announce itself back and the two windows would rebuild
+   * each other in a loop.
+   */
+  private applyingRemote = false;
 
   constructor(league: LeagueShape = readStoredLeague()) {
     this.league = normaliseLeague(league);
@@ -820,6 +830,7 @@ export class AuctionDraftService {
     this.overrides = { ...overrides };
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
+    this.announce();
   }
 
   /** Drop the import and go back to what the model says. */
@@ -828,6 +839,7 @@ export class AuctionDraftService {
     this.overrides = {};
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
+    this.announce();
   }
 
   /**
@@ -1176,28 +1188,73 @@ export class AuctionDraftService {
   // a saved draft can never disagree with the current valuation logic.
   // -------------------------------------------------------------------------
 
+  /**
+   * Watch for changes that reached storage.
+   *
+   * Deliberately carries nothing: a listener is being told the draft moved, not
+   * what it moved to. Whatever it needs, it reads back from the engine, which
+   * is the same rule that keeps the pick log the only shared fact.
+   */
+  setChangeListener(listener: (() => void) | null): void {
+    this.onChanged = listener;
+  }
+
+  private announce(): void {
+    if (this.applyingRemote) return;
+    this.onChanged?.();
+  }
+
+  /**
+   * Rebuild from what another window wrote.
+   *
+   * The whole state is re-derived from storage rather than patched, because a
+   * patch would need to know what changed and the channel deliberately does not
+   * say. Rebuilding cannot drift; a patch could.
+   */
+  reloadFromStorage(): void {
+    this.applyingRemote = true;
+    try {
+      this.league = normaliseLeague(readStoredLeague());
+      this.overrides = readStoredOverrides();
+      this.draftedCount = 0;
+      this.history = [];
+      this.initializePlayers();
+      this.initializeTeams();
+      // Replays the pick log the other window just wrote. A cleared draft
+      // leaves nothing to restore, which is the correct empty board.
+      this.restore();
+    } finally {
+      this.applyingRemote = false;
+    }
+  }
+
   private persist(): void {
     try {
+      // Emptying the draft is a change like any other. This used to `return`
+      // here, which skipped the announcement below — so a second window
+      // followed picks but never followed an undo back to zero, a reset, or a
+      // league change (which clears the picks and so lands on this branch).
       if (!this.history.length) {
         localStorage.removeItem(AuctionDraftService.STORAGE_KEY);
-        return;
+      } else {
+        localStorage.setItem(
+          AuctionDraftService.STORAGE_KEY,
+          JSON.stringify({
+            version: 2,
+            savedAt: new Date().toISOString(),
+            // Stamped, not to be replayed from, but so a pick log cannot be
+            // reinterpreted under a league it was never bid in. Absent on saves
+            // written before leagues were configurable, which were all default.
+            league: this.league,
+            budgets: this.teams.map((t) => ({ id: t.id, budget: t.budget })),
+            picks: this.history,
+          })
+        );
       }
-      localStorage.setItem(
-        AuctionDraftService.STORAGE_KEY,
-        JSON.stringify({
-          version: 2,
-          savedAt: new Date().toISOString(),
-          // Stamped, not to be replayed from, but so a pick log cannot be
-          // reinterpreted under a league it was never bid in. Absent on saves
-          // written before leagues were configurable, which were all default.
-          league: this.league,
-          budgets: this.teams.map((t) => ({ id: t.id, budget: t.budget })),
-          picks: this.history,
-        })
-      );
     } catch {
       /* storage unavailable (private mode, quota) — the draft simply won't resume */
     }
+    this.announce();
   }
 
   /** Replays a saved draft. Returns how many picks were restored. */
