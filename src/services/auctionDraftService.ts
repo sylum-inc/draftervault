@@ -7,6 +7,8 @@ import {
   normaliseLeague,
   pricePool,
   sameLeague,
+  startingSlots,
+  unfilledSlotsFor,
   type LeagueShape,
 } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
@@ -432,6 +434,16 @@ export class AuctionDraftService {
   private league: LeagueShape = POOL_LEAGUE;
   /** Replacement points per position under the active league. */
   private replacement: Record<string, number> = {};
+  /**
+   * Starting slots per team, derived from the lineup.
+   *
+   * Capped at the roster size: a league that fields more players than it may
+   * roster is refused by the settings panel, but if one ever reached the engine
+   * the dollar reserve would exceed every budget and no bid could be legal.
+   */
+  private get startingSlots(): number {
+    return Math.min(this.league.rosterSize, startingSlots(this.league));
+  }
   /** Imported rankings, by player id. Empty unless somebody has imported some. */
   private overrides: Record<string, RankingOverride> = readStoredOverrides();
 
@@ -600,7 +612,7 @@ export class AuctionDraftService {
     }
 
     // Every remaining starting slot still needs at least a dollar to fill.
-    const slotsToFill = Math.max(0, this.league.starters - filled - 1);
+    const slotsToFill = Math.max(0, this.startingSlots - filled - 1);
     const spendable = team.remaining - slotsToFill;
     if (cost > spendable) {
       return {
@@ -770,6 +782,23 @@ export class AuctionDraftService {
     };
   }
 
+  /**
+   * How many players the pool actually holds at each position.
+   *
+   * A league may roster more of a position than exist in the pool — 32 teams
+   * want 53 quarterbacks and there are 40 — and `replacementLevels` then falls
+   * back to the worst one rather than erroring, which understates that
+   * position's values. Nothing about that is visible from the board, so the
+   * settings panel says it before a league is applied.
+   */
+  getPoolDepth(): Record<string, number> {
+    const depth: Record<string, number> = {};
+    for (const player of this.players) {
+      depth[player.position] = (depth[player.position] ?? 0) + 1;
+    }
+    return depth;
+  }
+
   /** The imported rankings in force, by player id. */
   getCustomRankings(): Record<string, RankingOverride> {
     return { ...this.overrides };
@@ -882,7 +911,7 @@ export class AuctionDraftService {
     const remaining = team.remaining - cost;
     // Every unfilled starting slot still needs a dollar in reserve, exactly as
     // validateBid enforces it.
-    const minimumHold = Math.max(0, this.league.starters - filled - 1);
+    const minimumHold = Math.max(0, this.startingSlots - filled - 1);
     const spendable = remaining - minimumHold;
     const affordable =
       spendable > 0
@@ -970,27 +999,17 @@ export class AuctionDraftService {
         ? teamPlayers.reduce((sum, p) => sum + riskValues[p.injuryRisk], 0) / teamPlayers.length
         : 0;
 
-    // Calculate depth score (players beyond starting lineup). Every position
-    // needs an entry: an undefined starter count makes the subtraction NaN.
-    const startingPositions: RosterCounts = { QB: 1, RB: 2, WR: 2, TE: 1, K: 1, DST: 1 };
+    // Players beyond the starting lineup. This read from its own QB1/RB2/WR2
+    // table, which disagreed with the QB1/RB2/WR3 one urgency used — a third
+    // receiver counted as bench depth and as a starter at the same time.
     team.depthScore = Object.entries(team.roster).reduce((total, [pos, count]) => {
-      const starting = startingPositions[pos as PlayerPosition] ?? 0;
+      const starting = this.league.startingLineup[pos as PlayerPosition] ?? 0;
       return total + Math.max(0, count - starting);
     }, 0);
 
     // Calculate injury insurance (handcuff value)
     team.injuryInsurance = teamPlayers.reduce((sum, p) => sum + (p.handcuffValue ?? 0), 0) / 100;
   }
-
-  /** Starting slots a team must fill, which is what makes a position urgent. */
-  private static readonly STARTERS: Record<PlayerPosition, number> = {
-    QB: 1,
-    RB: 2,
-    WR: 3,
-    TE: 1,
-    K: 1,
-    DST: 1,
-  };
 
   /**
    * What this player should cost this team, right now.
@@ -1019,7 +1038,7 @@ export class AuctionDraftService {
     const riskAdjustedValue = adjustedValue * riskFactor;
 
     const filled = Object.values(team.roster).reduce((total, count) => total + count, 0);
-    const slotsToFill = Math.max(0, this.league.starters - filled - 1);
+    const slotsToFill = Math.max(0, this.startingSlots - filled - 1);
     const spendable = Math.max(1, team.remaining - slotsToFill);
 
     const targetBid = Math.max(1, Math.round(riskAdjustedValue));
@@ -1057,7 +1076,7 @@ export class AuctionDraftService {
     const openSlots = this.teams.reduce(
       (total, team) =>
         total +
-        Math.max(0, this.league.starters - Object.values(team.roster).reduce((a, b) => a + b, 0)),
+        Math.max(0, this.startingSlots - Object.values(team.roster).reduce((a, b) => a + b, 0)),
       0
     );
     const moneyLeft = this.teams.reduce((total, team) => total + team.remaining, 0) - openSlots;
@@ -1076,9 +1095,10 @@ export class AuctionDraftService {
    * which is what actually makes a hole expensive.
    */
   private calculateNeedMultiplier(position: string, team: Team): number {
-    const required = AuctionDraftService.STARTERS[position as PlayerPosition] ?? 1;
-    const have = team.roster[position as PlayerPosition] ?? 0;
-    const unfilled = Math.max(0, required - have);
+    // Derived from the league's own lineup, so a superflex or a 3-WR league
+    // makes the positions it actually starts urgent, and a flex counts for
+    // every position that could fill it.
+    const unfilled = unfilledSlotsFor(position as PlayerPosition, team.roster, this.league);
     const gone = this.calculatePositionScarcity(position);
     return 1 + Math.min(0.45, unfilled * 0.18 * gone);
   }

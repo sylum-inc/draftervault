@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   LEAGUE_LIMITS,
+  LINEUP_SLOTS,
   POSITIONS,
   leagueShape,
   normaliseLeague,
   rosteredForTeams,
   sameLeague,
+  startingSlots,
   type LeagueShape,
+  type LineupSlot,
   type Position,
 } from '@/lib/valuation';
 
@@ -16,6 +19,8 @@ interface LeagueSettingsProps {
   poolLeague: LeagueShape;
   /** Picks that would be lost, so the warning can be honest about the cost. */
   draftedCount: number;
+  /** Players the pool actually holds per position, to catch a league it cannot serve. */
+  poolDepth: Record<string, number>;
   onApply: (league: LeagueShape) => void;
   onClose: () => void;
 }
@@ -38,6 +43,7 @@ export const LeagueSettings = ({
   league,
   poolLeague,
   draftedCount,
+  poolDepth,
   onApply,
   onClose,
 }: LeagueSettingsProps) => {
@@ -45,7 +51,12 @@ export const LeagueSettings = ({
   const [teams, setTeams] = useState(String(league.teams));
   const [budget, setBudget] = useState(String(league.budget));
   const [rosterSize, setRosterSize] = useState(String(league.rosterSize));
-  const [starters, setStarters] = useState(String(league.starters));
+  const [lineup, setLineup] = useState<Record<LineupSlot, string>>(
+    () =>
+      Object.fromEntries(
+        LINEUP_SLOTS.map((slot) => [slot, String(league.startingLineup[slot] ?? 0)])
+      ) as Record<LineupSlot, string>
+  );
   const [limits, setLimits] = useState<Record<Position, string>>(
     () =>
       Object.fromEntries(POSITIONS.map((p) => [p, String(league.positionLimits[p])])) as Record<
@@ -70,7 +81,12 @@ export const LeagueSettings = ({
         teams: teamCount,
         budget: asNumber(budget, league.budget),
         rosterSize: asNumber(rosterSize, league.rosterSize),
-        starters: asNumber(starters, league.starters),
+        startingLineup: Object.fromEntries(
+          LINEUP_SLOTS.map((slot) => [
+            slot,
+            Math.max(0, asNumber(lineup[slot], league.startingLineup[slot] ?? 0)),
+          ])
+        ) as Record<LineupSlot, number>,
         positionLimits: Object.fromEntries(
           POSITIONS.map((p) => [p, Math.max(0, asNumber(limits[p], league.positionLimits[p]))])
         ) as Record<Position, number>,
@@ -80,7 +96,7 @@ export const LeagueSettings = ({
           teamCount === poolLeague.teams ? poolLeague.rostered : rosteredForTeams(teamCount),
       })
     );
-  }, [teams, budget, rosterSize, starters, limits, league, poolLeague]);
+  }, [teams, budget, rosterSize, lineup, limits, league, poolLeague]);
 
   const unchanged = sameLeague(draft, league);
   const rosterSlots = draft.teams * draft.rosterSize;
@@ -98,8 +114,22 @@ export const LeagueSettings = ({
     problems.push(
       `Position limits total ${positionCapacity}, so a team could never fill ${draft.rosterSize} roster spots.`
     );
-  if (draft.starters > draft.rosterSize)
-    problems.push('A team cannot be required to start more players than it may roster.');
+  const slots = startingSlots(draft);
+  if (slots > draft.rosterSize)
+    problems.push(`A team would start ${slots} players but may only roster ${draft.rosterSize}.`);
+  if (slots === 0) problems.push('A league has to start somebody.');
+
+  /**
+   * Positions the pool cannot fill at this league size.
+   *
+   * Not an error — the valuation falls back to the worst player it has — but it
+   * quietly understates that position, and nothing on the board would show it.
+   */
+  const thin = POSITIONS.map((position) => ({
+    position,
+    has: poolDepth[position] ?? 0,
+    wants: draft.rostered[position],
+  })).filter((entry) => entry.has > 0 && entry.has < entry.wants);
 
   const apply = () => {
     if (problems.length || unchanged) return;
@@ -186,14 +216,35 @@ export const LeagueSettings = ({
               LEAGUE_LIMITS.rosterSize.min,
               LEAGUE_LIMITS.rosterSize.max
             )}
-            {field(
-              'Starters',
-              starters,
-              setStarters,
-              'A dollar held per open slot',
-              0,
-              asNumber(rosterSize, league.rosterSize)
-            )}
+          </div>
+        </section>
+
+        <section className="dr-modal-section">
+          <h3 className="dr-eyebrow">
+            Starting lineup · {slots} slot{slots === 1 ? '' : 's'}
+          </h3>
+          <p className="dr-meter-note">
+            What decides which positions go early: a dollar is held back for every open slot, and an
+            unfilled one is what makes a position urgent. A flex counts for each of RB, WR and TE,
+            since any of them can fill it.
+          </p>
+          <div className="dr-league-grid">
+            {LINEUP_SLOTS.map((slot) => (
+              <label className="dr-league-field" key={slot}>
+                <span className="dr-eyebrow">{slot}</span>
+                <input
+                  className="dr-input"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={12}
+                  value={lineup[slot]}
+                  onChange={(event) =>
+                    setLineup((current) => ({ ...current, [slot]: event.target.value }))
+                  }
+                />
+              </label>
+            ))}
           </div>
         </section>
 
@@ -246,6 +297,21 @@ export const LeagueSettings = ({
             covered by a dollar first, and what is left is shared out by value over replacement.
           </p>
         </section>
+
+        {thin.length > 0 && problems.length === 0 && (
+          <section className="dr-modal-section">
+            <p className="dr-league-warning">
+              This league rosters{' '}
+              {thin
+                .map(
+                  (entry) => `${entry.wants} ${entry.position}s where the pool holds ${entry.has}`
+                )
+                .join(', and ')}
+              . Replacement level falls back to the worst one there is, so those values come out
+              lower than a deeper pool would set them. Every other position is unaffected.
+            </p>
+          </section>
+        )}
 
         {problems.length > 0 && (
           <section className="dr-modal-section">

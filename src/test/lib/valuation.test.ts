@@ -10,6 +10,8 @@ import {
   replacementLevels,
   rosteredForTeams,
   sameLeague,
+  startingSlots,
+  unfilledSlotsFor,
   type LeagueShape,
   type Projected,
 } from '@/lib/valuation';
@@ -124,6 +126,64 @@ describe('replacementLevels', () => {
   });
 });
 
+describe('unfilledSlotsFor', () => {
+  const empty = { QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DST: 0 };
+
+  it('counts a position its own unfilled starting slots', () => {
+    expect(unfilledSlotsFor('WR', empty, DEFAULT_LEAGUE)).toBe(3);
+    expect(unfilledSlotsFor('WR', { ...empty, WR: 1 }, DEFAULT_LEAGUE)).toBe(2);
+    expect(unfilledSlotsFor('WR', { ...empty, WR: 3 }, DEFAULT_LEAGUE)).toBe(0);
+  });
+
+  it('follows the league rather than a fixed lineup', () => {
+    // Superflex: two quarterbacks start, so the second one is a real hole.
+    const superflex = leagueShape({
+      startingLineup: { QB: 2, RB: 2, WR: 2, TE: 1, FLEX: 0, K: 1, DST: 1 },
+    });
+    expect(unfilledSlotsFor('QB', { ...empty, QB: 1 }, superflex)).toBe(1);
+    expect(unfilledSlotsFor('QB', { ...empty, QB: 1 }, DEFAULT_LEAGUE)).toBe(0);
+  });
+
+  it('treats an open flex as a hole for every position that can fill it', () => {
+    const withFlex = leagueShape({
+      startingLineup: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, K: 1, DST: 1 },
+    });
+    const started = { ...empty, QB: 1, RB: 2, WR: 2, TE: 1, K: 1, DST: 1 };
+
+    // The dedicated slots are full and the flex is not: a back, a receiver and
+    // a tight end are each a candidate for it.
+    expect(unfilledSlotsFor('RB', started, withFlex)).toBe(1);
+    expect(unfilledSlotsFor('WR', started, withFlex)).toBe(1);
+    expect(unfilledSlotsFor('TE', started, withFlex)).toBe(1);
+    // A quarterback cannot fill it.
+    expect(unfilledSlotsFor('QB', started, withFlex)).toBe(0);
+  });
+
+  it('stops counting the flex once somebody fills it', () => {
+    const withFlex = leagueShape({
+      startingLineup: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, K: 1, DST: 1 },
+    });
+    // A third receiver is the flex, so nobody still needs one.
+    const filled = { ...empty, QB: 1, RB: 2, WR: 3, TE: 1, K: 1, DST: 1 };
+    expect(unfilledSlotsFor('RB', filled, withFlex)).toBe(0);
+    expect(unfilledSlotsFor('WR', filled, withFlex)).toBe(0);
+    expect(unfilledSlotsFor('TE', filled, withFlex)).toBe(0);
+  });
+
+  it('prefers a dedicated hole over the flex', () => {
+    const withFlex = leagueShape({
+      startingLineup: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, K: 1, DST: 1 },
+    });
+    // No backs at all: two dedicated slots, and the flex is not added on top.
+    expect(unfilledSlotsFor('RB', empty, withFlex)).toBe(2);
+  });
+
+  it('ignores a flex the league does not have', () => {
+    const full = { ...empty, QB: 1, RB: 2, WR: 3, TE: 1, K: 1, DST: 1 };
+    expect(unfilledSlotsFor('RB', full, DEFAULT_LEAGUE)).toBe(0);
+  });
+});
+
 describe('league shapes', () => {
   it('scales rostered counts with the number of teams', () => {
     const ten = rosteredForTeams(10);
@@ -154,9 +214,19 @@ describe('league shapes', () => {
     expect(wild.rosterSize).toBe(LEAGUE_LIMITS.rosterSize.min);
   });
 
-  it('never asks a team to start more players than it may roster', () => {
-    const shape = normaliseLeague({ ...DEFAULT_LEAGUE, rosterSize: 5, starters: 9 });
-    expect(shape.starters).toBeLessThanOrEqual(shape.rosterSize);
+  it('counts the starting slots the lineup actually adds up to', () => {
+    expect(startingSlots(DEFAULT_LEAGUE)).toBe(9);
+    expect(
+      startingSlots(leagueShape({ startingLineup: { ...DEFAULT_LEAGUE.startingLineup, FLEX: 2 } }))
+    ).toBe(11);
+  });
+
+  it('rounds a lineup to whole non-negative slots', () => {
+    const shape = normaliseLeague(
+      leagueShape({ startingLineup: { QB: -1, RB: 2.4, WR: 3, TE: 1, FLEX: 0, K: 1, DST: 1 } })
+    );
+    expect(shape.startingLineup.QB).toBe(0);
+    expect(shape.startingLineup.RB).toBe(2);
   });
 
   it('rejects a non-numeric league rather than producing NaN prices', () => {
@@ -167,6 +237,13 @@ describe('league shapes', () => {
     });
     expect(Number.isInteger(broken.teams)).toBe(true);
     expect(Number.isInteger(broken.budget)).toBe(true);
+  });
+
+  it('tells a lineup change apart from an identical shape', () => {
+    const base = leagueShape();
+    expect(
+      sameLeague(base, leagueShape({ startingLineup: { ...base.startingLineup, FLEX: 1 } }))
+    ).toBe(false);
   });
 
   it('tells identical and differing shapes apart', () => {

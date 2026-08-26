@@ -570,6 +570,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           league={league}
           poolLeague={draftService.getPoolLeagueShape()}
           draftedCount={drafted.length}
+          poolDepth={draftService.getPoolDepth()}
           onApply={applyLeague}
           onClose={() => setLeagueOpen(false)}
         />

@@ -277,7 +277,12 @@ describe('AuctionDraftService', () => {
     });
 
     it('enforces the new roster limits', () => {
-      service.setLeagueShape(leagueShape({ rosterSize: 2, starters: 1 }));
+      service.setLeagueShape(
+        leagueShape({
+          rosterSize: 2,
+          startingLineup: { QB: 0, RB: 0, WR: 1, TE: 0, FLEX: 0, K: 0, DST: 0 },
+        })
+      );
       const [a, b, c] = service.getAvailablePlayers().filter((p) => p.position === 'WR');
 
       expect(service.draftPlayer(a.id, 'team-1', 1)).toBe(true);
@@ -324,6 +329,61 @@ describe('AuctionDraftService', () => {
       service.setLeagueShape(leagueShape({ budget: 250 }));
 
       expect(service.getPlayers().find((p) => p.id === player.id)!.estimatedValue).toBe(99);
+    });
+
+    it('prices urgency for the lineup the league actually starts', () => {
+      // Urgency is (unfilled slots x how much of the position is gone), so it is
+      // zero for everyone before a draft starts. Take some quarterbacks off the
+      // board first, and give team-1 one of its own.
+      const runOnQbs = (svc: AuctionDraftService) => {
+        const qbs = svc.getAvailablePlayers().filter((p) => p.position === 'QB');
+        qbs.slice(0, 8).forEach((p, i) => svc.draftPlayer(p.id, `team-${(i % 5) + 2}`, 1));
+        svc.draftPlayer(qbs[8].id, 'team-1', 1);
+        return svc.getAvailablePlayers().find((p) => p.position === 'QB')!;
+      };
+
+      const standardQb = runOnQbs(service);
+      const standard = service.getPlayerAnalytics(standardQb.id, 'team-1').needMultiplier;
+
+      // A superflex league starts two quarterbacks, so team-1 still has a hole
+      // where the standard league says it is done at the position.
+      const superflexService = new AuctionDraftService(
+        leagueShape({ startingLineup: { QB: 2, RB: 2, WR: 2, TE: 1, FLEX: 0, K: 1, DST: 1 } })
+      );
+      const superflexQb = runOnQbs(superflexService);
+      const superflex = superflexService.getPlayerAnalytics(
+        superflexQb.id,
+        'team-1'
+      ).needMultiplier;
+
+      expect(standard).toBe(1);
+      expect(superflex).toBeGreaterThan(1);
+    });
+
+    it('holds back a dollar for every slot the lineup starts', () => {
+      // Eleven starting slots means ten dollars are spoken for after this bid,
+      // so a $200 team cannot spend more than $190 on its first player.
+      service.setLeagueShape(
+        leagueShape({
+          startingLineup: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 2, K: 1, DST: 1 },
+        })
+      );
+      const player = firstAvailable(service);
+
+      expect(service.validateBid(player.id, 'team-1', 191).ok).toBe(false);
+      expect(service.validateBid(player.id, 'team-1', 190).ok).toBe(true);
+    });
+
+    it('counts a third receiver as a starter, not as bench depth', () => {
+      // depthScore read its own QB1/RB2/WR2 table while urgency read
+      // QB1/RB2/WR3, so a third receiver was both at once.
+      const wrs = service
+        .getAvailablePlayers()
+        .filter((p) => p.position === 'WR')
+        .slice(0, 3);
+      wrs.forEach((player) => service.draftPlayer(player.id, 'team-1', 1));
+
+      expect(service.getTeams()[0].depthScore).toBe(0);
     });
 
     it('clamps a league nobody could draft in', () => {

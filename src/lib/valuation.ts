@@ -16,6 +16,14 @@ export type Position = 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'DST';
 
 export const POSITIONS: Position[] = ['QB', 'RB', 'WR', 'TE', 'K', 'DST'];
 
+/** A slot in a starting lineup: a position, or the flex that several may fill. */
+export type LineupSlot = Position | 'FLEX';
+
+export const LINEUP_SLOTS: LineupSlot[] = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'K', 'DST'];
+
+/** Positions a flex slot accepts. */
+export const FLEX_ELIGIBLE: Position[] = ['RB', 'WR', 'TE'];
+
 /**
  * Everything about a league that changes what a player is worth.
  *
@@ -29,8 +37,15 @@ export interface LeagueShape {
   teams: number;
   budget: number;
   rosterSize: number;
-  /** Slots a team must field each week; each unfilled one holds back a dollar. */
-  starters: number;
+  /**
+   * What a team must field each week, position by position.
+   *
+   * This was three separate constants — a bare count for the dollar reserve, a
+   * QB1/RB2/WR3 table for positional urgency, and a QB1/RB2/WR2 table for depth
+   * scoring, the last two disagreeing about receivers. One definition means a
+   * superflex or a 3-WR league is priced for the lineup actually being played.
+   */
+  startingLineup: Record<LineupSlot, number>;
   /** Most a single team may carry at each position. */
   positionLimits: Record<Position, number>;
   /** How many of each position the league rosters in total; sets replacement level. */
@@ -48,7 +63,9 @@ export const DEFAULT_LEAGUE: LeagueShape = {
   teams: 12,
   budget: 200,
   rosterSize: 16,
-  starters: 9,
+  // Nine slots, matching the lineup the engine assumed before it was
+  // configurable — so turning this on changed nobody's numbers.
+  startingLineup: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 0, K: 1, DST: 1 },
   positionLimits: { QB: 3, RB: 6, WR: 7, TE: 3, K: 2, DST: 2 },
   rostered: { QB: 20, RB: 48, WR: 60, TE: 18, K: 12, DST: 12 },
 };
@@ -89,25 +106,38 @@ export const leagueShape = (
     teams,
     budget: overrides.budget ?? DEFAULT_LEAGUE.budget,
     rosterSize: overrides.rosterSize ?? DEFAULT_LEAGUE.rosterSize,
-    starters: overrides.starters ?? DEFAULT_LEAGUE.starters,
+    startingLineup: overrides.startingLineup ?? DEFAULT_LEAGUE.startingLineup,
     positionLimits: overrides.positionLimits ?? DEFAULT_LEAGUE.positionLimits,
     // Only scale when the caller left it alone; an explicit table wins.
     rostered: overrides.rostered ?? rosteredForTeams(teams),
   };
 };
 
-/** Clamp a league into the range the maths can handle, keeping starters ≤ roster. */
+/**
+ * How many players a team fields each week.
+ *
+ * Derived rather than stored: a stored copy could disagree with the lineup it
+ * is meant to count, and the dollar reserve in `validateBid` depends on it
+ * being right.
+ */
+export const startingSlots = (league: LeagueShape): number =>
+  LINEUP_SLOTS.reduce((total, slot) => total + (league.startingLineup[slot] ?? 0), 0);
+
+/** Clamp a league into the range the maths can handle. */
 export const normaliseLeague = (shape: LeagueShape): LeagueShape => {
   const clamp = (n: number, { min, max }: { min: number; max: number }) =>
     Math.min(max, Math.max(min, Math.round(Number.isFinite(n) ? n : min)));
-  const rosterSize = clamp(shape.rosterSize, LEAGUE_LIMITS.rosterSize);
+  const lineup = {} as Record<LineupSlot, number>;
+  for (const slot of LINEUP_SLOTS) {
+    const value = shape.startingLineup?.[slot];
+    lineup[slot] = Math.max(0, Math.round(Number.isFinite(value) ? value : 0));
+  }
   return {
     ...shape,
     teams: clamp(shape.teams, LEAGUE_LIMITS.teams),
     budget: clamp(shape.budget, LEAGUE_LIMITS.budget),
-    rosterSize,
-    // A league cannot be required to start more players than it may roster.
-    starters: Math.min(rosterSize, Math.max(0, Math.round(shape.starters))),
+    rosterSize: clamp(shape.rosterSize, LEAGUE_LIMITS.rosterSize),
+    startingLineup: lineup,
   };
 };
 
@@ -116,10 +146,38 @@ export const sameLeague = (a: LeagueShape, b: LeagueShape): boolean =>
   a.teams === b.teams &&
   a.budget === b.budget &&
   a.rosterSize === b.rosterSize &&
-  a.starters === b.starters &&
+  LINEUP_SLOTS.every((slot) => a.startingLineup[slot] === b.startingLineup[slot]) &&
   POSITIONS.every(
     (p) => a.positionLimits[p] === b.positionLimits[p] && a.rostered[p] === b.rostered[p]
   );
+
+/**
+ * Starting slots this position could fill on a team that has `have` of it.
+ *
+ * A dedicated hole must be filled by this position. A flex slot is a hole for
+ * every position that may fill it — the team still has to buy somebody for it,
+ * and a back, a receiver and a tight end are each a candidate — so it counts
+ * for each of them rather than being shared out arbitrarily between them.
+ */
+export const unfilledSlotsFor = (
+  position: Position,
+  roster: Record<Position, number>,
+  league: LeagueShape
+): number => {
+  const dedicated = Math.max(0, (league.startingLineup[position] ?? 0) - (roster[position] ?? 0));
+  if (dedicated > 0) return dedicated;
+
+  const flex = league.startingLineup.FLEX ?? 0;
+  if (flex === 0 || !FLEX_ELIGIBLE.includes(position)) return 0;
+
+  // Players beyond a position's own starting slots are what fills the flex.
+  const spare = FLEX_ELIGIBLE.reduce(
+    (total, eligible) =>
+      total + Math.max(0, (roster[eligible] ?? 0) - (league.startingLineup[eligible] ?? 0)),
+    0
+  );
+  return Math.max(0, flex - spare);
+};
 
 /** The least a valuation needs to know about a player. */
 export interface Projected {
