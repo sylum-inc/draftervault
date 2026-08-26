@@ -280,7 +280,10 @@ Open, roughly in order of value:
 The published preview artifact lives at
 https://claude.ai/code/artifact/7e72b3fa-0f58-46c9-8246-f3231e16849e — build it with
 `npm run build:artifact` and republish by passing that URL to the Artifact tool so
-the link stays stable. `scripts/build-artifact.mjs` embeds the 260 most valuable
+the link stays stable. The published page declares the `downloads`
+capability, which is what makes Export CSV work there; omitting `capabilities`
+on a republish carries that declaration forward, so it only needs restating if
+it is ever cleared. `scripts/build-artifact.mjs` embeds the 260 most valuable
 players' faces and all 32 crests as data URIs (the CSP blocks external hosts),
 strips the document shell, and adds the viewport meta the viewer's head lacks.
 
