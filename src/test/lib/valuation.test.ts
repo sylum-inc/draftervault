@@ -62,6 +62,34 @@ describe('pricePool against the shipped pool', () => {
   });
 });
 
+describe('the shipped pool and the client agree', () => {
+  it('was generated for the league the client defaults to', () => {
+    // If these drift, the board opens showing prices for a league nobody set.
+    expect(poolData.league).toMatchObject({
+      teams: DEFAULT_LEAGUE.teams,
+      budget: DEFAULT_LEAGUE.budget,
+      rosterSize: DEFAULT_LEAGUE.rosterSize,
+    });
+    expect(poolData.league.rostered).toEqual(DEFAULT_LEAGUE.rostered);
+  });
+
+  it('is deep enough for every league the settings allow', () => {
+    // A position shorter than the league rosters falls back to its own worst
+    // player, which understates it. The pool used to hold 40 quarterbacks
+    // where 32 teams roster 53.
+    const depth: Record<string, number> = {};
+    for (const player of poolData.players) {
+      depth[player.position] = (depth[player.position] ?? 0) + 1;
+    }
+
+    const biggest = rosteredForTeams(LEAGUE_LIMITS.teams.max);
+    const short = POSITIONS.filter((position) => depth[position] < biggest[position]).map(
+      (position) => `${position}: ${depth[position]} of ${biggest[position]}`
+    );
+    expect(short).toEqual([]);
+  });
+});
+
 describe('pricePool across league shapes', () => {
   it('gives every rostered player at least a dollar and never a fraction', () => {
     const { priced } = pricePool(projected(), leagueShape({ teams: 10, budget: 300 }));

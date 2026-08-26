@@ -36,7 +36,7 @@ const asNumber = (raw: string, fallback: number): number => {
  *
  * Changing it is not a display setting: replacement level, value over
  * replacement and every dollar figure are computed from these numbers, so this
- * panel re-prices 599 players rather than relabelling them. It says so, and it
+ * panel re-prices the whole pool rather than relabelling it. It says so, and it
  * says what a change costs before making it.
  */
 export const LeagueSettings = ({
@@ -97,6 +97,10 @@ export const LeagueSettings = ({
       })
     );
   }, [teams, budget, rosterSize, lineup, limits, league, poolLeague]);
+
+  // Read from the pool rather than written into the copy: the last hardcoded
+  // count went stale the first time the pool grew.
+  const poolSize = POSITIONS.reduce((total, position) => total + (poolDepth[position] ?? 0), 0);
 
   const unchanged = sameLeague(draft, league);
   const rosterSlots = draft.teams * draft.rosterSize;
@@ -175,8 +179,8 @@ export const LeagueSettings = ({
               League settings
             </h2>
             <p className="dr-meter-note">
-              Every dollar value on the board is computed from these numbers — change one and 599
-              players are re-priced, not relabelled.
+              Every dollar value on the board is computed from these numbers — change one and all{' '}
+              {poolSize} players are re-priced, not relabelled.
             </p>
           </div>
           <button

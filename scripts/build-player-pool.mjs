@@ -2,7 +2,7 @@
 /**
  * Builds the draft pool from real NFL data.
  *
- *   node scripts/build-player-pool.mjs [--cache <dir>] [--offline] [--size 600]
+ *   node scripts/build-player-pool.mjs [--cache <dir>] [--offline]
  *
  * Replaces the hand-typed player list with ~600 players drawn from actual
  * rosters, actual production, and a projection model documented below. Nothing
@@ -35,7 +35,12 @@ import { gunzipSync } from 'node:zlib';
 // The league shape and the points-to-dollars maths live in the client tree so
 // that the browser and this script cannot disagree about what a player is
 // worth. Node strips the types on import (v22.18+); CI pins that version.
-import { DEFAULT_LEAGUE, pricePool } from '../src/lib/valuation.ts';
+import {
+  DEFAULT_LEAGUE,
+  LEAGUE_LIMITS,
+  pricePool,
+  rosteredForTeams,
+} from '../src/lib/valuation.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'src/data/nfl');
@@ -49,7 +54,6 @@ const flag = (name, fallback) => {
 };
 const cacheDir = flag('cache', join(ROOT, '.cache/nfl'));
 const offline = args.includes('--offline');
-const POOL_SIZE = Number(flag('size', 600));
 
 /** The seasons that inform a projection. Older tape exists but stops mattering. */
 const SEASONS = [2023, 2024, 2025];
@@ -848,12 +852,28 @@ const main = async () => {
 
   candidates.sort((a, b) => b.projection.points - a.projection.points);
 
-  // Keep the pool draftable: enough of each position to fill twelve rosters,
-  // then the best of the rest up to the requested size.
-  // Hard caps per position. Ranking purely by projected points would fill the
-  // pool with quarterbacks, who out-score everyone in raw PPR terms while only
-  // twelve of them start. These are roughly three times what the league rosters.
-  const CAPS = { QB: 40, RB: 175, WR: 255, TE: 65, K: 32 };
+  // How many of each position to keep.
+  //
+  // Ranking purely by projected points would fill the pool with quarterbacks,
+  // who out-score everyone in raw PPR terms while only one of them starts, so
+  // each position is capped. The caps used to be typed numbers tuned for a
+  // twelve-team league, and quarterback sat at 40 — under the 53 that the
+  // largest league the client permits would roster, which silently dropped
+  // replacement level to the worst quarterback in the pool.
+  //
+  // They are now derived from the biggest league the valuation supports, with
+  // headroom for the bench nobody starts. Deepening is safe by construction:
+  // candidates are sorted by projected points, so everything an increase adds
+  // is worse than everything already in, which cannot move replacement level
+  // or a top-192 auction value for any smaller league.
+  const MAX_ROSTERED = rosteredForTeams(LEAGUE_LIMITS.teams.max);
+  const BENCH_HEADROOM = { QB: 1.2, RB: 1.4, WR: 1.6, TE: 1.35, K: 1 };
+  const CAPS = Object.fromEntries(
+    Object.entries(BENCH_HEADROOM).map(([position, headroom]) => [
+      position,
+      Math.round(MAX_ROSTERED[position] * headroom),
+    ])
+  );
   const chosen = [];
   const counts = new Map();
   for (const player of candidates) {
@@ -1409,13 +1429,18 @@ const main = async () => {
         `${player.name.padEnd(22)} ${String(player.team).padEnd(4)} ${player.trend.toLowerCase()}`
     );
   }
-  const draftableSpend = drafted.reduce((total, p) => total + p.auctionValue, 0);
+  // The players a league of this shape actually rosters, which is what the
+  // budget has to cover. `pricePool` decides this internally; here it is only
+  // being reported, so it is re-derived from the values it returned.
+  const rosterSlots = LEAGUE.teams * LEAGUE.rosterSize;
+  const draftable = [...ranked].sort((a, b) => b.vorp - a.vorp).slice(0, rosterSlots);
+  const draftableSpend = draftable.reduce((total, p) => total + p.auctionValue, 0);
   console.log(
     `\n  replacement level: ` +
       [...replacement].map(([p, v]) => `${p} ${Math.round(v)}`).join('  ')
   );
   console.log(
-    `  the ${drafted.length} draftable players price out at $${draftableSpend}; ` +
+    `  the ${draftable.length} draftable players price out at $${draftableSpend}; ` +
       `the league has $${LEAGUE.teams * LEAGUE.budget} to spend`
   );
 };

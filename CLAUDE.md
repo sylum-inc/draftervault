@@ -14,7 +14,7 @@ npm run build && npm run serve   # production bundle on :4173
 npm run build:single # one self-contained HTML file in dist-single/
 npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
-npm run build:pool   # rebuild the 599-player pool from nflverse production data
+npm run build:pool   # rebuild the 628-player pool from nflverse production data
 npm run build:icons  # redraw the app icons (CI checks they match)
 docker compose up -d --build     # nginx on :8080
 ```
@@ -25,7 +25,7 @@ docker compose up -d --build     # nginx on :8080
 src/pages/Index.tsx
   └── components/draft-room/DraftRoom.tsx     layout, filters, draft flow
         ├── PlayerCard.tsx        board card: headshot, team color, tier
-        ├── PlayerTable.tsx       dense sortable board for 599 players
+        ├── PlayerTable.tsx       dense sortable board for 628 players
         ├── NominationStage.tsx   player on the block + bid controls
         ├── NominationClock.tsx   whose turn, how long they have had
         ├── BudgetRail.tsx        money left per team
@@ -56,7 +56,7 @@ src/lib/rankingsCsv.ts                parsing and matching an imported ranking
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/draftAdvisor.ts          the opinion layer, deliberately separate
 src/services/nflIdentity.ts           team colors, crests, headshots
-src/data/nfl/pool.json                599 players: projections, values (generated)
+src/data/nfl/pool.json                628 players: projections, values (generated)
 src/data/nfl/player-history.json      per-player season and weekly scoring (lazy)
 src/data/nfl/schedule.json            2026 season by team, with matchup difficulty
 src/data/nfl/team-context.json        per-offence pace, PROE, red-zone rate
@@ -97,7 +97,7 @@ in CI); the client imports it directly and re-prices from `projection.points`,
 which is league-independent, rather than trusting the values baked into
 pool.json. That is what lets a league the pool was never built for price
 correctly with no regeneration. A test re-prices the shipped pool at the shape
-it was built for and asserts all 599 auction values, VORPs and replacement
+it was built for and asserts all 628 auction values, VORPs and replacement
 levels match exactly — that test is the guard against the two drifting, so
 don't weaken it to a tolerance.
 
@@ -133,7 +133,7 @@ DynastyProcess) for expert consensus rank, and **DynastyProcess's**
 That crosswalk is load-bearing. Sleeper carries a `gsis_id` for only 3,893 of
 its 12,224 players and almost none who matter — Ja'Marr Chase and Jahmyr Gibbs
 are both null — so joining on it directly resolved 61 of 567. Going through
-DynastyProcess resolves 371 of 599 to FantasyPros consensus; the 228 that miss
+DynastyProcess resolves 383 of 628 to FantasyPros consensus; the 245 that miss
 are $1-2 bench players FantasyPros does not rank, which is the correct answer.
 
 **Play-by-play is worth the download.** `play_by_play_2025.csv.gz` is 19MB
@@ -143,7 +143,7 @@ rate over expected, sack rate allowed). `readCsv` takes a column list because
 that file has 372 of them across ~50k rows, and materialising all of it is 18M
 property writes for the dozen fields anything reads.
 
-**The pool is generated, not typed.** `scripts/build-player-pool.mjs` builds 599
+**The pool is generated, not typed.** `scripts/build-player-pool.mjs` builds 628
 players from nflverse: 2023-2025 weekly production, 2026 rosters, snap counts,
 injuries, draft capital and the published schedule. Projections come from the
 model documented in that file — recency-weighted points per game, shrunk toward
@@ -156,6 +156,18 @@ Everything a player card shows traces to an observation: bye weeks and matchup
 difficulty from the 2026 schedule, floor and ceiling from one standard deviation
 of the season total, consistency from weekly variance, injury risk from games
 actually missed, and percentiles from the position's own distribution.
+
+**The pool has to be deeper than the biggest league it serves.** A position
+shorter than the league rosters does not error — `replacementLevels` falls back
+to the worst player it has, which quietly understates that whole position. The
+per-position caps in the builder are therefore derived from
+`rosteredForTeams(LEAGUE_LIMITS.teams.max)` rather than typed: they used to be
+hand-tuned numbers, and quarterback sat at 40 where a 32-team league rosters 53.
+Deepening is safe by construction — candidates are sorted by projected points,
+so anything a bigger cap admits is worse than everything already in, and cannot
+move replacement level or a top-192 auction value. Growing the pool from 599 to
+628 changed none of the original 599 players' values. `LeagueSettings` still
+reports a shortfall if one ever reappears, and a test asserts none exists.
 
 **Percentiles are how a number becomes meaningful.** Sixty per cent of snaps is a
 committee back and a workhorse tight end, so every headline figure carries its
@@ -176,6 +188,11 @@ Legacy services under `src/services/` named `real*` still generate numbers with
 
 - A `lint-staged` pre-commit hook runs `eslint --fix` and `prettier --write`, so
   commits touching an unformatted legacy file will reformat it. Expected.
+- **The build scripts are linted, not just parsed.** `node --check` stood in for
+  this once and proved only that `build-player-pool.mjs` was syntactically
+  valid — it passed a builder that referenced a variable a refactor had deleted,
+  and the failure surfaced minutes into a run, after the downloads. `no-undef`
+  over `scripts/` catches that class in a second.
 - **`npm run validate` passes and CI gates on it.** It used to be unpassable:
   lint reported 74 errors, all in the dead tree that `tsconfig.app.json`
   already excludes. `eslint.config.js` now reads that file's `include` list and
@@ -204,7 +221,7 @@ Legacy services under `src/services/` named `real*` still generate numbers with
 ## State of the work
 
 Done: the draft room (card and table boards with four swappable column sets, a
-nomination clock, bid validation, undo, persistence), a 599-player pool built
+nomination clock, bid validation, undo, persistence), a 628-player pool built
 from real production with projections, auction values, advanced usage from
 play-by-play, per-offence context, full career arcs, three-season injury history
 and FantasyPros consensus; seven-tab player dossiers with twelve bespoke charts;
@@ -232,17 +249,12 @@ Open, roughly in order of value:
    `src/hooks/use-mobile.tsx`, or those 89 plus `sidebar.tsx`. The 43 unused
    shadcn primitives are a separate call: they are a vendored library, and
    people add components from it later.
-2. **Per-league pool regeneration.** The client re-prices for any league shape
-   from the shipped projections, which is right for dollar values. What it
-   cannot change is the pool's _membership_ — 599 players chosen for a
-   twelve-team league — so a 32-team league runs thinner than it should. That
-   needs `npm run build:pool` per shape, or a larger pool shipped once.
-3. **`getPlayerAnalytics` still assumes a nine-slot starting lineup** in
-   `AuctionDraftService.STARTERS` — QB1/RB2/WR3/TE1/K1/DST1, which sums to the
-   nine that `league.starters` now controls, but as a fixed positional shape
-   rather than one derived from the league. Roster size, budget, team count and
-   position limits all follow the league; that table does not, so it is what
-   decides positional urgency no matter how the league is configured.
+2. **A shared draft room.** The engine was built for it — the pick log is the
+   only shared fact, and per-person state already lives apart in
+   `use-draft-preferences` — but one person still operates the board for
+   twelve. This is the open item with the most product in it, and the one that
+   needs a decision first: the repo is deliberately backend-free, so the sync
+   has to come from somewhere that does not change that.
 
 ## Related
 

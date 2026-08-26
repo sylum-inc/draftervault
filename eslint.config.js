@@ -59,8 +59,30 @@ export default tseslint.config(
   },
   {
     // Config files run in Node and legitimately use require() for plugins.
-    files: ["*.config.{ts,js}", "scripts/**/*.mjs"],
+    files: ["*.config.{ts,js}"],
     languageOptions: { globals: globals.node },
     rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
+  {
+    /**
+     * The build scripts, linted rather than merely parsed.
+     *
+     * `node --check` proves a file is syntactically valid and nothing more, so
+     * it happily accepted a pool builder that referenced a variable a refactor
+     * had deleted — the failure only appeared minutes into a run, after the
+     * downloads. `no-undef` catches that class before CI spends the bandwidth.
+     */
+    files: ["scripts/**/*.mjs"],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: globals.node,
+    },
+    rules: {
+      // `const { history, career, ...rest } = player` is how the builder drops
+      // fields from what it writes. Naming them is the point, not an oversight.
+      "no-unused-vars": ["error", { ignoreRestSiblings: true }],
+    },
   }
 );
