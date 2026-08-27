@@ -397,6 +397,17 @@ const writeStoredLeague = (league: LeagueShape): void => {
  */
 const RANKINGS_STORAGE_KEY = 'draft-vault:custom-rankings:v1';
 
+/**
+ * The draft a reset threw away.
+ *
+ * Reset sits next to Undo in the toolbar and used to be one unrecoverable
+ * click: the pick log was deleted outright. Since the pick log is the only
+ * shared fact, keeping the last one aside makes a reset undoable — which
+ * matters most on the night, when the draft in progress is the only copy of an
+ * afternoon's work.
+ */
+const CLEARED_STORAGE_KEY = 'draft-vault:cleared-draft:v1';
+
 const readStoredOverrides = (): Record<string, RankingOverride> => {
   try {
     const raw = localStorage.getItem(RANKINGS_STORAGE_KEY);
@@ -695,9 +706,37 @@ export class AuctionDraftService {
    * drift out of step with the draft and needs nothing extra synchronised if
    * this ever runs on more than one screen.
    */
+  /**
+   * Whether this team can still add anybody.
+   *
+   * A full roster is the practical end of a team's draft: the reserve rules
+   * guarantee it can always afford a dollar for each open slot, so money never
+   * strands a team with room.
+   */
+  canDraft(team: Team): boolean {
+    return rosterSize(team.roster) < this.league.rosterSize;
+  }
+
+  /** True once no team has room for another player. */
+  isComplete(): boolean {
+    return this.teams.length > 0 && this.teams.every((team) => !this.canDraft(team));
+  }
+
+  /**
+   * Whose turn it is to nominate.
+   *
+   * Rotation is still derived from the pick count rather than stored, but it
+   * steps over teams that are full — a team whose roster is finished does not
+   * keep getting handed the nomination, and at the end of the draft nobody is.
+   */
   getNominatingTeam(): Team | undefined {
     if (!this.teams.length) return undefined;
-    return this.teams[this.draftedCount % this.teams.length];
+    const start = this.draftedCount % this.teams.length;
+    for (let step = 0; step < this.teams.length; step++) {
+      const team = this.teams[(start + step) % this.teams.length];
+      if (this.canDraft(team)) return team;
+    }
+    return undefined;
   }
 
   /** Nomination order from here, starting with whoever is up. */
@@ -1158,6 +1197,23 @@ export class AuctionDraftService {
   }
 
   resetDraft(): void {
+    // Stash before clearing, so the reset can be taken back.
+    if (this.history.length) {
+      try {
+        localStorage.setItem(
+          CLEARED_STORAGE_KEY,
+          JSON.stringify({
+            clearedAt: new Date().toISOString(),
+            league: this.league,
+            budgets: this.teams.map((t) => ({ id: t.id, budget: t.budget })),
+            picks: this.history,
+          })
+        );
+      } catch {
+        /* storage unavailable — the reset is simply not undoable */
+      }
+    }
+
     this.players.forEach((p) => {
       p.isDrafted = false;
       delete p.draftedBy;
@@ -1284,6 +1340,59 @@ export class AuctionDraftService {
     let restored = 0;
     for (const pick of saved.picks) {
       if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
+    }
+    return restored;
+  }
+
+  /**
+   * How many picks a reset threw away, if one can still be taken back.
+   *
+   * Only offered while the board is empty: once somebody drafts again the
+   * cleared draft is genuinely history, and restoring it would silently
+   * replace work done since.
+   */
+  clearedPickCount(): number {
+    if (this.history.length) return 0;
+    try {
+      const raw = localStorage.getItem(CLEARED_STORAGE_KEY);
+      const saved = raw ? (JSON.parse(raw) as { league?: LeagueShape; picks?: unknown[] }) : null;
+      if (!saved?.picks?.length) return 0;
+      // Prices moved on if the league changed; those bids no longer make sense.
+      const league = saved.league ? normaliseLeague(leagueShape(saved.league)) : POOL_LEAGUE;
+      return sameLeague(league, this.league) ? saved.picks.length : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Put back the draft the last reset cleared. Returns how many picks returned. */
+  restoreClearedDraft(): number {
+    if (this.history.length) return 0;
+    let saved: {
+      league?: LeagueShape;
+      budgets?: Array<{ id: string; budget: number }>;
+      picks?: Array<{ playerId: string; teamId: string; cost: number }>;
+    } | null = null;
+    try {
+      const raw = localStorage.getItem(CLEARED_STORAGE_KEY);
+      saved = raw ? JSON.parse(raw) : null;
+    } catch {
+      saved = null;
+    }
+    if (!saved?.picks?.length) return 0;
+
+    const league = saved.league ? normaliseLeague(leagueShape(saved.league)) : POOL_LEAGUE;
+    if (!sameLeague(league, this.league)) return 0;
+
+    for (const { id, budget } of saved.budgets ?? []) this.updateTeamBudget(id, budget);
+    let restored = 0;
+    for (const pick of saved.picks) {
+      if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
+    }
+    try {
+      localStorage.removeItem(CLEARED_STORAGE_KEY);
+    } catch {
+      /* nothing to clean up */
     }
     return restored;
   }

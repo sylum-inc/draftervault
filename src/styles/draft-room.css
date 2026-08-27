@@ -3108,3 +3108,72 @@
     opacity: 0.75;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Draft night safety
+
+   Clearing the draft and reaching the end of it are both moments where the
+   room needs to be told plainly what has happened.
+   --------------------------------------------------------------------------- */
+
+.dr-ticker-warn {
+  color: var(--dr-ink);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--dr-caution) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--dr-caution) 34%, transparent);
+}
+
+/* A button that reads as a link: the recovery is an offer, not a command. */
+.dr-linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--dr-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dr-linkish:hover {
+  filter: brightness(1.2);
+}
+
+.dr-confirm {
+  width: min(440px, 100%);
+  padding: 20px;
+}
+
+.dr-confirm .dr-meter-note {
+  margin: 8px 0 16px;
+}
+
+.dr-confirm .dr-results-actions {
+  margin-bottom: 0;
+}
+
+.dr-confirm .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}
+
+/* The board is finished: this replaces the bid controls entirely, so it should
+   read as an ending rather than as another panel waiting for input. */
+.dr-stage-done {
+  padding: 20px 16px;
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius);
+  background: var(--dr-surface);
+}
+
+.dr-stage-done .dr-meter-note {
+  margin: 8px 0 16px;
+}
+
+.dr-stage-done .dr-results-actions {
+  margin-bottom: 0;
+}
+
+.dr-stage-done .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}

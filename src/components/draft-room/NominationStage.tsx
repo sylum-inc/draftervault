@@ -15,6 +15,8 @@ interface NominationStageProps {
   onBidChange: (bid: string) => void;
   onConfirm: () => void;
   onOpenProfile: () => void;
+  /** Whether a team still has room; a full one cannot win the bidding. */
+  canDraft: (team: Team) => boolean;
 }
 
 const inkFor = (hex: string): string => {
@@ -49,6 +51,7 @@ export const NominationStage = ({
   onBidChange,
   onConfirm,
   onOpenProfile,
+  canDraft,
 }: NominationStageProps) => {
   if (!player) {
     return (
@@ -178,11 +181,18 @@ export const NominationStage = ({
             onChange={(event) => onTeamChange(event.target.value)}
           >
             <option value="">Select a team…</option>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name} · ${t.remaining} left
-              </option>
-            ))}
+            {teams.map((t) => {
+              // A team with no room cannot win anything. It stays in the list
+              // so the order never shifts under the cursor mid-auction, but it
+              // says why it is unavailable rather than accepting the choice and
+              // rejecting the bid afterwards.
+              const full = !canDraft(t);
+              return (
+                <option key={t.id} value={t.id} disabled={full}>
+                  {t.name} · {full ? 'roster full' : `$${t.remaining} left`}
+                </option>
+              );
+            })}
           </select>
         </div>
 

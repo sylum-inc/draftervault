@@ -243,6 +243,109 @@ describe('AuctionDraftService', () => {
     });
   });
 
+  describe('a draft that runs out of room', () => {
+    /** Fill a team to its roster limit at a dollar a head. */
+    const fillTeam = (svc: AuctionDraftService, teamId: string) => {
+      const league = svc.getLeagueShape();
+      // Spread across positions so no position limit is hit first.
+      for (const position of ['RB', 'WR', 'QB', 'TE', 'K', 'DST'] as const) {
+        for (const player of svc.getAvailablePlayers().filter((p) => p.position === position)) {
+          const team = svc.getTeams().find((t) => t.id === teamId)!;
+          const filled = Object.values(team.roster).reduce((a, b) => a + b, 0);
+          if (filled >= league.rosterSize) return;
+          svc.draftPlayer(player.id, teamId, 1);
+        }
+      }
+    };
+
+    it('does not hand the nomination to a team that is full', () => {
+      // team-1 is up first with nothing drafted.
+      expect(service.getNominatingTeam()?.id).toBe('team-1');
+
+      fillTeam(service, 'team-1');
+      // Whoever is up now, it is not the team with no room left.
+      expect(service.getNominatingTeam()?.id).not.toBe('team-1');
+      expect(service.canDraft(service.getTeams()[0])).toBe(false);
+    });
+
+    it('knows when nobody can draft again', () => {
+      expect(service.isComplete()).toBe(false);
+
+      service.setLeagueShape(
+        leagueShape({
+          teams: 2,
+          rosterSize: 1,
+          startingLineup: { QB: 0, RB: 1, WR: 0, TE: 0, FLEX: 0, K: 0, DST: 0 },
+        })
+      );
+      const [a, b] = service.getAvailablePlayers();
+      service.draftPlayer(a.id, 'team-1', 1);
+      expect(service.isComplete()).toBe(false);
+      service.draftPlayer(b.id, 'team-2', 1);
+
+      expect(service.isComplete()).toBe(true);
+      expect(service.getNominatingTeam()).toBeUndefined();
+    });
+  });
+
+  describe('taking back a reset', () => {
+    it('offers back what the reset cleared', () => {
+      const [a, b] = service.getAvailablePlayers();
+      service.draftPlayer(a.id, 'team-1', 12);
+      service.draftPlayer(b.id, 'team-2', 8);
+
+      service.resetDraft();
+      expect(service.getDraftedPlayers()).toHaveLength(0);
+      expect(service.clearedPickCount()).toBe(2);
+
+      expect(service.restoreClearedDraft()).toBe(2);
+      const drafted = service.getDraftedPlayers();
+      expect(drafted).toHaveLength(2);
+      expect(drafted.find((p) => p.id === a.id)?.draftCost).toBe(12);
+      expect(service.getTeams()[0].remaining).toBe(188);
+    });
+
+    it('offers nothing back when the draft was already empty', () => {
+      service.resetDraft();
+      expect(service.clearedPickCount()).toBe(0);
+    });
+
+    it('stops offering once somebody drafts again', () => {
+      const [a, b] = service.getAvailablePlayers();
+      service.draftPlayer(a.id, 'team-1', 12);
+      service.resetDraft();
+      expect(service.clearedPickCount()).toBe(1);
+
+      // Restoring now would silently throw away the pick just made.
+      service.draftPlayer(b.id, 'team-3', 5);
+      expect(service.clearedPickCount()).toBe(0);
+      expect(service.restoreClearedDraft()).toBe(0);
+      expect(service.getDraftedPlayers()).toHaveLength(1);
+    });
+
+    it('will not put a draft back into a league that would not have charged those prices', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 30);
+      service.resetDraft();
+
+      service.setLeagueShape(leagueShape({ budget: 400 }));
+      expect(service.clearedPickCount()).toBe(0);
+      expect(service.restoreClearedDraft()).toBe(0);
+    });
+
+    it('does not offer the same cleared draft twice', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 12);
+      service.resetDraft();
+      service.restoreClearedDraft();
+      service.resetDraft();
+
+      // The second reset stashes the restored draft, not the original — but
+      // restoring consumed the first stash, so this is a fresh one.
+      expect(service.clearedPickCount()).toBe(1);
+    });
+  });
+
   describe('following another window', () => {
     /**
      * A second window is a second service over the same localStorage. These

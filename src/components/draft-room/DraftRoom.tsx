@@ -67,6 +67,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [leagueOpen, setLeagueOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [followedAt, setFollowedAt] = useState(0);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [cleared, setCleared] = useState(0);
   const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
     useDraftPreferences();
 
@@ -157,11 +159,26 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     if (draftService.undoLastPick()) sync();
   }, [draftService, sync]);
 
+  /**
+   * Clearing the draft is deliberate, and can be taken back.
+   *
+   * This button sits beside Undo and used to throw an afternoon's work away on
+   * one click with nothing to recover it. The engine keeps the cleared pick log
+   * aside, so the room can put it back until somebody drafts again.
+   */
   const reset = useCallback(() => {
     draftService.resetDraft();
+    setConfirmReset(false);
     setResumed(0);
     setSelected(null);
     setBid('');
+    setCleared(draftService.clearedPickCount());
+    sync();
+  }, [draftService, sync]);
+
+  const undoReset = useCallback(() => {
+    draftService.restoreClearedDraft();
+    setCleared(0);
     sync();
   }, [draftService, sync]);
 
@@ -220,6 +237,14 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rotates with each pick
     [draftService, players]
   );
+  /**
+   * Nobody has room for another player.
+   *
+   * Worth knowing about explicitly: without it the room goes on offering
+   * hundreds of players nobody can buy and asking a full team to nominate.
+   */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const complete = useMemo(() => draftService.isComplete(), [draftService, players, teams]);
 
   /**
    * An import re-prices the board but does not invalidate money already spent,
@@ -364,7 +389,11 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         >
           {league.teams} × ${league.budget}
         </button>
-        <button className="dr-button" onClick={reset} disabled={!drafted.length}>
+        <button
+          className="dr-button"
+          onClick={() => setConfirmReset(true)}
+          disabled={!drafted.length}
+        >
           Reset
         </button>
       </header>
@@ -376,6 +405,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           style={{ color: 'var(--dr-ink-muted)', fontSize: 12 }}
         >
           Resumed your saved draft — {resumed} pick{resumed === 1 ? '' : 's'} restored.
+        </p>
+      )}
+
+      {cleared > 0 && (
+        <p className="dr-ticker dr-ticker-warn" role="status">
+          Cleared {cleared} pick{cleared === 1 ? '' : 's'}.{' '}
+          <button type="button" className="dr-linkish" onClick={undoReset}>
+            Put them back
+          </button>{' '}
+          — available until somebody drafts again.
         </p>
       )}
 
@@ -488,18 +527,44 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         </main>
 
         <aside className="dr-aside">
-          <NominationStage
-            player={selected}
-            teams={teams}
-            teamId={teamId}
-            bid={bid}
-            analytics={analytics}
-            check={check}
-            onTeamChange={setTeamId}
-            onBidChange={setBid}
-            onConfirm={confirm}
-            onOpenProfile={() => setProfileOpen(true)}
-          />
+          {complete ? (
+            <section className="dr-stage dr-stage-done" aria-label="Draft complete">
+              <h2 className="dr-stage-name" style={{ fontSize: 24 }}>
+                That is the draft
+              </h2>
+              <p className="dr-meter-note">
+                Every roster is full — {drafted.length} pick
+                {drafted.length === 1 ? '' : 's'}, ${spent} spent. Nobody has room for another
+                player, so there is nothing left to nominate.
+              </p>
+              <div className="dr-results-actions">
+                <button
+                  type="button"
+                  className="dr-button dr-button-primary"
+                  onClick={() => setResultsOpen(true)}
+                >
+                  See the results
+                </button>
+                <button type="button" className="dr-button" onClick={() => setBoardOpen(true)}>
+                  The room
+                </button>
+              </div>
+            </section>
+          ) : (
+            <NominationStage
+              player={selected}
+              teams={teams}
+              teamId={teamId}
+              bid={bid}
+              analytics={analytics}
+              check={check}
+              onTeamChange={setTeamId}
+              onBidChange={setBid}
+              onConfirm={confirm}
+              onOpenProfile={() => setProfileOpen(true)}
+              canDraft={(team) => draftService.canDraft(team)}
+            />
+          )}
           {preferences.advisor && (
             <AdvisorPanel
               advice={advice}
@@ -602,6 +667,39 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           onClear={clearRankings}
           onClose={() => setImportOpen(false)}
         />
+      )}
+
+      {confirmReset && (
+        <div className="dr-modal" role="dialog" aria-modal="true" aria-label="Clear the draft">
+          <button
+            type="button"
+            className="dr-modal-scrim"
+            aria-label="Keep the draft"
+            onClick={() => setConfirmReset(false)}
+          />
+          <article className="dr-modal-panel dr-confirm">
+            <h2 className="dr-stage-name" style={{ fontSize: 22 }}>
+              Clear {drafted.length} pick{drafted.length === 1 ? '' : 's'}?
+            </h2>
+            <p className="dr-meter-note">
+              Every roster goes back to empty and every budget back to full. You can put it back
+              afterwards, but only until somebody drafts again.
+            </p>
+            <div className="dr-results-actions">
+              <button type="button" className="dr-button dr-button-primary" onClick={reset}>
+                Clear the draft
+              </button>
+              <button
+                type="button"
+                className="dr-button"
+                autoFocus
+                onClick={() => setConfirmReset(false)}
+              >
+                Keep drafting
+              </button>
+            </div>
+          </article>
+        </div>
       )}
 
       {leagueOpen && (
