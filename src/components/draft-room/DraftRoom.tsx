@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AuctionDraftService,
   type BidCheck,
@@ -68,6 +68,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [importOpen, setImportOpen] = useState(false);
   const [followedAt, setFollowedAt] = useState(0);
   const [confirmReset, setConfirmReset] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [cleared, setCleared] = useState(0);
   const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
     useDraftPreferences();
@@ -129,9 +130,17 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     return draftService.validateBid(selected.id, teamId, Number.parseInt(bid, 10));
   }, [selected, teamId, bid, draftService]);
 
+  /**
+   * Put a player on the block and hand the room straight to the money.
+   *
+   * Focus moves to the winning-team select because that is the next thing
+   * anyone types: in a live auction the name is called, the bidding happens out
+   * loud, and the only thing to record is who won and for how much.
+   */
   const nominate = useCallback(
     (player: Player) => {
       setSelected(player);
+      window.setTimeout(() => document.getElementById('dr-team')?.focus(), 0);
       let opening = player.estimatedValue;
       try {
         opening = Math.max(
@@ -246,6 +255,54 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const complete = useMemo(() => draftService.isComplete(), [draftService, players, teams]);
 
+  const anyModalOpen =
+    profileOpen ||
+    resultsOpen ||
+    boardOpen ||
+    compareOpen ||
+    leagueOpen ||
+    importOpen ||
+    confirmReset;
+
+  /**
+   * Run the auction without reaching for the mouse.
+   *
+   * An auction moves faster than a board of 628 cards can be clicked through:
+   * a name is called, bids are shouted, and the commissioner has a couple of
+   * seconds to record it. `/` puts the cursor in the search box and Enter puts
+   * the top match on the block, which turns a nomination into three keystrokes
+   * and a name.
+   *
+   * Shortcuts stay out of the way of typing: a key pressed inside an input,
+   * select or textarea belongs to that field, and a modal owns the keyboard
+   * while it is open.
+   */
+  useEffect(() => {
+    const isTyping = (target: EventTarget | null): boolean =>
+      target instanceof HTMLElement &&
+      (target.tagName === 'INPUT' ||
+        target.tagName === 'SELECT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable);
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (anyModalOpen || isTyping(event.target)) return;
+
+      if (event.key === '/') {
+        event.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      } else if (event.key.toLowerCase() === 'u' && draftService.canUndo()) {
+        event.preventDefault();
+        undo();
+      }
+    };
+
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [anyModalOpen, undo, draftService]);
+
   /**
    * An import re-prices the board but does not invalidate money already spent,
    * so unlike a league change it leaves the draft alone.
@@ -353,7 +410,12 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           seconds={preferences.clockSeconds}
         />
 
-        <button className="dr-button" onClick={undo} disabled={!draftService.canUndo()}>
+        <button
+          className="dr-button"
+          onClick={undo}
+          disabled={!draftService.canUndo()}
+          title="Undo the last pick — or press u"
+        >
           Undo pick
         </button>
         <button className="dr-button" onClick={() => setBoardOpen(true)} disabled={!drafted.length}>
@@ -422,11 +484,25 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         <main aria-label="Available players">
           <div className="dr-toolbar">
             <input
+              ref={searchRef}
               className="dr-search"
-              placeholder="Search players or teams…"
+              placeholder="Search players or teams…  ( / )"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               aria-label="Search players"
+              onKeyDown={(event) => {
+                // Enter puts the best remaining match on the block. Typing three
+                // letters of a name and pressing return is the whole nomination.
+                if (event.key === 'Enter' && available.length) {
+                  event.preventDefault();
+                  nominate(available[0]);
+                  setQuery('');
+                } else if (event.key === 'Escape') {
+                  event.preventDefault();
+                  setQuery('');
+                  event.currentTarget.blur();
+                }
+              }}
             />
             {POSITIONS.map((pos) => (
               <button
