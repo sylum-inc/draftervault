@@ -346,6 +346,86 @@ describe('AuctionDraftService', () => {
     });
   });
 
+  describe('the draft as a file', () => {
+    it('round-trips a draft through a file', () => {
+      const [a, b] = service.getAvailablePlayers();
+      service.draftPlayer(a.id, 'team-1', 30);
+      service.draftPlayer(b.id, 'team-4', 12);
+      const file = service.exportDraft();
+
+      // A different machine: a fresh service that has never seen this draft.
+      localStorage.clear();
+      const elsewhere = new AuctionDraftService();
+      expect(elsewhere.getDraftedPlayers()).toHaveLength(0);
+
+      const result = elsewhere.importDraft(file);
+      expect(result).toMatchObject({ ok: true, restored: 2, skipped: 0 });
+      const drafted = elsewhere.getDraftedPlayers();
+      expect(drafted.find((p) => p.id === a.id)?.draftCost).toBe(30);
+      expect(elsewhere.getTeams()[3].remaining).toBe(188);
+    });
+
+    it('carries the league with the picks', () => {
+      // Prices are meaningless without the league they were bid under.
+      service.setLeagueShape(leagueShape({ teams: 10, budget: 300 }));
+      const player = service.getAvailablePlayers()[0];
+      service.draftPlayer(player.id, 'team-2', 40);
+      const file = service.exportDraft();
+
+      localStorage.clear();
+      const elsewhere = new AuctionDraftService();
+      expect(elsewhere.getTeams()).toHaveLength(12);
+
+      expect(elsewhere.importDraft(file)).toMatchObject({ ok: true, restored: 1 });
+      expect(elsewhere.getTeams()).toHaveLength(10);
+      expect(elsewhere.getLeagueShape().budget).toBe(300);
+    });
+
+    it('replaces whatever was on the board', () => {
+      const [a, b, c] = service.getAvailablePlayers();
+      service.draftPlayer(a.id, 'team-1', 5);
+      const file = service.exportDraft();
+
+      service.resetDraft();
+      service.draftPlayer(b.id, 'team-2', 7);
+      service.draftPlayer(c.id, 'team-3', 9);
+      expect(service.getDraftedPlayers()).toHaveLength(2);
+
+      service.importDraft(file);
+      const drafted = service.getDraftedPlayers();
+      expect(drafted).toHaveLength(1);
+      expect(drafted[0].id).toBe(a.id);
+    });
+
+    it('refuses a file that is not JSON', () => {
+      expect(service.importDraft('not a draft at all')).toMatchObject({ ok: false });
+    });
+
+    it("refuses somebody else's JSON", () => {
+      expect(service.importDraft('{"picks":[{"playerId":"x"}]}')).toMatchObject({
+        ok: false,
+        reason: expect.stringContaining('Draft Vault'),
+      });
+    });
+
+    it('counts picks it could not replay rather than dropping them quietly', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 10);
+      const file = JSON.parse(service.exportDraft());
+      file.picks.push({ playerId: 'nobody-at-all', teamId: 'team-2', cost: 5 });
+
+      expect(service.importDraft(JSON.stringify(file))).toMatchObject({
+        ok: true,
+        restored: 1,
+        skipped: 1,
+      });
+    });
+
+    it('survives an empty draft', () => {
+      expect(service.importDraft(service.exportDraft())).toMatchObject({ ok: true, restored: 0 });
+    });
+  });
+
   describe('following another window', () => {
     /**
      * A second window is a second service over the same localStorage. These

@@ -39,6 +39,7 @@ src/pages/Index.tsx
         ├── BudgetPlanner.tsx     what a bid leaves behind, live
         ├── BargainBoard.tsx      our board against expert consensus
         ├── AdvisorPanel.tsx      the opinion layer, off by default
+        ├── DraftFile.tsx         save the draft to a file, or load one
         ├── LeagueSettings.tsx    teams, budget, roster shape — re-prices the board
         ├── RankingsImport.tsx    bring your own values, previewed before applying
         ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
@@ -118,6 +119,29 @@ collide on first-initial-plus-surname — "B. Robinson" is Bijan ($54) or Brian
 bound silently and wrongly. Imported values replace ours everywhere including
 in the advice, because an opinion nothing acts on is decoration; ours survives
 on `player.modelValue` and the board marks whose number it is showing.
+
+**Draft night is the deadline, and the room has to survive it.** Three things
+were found by driving a full 192-pick draft rather than by testing one. Reset
+sat beside Undo, took no confirmation, and deleted the pick log outright — it
+now asks, and the engine keeps the cleared log so it can be put back until
+somebody drafts again. `getNominatingTeam` rotated on `draftedCount %
+teams.length` regardless of room, so a full team kept being asked to nominate;
+it now steps over teams that cannot draft, and `isComplete()` ends the draft
+rather than offering hundreds of players nobody can buy. A full team is
+disabled in the winning-team list rather than accepted and rejected afterwards.
+
+**The auction runs from the keyboard, because it moves faster than a mouse.**
+`/` focuses the search, a few letters and Enter put the top match on the block,
+focus lands on the winning-team select, and Enter in the bid sells. `u` undoes.
+Shortcuts never fire inside an input, select or textarea, and a modal owns the
+keyboard while open — the guard is what keeps typing "u" in the search box from
+undoing a pick.
+
+**A file is the escape hatch.** `exportDraft()`/`importDraft()` carry the pick
+log _and_ the league, because prices are meaningless without the league they
+were bid under. Loading replaces the board, so it asks first when a draft is in
+progress, and picks that no longer validate are counted rather than dropped
+quietly.
 
 **A second window follows; it does not receive.** `draftSync.ts` posts one
 thing on a `BroadcastChannel` — that the draft moved — and the receiving window
@@ -247,7 +271,9 @@ budget simulator; a bargain board; a separated advisor layer; defensive
 personnel for all 32 teams; results with grades and export; Docker/nginx
 deployment; a single-file build; a configurable league that re-prices the whole
 board; a custom-rankings import that refuses to guess; app icons and a manifest
-that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; 166 tests.
+that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; keyboard operation, a
+non-destructive reset, a draft that ends, and a draft file for the night the
+laptop dies; 180 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

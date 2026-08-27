@@ -1397,6 +1397,76 @@ export class AuctionDraftService {
     return restored;
   }
 
+  /**
+   * The draft as a file somebody can keep.
+   *
+   * localStorage is one browser profile on one machine: a cleared cache, a
+   * borrowed laptop or a dead battery loses the afternoon. This is the same
+   * thing `persist()` writes, plus the league it was bid under, so a draft can
+   * be carried somewhere else and picked up mid-auction.
+   */
+  exportDraft(): string {
+    return JSON.stringify(
+      {
+        kind: 'draft-vault-draft',
+        version: 1,
+        savedAt: new Date().toISOString(),
+        league: this.league,
+        budgets: this.teams.map((t) => ({ id: t.id, budget: t.budget })),
+        picks: this.history,
+      },
+      null,
+      2
+    );
+  }
+
+  /**
+   * Load a draft from a file, replacing whatever is on the board.
+   *
+   * The league travels with the picks and is adopted, because prices are
+   * meaningless without it — a draft bid in a ten-team league does not describe
+   * a roster anybody could buy in a twelve-team one. Picks that no longer
+   * validate are counted rather than silently dropped.
+   */
+  importDraft(
+    text: string
+  ): { ok: true; restored: number; skipped: number } | { ok: false; reason: string } {
+    let saved: {
+      kind?: string;
+      league?: LeagueShape;
+      budgets?: Array<{ id: string; budget: number }>;
+      picks?: Array<{ playerId: string; teamId: string; cost: number }>;
+    };
+    try {
+      saved = JSON.parse(text);
+    } catch {
+      return { ok: false, reason: 'That file is not a saved draft — it is not readable as JSON.' };
+    }
+
+    if (!saved || saved.kind !== 'draft-vault-draft') {
+      return { ok: false, reason: 'That file was not saved by Draft Vault.' };
+    }
+    if (!Array.isArray(saved.picks)) {
+      return { ok: false, reason: 'That draft file has no picks in it.' };
+    }
+
+    this.league = saved.league ? normaliseLeague(leagueShape(saved.league)) : this.league;
+    writeStoredLeague(this.league);
+    this.draftedCount = 0;
+    this.history = [];
+    this.initializePlayers();
+    this.initializeTeams();
+
+    for (const { id, budget } of saved.budgets ?? []) this.updateTeamBudget(id, budget);
+
+    let restored = 0;
+    for (const pick of saved.picks) {
+      if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
+    }
+    this.persist();
+    return { ok: true, restored, skipped: saved.picks.length - restored };
+  }
+
   /** Whether a resumable draft is sitting in storage. */
   static hasSavedDraft(): boolean {
     try {

@@ -24,6 +24,7 @@ import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
 import { LeagueSettings } from './LeagueSettings';
 import { RankingsImport } from './RankingsImport';
+import { DraftFile } from './DraftFile';
 import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
 import { openDraftSync } from '@/services/draftSync';
 import type { LeagueShape } from '@/lib/valuation';
@@ -68,6 +69,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [importOpen, setImportOpen] = useState(false);
   const [followedAt, setFollowedAt] = useState(0);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [fileOpen, setFileOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const [cleared, setCleared] = useState(0);
   const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
@@ -453,6 +455,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         </button>
         <button
           className="dr-button"
+          onClick={() => setFileOpen(true)}
+          title="Save the draft to a file, or load one"
+        >
+          File
+        </button>
+        <button
+          className="dr-button"
           onClick={() => setConfirmReset(true)}
           disabled={!drafted.length}
         >
@@ -742,6 +751,22 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           onImport={applyRankings}
           onClear={clearRankings}
           onClose={() => setImportOpen(false)}
+        />
+      )}
+
+      {fileOpen && (
+        <DraftFile
+          service={draftService}
+          draftedCount={drafted.length}
+          onLoaded={() => {
+            setSelected(null);
+            setTeamId('');
+            setBid('');
+            setResumed(0);
+            setCleared(0);
+            sync();
+          }}
+          onClose={() => setFileOpen(false)}
         />
       )}
 
