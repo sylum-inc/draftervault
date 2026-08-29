@@ -501,3 +501,50 @@ describe('league shapes', () => {
     expect(sameLeague(base, { ...base, rostered: { ...base.rostered, WR: 59 } })).toBe(false);
   });
 });
+
+describe('the sheet pricePool actually used', () => {
+  // Which players the money is buying is needed in three other places: what is
+  // still for sale, what inflation is measured over, and when the auction is
+  // finished. Every one of those recomputing the selection is a second
+  // definition that can disagree with the first — and it would disagree only
+  // once a real sheet is imported, which is the only night any of it matters.
+  // So the selection is returned rather than left to be derived again.
+  const projected = (points: number, position: string, index: number) => ({
+    position,
+    points,
+    receptions: 0,
+    id: `p${index}`,
+  });
+
+  const field = Array.from({ length: 300 }, (_, i) =>
+    projected(320 - i, ['RB', 'WR', 'TE', 'QB'][i % 4], i)
+  );
+
+  it('hands back the mask rather than making callers guess it', () => {
+    const { onSheet, priced } = pricePool(field, leagueShape({ auctionSheetSize: 50 }));
+
+    expect(onSheet.filter(Boolean)).toHaveLength(50);
+    // Everything priced above a dollar was bought. The converse does not hold:
+    // a player on the sheet with no surplus still costs the dollar the rules
+    // require, so he is on the mask at $1.
+    priced.forEach((entry, index) => {
+      if (entry.auctionValue > 1) expect(onSheet[index]).toBe(true);
+    });
+  });
+
+  it('returns exactly the sheet it was given, not one it derived', () => {
+    const explicit = field.map((_, index) => index % 7 === 0);
+    const { onSheet } = pricePool(field, leagueShape({ auctionSheetSize: 50 }), {
+      onSheet: explicit,
+    });
+
+    // An explicit sheet overrides the size entirely — 43 players, not 50.
+    expect(onSheet).toEqual(explicit);
+  });
+
+  it('marks every rosterable slot when the whole board is auctioned', () => {
+    const league = leagueShape({ auctionSheetSize: null });
+    const { onSheet } = pricePool(field, league);
+    expect(onSheet.filter(Boolean)).toHaveLength(league.teams * league.rosterSize);
+  });
+});

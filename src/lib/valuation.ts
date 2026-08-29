@@ -317,11 +317,30 @@ export interface PricingOptions {
   onSheet?: readonly boolean[];
 }
 
+/**
+ * Prices, replacement levels, and the sheet the prices were reached under.
+ *
+ * `onSheet` is returned rather than left to be recomputed. Which players the
+ * money is buying is needed in three other places — what is still for sale,
+ * what inflation is measured over, when the auction is finished — and every one
+ * of those recomputing it is a second definition that can silently disagree
+ * with the first. It would disagree only when a real sheet has been imported,
+ * which is the only night any of it matters. So the selection is made once,
+ * here, and handed back; there is no second selector to pass different
+ * arguments to.
+ */
+export interface Pricing {
+  replacement: Record<string, number>;
+  priced: Priced[];
+  /** True where the player was bought with money, parallel to `players`. */
+  onSheet: boolean[];
+}
+
 export const pricePool = (
   players: readonly Projected[],
   league: LeagueShape,
   options: PricingOptions = {}
-): { replacement: Record<string, number>; priced: Priced[] } => {
+): Pricing => {
   const { onSheet } = options;
 
   /*
@@ -379,5 +398,9 @@ export const pricePool = (
         : 1,
   }));
 
-  return { replacement, priced };
+  return {
+    replacement,
+    priced,
+    onSheet: players.map((_, index) => inPool.has(index)),
+  };
 };

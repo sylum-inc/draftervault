@@ -13,6 +13,72 @@ describe('AuctionDraftService', () => {
     service = new AuctionDraftService();
   });
 
+  describe('the seams the rest of the features hang off', () => {
+    // These are the shared edges: several features need the same fact, and the
+    // failure they are guarding against is two of them computing it separately
+    // and disagreeing only on the night it matters.
+
+    it('tells every listener, not just the last one to arrive', () => {
+      // A second window follows the draft through a change listener already.
+      // Anything else that wants to react to a pick — a save, a sync — used to
+      // take the single slot and silently stop the first from ever firing.
+      const heard: string[] = [];
+      service.addChangeListener(() => heard.push('window'));
+      service.addChangeListener(() => heard.push('autosave'));
+
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 5);
+
+      expect(heard).toContain('window');
+      expect(heard).toContain('autosave');
+    });
+
+    it('lets one listener leave without silencing the others', () => {
+      const heard: string[] = [];
+      const stop = service.addChangeListener(() => heard.push('going'));
+      service.addChangeListener(() => heard.push('staying'));
+      stop();
+
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 5);
+
+      expect(heard).toEqual(['staying']);
+    });
+
+    it('keeps the single-listener form working for the caller that uses it', () => {
+      let count = 0;
+      service.setChangeListener(() => (count += 1));
+      service.draftPlayer(firstAvailable(service).id, 'team-1', 5);
+      expect(count).toBe(1);
+
+      service.setChangeListener(null);
+      service.draftPlayer(firstAvailable(service, 'WR').id, 'team-2', 5);
+      expect(count).toBe(1);
+    });
+
+    it('accepts a bid at the ceiling and refuses the dollar above it', () => {
+      // The money half of validateBid is now shared with whatever states a
+      // team's ceiling. If the two ever drift, this boundary is where it shows
+      // — a number displayed beside the bid box that the engine then rejects.
+      const player = firstAvailable(service);
+      expect(service.validateBid(player.id, 'team-1', 192).ok).toBe(true);
+      expect(service.validateBid(player.id, 'team-1', 193).ok).toBe(false);
+    });
+
+    it('applies the roster rules to a free pick exactly as to a bid', () => {
+      // checkRoster is split out so a pick that costs nothing still passes it.
+      // A roster rule that stops a $1 bid but not an identical free pick is a
+      // rule in name only.
+      const limit = leagueShape().positionLimits.K;
+      const kickers = service.getAvailablePlayers().filter((p) => p.position === 'K');
+      for (let i = 0; i < limit; i++) {
+        expect(service.draftPlayer(kickers[i].id, 'team-1', 1)).toBe(true);
+      }
+
+      const check = service.validateBid(kickers[limit].id, 'team-1', 1);
+      expect(check.ok).toBe(false);
+      if (!check.ok) expect(check.code).toBe('position-full');
+    });
+  });
+
   describe('the reserve, in a partial auction', () => {
     // The $1-per-starting-slot reserve exists because every roster spot has to
     // be bought. This league auctions a commissioner's sheet of the best

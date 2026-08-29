@@ -521,7 +521,7 @@ export class AuctionDraftService {
   /** Imported rankings, by player id. Empty unless somebody has imported some. */
   private overrides: Record<string, RankingOverride> = readStoredOverrides();
   /** Told after every change that reached storage, so other windows can follow. */
-  private onChanged: (() => void) | null = null;
+  private listeners = new Set<() => void>();
   /**
    * True while rebuilding from a change another window made.
    *
@@ -714,8 +714,35 @@ export class AuctionDraftService {
       };
     }
 
-    const filled = rosterSize(team.roster);
-    if (filled >= this.league.rosterSize) {
+    const room = this.checkRoster(player, team);
+    if (!room.ok) return room;
+
+    const { spendable, held } = this.spendableFor(team);
+    if (cost > spendable) {
+      return {
+        ok: false,
+        code: 'insufficient-funds',
+        message:
+          held > 0
+            ? `${team.name} can spend $${Math.max(0, spendable)} — $${held} is held back for ${held} open starting spot${held === 1 ? '' : 's'}.`
+            : `${team.name} only has $${team.remaining} left.`,
+      };
+    }
+
+    return { ok: true };
+  }
+
+  /**
+   * Whether this team has room for this player at all, money aside.
+   *
+   * Split out of validateBid because a pick that costs nothing still has to
+   * pass it, and because the most-they-can-bid question needs the money half
+   * on its own. Two callers reading one copy is the point: a roster rule that
+   * rejects a bid but not an identically illegal free pick is a rule in name
+   * only.
+   */
+  private checkRoster(player: Player, team: Team): BidCheck {
+    if (rosterSize(team.roster) >= this.league.rosterSize) {
       return {
         ok: false,
         code: 'roster-full',
@@ -729,22 +756,21 @@ export class AuctionDraftService {
         message: `${team.name} cannot carry more than ${this.league.positionLimits[player.position]} at ${player.position}.`,
       };
     }
-
-    // Every remaining starting slot still needs at least a dollar to fill.
-    const slotsToFill = Math.max(0, this.reservedSlots - filled - 1);
-    const spendable = team.remaining - slotsToFill;
-    if (cost > spendable) {
-      return {
-        ok: false,
-        code: 'insufficient-funds',
-        message:
-          slotsToFill > 0
-            ? `${team.name} can spend $${Math.max(0, spendable)} — $${slotsToFill} is held back for ${slotsToFill} open starting spot${slotsToFill === 1 ? '' : 's'}.`
-            : `${team.name} only has $${team.remaining} left.`,
-      };
-    }
-
     return { ok: true };
+  }
+
+  /**
+   * The most this team may legally commit to one player, and what is withheld.
+   *
+   * The reserve is `reservedSlots` — zero whenever the snake fills the rest of
+   * the roster for free. Anything that wants to state a team's ceiling has to
+   * come through here rather than recomputing it, or the number shown beside a
+   * bid box drifts from the number the engine will actually accept, and the
+   * first anyone knows of it is a rejected bid at the worst moment.
+   */
+  private spendableFor(team: Team): { spendable: number; held: number } {
+    const held = Math.max(0, this.reservedSlots - rosterSize(team.roster) - 1);
+    return { spendable: team.remaining - held, held };
   }
 
   draftPlayer(playerId: string, teamId: string, cost: number): boolean {
@@ -1418,13 +1444,46 @@ export class AuctionDraftService {
    * what it moved to. Whatever it needs, it reads back from the engine, which
    * is the same rule that keeps the pick log the only shared fact.
    */
+  addChangeListener(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  /**
+   * The single-listener form, kept because one caller reads naturally as one.
+   *
+   * It cannot stay the only form: a second window follows the draft through
+   * it already, and anything else that wants to react to a pick — a save, a
+   * sync, a refresh — would silently take the slot and stop the first from
+   * ever firing again. A Set is the seam; this is a convenience over it.
+   */
   setChangeListener(listener: (() => void) | null): void {
-    this.onChanged = listener;
+    this.listeners.clear();
+    if (listener) this.listeners.add(listener);
+  }
+
+  /**
+   * Put a saved pick log back on the board, and say how much of it landed.
+   *
+   * Three callers replay — resuming this browser's draft, taking back a reset,
+   * and loading a file — and they were three copies of the same loop. That is
+   * one loop three chances to diverge, and a pick that replays differently
+   * depending on which door it came through is a draft that disagrees with
+   * itself. Picks that no longer validate are counted, never dropped quietly.
+   */
+  private replay(picks: ReadonlyArray<{ playerId: string; teamId: string; cost: number }>): number {
+    let restored = 0;
+    for (const pick of picks) {
+      if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
+    }
+    return restored;
   }
 
   private announce(): void {
     if (this.applyingRemote) return;
-    this.onChanged?.();
+    for (const listener of this.listeners) listener();
   }
 
   /**
@@ -1507,10 +1566,7 @@ export class AuctionDraftService {
     this.resetDraft();
     for (const { id, budget } of saved.budgets ?? []) this.updateTeamBudget(id, budget);
 
-    let restored = 0;
-    for (const pick of saved.picks) {
-      if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
-    }
+    const restored = this.replay(saved.picks);
     return restored;
   }
 
@@ -1555,10 +1611,7 @@ export class AuctionDraftService {
     if (!sameLeague(league, this.league)) return 0;
 
     for (const { id, budget } of saved.budgets ?? []) this.updateTeamBudget(id, budget);
-    let restored = 0;
-    for (const pick of saved.picks) {
-      if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
-    }
+    const restored = this.replay(saved.picks);
     try {
       localStorage.removeItem(CLEARED_STORAGE_KEY);
     } catch {
@@ -1638,10 +1691,7 @@ export class AuctionDraftService {
 
     for (const { id, budget } of saved.budgets ?? []) this.updateTeamBudget(id, budget);
 
-    let restored = 0;
-    for (const pick of saved.picks) {
-      if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
-    }
+    const restored = this.replay(saved.picks);
     this.persist();
     return { ok: true, restored, skipped: saved.picks.length - restored };
   }
