@@ -384,6 +384,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const customCount = useMemo(() => draftService.getCustomRankingCount(), [draftService, players]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const myTeamId = useMemo(() => draftService.getMyTeamId(), [draftService, teams]);
+
   const activeTeam = teams.find((team) => team.id === teamId);
 
   // The opinion layer is computed only when it is switched on: it is the one
@@ -742,6 +745,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               players={players}
               activeTeamId={teamId}
               onSelectTeam={setTeamId}
+              league={league}
+              myTeamId={myTeamId}
             />
           )}
           {asidePanel === 'market' && <MarketPanel market={market} teams={teams} />}
@@ -872,6 +877,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           poolLeague={draftService.getPoolLeagueShape()}
           draftedCount={drafted.length}
           poolDepth={draftService.getPoolDepth()}
+          teamList={teams}
+          myTeamId={myTeamId}
+          onRenameTeam={(id, name) => {
+            draftService.renameTeam(id, name);
+            sync();
+          }}
+          onSetMyTeam={(id) => {
+            draftService.setMyTeam(id);
+            sync();
+          }}
           onApply={applyLeague}
           onClose={() => setLeagueOpen(false)}
         />

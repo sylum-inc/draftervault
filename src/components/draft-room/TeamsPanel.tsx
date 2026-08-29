@@ -1,21 +1,29 @@
 import type { Player, PlayerPosition, Team } from '@/services/auctionDraftService';
+import { POSITIONS, type LeagueShape } from '@/lib/valuation';
 
 interface TeamsPanelProps {
   teams: Team[];
   players: Player[];
   activeTeamId: string;
   onSelectTeam: (teamId: string) => void;
+  /** The lineup the league actually starts, which is what "need" means. */
+  league: LeagueShape;
+  /** Which team is the person using this, so it can be told apart at a glance. */
+  myTeamId: string | null;
 }
 
-/** Starting slots a team is trying to fill, in the order they matter. */
-const STARTERS: Array<[PlayerPosition, number]> = [
-  ['QB', 1],
-  ['RB', 2],
-  ['WR', 3],
-  ['TE', 1],
-  ['K', 1],
-  ['DST', 1],
-];
+/**
+ * Starting slots a team is trying to fill, in the order they matter.
+ *
+ * Read from the league rather than typed here. This was the fourth hardcoded
+ * QB1/RB2/WR3 table in the app; the other three were consolidated when the
+ * league became configurable and this one was missed, so a superflex or
+ * three-receiver league saw needs it was not actually playing.
+ */
+const startersFor = (league: LeagueShape): Array<[PlayerPosition, number]> =>
+  POSITIONS.map(
+    (position) => [position, league.startingLineup[position] ?? 0] as [PlayerPosition, number]
+  ).filter(([, count]) => count > 0);
 
 /**
  * Every team's roster as it fills.
@@ -24,7 +32,15 @@ const STARTERS: Array<[PlayerPosition, number]> = [
  * everyone else's, because a team that still needs two running backs is the
  * team about to bid against you. Filled slots are solid, open ones hollow.
  */
-export const TeamsPanel = ({ teams, players, activeTeamId, onSelectTeam }: TeamsPanelProps) => {
+export const TeamsPanel = ({
+  teams,
+  players,
+  activeTeamId,
+  onSelectTeam,
+  league,
+  myTeamId,
+}: TeamsPanelProps) => {
+  const STARTERS = startersFor(league);
   const byTeam = new Map<string, Player[]>();
   for (const player of players) {
     if (!player.isDrafted || !player.draftedBy) continue;
@@ -46,9 +62,19 @@ export const TeamsPanel = ({ teams, players, activeTeamId, onSelectTeam }: Teams
         const active = team.id === activeTeamId;
 
         return (
-          <div className={`dr-team-block${active ? ' is-active' : ''}`} key={team.id}>
+          <div
+            className={`dr-team-block${active ? ' is-active' : ''}${team.id === myTeamId ? ' is-mine' : ''}`}
+            key={team.id}
+          >
             <button type="button" className="dr-team-head" onClick={() => onSelectTeam(team.id)}>
-              <span className="dr-team-name">{team.name}</span>
+              <span className="dr-team-name">
+                {team.name}
+                {team.id === myTeamId && (
+                  <span className="dr-mine-tag" title="Your team">
+                    you
+                  </span>
+                )}
+              </span>
               <span
                 className="dr-num"
                 style={{ color: team.remaining <= 5 ? 'var(--dr-danger)' : 'var(--dr-ink)' }}

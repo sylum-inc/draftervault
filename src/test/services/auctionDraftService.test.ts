@@ -346,6 +346,90 @@ describe('AuctionDraftService', () => {
     });
   });
 
+  describe('naming the teams', () => {
+    it('starts with numbered defaults', () => {
+      expect(service.getTeams()[6].name).toBe('Team 7');
+      expect(service.getMyTeamId()).toBeNull();
+    });
+
+    it('renames a team without touching the draft', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-7', 25);
+
+      service.renameTeam('team-7', 'Dave');
+      expect(service.getTeams()[6].name).toBe('Dave');
+      // A name is not a price: the draft is untouched.
+      expect(service.getDraftedPlayers()).toHaveLength(1);
+      expect(service.getTeams()[6].remaining).toBe(175);
+    });
+
+    it('falls back to the numbered default when a name is cleared', () => {
+      service.renameTeam('team-3', 'Sarah');
+      service.renameTeam('team-3', '   ');
+      expect(service.getTeams()[2].name).toBe('Team 3');
+    });
+
+    it('remembers names and which team is mine across a reload', () => {
+      service.renameTeam('team-2', 'Priya');
+      service.setMyTeam('team-2');
+
+      const reloaded = new AuctionDraftService();
+      expect(reloaded.getTeams()[1].name).toBe('Priya');
+      expect(reloaded.getMyTeamId()).toBe('team-2');
+    });
+
+    it('refuses a team that does not exist as mine', () => {
+      service.setMyTeam('team-99');
+      expect(service.getMyTeamId()).toBeNull();
+    });
+
+    it('keeps names through a league change', () => {
+      service.renameTeam('team-1', 'Dave');
+      service.setLeagueShape(leagueShape({ budget: 250 }));
+      expect(service.getTeams()[0].name).toBe('Dave');
+    });
+
+    it('drops a name for a team the league no longer has', () => {
+      service.renameTeam('team-12', 'Gone');
+      service.setLeagueShape(leagueShape({ teams: 8 }));
+      expect(service.getTeams()).toHaveLength(8);
+      expect(service.getTeams().some((t) => t.name === 'Gone')).toBe(false);
+    });
+
+    it('announces a rename so another window follows it', () => {
+      let announced = 0;
+      service.setChangeListener(() => announced++);
+      service.renameTeam('team-5', 'Marcus');
+      expect(announced).toBeGreaterThan(0);
+    });
+
+    it('carries names into another window', () => {
+      service.renameTeam('team-4', 'Nina');
+      service.setMyTeam('team-4');
+
+      const board = new AuctionDraftService();
+      board.reloadFromStorage();
+      expect(board.getTeams()[3].name).toBe('Nina');
+      expect(board.getMyTeamId()).toBe('team-4');
+    });
+
+    it('carries names in the draft file', () => {
+      service.renameTeam('team-1', 'Dave');
+      service.setMyTeam('team-1');
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 20);
+      const file = service.exportDraft();
+
+      localStorage.clear();
+      const elsewhere = new AuctionDraftService();
+      expect(elsewhere.getTeams()[0].name).toBe('Team 1');
+
+      elsewhere.importDraft(file);
+      expect(elsewhere.getTeams()[0].name).toBe('Dave');
+      expect(elsewhere.getMyTeamId()).toBe('team-1');
+    });
+  });
+
   describe('the draft as a file', () => {
     it('round-trips a draft through a file', () => {
       const [a, b] = service.getAvailablePlayers();

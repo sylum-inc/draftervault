@@ -14,6 +14,12 @@ import {
 } from '@/lib/valuation';
 
 interface LeagueSettingsProps {
+  /** Every team, so they can be named and one marked as yours. */
+  teamList: Array<{ id: string; name: string }>;
+  myTeamId: string | null;
+  /** Applies at once — a name changes no price, so nothing is re-priced. */
+  onRenameTeam: (teamId: string, name: string) => void;
+  onSetMyTeam: (teamId: string | null) => void;
   league: LeagueShape;
   /** The shape the shipped pool was priced for, for showing what has moved. */
   poolLeague: LeagueShape;
@@ -40,6 +46,10 @@ const asNumber = (raw: string, fallback: number): number => {
  * says what a change costs before making it.
  */
 export const LeagueSettings = ({
+  teamList,
+  myTeamId,
+  onRenameTeam,
+  onSetMyTeam,
   league,
   poolLeague,
   draftedCount,
@@ -270,6 +280,36 @@ export const LeagueSettings = ({
                   }
                 />
               </label>
+            ))}
+          </div>
+        </section>
+
+        <section className="dr-modal-section">
+          <h3 className="dr-eyebrow">Who is in the league</h3>
+          <p className="dr-meter-note">
+            Names apply straight away and re-price nothing — the draft is untouched. Marking your
+            own team is what lets the rest of the room be read as opponents.
+          </p>
+          <div className="dr-owners">
+            {teamList.map((team, index) => (
+              <div className="dr-owner-row" key={team.id}>
+                <button
+                  type="button"
+                  className={`dr-owner-mine${team.id === myTeamId ? ' is-mine' : ''}`}
+                  aria-pressed={team.id === myTeamId}
+                  title={team.id === myTeamId ? 'This is your team' : 'Mark this as your team'}
+                  onClick={() => onSetMyTeam(team.id === myTeamId ? null : team.id)}
+                >
+                  {team.id === myTeamId ? 'you' : String(index + 1)}
+                </button>
+                <input
+                  className="dr-input"
+                  value={team.name}
+                  maxLength={40}
+                  aria-label={`Name for team ${index + 1}`}
+                  onChange={(event) => onRenameTeam(team.id, event.target.value)}
+                />
+              </div>
             ))}
           </div>
         </section>

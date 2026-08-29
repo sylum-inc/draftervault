@@ -408,6 +408,44 @@ const RANKINGS_STORAGE_KEY = 'draft-vault:custom-rankings:v1';
  */
 const CLEARED_STORAGE_KEY = 'draft-vault:cleared-draft:v1';
 
+/**
+ * Who the other eleven teams actually are.
+ *
+ * Deliberately not part of `LeagueShape`: that is the set of facts prices are
+ * derived from, and `sameLeague` compares it to decide whether a draft can
+ * survive a change. Renaming a team changes nothing about what a player is
+ * worth, so putting names in there would throw the draft away over a typo.
+ */
+const ROSTER_STORAGE_KEY = 'draft-vault:teams:v1';
+
+interface StoredTeams {
+  names?: Record<string, string>;
+  /** Which team is the person using this app. */
+  mine?: string | null;
+}
+
+const readStoredTeams = (): StoredTeams => {
+  try {
+    const raw = localStorage.getItem(ROSTER_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as StoredTeams) : null;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeStoredTeams = (value: StoredTeams): void => {
+  try {
+    if (!Object.keys(value.names ?? {}).length && !value.mine) {
+      localStorage.removeItem(ROSTER_STORAGE_KEY);
+    } else {
+      localStorage.setItem(ROSTER_STORAGE_KEY, JSON.stringify(value));
+    }
+  } catch {
+    /* storage unavailable — names simply will not be remembered */
+  }
+};
+
 const readStoredOverrides = (): Record<string, RankingOverride> => {
   try {
     const raw = localStorage.getItem(RANKINGS_STORAGE_KEY);
@@ -467,9 +505,16 @@ export class AuctionDraftService {
    * each other in a loop.
    */
   private applyingRemote = false;
+  /** Names people actually answer to, over the default "Team 3". */
+  private teamNames: Record<string, string> = {};
+  /** Which team belongs to the person running this. */
+  private myTeamId: string | null = null;
 
   constructor(league: LeagueShape = readStoredLeague()) {
     this.league = normaliseLeague(league);
+    const stored = readStoredTeams();
+    this.teamNames = stored.names ?? {};
+    this.myTeamId = stored.mine ?? null;
     this.initializePlayers();
     this.initializeTeams();
   }
@@ -552,7 +597,7 @@ export class AuctionDraftService {
   private initializeTeams(): void {
     this.teams = Array.from({ length: this.league.teams }, (_, i) => ({
       id: `team-${i + 1}`,
-      name: `Team ${i + 1}`,
+      name: this.teamNames[`team-${i + 1}`] || `Team ${i + 1}`,
       budget: this.league.budget,
       spent: 0,
       remaining: this.league.budget,
@@ -846,6 +891,46 @@ export class AuctionDraftService {
       depth[player.position] = (depth[player.position] ?? 0) + 1;
     }
     return depth;
+  }
+
+  /**
+   * Give a team the name its owner answers to.
+   *
+   * Only one person runs this app while eleven others bid, so "Team 7" is a
+   * number to hold in your head at exactly the moment there is no room for it.
+   * Names cost nothing about the valuation, so unlike a league change this
+   * leaves the draft entirely alone.
+   */
+  renameTeam(teamId: string, name: string): void {
+    const trimmed = name.trim().slice(0, 40);
+    const team = this.teams.find((t) => t.id === teamId);
+    if (!team) return;
+
+    const index = this.teams.indexOf(team);
+    if (trimmed) this.teamNames[teamId] = trimmed;
+    else delete this.teamNames[teamId];
+    team.name = trimmed || `Team ${index + 1}`;
+
+    writeStoredTeams({ names: this.teamNames, mine: this.myTeamId });
+    this.announce();
+  }
+
+  /** Which team is the person running this, if they have said. */
+  getMyTeamId(): string | null {
+    return this.myTeamId;
+  }
+
+  /**
+   * Say which team is yours.
+   *
+   * The whole point of watching eleven other rosters is to know what they can
+   * still do to you; that only means anything once the app knows which one is
+   * not an opponent.
+   */
+  setMyTeam(teamId: string | null): void {
+    this.myTeamId = teamId && this.teams.some((t) => t.id === teamId) ? teamId : null;
+    writeStoredTeams({ names: this.teamNames, mine: this.myTeamId });
+    this.announce();
   }
 
   /** The imported rankings in force, by player id. */
@@ -1272,6 +1357,9 @@ export class AuctionDraftService {
     try {
       this.league = normaliseLeague(readStoredLeague());
       this.overrides = readStoredOverrides();
+      const stored = readStoredTeams();
+      this.teamNames = stored.names ?? {};
+      this.myTeamId = stored.mine ?? null;
       this.draftedCount = 0;
       this.history = [];
       this.initializePlayers();
@@ -1412,6 +1500,10 @@ export class AuctionDraftService {
         version: 1,
         savedAt: new Date().toISOString(),
         league: this.league,
+        // Who the teams are travels with the draft: a pick log full of
+        // "Team 7" is a worse record of the night than it needs to be.
+        teamNames: this.teamNames,
+        myTeamId: this.myTeamId,
         budgets: this.teams.map((t) => ({ id: t.id, budget: t.budget })),
         picks: this.history,
       },
@@ -1434,6 +1526,8 @@ export class AuctionDraftService {
     let saved: {
       kind?: string;
       league?: LeagueShape;
+      teamNames?: Record<string, string>;
+      myTeamId?: string | null;
       budgets?: Array<{ id: string; budget: number }>;
       picks?: Array<{ playerId: string; teamId: string; cost: number }>;
     };
@@ -1452,6 +1546,9 @@ export class AuctionDraftService {
 
     this.league = saved.league ? normaliseLeague(leagueShape(saved.league)) : this.league;
     writeStoredLeague(this.league);
+    if (saved.teamNames) this.teamNames = saved.teamNames;
+    if (saved.myTeamId !== undefined) this.myTeamId = saved.myTeamId;
+    writeStoredTeams({ names: this.teamNames, mine: this.myTeamId });
     this.draftedCount = 0;
     this.history = [];
     this.initializePlayers();

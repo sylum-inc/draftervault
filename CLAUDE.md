@@ -54,6 +54,7 @@ src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
+src/lib/playerSearch.ts               finding a player by a name typed in a hurry
 src/lib/saveFile.ts                   hands over a file, in browser or artifact
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/draftAdvisor.ts          the opinion layer, deliberately separate
@@ -119,6 +120,31 @@ collide on first-initial-plus-surname — "B. Robinson" is Bijan ($54) or Brian
 bound silently and wrongly. Imported values replace ours everywhere including
 in the advice, because an opinion nothing acts on is decoration; ours survives
 on `player.modelValue` and the board marks whose number it is showing.
+
+**The board renders a page at a time, and it is not a preference.** Measured
+before it was changed: under a 4x CPU throttle, nominating froze the interface
+for 4.3 seconds because React mounts a card per player and the board handed it
+all 628. Memoising `PlayerCard` fixed re-renders but not mounting, which was
+the real cost — `nominate` also had to stop depending on `teamId`, since it is
+passed to every card and a new identity per team change defeats the memo. Sixty
+cards mount, scrolling grows it, and the table takes the same limit applied
+_after_ sorting with the bar scales still measured over the whole field.
+Nominate went 4340ms to 663ms; the worst blocking task 3053ms to 375ms.
+
+**A name typed in a hurry has no apostrophe.** The board's search was a
+substring match on the printed name, so "jamarr" found nothing — Ja'Marr Chase,
+a top-five player, invisible at exactly the wrong moment, along with Wan'Dale
+Robinson and Amon-Ra St. Brown. `playerSearch.ts` strips punctuation from both
+sides. It deliberately keeps generational suffixes where the importer's
+`normaliseName` drops them: two sources spell "Kenneth Walker III" differently,
+but somebody typing it should still find him.
+
+**Teams have names, and one of them is yours.** Only one person runs this app
+while eleven others bid, so "Team 7" is a number to hold in your head at the
+moment there is no room for it. Names live in their own storage key rather than
+in `LeagueShape`, because `sameLeague` decides whether a draft survives a
+change and a rename must never throw one away. `getMyTeamId()` is what lets the
+rest of the room be read as opponents.
 
 **Draft night is the deadline, and the room has to survive it.** Three things
 were found by driving a full 192-pick draft rather than by testing one. Reset
@@ -272,8 +298,8 @@ personnel for all 32 teams; results with grades and export; Docker/nginx
 deployment; a single-file build; a configurable league that re-prices the whole
 board; a custom-rankings import that refuses to guess; app icons and a manifest
 that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; keyboard operation, a
-non-destructive reset, a draft that ends, and a draft file for the night the
-laptop dies; 180 tests.
+non-destructive reset, a draft that ends, a draft file for the night the
+laptop dies, named teams and a board that keeps up with an auction; 197 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

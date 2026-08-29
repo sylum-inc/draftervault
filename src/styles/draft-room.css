@@ -3189,3 +3189,62 @@
   text-transform: uppercase;
   color: var(--dr-ink-faint);
 }
+
+/* Naming the room. One person runs this app while eleven others bid, so the
+   difference between "Team 7" and a name is the difference between reading the
+   board and translating it. */
+.dr-owners {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.dr-owner-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dr-owner-row .dr-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dr-owner-mine {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 30px;
+  border-radius: var(--dr-radius-sm);
+  border: 1px solid var(--dr-line-strong);
+  background: var(--dr-raised);
+  color: var(--dr-ink-faint);
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.dr-owner-mine.is-mine {
+  background: var(--dr-accent);
+  border-color: transparent;
+  color: var(--dr-accent-ink);
+  font-weight: 700;
+}
+
+/* Your own team in the roster list. Quiet, but never ambiguous. */
+.dr-mine-tag {
+  margin-left: 6px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--dr-accent);
+  color: var(--dr-accent-ink);
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dr-team-block.is-mine {
+  border-color: color-mix(in srgb, var(--dr-accent) 45%, var(--dr-line));
+}
