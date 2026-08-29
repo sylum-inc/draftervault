@@ -33,3 +33,6 @@ coverage
 
 # TypeScript incremental build state
 *.tsbuildinfo
+
+# Scratch worktrees the agent harness creates for isolated runs. Never project content.
+.claude/worktrees/
