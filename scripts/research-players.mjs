@@ -318,7 +318,8 @@ const research = async (player) => {
       const answer = parseReply(message?.content ?? '');
       if (!answer) throw new Error('the reply was not JSON');
 
-      const record = validateResearch(answer, citedUrls(message));
+      const allowed = citedUrls(message);
+      const record = validateResearch(answer, allowed);
       counters.tokens += payload?.usage?.total_tokens ?? 0;
       counters.cost += Number(payload?.usage?.cost ?? 0) || SEARCH_COST;
       counters.findings += record.findings.length;
@@ -333,7 +334,7 @@ const research = async (player) => {
         researchedAt: new Date().toISOString(),
         ...record,
       };
-      return record;
+      return { record, cited: allowed.size };
     } catch (error) {
       // 429 and 5xx are the provider asking us to slow down; anything else is
       // ours and retrying it just spends the same money twice.
@@ -348,16 +349,52 @@ const research = async (player) => {
   }
 };
 
-const queue = selected.slice();
-let started = 0;
+/**
+ * One player first, alone, before any money is committed to the other 627.
+ *
+ * There is one failure this run cannot survive quietly. Every finding is
+ * checked against the citations the search returned, so if the web plugin does
+ * not engage — a model OpenRouter does not route it for, an account without
+ * search, an engine outage — then no reply carries citations, every claim is
+ * dropped as unsourced, and all 628 players come back NEUTRAL and empty. That
+ * file is indistinguishable from an honest run over a quiet week in the NFL,
+ * and it would have cost the entire budget to produce. So the run does not
+ * start until one reply has come back with sources actually attached to it.
+ */
+const probe = selected[0];
+console.log(`  preflight    asking about ${probe.name} before spending on the rest…`);
+const first = await research(probe);
+if (!first) {
+  console.error('\n  The first call failed, so nothing else was tried.\n');
+  process.exit(1);
+}
+if (first.cited === 0) {
+  console.error(
+    `\n  The first reply carried no search citations at all.\n\n` +
+      `  Every finding is kept only if it cites a URL the search returned, so a run\n` +
+      `  from here would drop all of them and write 628 empty records — a file that\n` +
+      `  reads exactly like a quiet week, having cost the whole budget.\n\n` +
+      `  The web plugin is probably not engaging. Check that ${options.model} is a\n` +
+      `  model OpenRouter routes the plugin for, and that web search is enabled on\n` +
+      `  the account. Re-run with --limit 1 --verbose to see the reply itself.\n\n` +
+      `  Nothing further was called.\n`
+  );
+  process.exit(1);
+}
+console.log(`  preflight    ok — ${first.cited} sources came back\n`);
+save();
+
+const queue = selected.slice(1);
+let started = 1;
 
 const worker = async () => {
   for (;;) {
     const player = queue.shift();
     if (!player) return;
     const at = (started += 1);
-    const record = await research(player);
-    if (record) {
+    const outcome = await research(player);
+    if (outcome) {
+      const { record } = outcome;
       const mark =
         record.direction === 'PAY_UP'
           ? '↑'
