@@ -30,6 +30,13 @@ export type ColumnSet = 'value' | 'production' | 'usage' | 'market';
 
 interface PlayerTableProps {
   players: Player[];
+  /**
+   * How many rows to actually render. The table mounts a row per player, and
+   * six hundred of them cost seconds of frozen interface on an ordinary laptop.
+   * Sorting and the bar scales still use every player, so what is shown is the
+   * real top of the list rather than an arbitrary slice.
+   */
+  limit?: number;
   selectedId?: string;
   watchlist: string[];
   pinned: string[];
@@ -312,6 +319,7 @@ const SET_LABEL: Record<ColumnSet, string> = {
  */
 export const PlayerTable = ({
   players,
+  limit,
   selectedId,
   watchlist,
   pinned,
@@ -330,6 +338,10 @@ export const PlayerTable = ({
     const sorted = [...players].sort(SORTS[sort] ?? SORTS.rank);
     return descending ? sorted.reverse() : sorted;
   }, [players, sort, descending]);
+
+  // Slice after sorting, and only for rendering: `maxima` below still measures
+  // the whole field, so a bar means the same thing however much is on screen.
+  const visible = useMemo(() => (limit ? rows.slice(0, limit) : rows), [rows, limit]);
 
   // Bars are scaled across what is actually on screen, so filtering to one
   // position rescales them instead of leaving every bar a stub.
@@ -411,7 +423,7 @@ export const PlayerTable = ({
           </tr>
         </thead>
         <tbody>
-          {rows.map((player) => {
+          {visible.map((player) => {
             const identity = getIdentity(player.id);
             const team = identity?.team ?? player.team;
             const trend = TREND_MARK[player.recentTrends] ?? TREND_MARK.STABLE;

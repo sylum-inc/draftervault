@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { CSSProperties } from 'react';
 import type { Player } from '@/services/auctionDraftService';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
@@ -28,7 +29,16 @@ const RISK_COLOR: Record<Player['injuryRisk'], string> = {
   HIGH: 'var(--dr-danger)',
 };
 
-export const PlayerCard = ({
+/**
+ * One card on the board.
+ *
+ * Wrapped in `memo` because the board holds 628 of these and React re-renders
+ * the whole list on every keystroke in the search box and every pick made.
+ * Unmemoised that cost roughly a second of frozen interface per nomination on
+ * an ordinary laptop; each card also resolves its identity and team colours, so
+ * the work is not trivial per instance.
+ */
+const PlayerCardView = ({
   player,
   selected,
   watched,
@@ -216,3 +226,14 @@ export const PlayerCard = ({
     </button>
   );
 };
+
+/**
+ * Re-render only when something about this card actually changed.
+ *
+ * The board hands every card the same stable callbacks, so this comes down to
+ * the player object, whether it is selected, watched or pinned. Reference
+ * equality on the player is right: the engine returns fresh arrays on every
+ * sync, but the player objects inside are the same instances unless the draft
+ * moved them.
+ */
+export const PlayerCard = memo(PlayerCardView);

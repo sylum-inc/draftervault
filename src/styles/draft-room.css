@@ -3177,3 +3177,15 @@
   width: auto;
   flex: 1 1 auto;
 }
+
+/* The board renders a page at a time; this both marks the edge and is the
+   sentinel that asks for the next one. */
+.dr-more {
+  padding: 18px 4px 28px;
+  text-align: center;
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
