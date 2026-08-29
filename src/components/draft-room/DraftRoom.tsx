@@ -40,6 +40,7 @@ import { openDraftSync } from '@/services/draftSync';
 import type { LeagueShape } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { matchesSearch, searchable } from '@/lib/playerSearch';
+import { copyTextToClipboard, saveTextFile } from '@/lib/saveFile';
 import { primeResearch } from '@/services/playerResearch';
 import '@/styles/draft-room.css';
 
@@ -56,6 +57,23 @@ const SORTS: Record<SortKey, (a: Player, b: Player) => number> = {
   value: (a, b) => b.estimatedValue - a.estimatedValue,
   projected: (a, b) => b.projectedPoints - a.projectedPoints,
 };
+
+/**
+ * How loudly the app should say that the record is only in this browser.
+ *
+ * There is no server on the night: the draft is a pick log in one profile on
+ * one laptop, and a cleared cache or a crashed tab takes the afternoon with it.
+ * The counter exists because remembering to save is the thing that reliably
+ * fails while an auction is running — but a warning that shouts from the first
+ * pick is a warning nobody reads by the fortieth, so it earns its volume.
+ *
+ * The bands are picks rather than minutes, because picks are what would have to
+ * be re-entered from memory. Under eight is a couple of nominations and reads
+ * grey. Eight is most of a snake round and is worth a colour. Twenty is a
+ * stretch of the night nobody could reconstruct from the table's paper.
+ */
+const exposureLevel = (picks: number): 'clear' | 'quiet' | 'warn' | 'urgent' =>
+  picks === 0 ? 'clear' : picks < 8 ? 'quiet' : picks < 20 ? 'warn' : 'urgent';
 
 export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [players, setPlayers] = useState<Player[]>(() => draftService.getPlayers());
@@ -86,6 +104,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [fileOpen, setFileOpen] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const [serverOpen, setServerOpen] = useState(false);
+  /** Bumped whenever a copy of the draft actually leaves this browser. */
+  const [savedTick, setSavedTick] = useState(0);
+  const [handoff, setHandoff] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const teamIdRef = useRef(teamId);
   teamIdRef.current = teamId;
@@ -398,6 +419,124 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   }, [draftService, sync]);
 
   /**
+   * Put back the pick the last undo took away.
+   *
+   * Undo sits under one key next to the one that focuses the search, and two
+   * accidental presses used to lose two picks with nothing on screen to say
+   * which. The engine keeps them until somebody drafts again, which is the same
+   * rule the cleared-draft net lives by.
+   */
+  const redo = useCallback(() => {
+    const outcome = draftService.redoLastUndo();
+    if (!outcome) return;
+    // Always sync, even on a refusal: the pick has left the stack either way,
+    // so the count on the button is wrong until the room re-reads it.
+    sync();
+    setHandoff(
+      outcome.ok
+        ? { tone: 'ok', text: `Put ${outcome.player.name} back.` }
+        : { tone: 'bad', text: outcome.reason }
+    );
+  }, [draftService, sync]);
+
+  /**
+   * Hand the whole draft over as a file, and record that it left.
+   *
+   * The room's only backup is a copy somewhere that is not this browser
+   * profile, so the act that makes one is also the act that resets the
+   * exposure counter — wired to the outcome rather than to the click, because a
+   * save the viewer declined is not a save.
+   */
+  const saveDraftFile = useCallback(
+    async (prefix = ''): Promise<boolean> => {
+      if (!draftService.getHistory().length) return false;
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+      // Taken before the await, and stamped after it. A save is not
+      // instantaneous — the artifact's downloads capability puts a confirmation
+      // in front of a person — and stamping the log as it stands afterwards
+      // marked any pick recorded during the save as one that had left the
+      // browser. The mark has to describe the text that went out.
+      const snapshot = draftService.snapshotMark();
+      const outcome = await saveTextFile(
+        `draft-vault-${stamp}.json`,
+        draftService.exportDraft(),
+        'application/json'
+      );
+      // `handed-off` counts as the draft having left — it is the best evidence
+      // an ordinary browser can give — but it is not reported as a saved file,
+      // because a cancelled Save-As dialog looks exactly like a successful one
+      // from here and a false "saved" is the one reassurance that costs an
+      // afternoon.
+      if (outcome.status === 'saved' || outcome.status === 'handed-off') {
+        draftService.markExported('file', snapshot);
+        setSavedTick((count) => count + 1);
+        setHandoff({
+          tone: 'ok',
+          text:
+            outcome.status === 'saved'
+              ? `${prefix}Saved ${outcome.filename}.`
+              : `${prefix}Handed ${outcome.filename} to your browser — check it downloaded.`,
+        });
+        return true;
+      }
+      setHandoff({
+        tone: 'bad',
+        text:
+          outcome.status === 'declined'
+            ? `${prefix}Nothing was saved — the save was declined.`
+            : `${prefix}Could not save a file.`,
+      });
+      return false;
+    },
+    [draftService]
+  );
+
+  /**
+   * The one-keystroke escape: the whole draft onto the clipboard.
+   *
+   * The same text a file carries, so what is pasted into a message or a note
+   * loads straight back through the file panel. The clipboard is not permitted
+   * everywhere — an insecure origin, a sandbox, a browser that asks — so a
+   * refusal falls through to the file rather than failing quietly, which is the
+   * one thing a backup must never do.
+   */
+  const copyDraft = useCallback(async () => {
+    if (!draftService.getHistory().length) return;
+    const snapshot = draftService.snapshotMark();
+    if (await copyTextToClipboard(draftService.exportDraft())) {
+      draftService.markExported('clipboard', snapshot);
+      setSavedTick((count) => count + 1);
+      setHandoff({
+        tone: 'ok',
+        text: 'The whole draft is on the clipboard — paste it somewhere that is not this browser.',
+      });
+      return;
+    }
+    await saveDraftFile('The clipboard is not available here, so ');
+  }, [draftService, saveDraftFile]);
+
+  // The note is about something that just happened, so it stops being true.
+  useEffect(() => {
+    if (!handoff) return;
+    const timer = window.setTimeout(() => setHandoff(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [handoff]);
+
+  /**
+   * How far the record is from the last copy of it that left this browser.
+   *
+   * `players` is the change signal for a pick and `savedTick` for a save; the
+   * engine holds both facts and is re-read rather than mirrored.
+   */
+  const unsaved = useMemo(
+    () => draftService.picksSinceExport(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [draftService, players, savedTick]
+  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const exportMark = useMemo(() => draftService.getExportMark(), [draftService, savedTick]);
+
+  /**
    * Clearing the draft is deliberate, and can be taken back.
    *
    * This button sits beside Undo and used to throw an afternoon's work away on
@@ -501,6 +640,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     sheetOpen ||
     orderOpen ||
     serverOpen ||
+    // The draft file panel, which the exposure chip deliberately routes you
+    // into — so leaving it out let a stray "u" undo a pick behind the scrim,
+    // on the one screen whose whole job is protecting the record.
+    fileOpen ||
     confirmReset;
 
   /**
@@ -535,12 +678,24 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
       } else if (event.key.toLowerCase() === 'u' && draftService.canUndo()) {
         event.preventDefault();
         undo();
+      } else if (event.key.toLowerCase() === 'r' && draftService.canRedo()) {
+        // Beside undo, because it is the same act read backwards. Nothing else
+        // in the room answers to r, s or c: the existing shortcuts are / and u,
+        // and every modal takes the keyboard while it is open.
+        event.preventDefault();
+        redo();
+      } else if (event.key.toLowerCase() === 'c') {
+        event.preventDefault();
+        void copyDraft();
+      } else if (event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        void saveDraftFile();
       }
     };
 
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [anyModalOpen, undo, draftService]);
+  }, [anyModalOpen, undo, redo, copyDraft, saveDraftFile, draftService]);
 
   /**
    * An import re-prices the board but does not invalidate money already spent,
@@ -826,6 +981,36 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         >
           Undo pick
         </button>
+        {/* Only while there is something to put back. An always-present Redo is
+            a button that does nothing most of the night, and one that appears
+            the moment a pick is taken back says what it is for. */}
+        {draftService.canRedo() && (
+          <button
+            className="dr-button"
+            onClick={redo}
+            title="Put back the pick that was just undone — or press r"
+          >
+            Redo ({draftService.undoneCount()})
+          </button>
+        )}
+
+        {/* How exposed the record is, where the picks are counted rather than
+            inside a panel nobody opens mid-auction. It opens the file panel,
+            because the fix for the thing it is warning about is in there. */}
+        {drafted.length > 0 && (
+          <button
+            className="dr-exposure"
+            data-level={exposureLevel(unsaved)}
+            onClick={() => setFileOpen(true)}
+            title={
+              unsaved === 0
+                ? `The whole draft has been ${exportMark?.kind === 'clipboard' ? 'copied' : 'saved'} since the last pick. Press s to save a file, c to copy it.`
+                : `${unsaved} pick${unsaved === 1 ? '' : 's'} since the draft last left this browser${exportMark ? '' : ' — no copy has ever been made'}. Press s to save a file, c to copy it.`
+            }
+          >
+            {unsaved === 0 ? 'Copy kept' : `${unsaved} unsaved`}
+          </button>
+        )}
         <button className="dr-button" onClick={() => setBoardOpen(true)} disabled={!drafted.length}>
           The room
         </button>
@@ -905,6 +1090,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           style={{ color: 'var(--dr-ink-muted)', fontSize: 12 }}
         >
           Resumed your saved draft — {resumed} pick{resumed === 1 ? '' : 's'} restored.
+        </p>
+      )}
+
+      {handoff && (
+        <p
+          className={handoff.tone === 'bad' ? 'dr-ticker dr-ticker-warn' : 'dr-ticker'}
+          role="status"
+          style={handoff.tone === 'bad' ? undefined : { color: 'var(--dr-value)', fontSize: 12 }}
+        >
+          {handoff.text}
         </p>
       )}
 
@@ -1223,6 +1418,22 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           service={draftService}
           players={players}
           teams={teams}
+          onCorrected={(result) => {
+            // A correction replays the whole log, so the selection may now be a
+            // player who is on the board again — or gone from it — and the
+            // count of what did not replay is the only place that is reported.
+            resync();
+            setSelected(null);
+            setBid('');
+            setHandoff(
+              result.skipped
+                ? {
+                    tone: 'bad',
+                    text: `Corrected. ${result.skipped} later pick${result.skipped === 1 ? '' : 's'} could no longer have happened and ${result.skipped === 1 ? 'was' : 'were'} dropped.`,
+                  }
+                : { tone: 'ok', text: `Corrected — all ${result.restored} picks still replay.` }
+            );
+          }}
           onClose={() => setBoardOpen(false)}
         />
       )}
@@ -1268,6 +1479,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         <DraftFile
           service={draftService}
           draftedCount={drafted.length}
+          unsaved={unsaved}
+          note={handoff}
+          onSave={() => void saveDraftFile()}
+          onCopy={() => void copyDraft()}
           onLoaded={() => {
             setSelected(null);
             setTeamId('');

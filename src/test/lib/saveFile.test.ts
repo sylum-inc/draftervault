@@ -92,8 +92,11 @@ describe('saveTextFile inside the artifact viewer', () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     stubObjectUrls();
 
+    // Handed over, not confirmed: an anchor click reports nothing about whether
+    // a file exists, and a cancelled Save-As dialog looks identical to a
+    // successful one from here.
     expect(await saveTextFile('results.csv', 'a,b')).toEqual({
-      status: 'saved',
+      status: 'handed-off',
       filename: 'results.csv',
     });
     expect(click).toHaveBeenCalled();
@@ -105,8 +108,11 @@ describe('saveTextFile in an ordinary browser', () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     stubObjectUrls();
 
+    // Handed over, not confirmed: an anchor click reports nothing about whether
+    // a file exists, and a cancelled Save-As dialog looks identical to a
+    // successful one from here.
     expect(await saveTextFile('results.csv', 'a,b')).toEqual({
-      status: 'saved',
+      status: 'handed-off',
       filename: 'results.csv',
     });
     expect(click).toHaveBeenCalledTimes(1);

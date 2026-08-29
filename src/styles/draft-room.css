@@ -3699,3 +3699,124 @@
   color: var(--dr-ink-muted);
   white-space: pre;
 }
+
+/* --------------------------------------------------------------------------
+   correcting the record, and keeping it
+   -------------------------------------------------------------------------- */
+
+/*
+ * The board is a dialog and has always said so in its ARIA role, but nothing
+ * ever positioned it: it rendered in the page flow, below the whole room, so
+ * "The room" opened somewhere off the bottom of a scrolled auction. The cell
+ * editor lives inside it, and an editor you have to go looking for is an
+ * editor nobody uses mid-draft.
+ */
+.dr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(4 6 10 / 0.78);
+  backdrop-filter: blur(3px);
+}
+
+/* Every pick in the grid is a button now, so the cell has to stop looking like
+   one everywhere except the edge that carries its position colour. */
+.dr-gridboard-pick {
+  width: 100%;
+  border: none;
+  border-left: 3px solid var(--dr-line-strong);
+  text-align: left;
+  font-family: inherit;
+}
+
+.dr-gridboard-pick:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--dr-accent) 18%, var(--dr-raised));
+}
+
+/*
+ * How far the record is from a copy that is not in this browser.
+ *
+ * Deliberately quiet at the bottom and loud at the top: this sits in a top bar
+ * somebody stares at for four hours, and a control that shouts from the first
+ * pick is one that has stopped meaning anything by the fortieth.
+ */
+.dr-exposure {
+  border: 1px solid var(--dr-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dr-ink-faint);
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.dr-exposure[data-level='clear'] {
+  color: var(--dr-value);
+  border-color: color-mix(in srgb, var(--dr-value) 40%, transparent);
+}
+
+.dr-exposure[data-level='warn'] {
+  color: var(--dr-caution);
+  border-color: color-mix(in srgb, var(--dr-caution) 50%, transparent);
+  background: color-mix(in srgb, var(--dr-caution) 12%, transparent);
+}
+
+.dr-exposure[data-level='urgent'] {
+  color: var(--dr-danger);
+  border-color: color-mix(in srgb, var(--dr-danger) 60%, transparent);
+  background: color-mix(in srgb, var(--dr-danger) 16%, transparent);
+  font-weight: 600;
+}
+
+.dr-pickedit .dr-field {
+  margin-top: 10px;
+}
+
+.dr-pickedit-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+}
+
+.dr-pickedit-matches {
+  list-style: none;
+  margin: 6px 0 4px;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.dr-pickedit-matches button {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.dr-pickedit-matches button[aria-pressed='true'] {
+  color: var(--dr-accent);
+  text-decoration: underline;
+}
+
+.dr-pickedit-matches em {
+  font-style: normal;
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-pickedit-lost {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}

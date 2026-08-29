@@ -1,13 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { AuctionDraftService, Player, Team } from '@/services/auctionDraftService';
 import { getIdentity } from '@/services/nflIdentity';
 import { DraftFlow, PositionRuns, type FlowPick } from './charts/DraftFlow';
 import { TierDepletion, type TierRow } from './charts/TierDepletion';
+import { PickEditor } from './PickEditor';
 
 interface DraftBoardProps {
   service: AuctionDraftService;
   players: Player[];
   teams: Team[];
+  /** A pick was amended, so everything derived from the log has moved. */
+  onCorrected: (result: { restored: number; skipped: number }) => void;
   onClose: () => void;
 }
 
@@ -22,7 +25,15 @@ const POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DST'];
  * second, and the depletion bars answer the third — one screen, no scrolling
  * back through a ticker.
  */
-export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps) => {
+export const DraftBoard = ({ service, players, teams, onCorrected, onClose }: DraftBoardProps) => {
+  /*
+   * The grid is where a mistake is noticed, so it is where a mistake is fixed.
+   *
+   * Undo could only ever take the end of the log back, which made noticing at
+   * pick sixty that pick forty was wrong cost twenty good picks and the memory
+   * of what they were. A cell opens the pick it is showing.
+   */
+  const [editing, setEditing] = useState<number | null>(null);
   const board = useMemo(() => service.getDraftBoard(), [service, players]); // eslint-disable-line react-hooks/exhaustive-deps
   const league = service.getLeagueShape();
 
@@ -128,15 +139,20 @@ export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps
                   return (
                     <div className="dr-gridboard-cell" role="cell" key={team.id}>
                       {pick ? (
-                        <span
+                        <button
+                          type="button"
                           className="dr-gridboard-pick"
                           style={{
                             borderLeftColor: `var(--dr-pos-${pick.player.position.toLowerCase()})`,
                           }}
+                          // A pick with no entry in the log cannot be addressed
+                          // by index, so it is shown and not offered.
+                          disabled={pick.index < 0}
+                          onClick={() => setEditing(pick.index)}
                           title={
                             pick.cost != null
-                              ? `#${pick.pickNumber} ${pick.player.name} — $${pick.cost}`
-                              : `#${pick.pickNumber} ${pick.player.name} — taken in the ${pick.phase}, no cost`
+                              ? `#${pick.pickNumber} ${pick.player.name} — $${pick.cost}. Click to correct it.`
+                              : `#${pick.pickNumber} ${pick.player.name} — taken in the ${pick.phase}, no cost. Click to correct it.`
                           }
                         >
                           <em>{pick.player.position === 'DST' ? 'D' : pick.player.position}</em>
@@ -149,7 +165,7 @@ export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps
                           <span className="dr-num">
                             {pick.cost != null ? `$${pick.cost}` : 'snake'}
                           </span>
-                        </span>
+                        </button>
                       ) : (
                         <span className="dr-gridboard-empty" aria-hidden="true" />
                       )}
@@ -161,6 +177,20 @@ export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps
           </div>
         </div>
       </div>
+
+      {editing !== null && (
+        <PickEditor
+          service={service}
+          index={editing}
+          players={players}
+          teams={teams}
+          onApplied={(result) => {
+            setEditing(null);
+            onCorrected(result);
+          }}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </div>
   );
 };

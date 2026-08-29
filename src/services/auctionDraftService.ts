@@ -299,6 +299,54 @@ export interface DraftPick {
   slot?: number;
 }
 
+/**
+ * An amendment to one entry in the pick log.
+ *
+ * The three things that get misheard across a table: which player, which team,
+ * and how much. Every field is optional because a correction is an amendment
+ * and not a replacement — the fields left out keep what the log already says.
+ *
+ * The phase is deliberately not among them. It is a fact about the transaction
+ * rather than a label on it: relabelling an auction sale as a snake pick would
+ * unspend money the room actually spent, and relabelling a snake pick as a sale
+ * would invent a price nobody paid. When the wrong half is recorded — which
+ * takes drafting a player the sheet never held — the honest repair is to undo
+ * back to it, because that is the only thing that can put the sheet back where
+ * it was.
+ */
+export interface PickCorrection {
+  playerId?: string;
+  teamId?: string;
+  cost?: number;
+}
+
+/**
+ * What a correction did, or would do.
+ *
+ * The same shape `importDraft` reports, and for the same reason: replaying an
+ * amended log can leave a later pick illegal — a raised price that busts a
+ * budget, a player who is now taken twice — and a pick that no longer replays
+ * is counted rather than dropped in silence.
+ */
+export type CorrectionResult =
+  | { ok: true; restored: number; skipped: number }
+  | { ok: false; reason: string };
+
+/** A pick a correction would cost, named so the room can be asked first. */
+export interface InvalidatedPick {
+  /** Its place in the draft, counting from one. */
+  pickNumber: number;
+  player: string;
+  team: string;
+  /** The engine's own words for why it would no longer replay. */
+  reason: string;
+}
+
+/** What a correction would do, answered before anything is applied. */
+export type CorrectionCheck =
+  | { ok: true; restored: number; skipped: number; invalidated: InvalidatedPick[] }
+  | { ok: false; reason: string };
+
 /** One seat on the serpentine board: who picks, and where it falls. */
 export interface SnakeSlot {
   team: Team;
@@ -735,6 +783,88 @@ const writeStoredSheet = (sheet: StoredSheet): void => {
 const CLEARED_STORAGE_KEY = 'draft-vault:cleared-draft:v1';
 
 /**
+ * When the record last left this browser, and what it looked like then.
+ *
+ * The draft lives in one profile on one machine, and on the night there is no
+ * server: a cleared profile, a crashed tab or a dead laptop takes the whole
+ * afternoon with it. The only defence is a copy somewhere else, and the only
+ * thing that reliably fails is remembering to make one while an auction is
+ * running. So the exposure is measured rather than left to memory.
+ *
+ * It is stored rather than held in memory because a reload must not report the
+ * record as freshly saved when it is not: the mark describes the copy the owner
+ * actually holds, and a page refresh does not make one.
+ */
+const EXPORT_MARK_KEY = 'draft-vault:export-mark:v1';
+
+/** The last time the whole draft was handed to something that is not this browser. */
+/** The part of a mark that describes a particular text, rather than a moment. */
+/**
+ * What came of putting an undone pick back.
+ *
+ * A refusal is a result rather than a null, because the entry has already left
+ * the stack by the time it is known: reporting nothing would lose the pick and
+ * leave the room looking unchanged.
+ */
+export type RedoOutcome =
+  | { ok: true; player: Player; team: Team; cost: number | null }
+  | { ok: false; reason: string };
+
+/** The part of a mark that describes a particular text, rather than a moment. */
+export interface ExportSnapshot {
+  picks: number;
+  fingerprint: string;
+}
+
+export interface ExportMark {
+  /** When, as an ISO stamp. */
+  savedAt: string;
+  /**
+   * How it left.
+   *
+   * `file` covers a file arriving as well as leaving: a draft loaded from one
+   * is a draft that demonstrably exists in a file, which is the only claim this
+   * mark makes.
+   */
+  kind: 'file' | 'clipboard';
+  /** Picks in the log at that moment. */
+  picks: number;
+  /**
+   * A fingerprint of the log that went out.
+   *
+   * A count alone cannot answer the question. Undo the last pick and re-record
+   * it correctly and the log is the same length and a different draft; correct
+   * a price and it is the same length again. The fingerprint says "different"
+   * where a count says "unchanged", and the two together say how far.
+   */
+  fingerprint: string;
+}
+
+const readStoredMark = (): ExportMark | null => {
+  try {
+    const raw = localStorage.getItem(EXPORT_MARK_KEY);
+    const saved = raw ? (JSON.parse(raw) as Partial<ExportMark>) : null;
+    if (!saved || typeof saved.fingerprint !== 'string') return null;
+    return {
+      savedAt: typeof saved.savedAt === 'string' ? saved.savedAt : new Date().toISOString(),
+      kind: saved.kind === 'clipboard' ? 'clipboard' : 'file',
+      picks: typeof saved.picks === 'number' ? saved.picks : 0,
+      fingerprint: saved.fingerprint,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const writeStoredMark = (mark: ExportMark): void => {
+  try {
+    localStorage.setItem(EXPORT_MARK_KEY, JSON.stringify(mark));
+  } catch {
+    /* storage unavailable — the exposure count simply restarts on reload */
+  }
+};
+
+/**
  * Who the other eleven teams actually are.
  *
  * Deliberately not part of `LeagueShape`: that is the set of facts prices are
@@ -837,6 +967,34 @@ export class AuctionDraftService {
   private draftedCount = 0;
   /** Pick order, so the last one can be taken back. */
   private history: DraftPick[] = [];
+  /**
+   * Picks taken back, newest last, so an undo can be undone.
+   *
+   * Undo was destructive and silent: two accidental presses of "u" lost two
+   * picks with nothing on screen to say which, and re-entering them meant
+   * remembering a price somebody called out five minutes ago. Any new pick
+   * clears this, which is the same rule the cleared-draft stash lives by —
+   * once the draft has moved on, the branch that was taken back is genuinely
+   * history and putting a pick from it back would splice it into a draft it
+   * was never part of.
+   *
+   * It is deliberately not persisted and deliberately not shared. The pick log
+   * is the only shared fact; this is a private note about what this window's
+   * owner just did, and a second window that never pressed undo should not be
+   * offering to redo it.
+   */
+  private undone: DraftPick[] = [];
+  /**
+   * True only while a redo is being put back.
+   *
+   * A redo goes through the ordinary draft path — it must, because the engine
+   * re-checks every pick it records — and that path clears the stack. Without
+   * this flag, redoing the first of three undone picks would throw the other
+   * two away.
+   */
+  private redoing = false;
+  /** When the draft last left this browser, or null if it never has. */
+  private mark: ExportMark | null = readStoredMark();
   /** The commissioner's snake order, by team id. Empty means the team order. */
   private snakeOrder: string[] = readStoredSnakeOrder();
   /**
@@ -981,8 +1139,14 @@ export class AuctionDraftService {
     // the moment the list lands. His grade becomes a D, and every drafted player
     // is summed at his post-import dollar, so the room is told it is paying a
     // 29% premium on evidence that is entirely an artefact of the import.
+    // Bought with money, not merely off the board. A snake pick costs nothing,
+    // so counting it here put free picks onto the sheet — and since the mask
+    // decides what inflation and scarcity are measured over, a rebuild then
+    // produced a board that replaying the identical log does not reproduce.
     const sold = new Set(
-      this.players.filter((player) => player.isDrafted).map((player) => player.id)
+      this.players
+        .filter((player) => player.isDrafted && player.draftCost != null)
+        .map((player) => player.id)
     );
     const mask = entries.map((entry) => wanted.has(entry.gsis) || sold.has(entry.gsis));
     return mask.some(Boolean) ? mask : undefined;
@@ -1122,6 +1286,24 @@ export class AuctionDraftService {
     const team = this.teams.find((t) => t.id === teamId);
     if (!team) return { ok: false, code: 'unknown-team', message: 'Pick a team first.' };
 
+    return this.checkBid(player, team, cost);
+  }
+
+  /**
+   * Everything about a bid that is a question of money and roster room.
+   *
+   * Split out of `validateBid` for the same reason `checkRoster` was split out
+   * of this: a second caller needs it against a state that is not the live
+   * board. `previewCorrection` has to answer what an amended pick log *would*
+   * do before any of it is applied, and it does that by walking shadow teams —
+   * the same rules, one set of them, applied to a state that has not happened
+   * yet. A second copy of the arithmetic would be a second answer to "can this
+   * team afford him", and the two would disagree on the only night it matters.
+   *
+   * Whether the player is already taken is not here: that is a fact about the
+   * board, and the shadow walk has its own answer to it.
+   */
+  private checkBid(player: Player, team: Team, cost: number): BidCheck {
     // NaN fails every comparison, so it has to be rejected explicitly or it
     // sails through the budget check and turns the team's money into NaN.
     if (!Number.isInteger(cost) || cost < 1) {
@@ -1230,6 +1412,7 @@ export class AuctionDraftService {
 
     this.draftedCount++;
     this.history.push({ playerId, teamId, cost, phase: 'auction' });
+    this.dropRedo();
     this.updateTeamMetrics(team);
     this.persist();
 
@@ -1295,6 +1478,7 @@ export class AuctionDraftService {
       phase: 'snake',
       slot: slot ?? this.getSnakeUpcoming(1)[0]?.slot,
     });
+    this.dropRedo();
     this.updateTeamMetrics(team);
     this.persist();
 
@@ -1330,10 +1514,357 @@ export class AuctionDraftService {
     team.projectedTotal -= player.projectedPoints;
 
     this.draftedCount = Math.max(0, this.draftedCount - 1);
+    // Kept, so it can be put back. Pressing "u" twice by accident used to lose
+    // two picks outright, and the room's only remedy was remembering what they
+    // were. Recorded after the undo has actually succeeded: an entry naming a
+    // player or a team the pool no longer has cannot be replayed, so offering
+    // to redo it would be an offer that fails when it is taken up.
+    this.undone.push(last);
     this.updateTeamMetrics(team);
     this.persist();
 
     return { player, team, cost };
+  }
+
+  /**
+   * Put back the pick the last undo took away.
+   *
+   * It goes back through the ordinary draft path rather than being pushed
+   * straight onto the log, because the engine re-checks everything it records
+   * and a redo is no exception: in the time since the undo, a second window may
+   * have bought the player, an import may have changed the roster rules, or a
+   * correction may have rebuilt the draft around him. If the pick can no longer
+   * be made it is dropped rather than kept, since an offer that fails every
+   * time it is taken up is worse than no offer at all.
+   *
+   * `cost` is null for a snake pick, exactly as `undoLastPick` reports it.
+   */
+  redoLastUndo(): RedoOutcome | null {
+    const next = this.undone.pop();
+    if (!next) return null;
+
+    this.redoing = true;
+    let done = false;
+    try {
+      done =
+        next.phase === 'snake'
+          ? this.applySnakePick(next.playerId, next.teamId, next.slot)
+          : this.draftPlayer(next.playerId, next.teamId, next.cost ?? 0);
+    } finally {
+      this.redoing = false;
+    }
+    const player = this.players.find((p) => p.id === next.playerId);
+    const team = this.teams.find((t) => t.id === next.teamId);
+
+    // A refusal has to be reported, not swallowed. The entry has already been
+    // popped, so returning a bare null discarded the only remaining copy of
+    // that pick while the room showed nothing at all: the owner pressed "r",
+    // saw no change, and the pick was gone.
+    if (!done || !player || !team) {
+      const why = player && team ? this.checkBid(player, team, next.cost ?? 0) : null;
+      return {
+        ok: false,
+        reason:
+          why && !why.ok
+            ? why.message
+            : 'That pick can no longer be made — the board has moved on from it.',
+      };
+    }
+
+    return {
+      ok: true,
+      player,
+      team,
+      cost: next.phase === 'snake' ? null : (next.cost ?? 0),
+    };
+  }
+
+  /** Whether there is an undone pick waiting to be put back. */
+  canRedo(): boolean {
+    return this.undone.length > 0;
+  }
+
+  /** How many picks are waiting to be put back. */
+  undoneCount(): number {
+    return this.undone.length;
+  }
+
+  /**
+   * Forget the undone picks.
+   *
+   * Called wherever the draft moves on — a new pick, a correction, a reset, a
+   * file — because from there the undone branch describes a draft that no
+   * longer exists. The redo itself is the one caller that must not trigger it,
+   * which is what `redoing` is for.
+   */
+  private dropRedo(): void {
+    if (!this.redoing) this.undone = [];
+  }
+
+  // -------------------------------------------------------------------------
+  // correcting the record
+  //
+  // One person keeps this record while eleven others draft on paper, and in a
+  // live auction a price is misheard and a team is written down wrong. Undo
+  // could only ever pop the end of the log, so noticing at pick sixty that pick
+  // forty was wrong meant throwing away twenty good picks and re-entering them
+  // from memory — which is how a small error becomes a lost afternoon.
+  //
+  // A correction amends one entry and then replays the amended log through the
+  // same `replay` every other door uses. Nothing here re-implements a rule: the
+  // draft that comes out is the draft those picks would have built if they had
+  // been recorded correctly in the first place.
+  // -------------------------------------------------------------------------
+
+  /**
+   * What correcting this pick would do, before any of it is done.
+   *
+   * A correction can legitimately make a later pick illegal — a raised price
+   * that busts a budget, a player who now appears twice — and those picks are
+   * lost when the amended log is replayed. That has to be a question the room
+   * is asked rather than something it discovers afterwards, so this answers it
+   * against shadow teams and changes nothing.
+   */
+  previewCorrection(index: number, change: PickCorrection): CorrectionCheck {
+    const planned = this.planCorrection(index, change);
+    if (!planned.ok) return planned;
+
+    const { picks, failures, restored } = planned;
+
+    // The amendment failing on its own pick is a refusal, not collateral. It
+    // was landing in `invalidated` beside genuinely later picks, so the panel
+    // headed it "1 later pick could no longer have happened" — naming the pick
+    // being edited, which is not a later pick — and left Apply enabled reading
+    // "Apply, losing 1", on a correction `correctPick` always refuses. A
+    // destructive-looking button that cannot act, on the one screen whose job
+    // is to say exactly what an action will cost.
+    const own = failures.find((failure) => failure.index === index);
+    if (own) return { ok: false, reason: own.rejection.message };
+
+    return {
+      ok: true,
+      restored,
+      skipped: picks.length - restored,
+      invalidated: failures.map((failure) => ({
+        // Where the pick sits in the log as the board shows it now. Replaying
+        // will renumber whatever survives, but the room is being asked about
+        // the picks it can see, and those are the ones it can see.
+        pickNumber: failure.index + 1,
+        player: this.players.find((p) => p.id === picks[failure.index].playerId)?.name ?? 'Unknown',
+        team: this.teams.find((t) => t.id === picks[failure.index].teamId)?.name ?? 'Unknown',
+        reason: failure.rejection.message,
+      })),
+    };
+  }
+
+  /**
+   * Amend one pick and rebuild the draft from the amended log.
+   *
+   * The phase travels with the entry untouched, and correcting a pick can
+   * legitimately move where the auction ended: swapping the sale that emptied
+   * the sheet for a player who was never on it leaves a sheet player still to
+   * sell, so `getPhase` reads `auction` again. The snake picks that follow keep
+   * the phase they were taken in and replay exactly as they were, because
+   * `applySnakePick` re-checks what cannot have been true — the player, the
+   * roster — and not whose turn it was. A logged pick is a record of what
+   * happened, not a proposal to be re-adjudicated against a sheet that has
+   * since changed shape.
+   *
+   * Reports what replayed and what did not, exactly as `importDraft` does.
+   */
+  correctPick(index: number, change: PickCorrection): CorrectionResult {
+    const planned = this.planCorrection(index, change);
+    if (!planned.ok) return planned;
+
+    // A correction that cannot keep the pick it is correcting would delete it,
+    // which is the opposite of what anybody pressing Apply is asking for. It is
+    // refused in the engine's own words rather than applied and counted.
+    const own = planned.failures.find((failure) => failure.index === index);
+    if (own) return { ok: false, reason: own.rejection.message };
+
+    return this.rebuild(planned.picks);
+  }
+
+  /**
+   * The amended log, and what replaying it would cost — without applying it.
+   *
+   * Everything either public entry point needs, worked out once, so a preview
+   * and the correction it previews cannot come to different answers.
+   */
+  private planCorrection(
+    index: number,
+    change: PickCorrection
+  ):
+    | { ok: false; reason: string }
+    | {
+        ok: true;
+        picks: DraftPick[];
+        restored: number;
+        failures: Array<{ index: number; rejection: BidRejection }>;
+      } {
+    if (!Number.isInteger(index) || index < 0 || index >= this.history.length) {
+      return { ok: false, reason: 'There is no pick at that place in the draft.' };
+    }
+
+    const amended: DraftPick = { ...this.history[index] };
+
+    if (change.playerId !== undefined) {
+      if (!this.players.some((player) => player.id === change.playerId)) {
+        return { ok: false, reason: 'That player is not in the pool.' };
+      }
+      amended.playerId = change.playerId;
+    }
+
+    if (change.teamId !== undefined) {
+      if (!this.teams.some((team) => team.id === change.teamId)) {
+        return { ok: false, reason: 'That team is not in this league.' };
+      }
+      amended.teamId = change.teamId;
+    }
+
+    if (change.cost !== undefined) {
+      // A snake pick carries no price and must not gain one. Zero is not the
+      // safe answer either: it reads as "bought for nothing", which is a claim
+      // about money, and the premium, surplus and inflation readings cannot
+      // tell it back out again from a free pick once it is in a sum.
+      if (amended.phase === 'snake') {
+        return {
+          ok: false,
+          reason: 'A snake pick has no price to correct — nobody paid for him.',
+        };
+      }
+      if (!Number.isInteger(change.cost) || change.cost < 1) {
+        return { ok: false, reason: 'A bid must be a whole dollar amount of $1 or more.' };
+      }
+      amended.cost = change.cost;
+    }
+
+    const picks = [...this.history];
+    picks[index] = amended;
+
+    const { restored, failures } = this.wouldReplay(picks);
+    return { ok: true, picks, restored, failures };
+  }
+
+  /**
+   * Replay a pick log against shadow teams, and say what would not land.
+   *
+   * The point of the shadows is that the rules stay in one place: this walks
+   * `checkBid` and `checkRoster` — the same two calls the live path makes —
+   * over teams that start empty and fill as the log is read, so the answer it
+   * gives is the answer the board will give when the log is actually replayed.
+   * A test bids one against the other, because a warning that disagrees with
+   * what then happens is worse than no warning.
+   */
+  private wouldReplay(picks: ReadonlyArray<DraftPick>): {
+    restored: number;
+    failures: Array<{ index: number; rejection: BidRejection }>;
+  } {
+    const shadows = new Map(
+      this.teams.map((team) => [
+        team.id,
+        { ...team, spent: 0, remaining: team.budget, roster: EMPTY_ROSTER() },
+      ])
+    );
+    const taken = new Set<string>();
+    const failures: Array<{ index: number; rejection: BidRejection }> = [];
+    let restored = 0;
+
+    picks.forEach((pick, index) => {
+      const fail = (rejection: BidRejection) => failures.push({ index, rejection });
+
+      const player = this.players.find((p) => p.id === pick.playerId);
+      if (!player) {
+        fail({ ok: false, code: 'unknown-player', message: 'That player is not in the pool.' });
+        return;
+      }
+      if (taken.has(player.id)) {
+        fail({
+          ok: false,
+          code: 'already-drafted',
+          message: `${player.name} is taken earlier in the draft.`,
+        });
+        return;
+      }
+      const team = shadows.get(pick.teamId);
+      if (!team) {
+        fail({ ok: false, code: 'unknown-team', message: 'That team is not in this league.' });
+        return;
+      }
+
+      // A snake pick is free, so only the roster can refuse it — the same half
+      // of the rules `applySnakePick` re-checks on the live path.
+      const check =
+        pick.phase === 'snake'
+          ? this.checkRoster(player, team)
+          : this.checkBid(player, team, pick.cost ?? 0);
+      if (!check.ok) {
+        fail(check);
+        return;
+      }
+
+      taken.add(player.id);
+      team.roster[player.position]++;
+      if (pick.phase !== 'snake') {
+        const cost = pick.cost ?? 0;
+        team.spent += cost;
+        team.remaining -= cost;
+      }
+      restored++;
+    });
+
+    return { restored, failures };
+  }
+
+  /**
+   * Throw the board away and build it again from a pick log.
+   *
+   * The same three steps `importDraft` takes, for the same reason: every
+   * derived number — a roster, a budget, a price, whose turn it is — comes back
+   * from replaying the log, so a corrected draft cannot end up as the old draft
+   * with one entry painted over.
+   *
+   * Budgets are carried across by hand because they are not in the log and not
+   * in the league: a team whose budget was adjusted keeps it, exactly as a file
+   * carries budgets beside the picks.
+   */
+  private rebuild(picks: ReadonlyArray<DraftPick>): CorrectionResult {
+    const budgets = this.teams.map((team) => ({ id: team.id, budget: team.budget }));
+
+    // Stash the log as it stands, into the same place a reset stashes it.
+    //
+    // A correction that drops later picks is the more dangerous of the two
+    // destructive acts, not the lesser: a reset is all-or-nothing and obvious,
+    // while this deletes an arbitrary tail behind a button that reads "Apply,
+    // losing 34". Reset earned its undo net by destroying an afternoon; there
+    // is no argument for the sharper instrument having none.
+    if (this.history.length) {
+      try {
+        localStorage.setItem(
+          CLEARED_STORAGE_KEY,
+          JSON.stringify({
+            clearedAt: new Date().toISOString(),
+            league: this.league,
+            budgets,
+            picks: this.history,
+          })
+        );
+      } catch {
+        /* storage unavailable — the correction is simply not undoable */
+      }
+    }
+
+    this.draftedCount = 0;
+    this.history = [];
+    // The undone branch belonged to the log that has just been replaced.
+    this.undone = [];
+    this.initializePlayers();
+    this.initializeTeams();
+    for (const { id, budget } of budgets) this.updateTeamBudget(id, budget);
+
+    const restored = this.replay(picks);
+    this.persist();
+    return { ok: true, restored, skipped: picks.length - restored };
   }
 
   /**
@@ -2404,6 +2935,11 @@ export class AuctionDraftService {
     this.league = wanted;
     this.draftedCount = 0;
     this.history = [];
+    // Those picks were bid at prices this league does not charge, so putting
+    // one back would build a roster nobody could have bought.
+    this.undone = [];
+    // Prices moved, so the saved copy is of a draft this league cannot replay.
+    this.clearExportMark();
     this.initializePlayers();
     this.initializeTeams();
     writeStoredLeague(this.league);
@@ -2503,12 +3039,26 @@ export class AuctionDraftService {
    * it, because the board has to be able to print "—" where there was no price.
    * A grid of `$0` cells reads as a room that bought a hundred and forty
    * players for nothing, which is the opposite of what happened.
+   *
+   * `index` is where the pick sits in the log, and it is here because the grid
+   * is where a mistake gets noticed and so is where it should be correctable.
+   * It is read off the log rather than inferred from `pickNumber`: the two
+   * agree today, and a cell that edits the wrong entry because they stopped
+   * agreeing is the worst thing this feature could do.
    */
   getDraftBoard(): Array<{
     team: Team;
-    picks: Array<{ player: Player; cost: number | null; phase: DraftPhase; pickNumber: number }>;
+    picks: Array<{
+      player: Player;
+      cost: number | null;
+      phase: DraftPhase;
+      pickNumber: number;
+      index: number;
+    }>;
   }> {
-    const phases = new Map(this.history.map((pick) => [pick.playerId, pick.phase]));
+    const entries = new Map(
+      this.history.map((pick, index) => [pick.playerId, { phase: pick.phase, index }])
+    );
     return this.teams.map((team) => ({
       team,
       picks: this.players
@@ -2516,8 +3066,9 @@ export class AuctionDraftService {
         .map((p) => ({
           player: p,
           cost: p.draftCost ?? null,
-          phase: phases.get(p.id) ?? 'auction',
+          phase: entries.get(p.id)?.phase ?? 'auction',
           pickNumber: p.pickNumber ?? 0,
+          index: entries.get(p.id)?.index ?? -1,
         }))
         .sort((a, b) => a.pickNumber - b.pickNumber),
     }));
@@ -2714,6 +3265,14 @@ export class AuctionDraftService {
     });
     this.draftedCount = 0;
     this.history = [];
+    // Redo is the small net and the stash above is the big one. Leaving undone
+    // picks here would let "r" splice a pick from the cleared draft into an
+    // empty board, which is neither draft.
+    this.undone = [];
+    // The mark described a draft that no longer exists. Left in place, a fresh
+    // draft shorter than the old one reported a single unsaved pick — the calm
+    // end of the scale — for work that has never left the browser.
+    this.clearExportMark();
     this.teams.forEach((team) => {
       team.spent = 0;
       team.remaining = team.budget;
@@ -2816,6 +3375,10 @@ export class AuctionDraftService {
       this.myTeamId = stored.mine ?? null;
       this.draftedCount = 0;
       this.history = [];
+      // Whatever this window had taken back, the window that just wrote has
+      // moved on from. Redo is a private note about what one person did here,
+      // never a shared fact, so it does not survive being told the draft moved.
+      this.undone = [];
       this.initializePlayers();
       this.initializeTeams();
       // Replays the pick log the other window just wrote. A cleared draft
@@ -2876,7 +3439,15 @@ export class AuctionDraftService {
     const savedLeague = saved.league ? normaliseLeague(leagueShape(saved.league)) : POOL_LEAGUE;
     if (!sameLeague(savedLeague, this.league)) return 0;
 
+    // Emptying the board to replay onto it, not throwing a draft away. The
+    // difference matters to the export mark: resetDraft forgets it, because the
+    // log it described is gone — but a reload replays that very log, so the
+    // mark still describes exactly what is about to be on the board. Clearing
+    // it here made every refresh report the whole draft as unsaved.
+    const mark = this.mark;
     this.resetDraft();
+    this.mark = mark;
+    if (mark) writeStoredMark(mark);
     for (const { id, budget } of saved.budgets ?? []) this.updateTeamBudget(id, budget);
 
     const restored = this.replay(saved.picks);
@@ -2931,6 +3502,108 @@ export class AuctionDraftService {
       /* nothing to clean up */
     }
     return restored;
+  }
+
+  // -------------------------------------------------------------------------
+  // how exposed the record is
+  //
+  // On the night there is no server, no account and no second machine: the
+  // draft is a pick log in one browser profile, and the only copy of an
+  // afternoon is the tab it is being played in. The file and the clipboard are
+  // the ways out; forgetting to use one while an auction is running is the
+  // failure that actually happens. So the app counts rather than reminds.
+  // -------------------------------------------------------------------------
+
+  /**
+   * A cheap, stable summary of the pick log.
+   *
+   * FNV-1a over the log's own JSON, prefixed with its length so two logs of
+   * different sizes can never collide. It answers one question — is this the
+   * draft that went out — which a pick count alone cannot: undo a pick and
+   * re-enter it at the right price and the count is unchanged while the record
+   * is not.
+   */
+  private fingerprint(): string {
+    const text = JSON.stringify(this.history);
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `${this.history.length}:${(hash >>> 0).toString(36)}`;
+  }
+
+  /**
+   * Record that the whole draft has just left this browser.
+   *
+   * Called by the two acts that put a copy somewhere the owner can point at: a
+   * file, and the clipboard. The optional server's autosave deliberately does
+   * not call it. That is not an oversight — the server is an overlay that is
+   * usually not running, and this counter measures what the owner is holding
+   * rather than what some process managed on his behalf. A number that goes
+   * quiet because of a backup nobody remembers making is a number that lies in
+   * the one direction that costs an afternoon.
+   */
+  markExported(kind: ExportMark['kind'], of: ExportSnapshot = this.snapshotMark()): ExportMark {
+    this.mark = { savedAt: new Date().toISOString(), kind, ...of };
+    writeStoredMark(this.mark);
+    return this.mark;
+  }
+
+  /**
+   * The log as it stands, to be stamped later against the text that left.
+   *
+   * Saving is not instantaneous: the artifact's downloads capability puts a
+   * confirmation in front of a person, and the clipboard can wait on a
+   * permission prompt. Stamping after the await marks the log as it is *then*,
+   * so a pick recorded while the save was in flight was recorded as saved. The
+   * caller takes this the moment it calls exportDraft and hands it back after,
+   * so the stamp describes the payload rather than the present.
+   */
+  snapshotMark(): ExportSnapshot {
+    return { picks: this.history.length, fingerprint: this.fingerprint() };
+  }
+
+  /** When the draft last left this browser, if it ever has. */
+  getExportMark(): ExportMark | null {
+    return this.mark;
+  }
+
+  /**
+   * How far the record has moved since the last copy of it left this browser.
+   *
+   * Zero when the copy is the draft on the board, and zero on an empty board —
+   * there is nothing to lose before the first pick, and a warning at that point
+   * is a warning nobody will read at pick forty. With no copy ever made the
+   * answer is the whole draft, which is exactly the exposure.
+   *
+   * Between those, the honest reading is a floor rather than an exact count: a
+   * log that differs from the saved one has moved by at least one change, and
+   * an undo followed by a re-entry moves it twice while leaving the length
+   * alone. It says "at least this far behind", and it is never behind by less.
+   */
+  picksSinceExport(): number {
+    if (!this.history.length) return 0;
+    if (!this.mark) return this.history.length;
+    if (this.mark.fingerprint === this.fingerprint()) return 0;
+    // A mark describing a longer log than the one on the board cannot be a copy
+    // of any part of it — a reset, a league change or a heavy correction has
+    // been through. The whole board is unsaved, and subtracting would have
+    // reported exactly 1: the calm end of the scale, for a draft that has never
+    // left the browser at all. This is the one direction the number must never
+    // be wrong in.
+    if (this.mark.picks > this.history.length) return this.history.length;
+    return Math.max(1, this.history.length - this.mark.picks);
+  }
+
+  /** Forget the mark, for when the log it describes is thrown away entirely. */
+  private clearExportMark(): void {
+    this.mark = null;
+    try {
+      localStorage.removeItem(EXPORT_MARK_KEY);
+    } catch {
+      /* storage unavailable — the mark was never durable anyway */
+    }
   }
 
   /**
@@ -3041,6 +3714,9 @@ export class AuctionDraftService {
     writeStoredTeams({ names: this.teamNames, mine: this.myTeamId });
     this.draftedCount = 0;
     this.history = [];
+    // A file replaces the board, so an undone pick from the draft it replaced
+    // belongs to a draft that is no longer here.
+    this.undone = [];
     this.initializePlayers();
     this.initializeTeams();
 
@@ -3048,7 +3724,14 @@ export class AuctionDraftService {
 
     const restored = this.replay(saved.picks);
     this.persist();
-    return { ok: true, restored, skipped: saved.picks.length - restored };
+    const skipped = saved.picks.length - restored;
+    // A draft that came out of a file is a draft that demonstrably exists in
+    // one, so the exposure counter starts from zero rather than warning about
+    // picks that are already safely on disk. Only when every pick replayed:
+    // if any were dropped the file and the board are different drafts, and the
+    // file is not a copy of what is now being played.
+    if (!skipped) this.markExported('file');
+    return { ok: true, restored, skipped };
   }
 
   /** Whether a resumable draft is sitting in storage. */

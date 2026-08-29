@@ -1,5 +1,6 @@
 /**
- * Handing the viewer a file, wherever the app happens to be running.
+ * Handing the viewer a copy of something, wherever the app happens to be
+ * running — as a file, or through the clipboard.
  *
  * In a browser this is an anchor with a `download` attribute. Inside the
  * published Artifact it is not: that sandbox blocks any download a page starts
@@ -22,8 +23,22 @@ interface ClaudeRuntime {
 }
 
 export type SaveOutcome =
-  /** Written, or handed to the browser's download machinery. */
+  /**
+   * Confirmed written, by something that can actually confirm it.
+   *
+   * Only the viewer's downloads capability reports this, because only it knows.
+   */
   | { status: 'saved'; filename: string }
+  /**
+   * Handed to the browser and not observable after that.
+   *
+   * An anchor click tells you nothing: a cancelled Save-As dialog, a blocked
+   * download and a full disk all look identical to a successful one. It is the
+   * best evidence available in an ordinary browser, so it still counts as the
+   * draft having left — but the room must not say "saved" about a file it has
+   * no way of knowing exists.
+   */
+  | { status: 'handed-off'; filename: string }
   /** The viewer was asked and said no. Not an error; say nothing loud. */
   | { status: 'declined' }
   /** Nothing could take the file. The caller should offer Copy instead. */
@@ -97,8 +112,34 @@ export const saveTextFile = async (
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
-    return { status: 'saved', filename };
+    // Not `saved`: the click succeeding says nothing about a file existing.
+    return { status: 'handed-off', filename };
   } catch (error) {
     return { status: 'failed', reason: error instanceof Error ? error.message : 'unknown' };
+  }
+};
+
+/**
+ * Put text on the clipboard, and say whether it got there.
+ *
+ * The second escape hatch, and on draft night the faster of the two: the whole
+ * draft goes into a message, a note or an email in one keystroke, which is a
+ * copy outside this browser profile without a file manager or a USB stick in
+ * the way.
+ *
+ * It reports rather than throws because there are several ordinary reasons it
+ * cannot work and none of them are errors the room should see: an insecure
+ * origin, a permission the browser declines, a sandbox that withholds the API.
+ * The caller falls back to a file, which is the same bytes through a different
+ * door.
+ */
+export const copyTextToClipboard = async (text: string): Promise<boolean> => {
+  const clipboard = typeof navigator === 'undefined' ? null : navigator.clipboard;
+  if (!clipboard || typeof clipboard.writeText !== 'function') return false;
+  try {
+    await clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
   }
 };

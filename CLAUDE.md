@@ -44,6 +44,7 @@ src/pages/Index.tsx
         ├── ResearchPanel.tsx     what the web said, with the link and the date
         ├── CompareTray.tsx       pin 2-4 players, then compare on shared scales
         ├── DraftBoard.tsx        the room: 12x16 grid, money flow, tier depletion
+        ├── PickEditor.tsx        correcting one pick, from the cell showing it
         ├── BudgetPlanner.tsx     what a bid leaves behind, live
         ├── BargainBoard.tsx      our board against expert consensus
         ├── AdvisorPanel.tsx      the opinion layer, off by default
@@ -70,7 +71,8 @@ src/lib/serverContract.ts             the wire between app and server (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
 src/lib/auctionSheet.ts               the commissioner's sheet, pasted or filed
 src/lib/playerSearch.ts               finding a player by a name typed in a hurry
-src/lib/saveFile.ts                   hands over a file, in browser or artifact
+src/lib/saveFile.ts                   hands over a file or the clipboard, in
+                                      browser or artifact
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/draftAdvisor.ts          the opinion layer, deliberately separate
 src/services/nflIdentity.ts           team colors, crests, headshots
@@ -438,16 +440,157 @@ disabled in the winning-team list rather than accepted and rejected afterwards.
 
 **The auction runs from the keyboard, because it moves faster than a mouse.**
 `/` focuses the search, a few letters and Enter put the top match on the block,
-focus lands on the winning-team select, and Enter in the bid sells. `u` undoes.
-Shortcuts never fire inside an input, select or textarea, and a modal owns the
-keyboard while open — the guard is what keeps typing "u" in the search box from
-undoing a pick.
+focus lands on the winning-team select, and Enter in the bid sells. `u` undoes,
+`r` puts back what `u` took, `s` saves the draft to a file and `c` copies the
+whole thing to the clipboard. Shortcuts never fire inside an input, select or
+textarea, and a modal owns the keyboard while open — the guard is what keeps
+typing "u" in the search box from undoing a pick, and it is why four more
+single letters cost nothing.
 
 **A file is the escape hatch.** `exportDraft()`/`importDraft()` carry the pick
 log _and_ the league, because prices are meaningless without the league they
 were bid under. Loading replaces the board, so it asks first when a draft is in
 progress, and picks that no longer validate are counted rather than dropped
 quietly.
+
+**A pick can be corrected in the middle, not only at the end.** Undo pops the
+log, so noticing at pick sixty that pick forty was wrong meant undoing twenty
+good picks and re-entering them from memory — which is how one misheard price
+becomes a lost afternoon. `correctPick(index, change)` amends the one entry and
+then replays the amended log through the same private `replay()` that
+`restore()`, `restoreClearedDraft()` and `importDraft()` come through, so a
+corrected draft is built by the code that built the original rather than being
+the old draft with one entry painted over. It reports `{ restored, skipped }`
+exactly as an import does, because a correction can legitimately leave a later
+pick with no legal way to have happened: a raised price that busts a budget, a
+player who is now taken twice.
+
+That count has to exist _before_ anything is applied, which is what
+`previewCorrection` is. It replays the amended log against shadow teams — clones
+that start empty and fill as the log is read — through `checkBid` and
+`checkRoster`, the same two calls the live path makes. `checkBid` was split out
+of `validateBid` for this exactly as `checkRoster` was split out of it for the
+snake: a second copy of "can this team afford him" is a second answer, and a
+warning that disagrees with what then happens is worse than no warning, so a
+test drives one against the other. A correction that cannot keep the pick it is
+correcting is refused rather than applied and counted — applying it would
+silently delete the pick somebody was trying to fix. The refusal is reported as
+a refusal, too, and not as collateral: listing the edited pick's own failure
+alongside genuinely later ones headed it "1 later pick could no longer have
+happened" — naming the pick being edited — under an enabled button the engine
+then always refused, on the one screen whose whole job is stating what an action
+will cost.
+
+A correction that drops later picks stashes the pre-correction log where a reset
+stashes it, so it can be taken back. It is the sharper of the two destructive
+acts rather than the lesser: a reset is all-or-nothing and obvious, while this
+deletes an arbitrary tail behind a button reading "Apply, losing 34". Reset
+earned its net by destroying an afternoon, and there is no argument for the
+finer instrument going without one.
+
+The editor offers players who are already drafted, marked with where they went.
+The correction the whole panel exists for is "that was the wrong man, and the
+right one is who I recorded three picks later", and excluding taken players made
+exactly that unreachable in both directions while telling the owner "nobody on
+the board by that name" about somebody sitting in the grid behind the dialog.
+Choosing one is not silently allowed: the preview replays and reports him as
+taken twice, which is the honest cost.
+
+**A correction carries the phase; it never re-derives it.** Correcting a pick
+can move where the auction ended, and that is right: swap the sale that emptied
+the sheet for a player who was never on it and there is a sheet player still to
+sell, so `getPhase()` reads `auction` again. The snake picks after it keep the
+half they were taken in and replay through `applySnakePick`, which re-checks
+what cannot have been true — the player exists, is not taken, fits the roster —
+and not whose turn it was. That is the principle a reorder is already held to: a
+logged pick is a record of what happened, not a proposal to be re-adjudicated
+against a sheet that has since changed shape. So `phase` is not among the fields
+a correction may carry. Relabelling a sale as a free pick would unspend money the
+room spent, relabelling a free pick as a sale would invent a price nobody paid,
+and when the wrong half really is recorded the repair is to undo back to it,
+because that is the only thing that also puts the sheet back where it was. A
+cost on a snake pick is refused for the same reason `draftCost` stays undefined
+rather than becoming 0, and a $0 correction is refused exactly as a $0 bid is.
+
+The editor is a cell of the 12x16 grid, because the grid is where a mistake is
+noticed. `getDraftBoard` therefore carries the pick's `index` in the log, read
+off the log rather than inferred from `pickNumber` — the two agree today, and a
+cell that edits the wrong entry because they stopped agreeing is the worst thing
+this could do. `.dr-overlay` had no CSS at all, so the board it opens in was
+rendering in the page flow below the whole room rather than over it; an editor
+you have to scroll to find is an editor nobody uses mid-draft, so the rule now
+exists and `CompareTray` becomes a real overlay with it.
+
+**Undo can be undone.** It sits under one key next to the one that focuses the
+search, and two accidental presses lost two picks with nothing on screen to say
+which. Undone picks go on a stack that any new pick clears — the same rule the
+cleared-draft stash lives by, because once the draft has moved on the branch
+that was taken back is genuinely history. `redoLastUndo()` puts a pick back
+through the ordinary draft path rather than pushing it onto the log, since the
+engine re-checks everything it records and a redo is no exception; a pick that
+can no longer be made is dropped rather than kept, because an offer that fails
+every time it is taken up is worse than no offer. The stack is deliberately not
+persisted and deliberately not shared: the pick log is the only shared fact, and
+a window that never pressed undo must not offer to redo. A correction, a reset,
+a league change and a file all clear it.
+
+**The record says how exposed it is, in picks.** On the night there is no
+server: the draft is a pick log in one browser profile, and a cleared cache or a
+crashed tab takes the afternoon with it. The only defence is a copy somewhere
+else and the thing that reliably fails is remembering to make one while an
+auction is running, so the app counts instead of reminding. `picksSinceExport()`
+is zero on an empty board, the whole draft when no copy has ever been made, and
+otherwise the distance from the last one; the top bar bands it — silent-grey
+under eight, amber to twenty, red past it, because a chip that shouts from the
+first pick means nothing by the fortieth.
+
+The mark describes the text that left rather than the board it left from. A save
+is not instantaneous — the artifact's downloads capability puts a confirmation in
+front of a person, and the clipboard can wait on a permission prompt — so
+stamping the log as it stands after the await marked any pick made during the
+save as one that had gone out. `snapshotMark()` is taken beside `exportDraft()`
+and handed back to `markExported`.
+
+The mark is also forgotten wherever the log it describes is thrown away — a reset,
+a league change — and `picksSinceExport` treats a mark longer than the current log
+as no mark at all. Left in place it subtracted its way to exactly 1, the calm end
+of the scale, for a fresh draft that had never left the browser. A reload is not
+that case and deliberately keeps it: replaying the stored log lands on the very
+draft the mark describes.
+
+`saveTextFile` distinguishes `saved` from `handed-off`. Only the viewer's
+downloads capability can confirm a file exists; an anchor click reports nothing,
+and a cancelled Save-As dialog looks identical to a success. A handoff still
+counts as the draft having left, because it is the best evidence an ordinary
+browser can give, but the room says "handed to your browser — check it
+downloaded" rather than claiming a file it cannot see.
+
+It is a fingerprint and not a count, because a count cannot answer the question:
+undo a pick and re-enter it at the right price and the log is the same length
+and a different draft, and a correction leaves the length alone entirely. The
+mark stores an FNV-1a of the log's own JSON beside the length, so "different" is
+answered exactly and "how far" is answered as a floor — at least one change, and
+never fewer than there were. It lives in `localStorage` because a page refresh
+is not a backup and must not read as one.
+
+Two things clear it and one deliberately does not. A file save clears it and a
+clipboard copy clears it, both wired to the outcome rather than the click — a
+save the viewer declined is not a save. `importDraft` clears it too when every
+pick replayed, since a draft that came out of a file demonstrably exists in one.
+The optional server's autosave does **not**, and that is the decision worth
+stating: the server is an overlay that is usually not running, this counter
+measures what the owner is holding, and a number that goes quiet because of a
+backup nobody remembers making is a number that lies in the one direction that
+costs an afternoon.
+
+`c` copies the same `exportDraft()` payload a file carries, so what lands in a
+message or a note loads straight back through `importDraft`. The clipboard is
+not permitted everywhere — an insecure origin, a browser that asks, the
+artifact's sandbox — so `copyTextToClipboard` reports rather than throws and the
+room falls through to the file, which is the same bytes through the other door.
+Both live in `DraftRoom` rather than in `DraftFile`, because both are also on
+the keyboard and a second copy of "the record has left" would be a second answer
+to whether the night is backed up.
 
 **A second window follows; it does not receive.** `draftSync.ts` posts one
 thing on a `BroadcastChannel` — that the draft moved — and the receiving window
@@ -798,7 +941,11 @@ stable ids; and an optional server the owner asked for — saved drafts with a
 full version history, an autosave that backs the night up as it is played, the
 pool and research rebuilds startable over HTTP with their progress polled back,
 somewhere for the OpenRouter key that is not the bundle, and a token behind a
-tunnel; 440 tests.
+tunnel; and the record made correctable and safe — any pick amended from the
+cell that shows it with what the amendment costs named first, an undo that can
+be undone, a visible count of how many picks stand between the board and the
+last copy of it that left this browser, and that copy one keystroke away as a
+file or on the clipboard; 477 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
