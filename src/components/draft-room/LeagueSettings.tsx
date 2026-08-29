@@ -21,6 +21,8 @@ interface LeagueSettingsProps {
   /** Applies at once — a name changes no price, so nothing is re-priced. */
   onRenameTeam: (teamId: string, name: string) => void;
   onSetMyTeam: (teamId: string | null) => void;
+  /** What a shape would cost, so it can be dialled against the real room. */
+  preview: (league: LeagueShape) => { top: number; median: number; bought: number };
   league: LeagueShape;
   /** The shape the shipped pool was priced for, for showing what has moved. */
   poolLeague: LeagueShape;
@@ -51,6 +53,7 @@ export const LeagueSettings = ({
   myTeamId,
   onRenameTeam,
   onSetMyTeam,
+  preview,
   league,
   poolLeague,
   draftedCount,
@@ -63,6 +66,9 @@ export const LeagueSettings = ({
   const [budget, setBudget] = useState(String(league.budget));
   const [rosterSize, setRosterSize] = useState(String(league.rosterSize));
   const [receptionPoints, setReceptionPoints] = useState(league.receptionPoints);
+  const [sheetSize, setSheetSize] = useState(
+    league.auctionSheetSize === null ? '' : String(league.auctionSheetSize)
+  );
   const [lineup, setLineup] = useState<Record<LineupSlot, string>>(
     () =>
       Object.fromEntries(
@@ -94,6 +100,7 @@ export const LeagueSettings = ({
         budget: asNumber(budget, league.budget),
         rosterSize: asNumber(rosterSize, league.rosterSize),
         receptionPoints,
+        auctionSheetSize: sheetSize.trim() === '' ? null : asNumber(sheetSize, 0),
         startingLineup: Object.fromEntries(
           LINEUP_SLOTS.map((slot) => [
             slot,
@@ -109,11 +116,14 @@ export const LeagueSettings = ({
           teamCount === poolLeague.teams ? poolLeague.rostered : rosteredForTeams(teamCount),
       })
     );
-  }, [teams, budget, rosterSize, lineup, limits, receptionPoints, league, poolLeague]);
+  }, [teams, budget, rosterSize, lineup, limits, receptionPoints, sheetSize, league, poolLeague]);
 
   // Read from the pool rather than written into the copy: the last hardcoded
   // count went stale the first time the pool grew.
   const poolSize = POSITIONS.reduce((total, position) => total + (poolDepth[position] ?? 0), 0);
+
+  // Recomputed as the shape is typed, which is the whole point of it.
+  const prices = useMemo(() => preview(draft), [preview, draft]);
 
   const unchanged = sameLeague(draft, league);
   const rosterSlots = draft.teams * draft.rosterSize;
@@ -285,6 +295,49 @@ export const LeagueSettings = ({
               </label>
             ))}
           </div>
+        </section>
+
+        <section className="dr-modal-section">
+          <h3 className="dr-eyebrow">The auction</h3>
+          <p className="dr-meter-note">
+            Leave this empty when the whole board is auctioned. Set it when the league auctions a
+            sheet of the best players and fills the rest another way — the same money then chases
+            far fewer of them, and every one costs more.
+          </p>
+          <div className="dr-league-grid">
+            <label className="dr-league-field">
+              <span className="dr-eyebrow">Players auctioned</span>
+              <input
+                className="dr-input"
+                type="number"
+                inputMode="numeric"
+                min={draft.teams}
+                max={628}
+                placeholder="all of them"
+                value={sheetSize}
+                onChange={(event) => setSheetSize(event.target.value)}
+              />
+              <span className="dr-meter-note">blank means the whole board</span>
+            </label>
+          </div>
+          <dl className="dr-league-summary">
+            <div>
+              <dt>Best player costs</dt>
+              <dd style={{ color: 'var(--dr-value)' }}>${prices.top}</dd>
+            </div>
+            <div>
+              <dt>Typical price</dt>
+              <dd>${prices.median}</dd>
+            </div>
+            <div>
+              <dt>Players bought</dt>
+              <dd>{prices.bought}</dd>
+            </div>
+          </dl>
+          <p className="dr-meter-note">
+            Dial the budget and the sheet until these match what your room actually pays. What the
+            league does is better evidence than the model.
+          </p>
         </section>
 
         <section className="dr-modal-section">

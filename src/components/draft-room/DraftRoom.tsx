@@ -887,6 +887,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             draftService.setMyTeam(id);
             sync();
           }}
+          preview={(shape) => draftService.getPricePreview(shape)}
           onApply={applyLeague}
           onClose={() => setLeagueOpen(false)}
         />

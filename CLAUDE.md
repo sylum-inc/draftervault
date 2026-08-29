@@ -94,6 +94,23 @@ hold, walk away — and it is a separate module for that reason, off until asked
 for, rendered in its own dashed box with the reasoning that produced each call.
 Don't let a recommendation leak into `DraftAnalytics`.
 
+**Only some leagues auction the whole board.** This one auctions a
+commissioner's sheet of the best players and snake-drafts the rest, so the same
+money chases far fewer of them. `auctionSheetSize` on the league sets how many
+are bought; the settings panel previews what the best player would then cost,
+because for a format the model has never seen, what the room actually pays is
+better evidence than the model.
+
+Replacement level does **not** move when only part of the pool is auctioned.
+This was got wrong once and it was instructive: setting the bar to the best
+player left off the sheet — reasoning that they are your snake alternative —
+left only a handful of players with any surplus, and the whole budget piled
+onto them. It priced the best player at 77% of a team's entire budget, which no
+auction has ever done. The error was assuming you get first pick of what is
+left; eleven other teams are drafting too, and across both phases the league
+still rosters the same players it always did. Only the money is concentrated. A
+test now asserts no player exceeds 55% of a budget at any sheet size.
+
 **Scoring is part of the league, and the pool is not built at yours.** nflverse
 gives full-PPR points and the builder took them straight, so a point a catch was
 hardcoded with no way to say otherwise. It is the biggest single lever in
@@ -319,7 +336,7 @@ board; a custom-rankings import that refuses to guess; app icons and a manifest
 that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; keyboard operation, a
 non-destructive reset, a draft that ends, a draft file for the night the
 laptop dies, named teams, a board that keeps up with an auction and configurable
-reception scoring; 207 tests.
+reception scoring, and pricing for a partial auction; 216 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

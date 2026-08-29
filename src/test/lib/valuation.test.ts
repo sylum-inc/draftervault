@@ -10,7 +10,6 @@ import {
   pricePool,
   replacementLevels,
   rosteredForTeams,
-  snakeReplacementLevels,
   sameLeague,
   startingSlots,
   unfilledSlotsFor,
@@ -209,20 +208,18 @@ describe('pricing an auction sheet', () => {
     return on;
   };
 
-  it('measures against the best player still available in the snake', () => {
+  it('does not move replacement level, because the league still rosters everyone', () => {
     const players = projected();
-    const onSheet = sheetOf(50);
-    const levels = snakeReplacementLevels(players, DEFAULT_LEAGUE, onSheet);
+    const full = pricePool(players, DEFAULT_LEAGUE);
+    const sheet = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(50) });
 
-    // The bar is the best player NOT on the sheet, which is far higher than the
-    // bottom of a 628-player pool.
-    const full = replacementLevels(players, DEFAULT_LEAGUE);
-    for (const position of ['RB', 'WR']) {
-      expect(levels[position]).toBeGreaterThan(full[position]);
-    }
+    // Got this wrong once: setting the bar to the best player left off the
+    // sheet left only a handful with any surplus, and the budget piled onto
+    // them — the best player came out at 77% of a team's entire budget.
+    expect(sheet.replacement).toEqual(full.replacement);
   });
 
-  it('charges far more when the same money buys far fewer players', () => {
+  it('charges more when the same money buys fewer players', () => {
     const players = projected();
     const full = pricePool(players, DEFAULT_LEAGUE);
     const sheet = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(50) });
@@ -231,8 +228,40 @@ describe('pricing an auction sheet', () => {
       (top, entry, index) => (entry.auctionValue > full.priced[top].auctionValue ? index : top),
       0
     );
-    // Twelve budgets of $200 chasing fifty players rather than 192 roster slots.
-    expect(sheet.priced[best].auctionValue).toBeGreaterThan(full.priced[best].auctionValue * 2);
+    expect(sheet.priced[best].auctionValue).toBeGreaterThan(full.priced[best].auctionValue);
+  });
+
+  it('keeps the best player inside what one team could actually pay', () => {
+    const players = projected();
+    for (const size of [50, 100]) {
+      const { priced } = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(size) });
+      const top = Math.max(...priced.map((entry) => entry.auctionValue));
+      // Nobody spends three quarters of their budget on one player. A model
+      // that says they do is a broken model, not a bold prediction.
+      expect(top).toBeLessThan(DEFAULT_LEAGUE.budget * 0.55);
+    }
+  });
+
+  it('prices from a sheet size alone, before the sheet itself exists', () => {
+    const players = projected();
+    const bySize = pricePool(players, leagueShape({ auctionSheetSize: 50 }));
+    const byList = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(50) });
+
+    const top = (r: { priced: Array<{ auctionValue: number }> }) =>
+      Math.max(...r.priced.map((e) => e.auctionValue));
+    expect(top(bySize)).toBe(top(byList));
+  });
+
+  it('charges less as the sheet grows', () => {
+    const players = projected();
+    const top = (size: number) =>
+      Math.max(
+        ...pricePool(players, leagueShape({ auctionSheetSize: size })).priced.map(
+          (e) => e.auctionValue
+        )
+      );
+    expect(top(100)).toBeLessThan(top(50));
+    expect(top(200)).toBeLessThan(top(100));
   });
 
   it('charges less as the sheet grows, because the money is spread wider', () => {

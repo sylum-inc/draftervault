@@ -968,6 +968,35 @@ export class AuctionDraftService {
     this.announce();
   }
 
+  /**
+   * What a league shape would do to prices, without committing to it.
+   *
+   * The settings panel changes numbers whose effect is invisible until you
+   * apply them and lose the draft. Showing what the best player would cost lets
+   * a shape be dialled against what the room actually pays — which, for a
+   * format the model has never seen, is better evidence than the model.
+   */
+  getPricePreview(league: LeagueShape): { top: number; median: number; bought: number } {
+    const entries = poolData.players as PoolEntry[];
+    const { priced } = pricePool(
+      entries.map((entry) => ({
+        position: entry.position,
+        points: entry.projection.points,
+        receptions: entry.projection.receptions,
+      })),
+      normaliseLeague(league)
+    );
+    const sold = priced
+      .map((entry) => entry.auctionValue)
+      .filter((value) => value > 1)
+      .sort((a, b) => b - a);
+    return {
+      top: sold[0] ?? 0,
+      median: sold[Math.floor(sold.length / 2)] ?? 0,
+      bought: sold.length,
+    };
+  }
+
   /** The imported rankings in force, by player id. */
   getCustomRankings(): Record<string, RankingOverride> {
     return { ...this.overrides };
