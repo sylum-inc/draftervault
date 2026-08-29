@@ -10,6 +10,7 @@ import {
   pricePool,
   replacementLevels,
   rosteredForTeams,
+  snakeReplacementLevels,
   sameLeague,
   startingSlots,
   unfilledSlotsFor,
@@ -184,6 +185,98 @@ describe('scoring', () => {
     // Without these the client cannot restate a single price.
     const missing = poolData.players.filter((p) => p.projection.receptions === undefined);
     expect(missing.map((p) => p.name)).toEqual([]);
+  });
+});
+
+describe('pricing an auction sheet', () => {
+  const projected = () =>
+    poolData.players.map((p) => ({
+      position: p.position,
+      points: p.projection.points,
+      receptions: p.projection.receptions,
+    }));
+
+  /** The commissioner's sheet: the best N by what a full auction would pay. */
+  const sheetOf = (size: number): boolean[] => {
+    const players = projected();
+    const full = pricePool(players, DEFAULT_LEAGUE);
+    const order = full.priced
+      .map((entry, index) => ({ value: entry.auctionValue, index }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, size);
+    const on = new Array(players.length).fill(false);
+    for (const entry of order) on[entry.index] = true;
+    return on;
+  };
+
+  it('measures against the best player still available in the snake', () => {
+    const players = projected();
+    const onSheet = sheetOf(50);
+    const levels = snakeReplacementLevels(players, DEFAULT_LEAGUE, onSheet);
+
+    // The bar is the best player NOT on the sheet, which is far higher than the
+    // bottom of a 628-player pool.
+    const full = replacementLevels(players, DEFAULT_LEAGUE);
+    for (const position of ['RB', 'WR']) {
+      expect(levels[position]).toBeGreaterThan(full[position]);
+    }
+  });
+
+  it('charges far more when the same money buys far fewer players', () => {
+    const players = projected();
+    const full = pricePool(players, DEFAULT_LEAGUE);
+    const sheet = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(50) });
+
+    const best = full.priced.reduce(
+      (top, entry, index) => (entry.auctionValue > full.priced[top].auctionValue ? index : top),
+      0
+    );
+    // Twelve budgets of $200 chasing fifty players rather than 192 roster slots.
+    expect(sheet.priced[best].auctionValue).toBeGreaterThan(full.priced[best].auctionValue * 2);
+  });
+
+  it('charges less as the sheet grows, because the money is spread wider', () => {
+    const players = projected();
+    const fifty = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(50) });
+    const hundred = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(100) });
+
+    const best = fifty.priced.reduce(
+      (top, entry, index) => (entry.auctionValue > fifty.priced[top].auctionValue ? index : top),
+      0
+    );
+    expect(hundred.priced[best].auctionValue).toBeLessThan(fifty.priced[best].auctionValue);
+  });
+
+  it('prices nobody who is not on the sheet', () => {
+    const players = projected();
+    const onSheet = sheetOf(60);
+    const { priced } = pricePool(players, DEFAULT_LEAGUE, { onSheet });
+
+    priced.forEach((entry, index) => {
+      if (!onSheet[index]) expect(entry.auctionValue).toBe(1);
+    });
+    expect(
+      priced.filter((entry, i) => onSheet[i] && entry.auctionValue > 1).length
+    ).toBeGreaterThan(40);
+  });
+
+  it('spends the budget on the sheet rather than on the pool', () => {
+    const players = projected();
+    const onSheet = sheetOf(50);
+    const { priced } = pricePool(players, DEFAULT_LEAGUE, { onSheet });
+    const spend = priced.reduce(
+      (total, entry, i) => total + (onSheet[i] ? entry.auctionValue : 0),
+      0
+    );
+    const budget = DEFAULT_LEAGUE.teams * DEFAULT_LEAGUE.budget;
+
+    expect(spend).toBeGreaterThan(budget * 0.95);
+    expect(spend).toBeLessThanOrEqual(budget * 1.05);
+  });
+
+  it('behaves exactly as before when no sheet is given', () => {
+    const players = projected();
+    expect(pricePool(players, DEFAULT_LEAGUE, {})).toEqual(pricePool(players, DEFAULT_LEAGUE));
   });
 });
 

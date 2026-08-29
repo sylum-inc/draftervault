@@ -279,11 +279,51 @@ export const replacementLevels = (
  *
  * Returns one entry per input player, in the same order.
  */
+/**
+ * Replacement level when only part of the pool is auctioned.
+ *
+ * In a league that auctions a sheet of the best players and snake-drafts the
+ * rest, what an auctioned player has to beat is not the worst rosterable player
+ * in the league — it is the best player you could still have taken for nothing.
+ * That is a far higher bar, and measuring against the wrong one is the
+ * difference between a sensible price and a fantasy.
+ */
+export const snakeReplacementLevels = (
+  players: readonly Projected[],
+  league: LeagueShape,
+  onSheet: readonly boolean[]
+): Record<string, number> => {
+  const levels: Record<string, number> = {};
+  players.forEach((player, index) => {
+    if (onSheet[index]) return;
+    const scored = pointsFor(player, league);
+    const best = levels[player.position];
+    if (best === undefined || scored > best) levels[player.position] = scored;
+  });
+  return levels;
+};
+
+export interface PricingOptions {
+  /**
+   * Which players go through the auction, parallel to `players`.
+   *
+   * Omitted, every rosterable player is auctioned and the whole budget is spread
+   * across the league's roster slots. Supplied, only these players are bought
+   * with money — so the same budget chases far fewer of them, and each is worth
+   * a great deal more.
+   */
+  onSheet?: readonly boolean[];
+}
+
 export const pricePool = (
   players: readonly Projected[],
-  league: LeagueShape
+  league: LeagueShape,
+  options: PricingOptions = {}
 ): { replacement: Record<string, number>; priced: Priced[] } => {
-  const replacement = replacementLevels(players, league);
+  const { onSheet } = options;
+  const replacement = onSheet
+    ? snakeReplacementLevels(players, league, onSheet)
+    : replacementLevels(players, league);
 
   const vorps = players.map(
     (player) =>
@@ -292,16 +332,22 @@ export const pricePool = (
       ) / 10
   );
 
-  const rosterSlots = league.teams * league.rosterSize;
+  // How many players the money is actually buying. A sheet is exactly its own
+  // length; a full auction is every roster slot in the league.
+  const sheetSize = onSheet ? onSheet.filter(Boolean).length : 0;
+  const rosterSlots = onSheet ? sheetSize : league.teams * league.rosterSize;
   const discretionary = league.teams * league.budget - rosterSlots;
 
   // Only the players who will actually be rostered share the surplus. Ranking
   // by VORP rather than points keeps a replacement-level quarterback from
-  // displacing a startable tight end.
-  const draftable = vorps
-    .map((vorp, index) => ({ vorp, index }))
-    .sort((a, b) => b.vorp - a.vorp)
-    .slice(0, rosterSlots);
+  // displacing a startable tight end. With a sheet there is nothing to rank:
+  // the sheet says who is bought.
+  const draftable = onSheet
+    ? vorps.map((vorp, index) => ({ vorp, index })).filter((entry) => onSheet[entry.index])
+    : vorps
+        .map((vorp, index) => ({ vorp, index }))
+        .sort((a, b) => b.vorp - a.vorp)
+        .slice(0, rosterSlots);
   const inPool = new Set(draftable.map((entry) => entry.index));
   const totalVorp = draftable.reduce((total, entry) => total + entry.vorp, 0) || 1;
 
