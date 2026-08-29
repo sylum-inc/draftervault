@@ -35,6 +35,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      # The single-file page is a second shipping path with its own failure
+      # modes — the module script lives in <head>, and the bundle registers a
+      # service worker that is useless in a self-contained page — and it is what
+      # the published artifact is built from. Breaking it used to surface only
+      # at publish time, which is the wrong moment to find out.
+      - name: Build the self-contained page
+        run: npm run build:single
+
   pool:
     name: Pool builder still runs
     runs-on: ubuntu-latest

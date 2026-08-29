@@ -1277,3 +1277,28 @@ describe('AuctionDraftService', () => {
     });
   });
 });
+
+describe('what a draft file has to carry', () => {
+  it('round-trips the sheet whole, including what the size was before it', () => {
+    // Dropping priorSize re-arms the bug its own doc comment describes: on the
+    // machine that restored the file, removing the sheet leaves the league
+    // pinned to a partial auction nobody chose. It only shows up one step later,
+    // which is why the pick count passing is not enough.
+    localStorage.clear();
+    const origin = new AuctionDraftService(leagueShape({ auctionSheetSize: null }));
+    const ids = origin
+      .getAvailablePlayers()
+      .slice(0, 60)
+      .map((player) => player.id);
+    origin.setAuctionSheet(ids);
+    const file = origin.exportDraft();
+
+    localStorage.clear();
+    const backup = new AuctionDraftService(leagueShape({ auctionSheetSize: null }));
+    expect(backup.importDraft(file).ok).toBe(true);
+    expect(JSON.parse(file).auctionSheet).toEqual(JSON.parse(backup.exportDraft()).auctionSheet);
+
+    backup.clearAuctionSheet();
+    expect(backup.getLeagueShape().auctionSheetSize).toBeNull();
+  });
+});

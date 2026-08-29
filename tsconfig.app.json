@@ -39,6 +39,7 @@
     "src/components/draft-room",
     "src/components/ui",
     "src/hooks/use-draft-preferences.ts",
+    "src/hooks/use-draft-server.ts",
     "src/hooks/use-toast.ts",
     "src/hooks/use-mobile.tsx",
     "src/services/auctionDraftService.ts",

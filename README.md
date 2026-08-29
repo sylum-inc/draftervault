@@ -5,6 +5,11 @@ analytics, 12 team budgets, live bid execution, and an auto-draft simulator. It
 is a pure front-end app — a static bundle with no backend, no database, and no
 API keys required to run it.
 
+There is also an **optional** server (`npm run server`) for saved drafts, draft
+history and server-side data rebuilds. It is strictly additive: the app works
+exactly the same with it stopped, which is how the published build runs and what
+draft night falls back to. See [docs/SERVER.md](docs/SERVER.md).
+
 ---
 
 ## Quick start (local)

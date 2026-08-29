@@ -8,6 +8,7 @@ import {
 } from '@/services/auctionDraftService';
 import { getIdentity, refreshIdentity, snapshotMeta } from '@/services/nflIdentity';
 import { useDraftPreferences } from '@/hooks/use-draft-preferences';
+import { useDraftServer } from '@/hooks/use-draft-server';
 import { PlayerCard } from './PlayerCard';
 import { PlayerTable, type TableSort } from './PlayerTable';
 import { NominationStage } from './NominationStage';
@@ -27,6 +28,7 @@ import { RankingsImport } from './RankingsImport';
 import { AuctionSheetImport } from './AuctionSheetImport';
 import { DraftFile } from './DraftFile';
 import { SnakeOrder } from './SnakeOrder';
+import { ServerPanel } from './ServerPanel';
 import {
   adviseOnBid,
   adviseOnNomination,
@@ -83,12 +85,29 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [confirmReset, setConfirmReset] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
+  const [serverOpen, setServerOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const teamIdRef = useRef(teamId);
   teamIdRef.current = teamId;
   const [cleared, setCleared] = useState(0);
   const { preferences, setView, toggleWatch, togglePin, clearPins, setAdvisor, setColumns } =
     useDraftPreferences();
+
+  /**
+   * The optional server, if there is one.
+   *
+   * With nothing configured this subscribes to nothing and calls nothing — the
+   * hook's whole first job is to be free when the app is being run the way it
+   * has always been run. The button below just says "Server" in that state and
+   * the panel behind it explains that there is none, which is not a fault.
+   */
+  const server = useDraftServer(draftService);
+  const serverLabel =
+    server.discovery.state === 'ready'
+      ? server.binding
+        ? `Server · backing up`
+        : `Server · on`
+      : 'Server';
 
   const sync = useCallback(() => {
     setPlayers(draftService.getPlayers());
@@ -439,9 +458,14 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
       sync();
     });
 
-    draftService.setChangeListener(channel.publish);
+    // `addChangeListener` rather than `setChangeListener`: the latter clears
+    // the Set, and the server autosave subscribes to the same one. Whichever
+    // mounted second would have silently taken the other's slot — a television
+    // that stopped following, or a backup that stopped being written, with
+    // nothing on screen to say so.
+    const unsubscribe = draftService.addChangeListener(channel.publish);
     return () => {
-      draftService.setChangeListener(null);
+      unsubscribe();
       channel.close();
     };
   }, [draftService, sync]);
@@ -476,6 +500,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // typing into its paste box undoes picks.
     sheetOpen ||
     orderOpen ||
+    serverOpen ||
     confirmReset;
 
   /**
@@ -855,6 +880,14 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           title="Save the draft to a file, or load one"
         >
           File
+        </button>
+        <button
+          className="dr-button"
+          aria-pressed={server.discovery.state === 'ready'}
+          onClick={() => setServerOpen(true)}
+          title="Saved drafts and rebuilds, when a server is running. The app does not need one."
+        >
+          {serverLabel}
         </button>
         <button
           className="dr-button"
@@ -1244,6 +1277,23 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             sync();
           }}
           onClose={() => setFileOpen(false)}
+        />
+      )}
+
+      {serverOpen && (
+        <ServerPanel
+          service={draftService}
+          server={server}
+          draftedCount={drafted.length}
+          onLoaded={() => {
+            setSelected(null);
+            setTeamId('');
+            setBid('');
+            setResumed(0);
+            setCleared(0);
+            sync();
+          }}
+          onClose={() => setServerOpen(false)}
         />
       )}
 

@@ -3666,3 +3666,36 @@
   background: color-mix(in srgb, var(--dr-value) 22%, var(--dr-raised));
   color: var(--dr-value);
 }
+
+/* ---------------------------------------------------------------------------
+   The server panel.
+
+   Wider than the import panels because it holds four unrelated sections —
+   connection, backup, saved drafts, rebuilds — and a job log that is only
+   readable at a monospace width. Everything it shows is an extra; the panel
+   leans on the existing modal and import styles rather than inventing a look,
+   so that it reads as one more drawer of the same cabinet and not as a
+   connection status somebody has to keep an eye on.
+   --------------------------------------------------------------------------- */
+
+.dr-server {
+  width: min(760px, 100%);
+}
+
+/* A batch job prints alignment-sensitive tables — replacement levels, the
+   priciest players by column — so it is monospace and it scrolls in its own
+   box rather than widening the panel or wrapping into nonsense. */
+.dr-server-log {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--dr-line);
+  border-radius: 4px;
+  background: var(--dr-sunken, var(--dr-raised));
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--dr-ink-muted);
+  white-space: pre;
+}

@@ -1,7 +1,12 @@
 # Draft Vault — working notes
 
-A fantasy football **auction draft room**. Pure front end: Vite + React + TypeScript,
-no backend, no database, no API keys needed to run it.
+A fantasy football **auction draft room**. Vite + React + TypeScript, and it runs
+as a pure front end: no backend, no database, no account and no API keys needed
+to draft with it, which is how the published artifact runs permanently and how
+draft night runs if anything goes wrong. There is now an _optional_ server
+(`npm run server`) for saved drafts, draft history and server-side rebuilds. It
+is strictly additive — see "The optional server" — and every path into it is
+inert when it is not running.
 
 ## Commands
 
@@ -17,6 +22,7 @@ npm run fetch:nfl    # regenerate team colors, crests and defensive units from E
 npm run build:pool   # rebuild the 628-player pool from nflverse production data
 npm run build:icons  # redraw the app icons (CI checks they match)
 OPENROUTER_API_KEY=sk-or-... npm run research:players   # web-research the pool
+npm run server       # the optional backend on 127.0.0.1:8788 (see docs/SERVER.md)
 docker compose up -d --build     # nginx on :8080
 ```
 
@@ -45,6 +51,7 @@ src/pages/Index.tsx
         ├── LeagueSettings.tsx    teams, budget, roster shape — re-prices the board
         ├── RankingsImport.tsx    bring your own values, previewed before applying
         ├── AuctionSheetImport.tsx  the sheet the commissioner circulated
+        ├── ServerPanel.tsx       the optional server: saved drafts and rebuilds
         ├── SnakeOrder.tsx        the order the snake is called in
         ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
         │                         ScheduleStrip, BidLadder, PositionSwarm,
@@ -55,9 +62,11 @@ src/pages/Index.tsx
         └── Headshot.tsx          photo with monogram fallback
 
 src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
+src/hooks/use-draft-server.ts         discovery + autosave, inert with no server
 
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
+src/lib/serverContract.ts             the wire between app and server (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
 src/lib/auctionSheet.ts               the commissioner's sheet, pasted or filed
 src/lib/playerSearch.ts               finding a player by a name typed in a hurry
@@ -66,6 +75,7 @@ src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/draftAdvisor.ts          the opinion layer, deliberately separate
 src/services/nflIdentity.ts           team colors, crests, headshots
 src/services/draftSync.ts             tells other windows the draft moved
+src/services/draftServer.ts           talking to the optional server, or not at all
 src/services/playerResearch.ts        the researched findings, lazily
 src/data/nfl/research.json            per-player sourced findings (generated)
 src/data/nfl/pool.json                628 players: projections, values (generated)
@@ -75,6 +85,10 @@ src/data/nfl/team-context.json        per-offence pace, PROE, red-zone rate
 scripts/build-player-pool.mjs         builds the pool from nflverse
 scripts/fetch-nfl-data.mjs            builds team identity from ESPN
 scripts/build-icons.mjs               draws public/icons/ with no image library
+server/index.mjs                      the optional server: config, HTTP, static
+server/api.mjs                        the routes, as a function of a request
+server/store.mjs                      saved drafts and their versions, on disk
+server/jobs.mjs                       the batch scripts, spawned and polled
 src/styles/draft-room.css             design tokens + component styles
 ```
 
@@ -441,8 +455,12 @@ rebuilds from the same localStorage the sender just wrote. No draft state
 crosses the channel, so two screens cannot come to believe different things; a
 message that carried the change could arrive out of order and they would. This
 is what the pick-log-is-the-only-shared-fact rule was being kept for. It is
-same-browser only: a draft across twelve houses needs a server, and there
-isn't one.
+same-browser only. There is a server now, and it deliberately does not change
+this: it stores copies of the draft, it does not carry one. Nothing about whose
+turn it is or what a player cost travels through it, because the moment two
+screens could learn the draft from two different places they can disagree about
+it, and the pick log being the only shared fact is what stops that. A draft
+across twelve houses is still a different problem.
 
 `persist()` announces on **every** path including the empty one. It used to
 `return` early when the draft emptied, so a second window followed picks but
@@ -473,15 +491,175 @@ identically to one with evidence. `researchContract.ts` holds those rules for
 the same reason `valuation.ts` holds the league: the script that writes the file
 and the panel that renders it must not be able to disagree.
 
-Nothing is fetched from the browser. An auction moves faster than a search does,
-and a key in the bundle is a key anyone can read out of it — so the output is a
-static file, which is also what makes it work in the published artifact, where
-the CSP blocks every external host.
+Nothing is fetched from the browser, and the bundled static file is still the
+first tier. An auction moves faster than a search does, and a key in the bundle
+is a key anyone can read out of it — so the output is a file the app loads like
+any other, which is also what makes it work in the published artifact, where the
+CSP blocks every external host. That has not changed and is not allowed to: the
+research the room reads on the night is `research.json`, sitting in the bundle.
+
+What the optional server adds is a place to _start the script from_ that is not
+a terminal — see "The optional server" below. The key lives in that process's
+environment and nowhere else. No route returns it, no route returns a prefix or
+a length of it, and the only thing anything ever learns about it is the boolean
+`jobs.research` in the handshake. It goes from the server process straight into
+a child process it spawned, which is the same script with the same flags a
+person would have typed. The browser still holds no key and still fetches
+nothing from OpenRouter, so the artifact and the single-file build are exactly
+as they were.
 
 **Identity is two-tiered.** The bundled snapshot in `src/data/nfl/` paints first
 with real names, colors and faces and needs no network; `refreshIdentity()` then
 merges live injury/team updates from ESPN over it and silently falls back to the
 snapshot on any failure.
+
+## The optional server
+
+**Everything below is an overlay. The app is what it was without it.** `npm run
+server` starts a Node process that holds saved drafts with a version history,
+can start the two batch scripts over HTTP, and can serve `dist/` so the whole
+lot sits behind one tunnel. Stop it and nothing is lost and nothing degrades:
+the pool is a bundled file, the draft is in localStorage, the second window
+follows over a BroadcastChannel, and the draft file is still the escape hatch.
+That is not a fallback path, it is the ordinary one — it is how the published
+artifact runs permanently, and it is what draft night falls back to at the first
+sign of trouble.
+
+**Discovery is opt-in, and that is the load-bearing decision.** The obvious
+design is to ask the current origin whether it happens to be a server. That
+costs a failed request on every load of an app whose normal condition is having
+no server, and a browser prints that failure to the console whether or not it
+was speculative. A red line under a board somebody is drafting off is a reason
+to distrust the board. So the address has to come from somewhere deliberate, and
+there are exactly three: what the owner typed into the server panel
+(localStorage), a `<meta name="draft-vault-server">` the server injects into the
+page _it_ served — which is how the tunnelled case needs no typing at all — and
+`VITE_DRAFT_SERVER` at build time for a dev server on another port. None of
+those exist in `build:single` or `build:artifact`, so both are inert by
+construction rather than by handling an error. The bar the tests hold it to is
+therefore not "the failure is caught" but "no request was made": with nothing
+configured, `useDraftServer` subscribes to nothing, sets no timer, calls no
+`fetch` and writes nothing to the console.
+
+**`src/lib/serverContract.ts` is the third file of its kind, and it is why the
+server can be trusted with a draft.** `valuation.ts` stops the pool builder and
+the board disagreeing about a price; `researchContract.ts` stops the research
+script and the panel disagreeing about a source; this stops `server/` and
+`draftServer.ts` disagreeing about what a saved draft is. The server imports it
+through Node's type stripping exactly as the pool builder imports `valuation.ts`
+— the same functions, not a copy — so `validateSaveDraft` refusing a payload in
+the browser and refusing it on arrival is one function refusing it twice.
+`jobArgs` is in there for the same reason and one sharper one: it is the entire
+surface between an HTTP request and an argv, and it can only emit strings it
+composed itself.
+
+Every response carries a contract number and **a client and a server that
+disagree do not talk.** The panel says which half is stale and refuses
+everything but the handshake. Guessing is the tempting alternative and it is
+wrong: the two halves ship from one git checkout and are updated together, so a
+mismatch always means somebody forgot to restart the server after a pull — ten
+seconds to fix — while the cost of guessing is a draft written to disk in a
+shape the other half misreads, which loses the afternoon the server exists to
+protect. The health response is the handshake, so its field set is frozen: a
+client of any version has to be able to read `kind` and `contract` out of it in
+order to find out that it cannot read anything else.
+
+**The server is a filing cabinet, not a second engine.** A saved draft is the
+exact text `exportDraft()` produced, stored as an opaque string with a name and
+a timestamp beside it. The server never parses it, never counts the picks, never
+learns the league and never decides whether a bid was legal — a test asserts
+that a payload of pure nonsense round-trips byte for byte. It cannot do
+otherwise: the rules are in `auctionDraftService` and the prices in
+`valuation.ts`, and a server that understood either would be a second place they
+live. Loading goes back in through `importDraft`, the identical door a file from
+a USB stick comes through, so a restored draft is validated by the same code and
+picks that no longer replay are counted rather than dropped. This is also why
+`VersionSummary` carries `bytes` and not a pick count: a pick count would
+require reading the payload, and the honest number is how many replayed anyway.
+
+**Storage is JSON files in a directory, and that is not a placeholder for a
+database.** One person keeps a few dozen drafts of about fifty kilobytes each.
+What the store has to be good at is being there at eleven at night when the
+laptop running the auction has stopped being there, and a directory of plain
+files is the best possible shape for that: `cat` reads it, `cp` copies it, a USB
+stick carries it, a text editor opens it, and a half-finished write is repaired
+by deleting one file. SQLite would add a dependency and turn recovery into "find
+a sqlite3 binary". Versions are separate immutable files — a save is a new file
+plus one appended line in the index, never a rewrite — so losing a version takes
+a deliberate deletion. A full hybrid draft is about 380 picks, so about 380
+versions of 50 kB: nineteen megabytes to make no state of the draft unreachable,
+which is the right amount of disk to spend on draft night. The version file is
+written before the index that names it, so an interruption leaves an orphan file
+rather than an index entry pointing at nothing.
+
+**Progress is polled, not streamed, and that was decided rather than skipped.**
+Server-Sent Events are within the standard library's reach and would have been
+about the same amount of code. Three things went the other way. An `EventSource`
+cannot carry an `Authorization` header, so the token would have had to travel in
+a query string and land in every proxy log between the laptop and the tunnel —
+a real downgrade for the one secret this design has. A tunnel is also the worst
+place for a long-held connection: it buffers, it idles out, and
+reconnect-and-resume is more code than polling ever was. And these jobs run for
+twenty minutes printing a line every second or two, so a stream buys nothing a
+poll every second and a half does not — while the poll survives a closed laptop
+lid, a page reload and the tunnel dropping entirely, because the job's state
+lives in the server process and not in a socket.
+
+**A rebuild never writes over the live data.** `build-player-pool.mjs` gained an
+`--out` flag and the server points it at a staging directory, because a fresh
+pool changes every price on the board and a draft in progress was bid at the old
+ones — the same objection `restore()` makes to a save stamped with a different
+league. Moving the result in is a deliberate act taken between drafts, followed
+by a rebuild of the app. The research job is staged too and is _seeded_ from the
+current `research.json` first, because that script merges into whatever is at
+`--out` and skips anyone asked about recently; pointed at an empty directory it
+would lose both and pay for all 628 players again.
+
+**Auth is honest about being one person behind a tunnel.** A shared token in
+`DRAFT_VAULT_TOKEN`, required on every route but the handshake, compared with
+`timingSafeEqual`. Not accounts, not passwords, not sessions — there is one
+person, and a login screen for him would be theatre with a real maintenance
+cost. What that buys and what it does not is worth stating plainly: **anyone who
+learns the tunnel URL and the token can read, overwrite and delete every saved
+draft, and can start a pool rebuild or spend the OpenRouter key on a research
+run.** They cannot read the key, cannot run anything but those two scripts, and
+cannot pass an argument to either — `jobArgs` composes the whole argv. Without
+the token they get the handshake and nothing else. The token is a bearer header
+the caller attaches on purpose rather than a cookie a browser attaches for them,
+which is the entire CSRF class gone by design rather than mitigated, and
+`Access-Control-Allow-Credentials` is therefore never sent.
+
+**Binding is loopback by default, and there is no way to get an unauthenticated
+server onto a public interface.** `cloudflared tunnel --url
+http://127.0.0.1:8788` and `ngrok http 8788` both run on the laptop and connect
+outward, so loopback is reachable through the tunnel and unreachable from the
+room's wifi; binding `0.0.0.0` buys nothing the tunnel does not already give.
+Starting on a non-loopback host without a token is refused at startup with an
+explanation, because the moment that combination is possible somebody reaches it
+by accident at eleven at night.
+
+**CORS is answered by removing the cross-origin case.** A tunnel means the
+browser's origin is not localhost, so "allow localhost" is the wrong answer
+here. When `dist/` exists the server serves it, the page and the API share an
+origin, and CORS never arises — which is also what makes the injected meta tag
+enough to configure the client. The allowlist exists for the one case left, `npm
+run dev` on :8080 talking to :8788, and it is an explicit `DRAFT_VAULT_ORIGINS`
+plus loopback origins when the server is itself on loopback. An origin is echoed
+only if it is on that list; nothing is reflected blindly, and `Vary: Origin` is
+sent either way so a cache cannot hand one origin's allowance to another.
+
+**The autosave joins the change listeners; it does not take them.** It
+subscribes through `addChangeListener`, which returns an unsubscribe and is a
+`Set`. `DraftRoom`'s window sync was using `setChangeListener`, which clears that
+Set — whichever mounted second would have silently taken the other's slot,
+leaving either a television that stopped following or a backup that stopped
+being written, with nothing on screen to say so. Both are on the Set now. Saves
+are debounced two seconds so a run of three quick nominations is one version
+rather than three, they never overlap (a change arriving mid-flight is
+remembered and written after, so the history reads forwards), and after three
+consecutive failures the backup stops and says so — a dropped tunnel does not
+come back because a fourth pick was made, and a request per pick for the rest of
+the night is a request per pick that can time out at the worst moment.
 
 ## Data provenance
 
@@ -575,6 +753,21 @@ Legacy services under `src/services/` named `real*` still generate numbers with
   event, so an unreachable font host leaves the app on its loading screen forever.
   That bug was real; the comment in `bloomberg-terminal.css` explains it.
 - `VITE_*` values are compiled into the bundle and readable by anyone. No secrets.
+  `VITE_DRAFT_SERVER` is an address, not a credential, and is the only one the
+  server work adds. The shared token is typed into the panel and kept in the
+  owner's own localStorage; the OpenRouter key never leaves the server process.
+- **`server/` is linted, not typechecked.** `tsc` reads `tsconfig.app.json`,
+  which is the tree reachable from `main.tsx`, so nothing typechecks the `.mjs`
+  server at all. `eslint.config.js` therefore lints `server/**/*.mjs` beside
+  `scripts/**/*.mjs` under `no-undef`, which is the only thing standing between
+  a renamed export in `serverContract.ts` and a server that starts fine and then
+  throws on the first request. What does check the contract is
+  `src/test/services/serverRoutes.test.ts`: it imports `server/api.mjs` and
+  `server/store.mjs` straight into vitest and drives the routes with nothing
+  listening on any port, which is the only shape of that test compatible with
+  `npm run validate` running on a laptop with no server.
+- The server writes to `.draft-vault-data/`, which is gitignored. It is somebody's
+  draft history, not project content.
 - The published artifact's `<head>` is not ours, so the single-file page carries
   its own `<meta name="viewport">`. Without it a phone assumes a 980px page and
   scales the whole app into a letterbox — which is exactly what happened once.
@@ -601,7 +794,11 @@ anywhere, and advice written for a draft where money decides nothing; the four
 things the owner asked for by name — who can legally outbid you and who
 plausibly would, inflation-adjusted prices that carry their workings, a
 nomination plan with the players to protect, and run and tier-break alerts with
-stable ids; 385 tests.
+stable ids; and an optional server the owner asked for — saved drafts with a
+full version history, an autosave that backs the night up as it is played, the
+pool and research rebuilds startable over HTTP with their progress polled back,
+somewhere for the OpenRouter key that is not the bundle, and a token behind a
+tunnel; 440 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -623,11 +820,15 @@ Open, roughly in order of value:
    `src/hooks/use-mobile.tsx`, or those 89 plus `sidebar.tsx`. The 43 unused
    shadcn primitives are a separate call: they are a vendored library, and
    people add components from it later.
-2. **A draft shared beyond one browser.** Two windows on one machine now stay
-   in step (`draftSync.ts`), which covers the laptop-and-television case. Twelve
-   people in twelve houses is a different problem and needs a server; the
-   Artifact runtime offers no cross-viewer state, so there is no way to get it
-   without changing what this repo is.
+2. **A draft shared beyond one browser.** Two windows on one machine stay in
+   step (`draftSync.ts`), which covers the laptop-and-television case. The
+   optional server does _not_ extend that and was not built to: it stores copies
+   of the draft, it does not carry one, and nothing about whose turn it is
+   travels through it. Making it authoritative would mean a second place the
+   draft lives and a second place the rules would have to be enforced — the two
+   things the pick-log-is-the-only-shared-fact rule exists to prevent — so it is
+   a real design change rather than a route to add. The published artifact
+   cannot have it either way: its CSP blocks every external host.
 
 ## Related
 

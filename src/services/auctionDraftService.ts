@@ -3016,6 +3016,17 @@ export class AuctionDraftService {
           unsold: Array.isArray(saved.auctionSheet.unsold)
             ? saved.auctionSheet.unsold.filter((id): id is string => typeof id === 'string')
             : [],
+          // Carried through, because dropping it silently re-armed the bug its
+          // own doc comment describes: with no prior size, removing the sheet
+          // on the restored machine leaves auctionSheetSize pinned forever, and
+          // the board is stuck in a partial auction nobody chose. Rare when a
+          // restore meant a USB stick; routine once a server saves a version
+          // per pick and the answer to any mishap is "load it on the backup".
+          priorSize:
+            typeof saved.auctionSheet.priorSize === 'number' ||
+            saved.auctionSheet.priorSize === null
+              ? saved.auctionSheet.priorSize
+              : undefined,
         }
       : EMPTY_SHEET();
     writeStoredSheet(this.sheet);

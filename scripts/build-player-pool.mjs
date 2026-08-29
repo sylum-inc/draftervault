@@ -2,7 +2,7 @@
 /**
  * Builds the draft pool from real NFL data.
  *
- *   node scripts/build-player-pool.mjs [--cache <dir>] [--offline]
+ *   node scripts/build-player-pool.mjs [--cache <dir>] [--offline] [--out <dir>]
  *
  * Replaces the hand-typed player list with ~600 players drawn from actual
  * rosters, actual production, and a projection model documented below. Nothing
@@ -24,10 +24,11 @@
  *             db_playerids.csv            gsis <-> sleeper <-> fantasypros
  *             db_fpecr_latest.csv         FantasyPros expert consensus rank
  *
- * Writes src/data/nfl/pool.json and src/data/nfl/player-history.json.
+ * Writes pool.json, schedule.json, player-history.json and team-context.json
+ * into src/data/nfl, or into whatever `--out` names.
  */
 import { mkdirSync, readFileSync, writeFileSync, existsSync, createWriteStream } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -43,7 +44,6 @@ import {
 } from '../src/lib/valuation.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'src/data/nfl');
 const NFLVERSE = 'https://github.com/nflverse/nflverse-data/releases/download';
 const DYNASTYPROCESS = 'https://github.com/dynastyprocess/data/raw/master/files';
 
@@ -54,6 +54,22 @@ const flag = (name, fallback) => {
 };
 const cacheDir = flag('cache', join(ROOT, '.cache/nfl'));
 const offline = args.includes('--offline');
+/**
+ * Where the four generated files land. Defaults to the tree the app imports.
+ *
+ * It takes a directory rather than a filename because a run writes pool.json,
+ * schedule.json, player-history.json and team-context.json, and those four are
+ * one artefact: a pool priced against a schedule it did not generate would put
+ * bye weeks against the wrong players.
+ *
+ * The flag exists because the server can start this build over HTTP, and a
+ * build that overwrote the live tree would change every price on the board
+ * underneath a draft that was bid at the old ones — the same objection
+ * `restore()` makes to a save stamped with a different league. So the server
+ * points it at a staging directory and moving the result in is a deliberate act
+ * taken between drafts.
+ */
+const OUT = resolve(ROOT, flag('out', join(ROOT, 'src/data/nfl')));
 
 /** The seasons that inform a projection. Older tape exists but stops mattering. */
 const SEASONS = [2023, 2024, 2025];
@@ -482,6 +498,7 @@ const readPlayByPlay = (path) => {
 
 const main = async () => {
   console.log('Draft Vault — building the player pool from real data\n');
+  console.log(`  writing to   ${OUT}\n`);
 
   const paths = {};
   for (const name of Object.keys(SOURCES)) paths[name] = await cached(name);
