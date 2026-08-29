@@ -26,8 +26,19 @@ interface TeamResult {
   listValue: number;
   surplus: number;
   starterPoints: number;
+  /** How many of the roster were bought with money rather than taken free. */
+  bought: number;
   grade: string;
 }
+
+/**
+ * Whether this player was bought.
+ *
+ * `draftCost` is absent on a snake pick and zero never appears, so this is the
+ * money question asked directly rather than inferred from a phase the results
+ * screen would otherwise have to be handed.
+ */
+const wasBought = (player: Player): boolean => player.draftCost != null;
 
 /**
  * Picks the lineup a roster would actually start, so a team is judged on the
@@ -72,7 +83,7 @@ const gradeFor = (points: number, all: number[]): string => {
 };
 
 const toCsv = (results: TeamResult[]): string => {
-  const rows = [['Pick', 'Team', 'Player', 'Pos', 'NFL', 'Paid', 'Our value', 'Projected']];
+  const rows = [['Pick', 'Team', 'Player', 'Pos', 'NFL', 'How', 'Paid', 'Our value', 'Projected']];
   for (const result of results) {
     for (const player of result.roster) {
       rows.push([
@@ -81,7 +92,11 @@ const toCsv = (results: TeamResult[]): string => {
         player.name,
         player.position,
         player.team,
-        `${player.draftCost ?? 0}`,
+        // A blank Paid cell beside "snake" is the honest record. A 0 there
+        // would be read by every spreadsheet as a player bought for nothing,
+        // and averaging over the column would halve what the room actually paid.
+        wasBought(player) ? 'auction' : 'snake',
+        wasBought(player) ? `${player.draftCost}` : '',
         `${player.estimatedValue}`,
         `${player.projectedPoints}`,
       ]);
@@ -110,9 +125,22 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
     const rows = teams.map((team) => {
       const roster = drafted
         .filter((player) => player.draftedBy === team.id)
-        .sort((a, b) => (b.draftCost ?? 0) - (a.draftCost ?? 0));
-      const spent = roster.reduce((total, player) => total + (player.draftCost ?? 0), 0);
-      const listValue = roster.reduce((total, player) => total + player.estimatedValue, 0);
+        .sort((a, b) => (b.draftCost ?? -1) - (a.draftCost ?? -1));
+      /*
+       * Money counts the auction; the lineup counts both.
+       *
+       * `starterPoints` is over the whole roster because a receiver taken for
+       * nothing scores exactly as many points as one bought for $40 — that is
+       * the team the manager will field, and the grade is a curve on it.
+       *
+       * Spend and list value are over the bought half only. Summing our prices
+       * across free picks would credit a team with $180 of "surplus" it never
+       * bid for and hand the same bonus to everybody, which is a column of
+       * noise dressed as a result.
+       */
+      const bought = roster.filter(wasBought);
+      const spent = bought.reduce((total, player) => total + (player.draftCost ?? 0), 0);
+      const listValue = bought.reduce((total, player) => total + player.estimatedValue, 0);
       return {
         team,
         roster,
@@ -120,6 +148,7 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
         listValue,
         surplus: listValue - spent,
         starterPoints: startingPoints(roster),
+        bought: bought.length,
         grade: '',
       };
     });
@@ -229,7 +258,7 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
                     <th scope="col" className="is-numeric">
                       Surplus
                     </th>
-                    <th scope="col" className="is-numeric">
+                    <th scope="col" className="is-numeric" title="Bought at auction / rostered">
                       Players
                     </th>
                   </tr>
@@ -254,7 +283,14 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
                       >
                         {row.surplus >= 0 ? '+' : '−'}${Math.abs(row.surplus)}
                       </td>
-                      <td className="is-numeric dr-num">{row.roster.length}</td>
+                      {/* Bought and rostered are two different counts once the
+                          snake starts, and the money columns beside them are
+                          about the first one only. */}
+                      <td className="is-numeric dr-num">
+                        {row.bought < row.roster.length
+                          ? `${row.bought}/${row.roster.length}`
+                          : row.roster.length}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -262,9 +298,10 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
             </div>
 
             <p className="dr-footnote">
-              Surplus is what a roster is worth at our prices minus what it cost. A positive number
-              means the team bought under the model, not that it will score more — the grade is the
-              points column.
+              Surplus is what a roster is worth at our prices minus what it cost, over the players
+              that were actually bought. A positive number means the team bought under the model,
+              not that it will score more — the grade is the points column, and that one counts
+              every player on the roster however he arrived.
             </p>
           </>
         )}

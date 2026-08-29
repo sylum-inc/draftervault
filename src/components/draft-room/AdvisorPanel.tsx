@@ -10,6 +10,7 @@ interface AdvisorPanelProps {
 const VERDICT_COLOR: Record<Advice['verdict'], string> = {
   BID: 'var(--dr-value)',
   VALUE: 'var(--dr-value)',
+  TAKE: 'var(--dr-value)',
   HOLD: 'var(--dr-caution)',
   PASS: 'var(--dr-danger)',
 };
@@ -17,6 +18,8 @@ const VERDICT_COLOR: Record<Advice['verdict'], string> = {
 const VERDICT_WORD: Record<Advice['verdict'], string> = {
   BID: 'Bid',
   VALUE: 'Good value',
+  // The snake half, where the only question is whether to spend the slot.
+  TAKE: 'Take him',
   HOLD: 'Hold',
   PASS: 'Walk away',
 };
@@ -43,7 +46,9 @@ export const AdvisorPanel = ({ advice, alerts, nomination, onDismiss }: AdvisorP
       <div className="dr-advice">
         <div className="dr-advice-verdict" style={{ color: VERDICT_COLOR[advice.verdict] }}>
           <strong>{VERDICT_WORD[advice.verdict]}</strong>
-          <span className="dr-num">up to ${advice.stopAt}</span>
+          {/* A snake pick has no stop price. "$0" beside a free player reads as
+              advice to spend nothing on him, which is a different claim. */}
+          {advice.stopAt != null && <span className="dr-num">up to ${advice.stopAt}</span>}
         </div>
         <p className="dr-advice-headline">{advice.headline}</p>
         <ul className="dr-advice-reasons">
@@ -58,7 +63,7 @@ export const AdvisorPanel = ({ advice, alerts, nomination, onDismiss }: AdvisorP
       </div>
     ) : (
       <p className="dr-advisor-idle">
-        Put a player on the block and pick a team to get a read on the bid.
+        Put a player on the block and pick a team to get a read on the pick.
       </p>
     )}
 

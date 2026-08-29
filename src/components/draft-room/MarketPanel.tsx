@@ -1,8 +1,17 @@
-import type { MarketState, Team } from '@/services/auctionDraftService';
+import type { DraftPhase, MarketState, Team } from '@/services/auctionDraftService';
 
 interface MarketPanelProps {
   market: MarketState;
   teams: Team[];
+  /**
+   * Which half of the draft is running.
+   *
+   * Every reading in here is about money, and in the snake half no money moves.
+   * The engine freezes inflation at 1.00 so the meter cannot drift upward on
+   * its own; this is what stops the panel from reporting that as a live
+   * measurement of a market that has closed.
+   */
+  phase: DraftPhase;
 }
 
 /** Plain words for what the inflation number means for the next bid. */
@@ -23,8 +32,11 @@ const readInflation = (inflation: number): { label: string; tone: string } => {
  * players were worth, how much of each position is gone, and what it costs to
  * keep waiting at one.
  */
-export const MarketPanel = ({ market, teams }: MarketPanelProps) => {
-  const reading = readInflation(market.inflation);
+export const MarketPanel = ({ market, teams, phase }: MarketPanelProps) => {
+  const snake = phase === 'snake';
+  const reading = snake
+    ? { label: 'The money is finished — the snake fills the rest', tone: 'var(--dr-ink-muted)' }
+    : readInflation(market.inflation);
   const premiumPct = market.premium != null ? Math.round((market.premium - 1) * 100) : null;
 
   // Where the room is paying under our numbers — the only bargain signal that
@@ -70,10 +82,16 @@ export const MarketPanel = ({ market, teams }: MarketPanelProps) => {
           {reading.label}
         </p>
         <p className="dr-meter-note">
-          ${market.moneyLeft} left chasing ${market.valueLeft} of value
+          {snake ? (
+            <>${market.moneyLeft} went unspent — nothing left to bid on</>
+          ) : (
+            <>
+              ${market.moneyLeft} left chasing ${market.valueLeft} of value
+            </>
+          )}
           {premiumPct != null && (
             <>
-              {' · room paying '}
+              {snake ? ' · room paid ' : ' · room paying '}
               <strong className="dr-num">
                 {premiumPct > 0 ? '+' : ''}
                 {premiumPct}%
@@ -125,7 +143,7 @@ export const MarketPanel = ({ market, teams }: MarketPanelProps) => {
       )}
 
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
-        What the room is paying
+        {snake ? 'What the room paid' : 'What the room is paying'}
       </h3>
       {priced.length === 0 ? (
         <p className="dr-meter-note">

@@ -26,7 +26,13 @@ import { LeagueSettings } from './LeagueSettings';
 import { RankingsImport } from './RankingsImport';
 import { AuctionSheetImport } from './AuctionSheetImport';
 import { DraftFile } from './DraftFile';
-import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
+import { SnakeOrder } from './SnakeOrder';
+import {
+  adviseOnBid,
+  adviseOnNomination,
+  adviseOnSnakePick,
+  buildAlerts,
+} from '@/services/draftAdvisor';
 import { openDraftSync } from '@/services/draftSync';
 import type { LeagueShape } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
@@ -75,6 +81,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [followedAt, setFollowedAt] = useState(0);
   const [confirmReset, setConfirmReset] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const teamIdRef = useRef(teamId);
   teamIdRef.current = teamId;
@@ -207,10 +214,45 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     }
   }, [selected, teamId, draftService]);
 
+  /**
+   * Which half of the draft the room is in.
+   *
+   * Derived from the pick log and the sheet on every sync rather than held in
+   * state, so following another window, replaying a file and undoing across the
+   * boundary all land on the same answer without any of them being told about
+   * the phase. `players` is the change signal; the engine holds the state.
+   */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const phase = useMemo(() => draftService.getPhase(), [draftService, players]);
+  const snake = phase === 'snake';
+
+  const onTheClock = useMemo(
+    () => draftService.getSnakeOnTheClock(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- moves with every pick
+    [draftService, players, teams]
+  );
+
+  /**
+   * Sheet players still to sell or be passed over — and so how far the auction
+   * has left to run. Null when no sheet is in force, which is the case with no
+   * snake phase at all.
+   */
+  const sheetRemaining = useMemo(
+    () => (draftService.getSheetCount() ? draftService.getSheetRemaining().length : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- counts down with the sheet
+    [draftService, players]
+  );
+
   const check: BidCheck | null = useMemo(() => {
-    if (!selected || !teamId) return null;
+    if (!selected) return null;
+    // One typed answer, whichever half is running. The snake has no team to
+    // choose — the order chose it — so the check is against whoever is up.
+    if (snake) {
+      return onTheClock ? draftService.validateSnakePick(selected.id, onTheClock.team.id) : null;
+    }
+    if (!teamId) return null;
     return draftService.validateBid(selected.id, teamId, Number.parseInt(bid, 10));
-  }, [selected, teamId, bid, draftService]);
+  }, [selected, teamId, bid, draftService, snake, onTheClock]);
 
   /**
    * Put a player on the block and hand the room straight to the money.
@@ -222,7 +264,24 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const nominate = useCallback(
     (player: Player) => {
       setSelected(player);
-      window.setTimeout(() => document.getElementById('dr-team')?.focus(), 0);
+      // In the auction the next thing anyone types is who won; in the snake
+      // the order has already said, so the confirm button is what Enter needs
+      // to reach. Either way the mouse is never required.
+      window.setTimeout(
+        () =>
+          (
+            document.getElementById('dr-team') ?? document.getElementById('dr-snake-draft')
+          )?.focus(),
+        0
+      );
+      // A snake pick has no price, so loading an opening bid for one puts a
+      // number into `bid` that nothing on screen should be reading. The stage
+      // hides the bid box, but the budget planner is handed the same value and
+      // would otherwise offer to plan a $54 spend on a free pick.
+      if (draftService.getPhase() === 'snake') {
+        setBid('');
+        return;
+      }
       let opening = player.estimatedValue;
       try {
         opening = Math.max(
@@ -242,14 +301,57 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     [draftService]
   );
 
+  /**
+   * Record the transaction, whichever half the room is in.
+   *
+   * One handler because the stage has one confirm button: in the auction it is
+   * a sale at a price, in the snake it is a free pick by whoever the order says
+   * is up. The engine re-checks both regardless of what got this far.
+   */
   const confirm = useCallback(() => {
-    if (!selected || !teamId) return;
-    if (!draftService.draftPlayer(selected.id, teamId, Number.parseInt(bid, 10))) return;
+    if (!selected) return;
+    if (snake) {
+      if (!onTheClock) return;
+      if (!draftService.draftSnakePick(selected.id, onTheClock.team.id)) return;
+    } else {
+      if (!teamId) return;
+      if (!draftService.draftPlayer(selected.id, teamId, Number.parseInt(bid, 10))) return;
+    }
     sync();
     setSelected(null);
     setBid('');
     setProfileOpen(false);
-  }, [selected, teamId, bid, draftService, sync]);
+  }, [selected, teamId, bid, draftService, sync, snake, onTheClock]);
+
+  /**
+   * Nobody bid a dollar on the player on the block.
+   *
+   * Without this control one player the room never called holds the auction
+   * open forever — `getSheetRemaining` never empties, the phase never turns,
+   * and the app is still asking for a winning bid while the table has moved on
+   * to round three. He is marked passed over rather than struck off, because
+   * the sheet's length is the league's auctioned count.
+   */
+  const markUnsold = useCallback(() => {
+    if (!selected) return;
+    if (!draftService.removeFromSheet(selected.id)) return;
+    setSelected(null);
+    setBid('');
+    sync();
+  }, [selected, draftService, sync]);
+
+  /**
+   * The room came back to him after all.
+   *
+   * Passing a player over is not a pick, so undo cannot take it back — undo
+   * pops the pick log and would remove an unrelated sale instead. Without this
+   * the only route back was removing the whole sheet, which re-prices the board.
+   */
+  const returnToSheet = useCallback(() => {
+    if (!selected) return;
+    if (!draftService.returnToSheet(selected.id)) return;
+    sync();
+  }, [selected, draftService, sync]);
 
   const undo = useCallback(() => {
     if (draftService.undoLastPick()) sync();
@@ -352,6 +454,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // A modal missing from this is a modal that lets "/" and "u" through, so
     // typing into its paste box undoes picks.
     sheetOpen ||
+    orderOpen ||
     confirmReset;
 
   /**
@@ -464,18 +567,52 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const myTeamId = useMemo(() => draftService.getMyTeamId(), [draftService, teams]);
 
+  // The commissioner's snake order, repaired against the current teams by the
+  // engine on every read — so a rename or a league change cannot leave a team
+  // out of the list the room drafts from.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const snakeOrder = useMemo(() => draftService.getSnakeOrder(), [draftService, teams, followedAt]);
+
+  /**
+   * Reordering the snake leaves the draft alone.
+   *
+   * It changes no price and makes no pick already taken illegal — only who is
+   * next — which is exactly why the order lives in its own storage key rather
+   * than on the league, where applying it would clear the board.
+   */
+  const applyOrder = useCallback(
+    (ids: string[]) => {
+      draftService.setSnakeOrder(ids);
+      setOrderOpen(false);
+      sync();
+    },
+    [draftService, sync]
+  );
+
   const activeTeam = teams.find((team) => team.id === teamId);
 
   // The opinion layer is computed only when it is switched on: it is the one
   // part of the app that is not a measurement, and it should cost nothing when
   // nobody has asked for it.
-  const advice = useMemo(
-    () =>
-      preferences.advisor && selected
-        ? adviseOnBid(selected, activeTeam, analytics, draftService, Number.parseInt(bid, 10) || 0)
-        : null,
-    [preferences.advisor, selected, activeTeam, analytics, draftService, bid]
-  );
+  const advice = useMemo(() => {
+    if (!preferences.advisor || !selected) return null;
+    // The snake asks a different question and gets a different answer. Both
+    // come back as one `Advice`, so the panel needs no second prop: it is the
+    // same register of claim either way, and it stays in the same dashed box.
+    return snake
+      ? adviseOnSnakePick(selected, onTheClock?.team, players, draftService)
+      : adviseOnBid(selected, activeTeam, analytics, draftService, Number.parseInt(bid, 10) || 0);
+  }, [
+    preferences.advisor,
+    selected,
+    activeTeam,
+    analytics,
+    draftService,
+    bid,
+    snake,
+    onTheClock,
+    players,
+  ]);
 
   const alerts = useMemo(
     () => (preferences.advisor ? buildAlerts(players, activeTeam, draftService) : []),
@@ -529,6 +666,19 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           </span>
         </div>
 
+        {/* Which half of the draft is running, and how far the auction has left
+            to go. The count is the reason the unsold control exists: without a
+            visible number, one player nobody called leaves the room wondering
+            why the bid box will not go away. */}
+        {sheetRemaining != null && (
+          <div className="dr-stat">
+            <span className="dr-eyebrow">{snake ? 'Snake' : 'Sheet left'}</span>
+            <span className="dr-stat-value">
+              {snake && onTheClock ? `#${onTheClock.overall}` : sheetRemaining}
+            </span>
+          </div>
+        )}
+
         {followedAt > 0 && (
           <span
             className="dr-synced"
@@ -539,11 +689,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           </span>
         )}
 
-        <NominationClock
-          nominator={nominator}
-          player={selected}
-          seconds={preferences.clockSeconds}
-        />
+        {/* Nobody nominates in the snake — the order does it — so the clock
+            would be naming a team for a turn that does not exist. The stage
+            carries whose pick it is instead. */}
+        {!snake && (
+          <NominationClock
+            nominator={nominator}
+            player={selected}
+            seconds={preferences.clockSeconds}
+          />
+        )}
 
         <button
           className="dr-button"
@@ -593,6 +748,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           title="Teams, budget and roster shape — every price is computed from them"
         >
           {league.teams} × ${league.budget}
+        </button>
+        <button
+          className="dr-button"
+          onClick={() => setOrderOpen(true)}
+          title="The order the snake is called in — the commissioner sets it"
+        >
+          Snake order
         </button>
         <button
           className="dr-button"
@@ -801,6 +963,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             </section>
           ) : (
             <NominationStage
+              mode={phase}
               player={selected}
               teams={teams}
               teamId={teamId}
@@ -812,6 +975,11 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               onConfirm={confirm}
               onOpenProfile={() => setProfileOpen(true)}
               canDraft={(team) => draftService.canDraft(team)}
+              onTheClock={onTheClock}
+              sheetRemaining={sheetRemaining}
+              onUnsold={markUnsold}
+              onReturnToSheet={returnToSheet}
+              passedOver={!!selected && sheet.unsold.includes(selected.id)}
             />
           )}
           {preferences.advisor && (
@@ -836,7 +1004,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             ))}
           </div>
 
-          {asidePanel === 'budgets' && <BudgetRail teams={teams} activeTeamId={teamId} />}
+          {asidePanel === 'budgets' && (
+            <BudgetRail teams={teams} players={players} activeTeamId={teamId} />
+          )}
           {asidePanel === 'rosters' && (
             <TeamsPanel
               teams={teams}
@@ -847,7 +1017,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               myTeamId={myTeamId}
             />
           )}
-          {asidePanel === 'market' && <MarketPanel market={market} teams={teams} />}
+          {asidePanel === 'market' && <MarketPanel market={market} teams={teams} phase={phase} />}
           {asidePanel === 'bargains' && (
             <BargainBoard service={draftService} players={players} onSelect={nominate} />
           )}
@@ -874,7 +1044,11 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             <span className="dr-pick" key={player.id}>
               <strong>{getIdentity(player.id)?.name ?? player.name}</strong>
               {teams.find((team) => team.id === player.draftedBy)?.name}
-              <span className="dr-num">${player.draftCost}</span>
+              {/* A snake pick has no price. "$0" would read as a player bought
+                  for nothing, which is a claim about money nobody spent. */}
+              <span className="dr-num">
+                {player.draftCost != null ? `$${player.draftCost}` : 'snake'}
+              </span>
             </span>
           ))
         )}
@@ -930,6 +1104,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           onApply={applySheet}
           onClear={clearSheet}
           onClose={() => setSheetOpen(false)}
+        />
+      )}
+
+      {orderOpen && (
+        <SnakeOrder
+          order={snakeOrder}
+          myTeamId={myTeamId}
+          pickCount={draftService.getSnakePickCount()}
+          onApply={applyOrder}
+          onClose={() => setOrderOpen(false)}
         />
       )}
 

@@ -244,11 +244,72 @@ export interface BidRejection {
     | 'invalid-amount'
     | 'insufficient-funds'
     | 'roster-full'
-    | 'position-full';
+    | 'position-full'
+    // The snake half of the draft. A free pick has no money to be wrong about,
+    // so the only two ways it can be illegal beyond the roster rules are being
+    // taken while the auction is still running and being taken out of turn.
+    | 'not-in-snake'
+    | 'not-your-turn';
   message: string;
 }
 
 export type BidCheck = { ok: true } | BidRejection;
+
+/**
+ * Which half of the draft a transaction belongs to.
+ *
+ * This league auctions a commissioner's sheet of 50-100 players and then fills
+ * every remaining roster spot by serpentine snake draft — roughly 60 picks
+ * bought with money and 140 taken for nothing.
+ */
+export type DraftPhase = 'auction' | 'snake';
+
+/**
+ * One transaction in the pick log.
+ *
+ * `phase` is stored rather than derived, and that is not a breach of the
+ * pick-log-stores-nothing-derived rule: it is a fact about the transaction,
+ * exactly like the price. It cannot be recovered afterwards — marking one more
+ * player unsold, or putting one back up, moves where the auction ended, and
+ * every pick already made would silently reclassify. What stays derived is
+ * whose turn it is, which is computed from the log and the order.
+ *
+ * `cost` is absent on a snake pick and must stay absent rather than become 0:
+ * zero reads as "bought for nothing", which is a different claim and poisons
+ * premium, surplus, inflation and every grade downstream.
+ */
+export interface DraftPick {
+  playerId: string;
+  teamId: string;
+  cost?: number;
+  phase: DraftPhase;
+  /**
+   * Which seat on the serpentine board a snake pick consumed.
+   *
+   * Stored for the same reason the phase is: it is a fact about the
+   * transaction, and it cannot be recovered afterwards. Without it, whose turn
+   * it was had to be reconstructed by replaying every earlier snake pick
+   * through the order in force *now* — so reordering the board mid-draft
+   * re-attributed picks already taken to whichever teams the new order put in
+   * those seats, and handed the clock to a team that was already full. With the
+   * seat recorded, a reorder can only change who sits in the seats still empty,
+   * which is exactly what the panel promises.
+   */
+  slot?: number;
+}
+
+/** One seat on the serpentine board: who picks, and where it falls. */
+export interface SnakeSlot {
+  team: Team;
+  /** Round on the board, counting from one. */
+  round: number;
+  /** Seat within the round, counting from one and always left-to-right. */
+  pick: number;
+  /** Which snake pick of the whole draft this is, counting from one. */
+  overall: number;
+  /** The seat's index on the endless serpentine board, counting from zero. */
+  slot: number;
+}
 
 export interface Team {
   id: string;
@@ -560,6 +621,41 @@ const writeStoredOverrides = (overrides: Record<string, RankingOverride>): void 
   }
 };
 
+/**
+ * The order the snake draft is called in.
+ *
+ * Fixed in advance by the commissioner — not derived from what anybody spent at
+ * auction, and not drawn on the night by this app. It gets its own key for
+ * exactly the reason team names do: `sameLeague` decides whether a draft in
+ * progress survives a change, and reordering the snake must never throw one
+ * away. It changes no price and no rule; it changes only who is next.
+ *
+ * Stored as team ids so a rename cannot disturb it. Missing or unknown ids are
+ * repaired against the current teams rather than trusted, because a stored
+ * order that has lost a team would silently drop that team from the draft.
+ */
+const SNAKE_ORDER_KEY = 'draft-vault:snake-order:v1';
+
+const readStoredSnakeOrder = (): string[] => {
+  try {
+    const raw = localStorage.getItem(SNAKE_ORDER_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === 'string');
+  } catch {
+    return [];
+  }
+};
+
+const writeStoredSnakeOrder = (ids: readonly string[]): void => {
+  try {
+    if (!ids.length) localStorage.removeItem(SNAKE_ORDER_KEY);
+    else localStorage.setItem(SNAKE_ORDER_KEY, JSON.stringify(ids));
+  } catch {
+    /* storage unavailable — the order simply falls back to the team order */
+  }
+};
+
 const EMPTY_ROSTER = (): RosterCounts => ({ QB: 0, RB: 0, WR: 0, TE: 0, K: 0, DST: 0 });
 
 const rosterSize = (roster: RosterCounts): number =>
@@ -570,7 +666,9 @@ export class AuctionDraftService {
   private teams: Team[] = [];
   private draftedCount = 0;
   /** Pick order, so the last one can be taken back. */
-  private history: Array<{ playerId: string; teamId: string; cost: number }> = [];
+  private history: DraftPick[] = [];
+  /** The commissioner's snake order, by team id. Empty means the team order. */
+  private snakeOrder: string[] = readStoredSnakeOrder();
   /**
    * The league being drafted. Every rule and every dollar value derives from
    * it, so changing it re-prices the board rather than merely relabelling it.
@@ -849,14 +947,7 @@ export class AuctionDraftService {
     const player = this.players.find((p) => p.id === playerId);
     if (!player)
       return { ok: false, code: 'unknown-player', message: 'That player is not in the pool.' };
-    if (player.isDrafted) {
-      const owner = this.teams.find((t) => t.id === player.draftedBy);
-      return {
-        ok: false,
-        code: 'already-drafted',
-        message: `${player.name} already went to ${owner?.name ?? 'another team'} for $${player.draftCost}.`,
-      };
-    }
+    if (player.isDrafted) return this.alreadyGone(player);
 
     const team = this.teams.find((t) => t.id === teamId);
     if (!team) return { ok: false, code: 'unknown-team', message: 'Pick a team first.' };
@@ -898,6 +989,27 @@ export class AuctionDraftService {
    * rejects a bid but not an identically illegal free pick is a rule in name
    * only.
    */
+  /**
+   * He is already somebody's, said once for both halves.
+   *
+   * The price is only mentioned when there was one. A snake pick has no
+   * `draftCost`, and the auction's message interpolated it unconditionally —
+   * which printed "already went to Team 4 for $undefined" the moment anybody
+   * tried to nominate a player the snake had taken.
+   */
+  private alreadyGone(player: Player): BidRejection {
+    const owner = this.teams.find((t) => t.id === player.draftedBy);
+    const to = owner?.name ?? 'another team';
+    return {
+      ok: false,
+      code: 'already-drafted',
+      message:
+        player.draftCost != null
+          ? `${player.name} already went to ${to} for $${player.draftCost}.`
+          : `${player.name} already went to ${to} in the snake.`,
+    };
+  }
+
   private checkRoster(player: Player, team: Team): BidCheck {
     if (rosterSize(team.roster) >= this.league.rosterSize) {
       return {
@@ -947,15 +1059,85 @@ export class AuctionDraftService {
     team.projectedTotal += player.projectedPoints;
 
     this.draftedCount++;
-    this.history.push({ playerId, teamId, cost });
+    this.history.push({ playerId, teamId, cost, phase: 'auction' });
     this.updateTeamMetrics(team);
     this.persist();
 
     return true;
   }
 
-  /** Takes back the most recent pick. Returns the undone pick, or null. */
-  undoLastPick(): { player: Player; team: Team; cost: number } | null {
+  /**
+   * Take a player in the snake, for nothing.
+   *
+   * Re-checks the rules exactly as `draftPlayer` re-checks `validateBid`: a
+   * caller that skipped the check must not be able to put an illegal pick in
+   * the log, because the log is the only shared fact and it replays on reload.
+   *
+   * No money moves and `draftCost` stays undefined — never 0. A snake pick is
+   * not a player bought for nothing; he is a player nobody paid for, and every
+   * premium, surplus and inflation reading downstream depends on being able to
+   * tell the difference.
+   */
+  draftSnakePick(playerId: string, teamId: string): boolean {
+    if (!this.validateSnakePick(playerId, teamId).ok) return false;
+    return this.applySnakePick(playerId, teamId, this.getSnakeOnTheClock()?.slot);
+  }
+
+  /**
+   * Put a snake pick on the board without asking whether it may be made.
+   *
+   * This is the half that replaying a saved log needs, and separating it is not
+   * a convenience — it is the fix for a bug that destroyed drafts. `replay` used
+   * to send every stored snake pick back through `validateSnakePick`, which
+   * asks whether the team is on the clock *under the order in force now*. The
+   * order lives outside the pick log, so reordering the board — the one thing
+   * the order panel exists to do, and which it promises changes nothing already
+   * taken — made every logged snake pick fail on the next reload. The second
+   * window then wrote the truncated log back over the good one, and the picks
+   * were gone. Importing a sheet mid-snake did the same thing by flipping the
+   * phase back to auction.
+   *
+   * The principle it violated is worth stating plainly: a logged pick is a
+   * record of what happened, not a proposal to be re-adjudicated against
+   * today's rules. What replay still checks is what cannot have been true —
+   * that the player exists, is not already taken, and fits the roster.
+   * Whose turn it was belongs on the live path, where a person is about to act.
+   */
+  private applySnakePick(playerId: string, teamId: string, slot?: number): boolean {
+    const player = this.players.find((p) => p.id === playerId);
+    const team = this.teams.find((t) => t.id === teamId);
+    if (!player || !team || player.isDrafted) return false;
+    if (!this.checkRoster(player, team).ok) return false;
+
+    player.isDrafted = true;
+    player.draftedBy = teamId;
+    player.pickNumber = this.draftedCount + 1;
+
+    team.roster[player.position]++;
+    team.projectedTotal += player.projectedPoints;
+
+    this.draftedCount++;
+    // A log written before the seat was recorded still replays; it simply
+    // resumes the board from wherever the walk had reached.
+    this.history.push({
+      playerId,
+      teamId,
+      phase: 'snake',
+      slot: slot ?? this.getSnakeUpcoming(1)[0]?.slot,
+    });
+    this.updateTeamMetrics(team);
+    this.persist();
+
+    return true;
+  }
+
+  /**
+   * Takes back the most recent pick. Returns the undone pick, or null.
+   *
+   * `cost` is null for a snake pick, for the same reason `draftCost` is absent
+   * on one: there was no price, and zero would be a claim about one.
+   */
+  undoLastPick(): { player: Player; team: Team; cost: number | null } | null {
     const last = this.history.pop();
     if (!last) return null;
 
@@ -968,8 +1150,12 @@ export class AuctionDraftService {
     delete player.draftCost;
     delete player.pickNumber;
 
-    team.spent -= last.cost;
-    team.remaining += last.cost;
+    // A snake pick moved no money, so there is none to give back. Undoing one
+    // also puts the room back in the auction, which needs no code here: the
+    // phase is derived from the log, and the log is one entry shorter.
+    const cost = last.phase === 'snake' ? null : (last.cost ?? 0);
+    team.spent -= cost ?? 0;
+    team.remaining += cost ?? 0;
     team.roster[player.position] = Math.max(0, team.roster[player.position] - 1);
     team.projectedTotal -= player.projectedPoints;
 
@@ -977,7 +1163,7 @@ export class AuctionDraftService {
     this.updateTeamMetrics(team);
     this.persist();
 
-    return { player, team, cost: last.cost };
+    return { player, team, cost };
   }
 
   /**
@@ -1028,6 +1214,199 @@ export class AuctionDraftService {
     );
   }
 
+  // -------------------------------------------------------------------------
+  // the snake half
+  //
+  // The auction buys the commissioner's sheet; every remaining roster spot is
+  // filled by a serpentine draft in an order he fixes in advance. Which half
+  // the room is in is derived from the log and the sheet, never stored as
+  // current state — so reloading, following a second window, replaying a file
+  // and undoing all land on the same answer, because they all replay the same
+  // log.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Which half of the draft the room is in.
+   *
+   * The auction is over when every player on the sheet is either sold or marked
+   * as passed over, which is exactly what `getSheetRemaining` answers. With no
+   * sheet in force there is no snake phase at all: the app does not know which
+   * players the money was buying, so it cannot know when the money is finished,
+   * and claiming otherwise mid-auction would take the bid box off the screen
+   * with names still to call.
+   */
+  getPhase(): DraftPhase {
+    if (!this.sheet.ids.length) return 'auction';
+    return this.getSheetRemaining().length === 0 ? 'snake' : 'auction';
+  }
+
+  /**
+   * The snake order in force: the commissioner's, or the team order.
+   *
+   * Repaired against the current teams on every read rather than trusted, so a
+   * stored order written under a different league — or one that lost a team to
+   * a hand-edited storage key — cannot drop a team out of the draft entirely.
+   */
+  getSnakeOrder(): Team[] {
+    const byId = new Map(this.teams.map((team) => [team.id, team]));
+    const ordered: Team[] = [];
+    for (const id of this.snakeOrder) {
+      const team = byId.get(id);
+      if (team && !ordered.includes(team)) ordered.push(team);
+    }
+    for (const team of this.teams) if (!ordered.includes(team)) ordered.push(team);
+    return ordered;
+  }
+
+  /**
+   * Set the order the snake is called in.
+   *
+   * Allowed mid-draft on purpose: the order is announced at the table, and it
+   * is announced differently often enough that refusing to change it would mean
+   * running the rest of the night off a list everyone can see is wrong. It
+   * moves nobody's money and invalidates no pick already made — only who is
+   * next — which is why it is not a league change and does not clear the draft.
+   */
+  setSnakeOrder(teamIds: readonly string[]): void {
+    const known = new Set(this.teams.map((team) => team.id));
+    this.snakeOrder = [...new Set(teamIds)].filter((id) => known.has(id));
+    writeStoredSnakeOrder(this.snakeOrder);
+    this.announce();
+  }
+
+  /** How many picks the snake has taken so far. */
+  getSnakePickCount(): number {
+    return this.history.reduce((total, pick) => total + (pick.phase === 'snake' ? 1 : 0), 0);
+  }
+
+  /**
+   * Who is on the clock in the snake, and where in the board they are.
+   *
+   * Serpentine over the fixed order — round one forward, round two reversed —
+   * computed from the number of snake picks made rather than stored, exactly as
+   * `getNominatingTeam` is computed from the pick count. A team whose roster is
+   * full is stepped over, because this format has no minimum a team must buy at
+   * auction and so rosters fill at wildly different times.
+   *
+   * The walk starts from an empty snake and replays the whole schedule rather
+   * than indexing straight into it. Indexing is what looks obvious and is
+   * wrong: skipping a full team shifts every later slot, so slot number and
+   * pick number stop agreeing, and the team after a full one gets handed two
+   * picks in a row. Two hundred iterations of arithmetic is not worth being
+   * clever about.
+   */
+  getSnakeOnTheClock(): SnakeSlot | undefined {
+    return this.getSnakeUpcoming(1)[0];
+  }
+
+  /**
+   * The next few snake slots, in order, starting with whoever is on the clock.
+   *
+   * The question a snake draft actually turns on is not who is picking now but
+   * how long it is until you pick again — at the turn you take two in a row, in
+   * the middle of a round you wait twenty-two. That is a fact about the order
+   * and the rosters, so it is computed here rather than by whoever renders it.
+   */
+  getSnakeUpcoming(count = 4): SnakeSlot[] {
+    const order = this.getSnakeOrder();
+    if (!order.length || count < 1) return [];
+
+    // Rosters as they stand, and the board resumed after the last seat somebody
+    // actually took. Both halves of that matter. Rebuilding the rosters as the
+    // snake found them and re-walking from seat zero meant every pick already
+    // taken was re-attributed through the current order, so a reorder moved the
+    // clock onto a team that was already full and wedged the draft with no way
+    // forward from the room — every player rejected as roster-full and the
+    // draft never complete.
+    const filled = new Map(order.map((team) => [team.id, rosterSize(team.roster)]));
+    let open = order.reduce(
+      (total, team) => total + Math.max(0, this.league.rosterSize - (filled.get(team.id) ?? 0)),
+      0
+    );
+
+    const made = this.getSnakePickCount();
+    const taken = this.history.reduce(
+      (last, pick) =>
+        pick.phase === 'snake' && pick.slot != null ? Math.max(last, pick.slot) : last,
+      -1
+    );
+
+    const upcoming: SnakeSlot[] = [];
+    for (let slot = taken + 1; open > 0 && upcoming.length < count; slot++) {
+      const team = this.seatAt(slot, order);
+      if ((filled.get(team.id) ?? 0) >= this.league.rosterSize) continue;
+      upcoming.push({
+        team,
+        round: Math.floor(slot / order.length) + 1,
+        pick: (slot % order.length) + 1,
+        overall: made + upcoming.length + 1,
+        slot,
+      });
+      filled.set(team.id, (filled.get(team.id) ?? 0) + 1);
+      open--;
+    }
+    return upcoming;
+  }
+
+  /**
+   * Whose seat this is on the endless serpentine board.
+   *
+   * Even rounds run left to right and odd rounds run back again; that is the
+   * whole of a serpentine order.
+   */
+  private seatAt(slot: number, order: Team[]): Team {
+    const round = Math.floor(slot / order.length);
+    const seat = slot % order.length;
+    return order[round % 2 === 0 ? seat : order.length - 1 - seat];
+  }
+
+  /**
+   * Whether this free pick is legal, and if not, why.
+   *
+   * The same typed answer a bid gets, because the room renders it the same way
+   * and a rejection nobody can read is a rejection nobody can act on. It is
+   * `checkRoster` — the half of `validateBid` that has nothing to do with
+   * money, split out for exactly this — plus the two things only a snake pick
+   * can get wrong: being taken while the auction is still running, and being
+   * taken by a team that is not on the clock.
+   */
+  validateSnakePick(playerId: string, teamId: string): BidCheck {
+    const player = this.players.find((p) => p.id === playerId);
+    if (!player)
+      return { ok: false, code: 'unknown-player', message: 'That player is not in the pool.' };
+    if (player.isDrafted) return this.alreadyGone(player);
+
+    const team = this.teams.find((t) => t.id === teamId);
+    if (!team) return { ok: false, code: 'unknown-team', message: 'Pick a team first.' };
+
+    if (this.getPhase() !== 'snake') {
+      const left = this.getSheetRemaining().length;
+      return {
+        ok: false,
+        code: 'not-in-snake',
+        message: this.sheet.ids.length
+          ? `The auction is still running — ${left} sheet player${left === 1 ? '' : 's'} left to sell or pass over.`
+          : 'There is no snake phase without the commissioner’s sheet, so the room does not know when the auction ended.',
+      };
+    }
+
+    const room = this.checkRoster(player, team);
+    if (!room.ok) return room;
+
+    const onTheClock = this.getSnakeOnTheClock();
+    if (!onTheClock || onTheClock.team.id !== teamId) {
+      return {
+        ok: false,
+        code: 'not-your-turn',
+        message: onTheClock
+          ? `It is ${onTheClock.team.name} on the clock, not ${team.name}.`
+          : 'Every roster is full — there is nobody left to pick.',
+      };
+    }
+
+    return { ok: true };
+  }
+
   /**
    * How the room is behaving, as numbers a bidder can act on.
    *
@@ -1038,13 +1417,25 @@ export class AuctionDraftService {
    */
   getMarketState(): MarketState {
     const drafted = this.players.filter((p) => p.isDrafted);
-    const spent = drafted.reduce((total, p) => total + (p.draftCost ?? 0), 0);
-    const listed = drafted.reduce((total, p) => total + p.estimatedValue, 0);
+    /*
+     * Money counts the auction; supply counts both halves.
+     *
+     * A receiver taken in the snake is genuinely off the board, so scarcity,
+     * tier depletion and every "gone" count include him — waiting for him is no
+     * longer an option and that is what those numbers are for. But nobody paid
+     * for him, so he cannot appear in anything measuring what the room pays:
+     * averaging a free player into the premium drags it toward zero and reports
+     * a room paying 60% under list for the rest of the night, on a hundred and
+     * forty picks in which no money changed hands at all.
+     */
+    const bought = drafted.filter((p) => p.draftCost != null);
+    const spent = bought.reduce((total, p) => total + (p.draftCost ?? 0), 0);
+    const listed = bought.reduce((total, p) => total + p.estimatedValue, 0);
 
     const positions: PlayerPosition[] = ['QB', 'RB', 'WR', 'TE', 'K', 'DST'];
     const scarcity = positions.map((position) => {
       const startable = this.players.filter((p) => p.position === position && this.forSale(p));
-      const sold = drafted.filter((p) => p.position === position);
+      const sold = bought.filter((p) => p.position === position);
       const soldFor = sold.reduce((total, p) => total + (p.draftCost ?? 0), 0);
       const soldList = sold.reduce((total, p) => total + p.estimatedValue, 0);
 
@@ -1060,6 +1451,12 @@ export class AuctionDraftService {
 
       return {
         position,
+        // Off the board, however he left it. A sheet player nobody bid on and
+        // somebody then took in the snake is exactly as unavailable as one who
+        // went for $40, and this is the number that says whether waiting is
+        // still an option. `sold` below is the money question and counts only
+        // the ones that were bought; the two genuinely differ once the snake
+        // starts, and they are meant to.
         gone: startable.filter((p) => p.isDrafted).length,
         total: startable.length,
         tierOneLeft: this.players.filter(
@@ -1560,7 +1957,10 @@ export class AuctionDraftService {
       if (!previous?.isDrafted) continue;
       player.isDrafted = true;
       player.draftedBy = previous.draftedBy;
-      player.draftCost = previous.draftCost;
+      // Assigned only when there was a price. Writing `undefined` back would
+      // leave the key present, and "has a draftCost of undefined" is one hop
+      // from being treated as a cost of nothing by whoever reads it next.
+      if (previous.draftCost != null) player.draftCost = previous.draftCost;
       player.pickNumber = previous.pickNumber;
     }
   }
@@ -1669,16 +2069,29 @@ export class AuctionDraftService {
       .slice(0, limit);
   }
 
-  /** Every pick so far, grouped for the league board. */
+  /**
+   * Every pick so far, grouped for the league board.
+   *
+   * `cost` is null for a snake pick rather than 0, and the phase travels with
+   * it, because the board has to be able to print "—" where there was no price.
+   * A grid of `$0` cells reads as a room that bought a hundred and forty
+   * players for nothing, which is the opposite of what happened.
+   */
   getDraftBoard(): Array<{
     team: Team;
-    picks: Array<{ player: Player; cost: number; pickNumber: number }>;
+    picks: Array<{ player: Player; cost: number | null; phase: DraftPhase; pickNumber: number }>;
   }> {
+    const phases = new Map(this.history.map((pick) => [pick.playerId, pick.phase]));
     return this.teams.map((team) => ({
       team,
       picks: this.players
         .filter((p) => p.draftedBy === team.id)
-        .map((p) => ({ player: p, cost: p.draftCost ?? 0, pickNumber: p.pickNumber ?? 0 }))
+        .map((p) => ({
+          player: p,
+          cost: p.draftCost ?? null,
+          phase: phases.get(p.id) ?? 'auction',
+          pickNumber: p.pickNumber ?? 0,
+        }))
         .sort((a, b) => a.pickNumber - b.pickNumber),
     }));
   }
@@ -1777,6 +2190,18 @@ export class AuctionDraftService {
    * the room is going to overpay for what is left; below it, bargains.
    */
   private calculateMarketInflation(): number {
+    /*
+     * Nothing inflates once the money stops.
+     *
+     * Inflation is money left over value left, and in the snake phase the first
+     * of those is frozen while the second goes on shrinking with every pick. So
+     * the ratio climbs on its own until it pins at the 1.8 clamp, and the market
+     * panel reads "money is chasing scraps — expect overpays" for a hundred and
+     * forty picks in which nobody spends a penny. Whatever money is still in the
+     * room at the end of the auction is money that stays there.
+     */
+    if (this.getPhase() === 'snake') return 1;
+
     const openSlots = this.teams.reduce(
       (total, team) =>
         total +
@@ -1933,10 +2358,18 @@ export class AuctionDraftService {
    * depending on which door it came through is a draft that disagrees with
    * itself. Picks that no longer validate are counted, never dropped quietly.
    */
-  private replay(picks: ReadonlyArray<{ playerId: string; teamId: string; cost: number }>): number {
+  private replay(picks: ReadonlyArray<Partial<DraftPick>>): number {
     let restored = 0;
     for (const pick of picks) {
-      if (this.draftPlayer(pick.playerId, pick.teamId, pick.cost)) restored++;
+      if (!pick.playerId || !pick.teamId) continue;
+      // A pick log written before the snake existed carries no phase, and every
+      // pick in it was an auction buy — which is what the missing field means,
+      // not a value to guess at.
+      const ok =
+        pick.phase === 'snake'
+          ? this.applySnakePick(pick.playerId, pick.teamId, pick.slot)
+          : this.draftPlayer(pick.playerId, pick.teamId, pick.cost ?? 0);
+      if (ok) restored++;
     }
     return restored;
   }
@@ -1961,6 +2394,9 @@ export class AuctionDraftService {
       // The sheet decides what the money is buying, so it has to be back in
       // hand before the board is priced rather than after it.
       this.sheet = readStoredSheet();
+      // The order decides who the second screen says is on the clock, and a
+      // window that kept the old one would put a different name up.
+      this.snakeOrder = readStoredSnakeOrder();
       const stored = readStoredTeams();
       this.teamNames = stored.names ?? {};
       this.myTeamId = stored.mine ?? null;
@@ -2011,7 +2447,7 @@ export class AuctionDraftService {
       version?: number;
       league?: LeagueShape;
       budgets?: Array<{ id: string; budget: number }>;
-      picks?: Array<{ playerId: string; teamId: string; cost: number }>;
+      picks?: DraftPick[];
     } | null = null;
     try {
       const raw = localStorage.getItem(AuctionDraftService.STORAGE_KEY);
@@ -2060,7 +2496,7 @@ export class AuctionDraftService {
     let saved: {
       league?: LeagueShape;
       budgets?: Array<{ id: string; budget: number }>;
-      picks?: Array<{ playerId: string; teamId: string; cost: number }>;
+      picks?: DraftPick[];
     } | null = null;
     try {
       const raw = localStorage.getItem(CLEARED_STORAGE_KEY);
@@ -2103,6 +2539,12 @@ export class AuctionDraftService {
         // list describe a different auction. A draft carried to a backup laptop
         // has to price identically, not approximately.
         auctionSheet: this.sheet,
+        // The snake order travels too. It sets nothing about a price, so a file
+        // without one still replays every pick correctly — but a backup laptop
+        // that came up mid-snake with the default team order would put the
+        // wrong team on the clock, which is the one thing the room in front of
+        // it cannot check against the app.
+        snakeOrder: this.snakeOrder,
         // Who the teams are travels with the draft: a pick log full of
         // "Team 7" is a worse record of the night than it needs to be.
         teamNames: this.teamNames,
@@ -2130,10 +2572,11 @@ export class AuctionDraftService {
       kind?: string;
       league?: LeagueShape;
       auctionSheet?: Partial<StoredSheet>;
+      snakeOrder?: unknown;
       teamNames?: Record<string, string>;
       myTeamId?: string | null;
       budgets?: Array<{ id: string; budget: number }>;
-      picks?: Array<{ playerId: string; teamId: string; cost: number }>;
+      picks?: DraftPick[];
     };
     try {
       saved = JSON.parse(text);
@@ -2162,6 +2605,12 @@ export class AuctionDraftService {
         }
       : EMPTY_SHEET();
     writeStoredSheet(this.sheet);
+    // A file saved before the snake existed carries no order, and the empty
+    // list is the correct reading of that: fall back to the team order.
+    this.snakeOrder = Array.isArray(saved.snakeOrder)
+      ? saved.snakeOrder.filter((id): id is string => typeof id === 'string')
+      : [];
+    writeStoredSnakeOrder(this.snakeOrder);
     if (saved.teamNames) this.teamNames = saved.teamNames;
     if (saved.myTeamId !== undefined) this.myTeamId = saved.myTeamId;
     writeStoredTeams({ names: this.teamNames, mine: this.myTeamId });
@@ -2188,7 +2637,7 @@ export class AuctionDraftService {
 
   private static readonly STORAGE_KEY = 'draft-vault:auction-draft:v2';
 
-  getHistory(): ReadonlyArray<{ playerId: string; teamId: string; cost: number }> {
+  getHistory(): ReadonlyArray<DraftPick> {
     return this.history;
   }
 

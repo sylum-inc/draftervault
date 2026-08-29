@@ -26,10 +26,20 @@ export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps
   const board = useMemo(() => service.getDraftBoard(), [service, players]); // eslint-disable-line react-hooks/exhaustive-deps
   const league = service.getLeagueShape();
 
+  /*
+   * Money leaving the room — the auction half, and only the auction half.
+   *
+   * A hundred and forty snake picks are a hundred and forty zero-dollar points
+   * on a chart whose whole subject is spending. They draw a dead flat line
+   * three quarters of the way across it, and a flat line on a money chart is
+   * not "no money moved": it is indistinguishable from a room that has run out,
+   * which is a real and different thing this chart exists to show. So the
+   * drain stops where the money did.
+   */
   const flow: FlowPick[] = useMemo(
     () =>
       players
-        .filter((player) => player.isDrafted)
+        .filter((player) => player.isDrafted && player.draftCost != null)
         .map((player) => ({
           pickNumber: player.pickNumber ?? 0,
           position: player.position,
@@ -40,6 +50,9 @@ export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps
         .sort((a, b) => a.pickNumber - b.pickNumber),
     [players, teams]
   );
+
+  /** Any pick at all, either half, is enough for the supply chart to say something. */
+  const depleted = players.some((player) => player.isDrafted);
 
   const depletion: TierRow[] = useMemo(
     () =>
@@ -70,17 +83,27 @@ export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps
           </button>
         </header>
 
-        {flow.length >= 2 ? (
+        {/* Two sections, gated separately, because they answer different
+            questions. Money left in the room is about the auction and needs
+            bought players. What is left is about supply and counts both halves
+            — gating it on the money count hid it through the entire snake,
+            behind a message saying the board fills in as picks happen while a
+            hundred and forty picks happened below it. */}
+        {flow.length >= 2 || depleted ? (
           <div className="dr-boardview-charts">
-            <section>
-              <h3 className="dr-eyebrow">Money left in the room</h3>
-              <DraftFlow picks={flow} totalBudget={totalBudget} />
-              <PositionRuns picks={flow} />
-            </section>
-            <section>
-              <h3 className="dr-eyebrow">What is left</h3>
-              <TierDepletion rows={depletion} />
-            </section>
+            {flow.length >= 2 && (
+              <section>
+                <h3 className="dr-eyebrow">Money left in the room</h3>
+                <DraftFlow picks={flow} totalBudget={totalBudget} />
+                <PositionRuns picks={flow} />
+              </section>
+            )}
+            {depleted && (
+              <section>
+                <h3 className="dr-eyebrow">What is left</h3>
+                <TierDepletion rows={depletion} />
+              </section>
+            )}
           </div>
         ) : (
           <p className="dr-empty">
@@ -110,13 +133,22 @@ export const DraftBoard = ({ service, players, teams, onClose }: DraftBoardProps
                           style={{
                             borderLeftColor: `var(--dr-pos-${pick.player.position.toLowerCase()})`,
                           }}
-                          title={`#${pick.pickNumber} ${pick.player.name} — $${pick.cost}`}
+                          title={
+                            pick.cost != null
+                              ? `#${pick.pickNumber} ${pick.player.name} — $${pick.cost}`
+                              : `#${pick.pickNumber} ${pick.player.name} — taken in the ${pick.phase}, no cost`
+                          }
                         >
                           <em>{pick.player.position === 'DST' ? 'D' : pick.player.position}</em>
                           <span className="dr-gridboard-name">
                             {getIdentity(pick.player.id)?.name ?? pick.player.name}
                           </span>
-                          <span className="dr-num">${pick.cost}</span>
+                          {/* A cell reading "$0" says the room bought him for
+                              nothing. The grid says which half of the draft he
+                              came from instead. */}
+                          <span className="dr-num">
+                            {pick.cost != null ? `$${pick.cost}` : 'snake'}
+                          </span>
                         </span>
                       ) : (
                         <span className="dr-gridboard-empty" aria-hidden="true" />

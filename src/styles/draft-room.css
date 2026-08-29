@@ -3414,3 +3414,61 @@
   font-weight: 700;
   line-height: 1;
 }
+
+/* ---------------------------------------------------------------------------
+   The snake half.
+
+   This league auctions the commissioner's sheet and then fills every remaining
+   roster spot by serpentine draft. The stage changes shape rather than merely
+   disabling the bid box, so nobody types a price into a pick that has none.
+   --------------------------------------------------------------------------- */
+
+/* Who is on the clock, above the player. The auction has a nomination clock in
+   the top bar; the snake's turn is the whole of what the stage is asking. */
+.dr-stage-clock {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-stage-clock strong {
+  font-size: 15px;
+  color: var(--dr-ink);
+}
+
+/* The order the snake is called in. Numbered because the number is the point:
+   round one runs down it and round two runs back up. */
+.dr-order-list {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.dr-order-list li {
+  display: grid;
+  grid-template-columns: 26px 1fr auto auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--dr-line);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.dr-order-list li.is-mine {
+  border-color: color-mix(in srgb, var(--dr-accent) 45%, var(--dr-line));
+}
+
+.dr-order-name {
+  display: flex;
+  align-items: center;
+  color: var(--dr-ink);
+}

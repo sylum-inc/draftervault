@@ -20,6 +20,10 @@ interface TeamsPanelProps {
  * league became configurable and this one was missed, so a superflex or
  * three-receiver league saw needs it was not actually playing.
  */
+/** What a roster line paid, in words, for the column that has room for a dash. */
+const cost = (player: Player): string =>
+  player.draftCost != null ? `Bought for $${player.draftCost}` : 'Taken in the snake — no cost';
+
 const startersFor = (league: LeagueShape): Array<[PlayerPosition, number]> =>
   POSITIONS.map(
     (position) => [position, league.startingLineup[position] ?? 0] as [PlayerPosition, number]
@@ -56,8 +60,10 @@ export const TeamsPanel = ({
       </header>
 
       {teams.map((team) => {
+        // Dearest first, and the free ones last: a snake pick has no cost at
+        // all, so it sorts below a $1 buy rather than tying with one.
         const roster = (byTeam.get(team.id) ?? []).sort(
-          (a, b) => (b.draftCost ?? 0) - (a.draftCost ?? 0)
+          (a, b) => (b.draftCost ?? -1) - (a.draftCost ?? -1)
         );
         const active = team.id === activeTeamId;
 
@@ -105,7 +111,11 @@ export const TeamsPanel = ({
               <ul className="dr-team-roster">
                 {roster.slice(0, 5).map((player) => (
                   <li key={player.id}>
-                    <span className="dr-num dr-team-cost">${player.draftCost}</span>
+                    {/* A snake pick was not bought for $0; nobody bought him at
+                        all. The column says which of the two happened. */}
+                    <span className="dr-num dr-team-cost" title={cost(player)}>
+                      {player.draftCost != null ? `$${player.draftCost}` : '—'}
+                    </span>
                     {player.name}
                   </li>
                 ))}

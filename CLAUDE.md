@@ -45,6 +45,7 @@ src/pages/Index.tsx
         ├── LeagueSettings.tsx    teams, budget, roster shape — re-prices the board
         ├── RankingsImport.tsx    bring your own values, previewed before applying
         ├── AuctionSheetImport.tsx  the sheet the commissioner circulated
+        ├── SnakeOrder.tsx        the order the snake is called in
         ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
         │                         ScheduleStrip, BidLadder, PositionSwarm,
         │                         OutcomeCurve, ConsensusRange, QuadrantScatter,
@@ -134,10 +135,9 @@ them and "B. Robinson RB ATL" can. A sheet player nobody bids a dollar on is
 marked unsold rather than struck off, because shortening the list would move
 `auctionSheetSize` — re-pricing the room mid-auction and, since `sameLeague` is
 what lets a saved draft replay, refusing to restore the draft being played. The
-engine ships `removeFromSheet`/`getSheetRemaining` for it, but **nothing in the
-room calls them yet**: the control that marks a player passed over, and the
-auction-is-over condition that reads it, belong with the snake phase and are not
-built. The API exists so that work does not have to reopen the engine.
+engine ships `removeFromSheet`/`getSheetRemaining` for it, and the snake phase
+is what calls them: the "Nobody bid" control on the stage marks a player passed
+over, and `getSheetRemaining()` emptying is the condition the auction ends on.
 
 A list can be too concentrated to price. The whole budget chases whatever is on
 the sheet, so twelve names put the best player at 119% of a budget — a headline
@@ -168,6 +168,82 @@ looked tapped out at $88 while they could still go to $96. Every bid walked away
 from on that basis is a player lost while holding money nobody required.
 `reservedSlots` is the one place that decides it; three tests fail if the
 condition is removed.
+
+**The phase is derived; the pick log records which one each pick happened in.**
+`getPhase()` returns `auction` until every player on the sheet is either sold or
+marked unsold — `getSheetRemaining()` empty — and `snake` after. Nothing stores
+"we are in the snake now", so reloading, following a second window, replaying a
+file and undoing all land on the same answer, because they all replay the same
+log. With no sheet in force there is no snake phase at all: a _size_ says how
+many players are bought and not which, so the room cannot know when the money is
+finished, and guessing would take the bid box away with names still to call.
+Getting back across the boundary is worth stating precisely, because the
+obvious answer is wrong. Undoing a snake pick does _not_ do it: the phase reads
+the sheet, and taking back a pick of somebody who was never on the sheet leaves
+it just as empty. The ways back are undoing far enough to unsell the auction
+pick that emptied the sheet, or `returnToSheet` on a player the room passed
+over. What is free is the mechanism — nothing had to be told the phase moved,
+because nothing stores it.
+
+The pick log entry gained a `phase`, and that is not storing something derived:
+it is a fact about the transaction, exactly like the price. It has to be stored
+because it cannot be recovered afterwards — marking one more player unsold moves
+where the auction ended, and every pick already made would silently reclassify.
+What stays derived is _whose turn it is_. `getSnakeOnTheClock()` walks the
+serpentine schedule from an empty snake each time rather than indexing into it:
+indexing looks obvious and is wrong, because skipping a full team shifts every
+later slot, so the team after a full one gets handed two picks in a row. Two
+hundred iterations of arithmetic is not worth being clever about.
+
+**Money counts the auction; supply counts both.** A receiver taken in the snake
+is genuinely off the board, so scarcity, tier depletion and every "gone" count
+include him — waiting for him is no longer an option, which is what those
+numbers are for. But nobody paid for him, so he appears in nothing that measures
+money: premium, inflation, budget, surplus and the grade's spend column all read
+the auction half only. `draftCost` stays **undefined** on a snake pick and never
+becomes 0, because 0 is a claim — "bought for nothing" — and the two are
+indistinguishable once one has leaked into a sum. TypeScript cannot help here:
+the field was already optional, so every `draftCost ?? 0` had to be found by
+hand and decided one at a time. `MarketState.scarcity` now has `gone` and `sold`
+genuinely differing, and they are meant to.
+
+Inflation is short-circuited to 1 for the whole snake phase. Money left is fixed
+while value left goes on shrinking, so without it the ratio climbs on its own
+until it pins at the 1.8 clamp and `MarketPanel` reads "money is chasing scraps
+— expect overpays" for a hundred and forty picks in which nobody spends a penny.
+`DraftFlow` is fed auction picks only for the same reason: a hundred and forty
+zero-dollar points draw a flat line, and a flat line on a money chart is
+indistinguishable from a room that has run out — a real and different thing that
+chart exists to show.
+
+**The snake order is fixed in advance and lives in its own storage key.** The
+commissioner sets it; it is not derived from auction spending and not drawn on
+the night. `draft-vault:snake-order:v1` rather than a field on `LeagueShape`,
+for exactly the reason team names are: `sameLeague` decides whether a draft
+survives a change, and a reorder must never throw one away. It is repaired
+against the current teams on every read, so an order that has lost a team cannot
+drop that team out of the draft. Reordering mid-draft is allowed on purpose —
+the order gets announced at the table and it gets announced differently often
+enough that the alternative is running the night off a list everyone can see is
+wrong. It has its own panel because `LeagueSettings`' Apply clears the draft.
+
+`validateSnakePick` returns the same typed `BidCheck` a bid gets, composed from
+`checkRoster` — the half of `validateBid` that has nothing to do with money,
+split out for exactly this — plus the two things only a free pick can get wrong:
+being taken while the auction runs (`not-in-snake`) and being taken out of turn
+(`not-your-turn`). `draftSnakePick` re-checks it, as `draftPlayer` re-checks
+`validateBid`. A $0 auction bid is still rejected as `invalid-amount`; the free
+pick is its own call, not a bid of nothing.
+
+`NominationStage` takes `mode: 'auction' | 'snake'` as its structural branch,
+and that is deliberately the _only_ phase-shaped prop it has. In the snake there
+is no bid box, no stepper, no value verdict and no winning-team select — the
+order chose the team — only who is on the clock, the round and pick, and a
+draft button. The file and the second window carry the phase on every pick and
+the order beside the sheet; storage stays at version 2 and the file at version 1,
+because bumping the storage version would make `restore()` refuse the draft
+already sitting in the owner's browser. A pick with no `phase` is an auction
+buy, which is what it was.
 
 **Scoring is part of the league, and the pool is not built at yours.** nflverse
 gives full-PPR points and the builder took them straight, so a point a catch was
@@ -437,8 +513,11 @@ board; a custom-rankings import that refuses to guess; app icons and a manifest
 that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; keyboard operation, a
 non-destructive reset, a draft that ends, a draft file for the night the
 laptop dies, named teams, a board that keeps up with an auction and configurable
-reception scoring, pricing for a partial auction and the commissioner's actual
-sheet imported by paste or file; 295 tests.
+reception scoring, pricing for a partial auction, the commissioner's actual
+sheet imported by paste or file, and the snake half of the hybrid draft — a
+derived phase, a fixed serpentine order, free picks that carry no price
+anywhere, and advice written for a draft where money decides nothing; 345
+tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

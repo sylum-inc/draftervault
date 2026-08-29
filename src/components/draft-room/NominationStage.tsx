@@ -1,22 +1,63 @@
 import type { CSSProperties } from 'react';
-import type { BidCheck, DraftAnalytics, Player, Team } from '@/services/auctionDraftService';
+import type {
+  BidCheck,
+  DraftAnalytics,
+  DraftPhase,
+  Player,
+  SnakeSlot,
+  Team,
+} from '@/services/auctionDraftService';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
 import { Headshot } from './Headshot';
 import { RangeBar } from './charts/RangeBar';
 
 interface NominationStageProps {
+  /**
+   * Which half of the draft this stage is running, and the structural branch
+   * of the whole component.
+   *
+   * It is deliberately the *only* phase-shaped prop. Two panels of controls
+   * that differ in what they ask for — a price, or nothing at all — is one
+   * decision, and splitting it across a second flag is how the bid box comes
+   * back for a pick that has no price. Everything else here is a plain fact
+   * that one mode or the other happens to use.
+   */
+  mode: DraftPhase;
   player: Player | null;
   teams: Team[];
   teamId: string;
   bid: string;
   analytics: DraftAnalytics | null;
+  /**
+   * Whether this transaction is legal. The engine answers it for both halves in
+   * the same typed shape — `validateBid` in the auction, `validateSnakePick` in
+   * the snake — and this renders whichever came back verbatim.
+   */
   check: BidCheck | null;
   onTeamChange: (teamId: string) => void;
   onBidChange: (bid: string) => void;
+  /** Sell at the bid, or take the pick. The room decides which by phase. */
   onConfirm: () => void;
   onOpenProfile: () => void;
   /** Whether a team still has room; a full one cannot win the bidding. */
   canDraft: (team: Team) => boolean;
+  /** Whose turn it is in the snake, with the round and pick it falls on. */
+  onTheClock?: SnakeSlot;
+  /**
+   * Sheet players still to sell or be passed over. Null when no sheet is in
+   * force, which is also when there is no snake phase to count down to.
+   */
+  sheetRemaining: number | null;
+  /**
+   * Nobody bid a dollar. Marks the player passed over rather than striking him
+   * off, which is what eventually ends the auction — one player nobody calls
+   * would otherwise hold the room in an auction the table left long ago.
+   */
+  onUnsold: () => void;
+  /** Put a player the room passed over back up for bidding. */
+  onReturnToSheet: () => void;
+  /** Whether this player has already been passed over. */
+  passedOver: boolean;
 }
 
 const inkFor = (hex: string): string => {
@@ -41,6 +82,7 @@ const verdictFor = (
 };
 
 export const NominationStage = ({
+  mode,
   player,
   teams,
   teamId,
@@ -52,14 +94,44 @@ export const NominationStage = ({
   onConfirm,
   onOpenProfile,
   canDraft,
+  onTheClock,
+  sheetRemaining,
+  onUnsold,
+  onReturnToSheet,
+  passedOver,
 }: NominationStageProps) => {
+  const snake = mode === 'snake';
+
   if (!player) {
     return (
       <section className="dr-panel dr-stage is-empty" aria-label="Nomination">
+        {snake && onTheClock && (
+          <p className="dr-eyebrow" style={{ marginBottom: 8 }}>
+            {/* Both numbers, because they diverge and each is the answer to a
+                different question. `pick` is the seat on the printed board;
+                `overall` is what somebody at the table actually calls out. A
+                team that filled its roster at auction still owns its seat, so
+                with two teams bought out the opening pick of the snake sits in
+                seat three — and nobody calls that pick three. */}
+            Round {onTheClock.round}, pick {onTheClock.pick} · #{onTheClock.overall} overall ·{' '}
+            {onTheClock.team.name} on the clock
+          </p>
+        )}
         <p className="dr-empty">
-          Pick a player from the board to put them up for auction.
-          <br />
-          Their valuation and bid controls appear here.
+          {snake ? (
+            <>
+              The auction is over. Pick a player from the board to hand him to the team on the
+              clock.
+              <br />
+              Nothing costs anything from here.
+            </>
+          ) : (
+            <>
+              Pick a player from the board to put them up for auction.
+              <br />
+              Their valuation and bid controls appear here.
+            </>
+          )}
         </p>
       </section>
     );
@@ -78,7 +150,21 @@ export const NominationStage = ({
     onBidChange(String(Math.max(1, (Number.parseInt(bid, 10) || 0) + delta)));
 
   return (
-    <section className="dr-panel dr-stage" style={style} aria-label={`Nomination: ${player.name}`}>
+    <section
+      className="dr-panel dr-stage"
+      style={style}
+      aria-label={snake ? `Snake pick: ${player.name}` : `Nomination: ${player.name}`}
+    >
+      {snake && onTheClock && (
+        <p className="dr-stage-clock">
+          <span className="dr-eyebrow">
+            Round {onTheClock.round} · pick {onTheClock.pick} · #{onTheClock.overall} overall
+          </span>
+          <strong>{onTheClock.team.name}</strong>
+          <span className="dr-eyebrow">on the clock</span>
+        </p>
+      )}
+
       <div className="dr-stage-hero">
         {logo && <img className="dr-stage-logo" src={logo} alt="" aria-hidden="true" />}
         <Headshot
@@ -99,14 +185,33 @@ export const NominationStage = ({
       </div>
 
       <dl className="dr-stage-tiles">
-        <div className="dr-tile">
-          <dt>Est. value</dt>
-          <dd style={{ color: 'var(--dr-value)' }}>${player.estimatedValue}</dd>
-        </div>
-        <div className="dr-tile">
-          <dt>Max bid</dt>
-          <dd>${analytics ? Math.round(analytics.maxBid) : '—'}</dd>
-        </div>
+        {/* Money in the auction, the board in the snake. A price and a ceiling
+            are the two numbers that decide a bid; neither says anything about a
+            pick that costs nothing, where the question is where he ranks and
+            what he is projected to do. */}
+        {snake ? (
+          <>
+            <div className="dr-tile">
+              <dt>Our rank</dt>
+              <dd style={{ color: 'var(--dr-value)' }}>#{player.adp}</dd>
+            </div>
+            <div className="dr-tile">
+              <dt>Bye</dt>
+              <dd>{player.byeWeek || '—'}</dd>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="dr-tile">
+              <dt>Est. value</dt>
+              <dd style={{ color: 'var(--dr-value)' }}>${player.estimatedValue}</dd>
+            </div>
+            <div className="dr-tile">
+              <dt>Max bid</dt>
+              <dd>${analytics ? Math.round(analytics.maxBid) : '—'}</dd>
+            </div>
+          </>
+        )}
         <div className="dr-tile">
           <dt>Projected</dt>
           <dd>{player.projectedPoints}</dd>
@@ -170,67 +275,82 @@ export const NominationStage = ({
           onConfirm();
         }}
       >
-        <div className="dr-field">
-          <label className="dr-eyebrow" htmlFor="dr-team">
-            Winning team
-          </label>
-          <select
-            id="dr-team"
-            className="dr-select"
-            value={teamId}
-            onChange={(event) => onTeamChange(event.target.value)}
-          >
-            <option value="">Select a team…</option>
-            {teams.map((t) => {
-              // A team with no room cannot win anything. It stays in the list
-              // so the order never shifts under the cursor mid-auction, but it
-              // says why it is unavailable rather than accepting the choice and
-              // rejecting the bid afterwards.
-              const full = !canDraft(t);
-              return (
-                <option key={t.id} value={t.id} disabled={full}>
-                  {t.name} · {full ? 'roster full' : `$${t.remaining} left`}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        <div className="dr-field">
-          <label className="dr-eyebrow" htmlFor="dr-bid">
-            Winning bid
-          </label>
-          <div className="dr-bid">
-            <button
-              type="button"
-              className="dr-step"
-              onClick={() => step(-1)}
-              aria-label="Lower bid by one dollar"
+        {snake ? (
+          // Nobody chooses a team in the snake: the order chose it, and offering
+          // a select here would be offering a choice the engine will refuse.
+          <p className="dr-verdict">
+            <span>Goes to</span>
+            <strong>{onTheClock?.team.name ?? '—'}</strong>
+          </p>
+        ) : (
+          <div className="dr-field">
+            <label className="dr-eyebrow" htmlFor="dr-team">
+              Winning team
+            </label>
+            <select
+              id="dr-team"
+              className="dr-select"
+              value={teamId}
+              onChange={(event) => onTeamChange(event.target.value)}
             >
-              −
-            </button>
-            <input
-              id="dr-bid"
-              className="dr-input"
-              inputMode="numeric"
-              value={bid}
-              onChange={(event) => onBidChange(event.target.value.replace(/[^0-9]/g, ''))}
-            />
-            <button
-              type="button"
-              className="dr-step"
-              onClick={() => step(1)}
-              aria-label="Raise bid by one dollar"
-            >
-              +
-            </button>
+              <option value="">Select a team…</option>
+              {teams.map((t) => {
+                // A team with no room cannot win anything. It stays in the list
+                // so the order never shifts under the cursor mid-auction, but it
+                // says why it is unavailable rather than accepting the choice and
+                // rejecting the bid afterwards.
+                const full = !canDraft(t);
+                return (
+                  <option key={t.id} value={t.id} disabled={full}>
+                    {t.name} · {full ? 'roster full' : `$${t.remaining} left`}
+                  </option>
+                );
+              })}
+            </select>
           </div>
-        </div>
+        )}
 
-        <p className="dr-verdict">
-          <span>Against our number</span>
-          <strong style={{ color: verdict.tone }}>{verdict.label}</strong>
-        </p>
+        {!snake && (
+          <div className="dr-field">
+            <label className="dr-eyebrow" htmlFor="dr-bid">
+              Winning bid
+            </label>
+            <div className="dr-bid">
+              <button
+                type="button"
+                className="dr-step"
+                onClick={() => step(-1)}
+                aria-label="Lower bid by one dollar"
+              >
+                −
+              </button>
+              <input
+                id="dr-bid"
+                className="dr-input"
+                inputMode="numeric"
+                value={bid}
+                onChange={(event) => onBidChange(event.target.value.replace(/[^0-9]/g, ''))}
+              />
+              <button
+                type="button"
+                className="dr-step"
+                onClick={() => step(1)}
+                aria-label="Raise bid by one dollar"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* A verdict against our number is a statement about a price. There is
+            no price in the snake, so there is nothing to be above or below. */}
+        {!snake && (
+          <p className="dr-verdict">
+            <span>Against our number</span>
+            <strong style={{ color: verdict.tone }}>{verdict.label}</strong>
+          </p>
+        )}
 
         {rejection && (
           <p className="dr-notice" role="status">
@@ -238,13 +358,75 @@ export const NominationStage = ({
           </p>
         )}
 
-        <button
-          type="submit"
-          className="dr-button dr-button-primary"
-          disabled={!!rejection || !teamId}
-        >
-          Sold — ${Number.isFinite(amount) ? amount : 0}
-        </button>
+        {snake ? (
+          <button
+            // The auction hands focus to the winning-team select after a
+            // nomination; the snake has no select, so the confirm button is
+            // what the keyboard lands on and Enter still records the pick.
+            id="dr-snake-draft"
+            type="submit"
+            className="dr-button dr-button-primary"
+            disabled={!!rejection || !onTheClock}
+          >
+            Draft to {onTheClock?.team.name ?? 'nobody'}
+          </button>
+        ) : (
+          <>
+            <button
+              type="submit"
+              className="dr-button dr-button-primary"
+              disabled={!!rejection || !teamId}
+            >
+              Sold — ${Number.isFinite(amount) ? amount : 0}
+            </button>
+
+            {/* The auction cannot end while one player nobody called is still
+                waiting to be sold, and somebody has to be able to say so. It
+                marks him passed over rather than striking him off, because the
+                sheet's length is the league's auctioned count and shortening it
+                would re-price the room mid-auction. Only for a player who is on
+                the sheet: nobody bids on the other five hundred either, and
+                there is nothing to pass over. */}
+            {/* Passing a player over is the only control in the room that can
+                end the auction, and it used to be one unconfirmed click with no
+                way back: undo pops the pick log, so it takes back an unrelated
+                sale instead, and a reset keeps the mark. A mis-click on the last
+                unsold name ended the auction and left a $54 player to be taken
+                for nothing. So the inverse is offered in the same slot, and the
+                click that ends the auction asks first. */}
+            {sheetRemaining != null && player.onSheet && !passedOver && (
+              <button
+                type="button"
+                className="dr-button"
+                onClick={() => {
+                  if (
+                    sheetRemaining > 1 ||
+                    window.confirm(
+                      `${player.name} is the last name on the sheet. Passing him over ends the auction and opens the snake draft.`
+                    )
+                  ) {
+                    onUnsold();
+                  }
+                }}
+                style={{ justifyContent: 'center' }}
+                title="Mark him passed over — he goes to the snake instead"
+              >
+                Nobody bid · {sheetRemaining} left on the sheet
+              </button>
+            )}
+            {player.onSheet && passedOver && (
+              <button
+                type="button"
+                className="dr-button"
+                onClick={onReturnToSheet}
+                style={{ justifyContent: 'center' }}
+                title="The room came back to him — put him up for bidding again"
+              >
+                Put him back up
+              </button>
+            )}
+          </>
+        )}
 
         <button
           type="button"
