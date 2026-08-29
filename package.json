@@ -25,7 +25,8 @@
     "prepare": "husky",
     "validate": "npm run type-check && npm run lint && npm run test:run",
     "build:artifact": "npm run build:single && node scripts/build-artifact.mjs",
-    "build:icons": "node scripts/build-icons.mjs"
+    "build:icons": "node scripts/build-icons.mjs",
+    "research:players": "node scripts/research-players.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -30,6 +30,7 @@ import { openDraftSync } from '@/services/draftSync';
 import type { LeagueShape } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { matchesSearch, searchable } from '@/lib/playerSearch';
+import { primeResearch } from '@/services/playerResearch';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -135,6 +136,18 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const CARD_PAGE = 60;
   const [cardLimit, setCardLimit] = useState(CARD_PAGE);
   const moreRef = useRef<HTMLDivElement>(null);
+
+  // The research marks are read straight out of a module-level map by each
+  // card, so this flag is the only thing that tells the memoised board the map
+  // has arrived. It flips once, which costs exactly one re-render of the list.
+  const [researchReady, setResearchReady] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void primeResearch().then(() => live && setResearchReady(true));
+    return () => {
+      live = false;
+    };
+  }, []);
 
   // Any change to what is being shown starts the list again from the top.
   useEffect(() => {
@@ -664,6 +677,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                       onToggleWatch={toggleWatch}
                       onTogglePin={togglePin}
                       pinned={preferences.pinned.includes(player.id)}
+                      researchReady={researchReady}
                     />
                   ))}
                 </div>

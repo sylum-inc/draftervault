@@ -3286,3 +3286,115 @@
 .dr-scoring-option .dr-meter-note {
   margin: 0;
 }
+
+/* Research — claims somebody else published
+   ------------------------------------------------------------------------
+   A third register, distinct from both a measurement and an opinion. The
+   advisor is dashed amber because it is arguing; this is a solid rule in the
+   neutral ink because it is quoting. Every line ends in a link, which is the
+   point: the panel is asking to be checked, not believed. */
+.dr-research {
+  border: 1px solid var(--dr-line);
+  border-left: 3px solid var(--dr-dim);
+  border-radius: 4px;
+  padding: 14px 16px;
+  background: var(--dr-surface);
+}
+
+.dr-research-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dr-research-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dr-ink);
+  border: 1px solid var(--dr-line);
+  border-radius: 3px;
+  padding: 2px 7px;
+}
+
+.dr-research-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dr-research-confidence,
+.dr-research-stale {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-dim);
+}
+
+.dr-research-stale {
+  color: var(--dr-caution);
+  border: 1px solid var(--dr-caution);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.dr-research-findings {
+  list-style: none;
+  margin: 12px 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dr-research-findings li {
+  display: flex;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--dr-line);
+}
+
+.dr-research-impact {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--dr-dim);
+  width: 12px;
+  flex: none;
+}
+
+.dr-research-claim {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--dr-ink);
+}
+
+.dr-research-source {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--dr-dim);
+}
+
+.dr-research-source a {
+  color: var(--dr-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dr-research-source a:hover {
+  color: var(--dr-ink);
+}
+
+/* The board's one-glyph version of the same thing: enough to say "there is
+   something to read here", never enough to act on without opening it. */
+.dr-research-mark {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}

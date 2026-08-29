@@ -26,6 +26,7 @@ import { OutcomeCurve } from './charts/OutcomeCurve';
 import { ConsensusRange } from './charts/ConsensusRange';
 import { QuadrantScatter, type ScatterPoint } from './charts/QuadrantScatter';
 import { CareerArc } from './charts/CareerArc';
+import { ResearchPanel } from './ResearchPanel';
 
 interface PlayerProfileProps {
   player: Player;
@@ -50,7 +51,8 @@ type Tab =
   | 'career'
   | 'schedule'
   | 'value'
-  | 'defense';
+  | 'defense'
+  | 'research';
 
 /** 1st, 2nd, 3rd, 4th — the teens are the exception that catches everyone. */
 const ordinal = (value: number): string => {
@@ -140,6 +142,7 @@ export const PlayerProfile = ({
         ['defense', 'Unit'],
         ['schedule', 'Schedule'],
         ['value', 'Value'],
+        ['research', 'Research'],
       ]
     : [
         ['overview', 'Overview'],
@@ -149,6 +152,7 @@ export const PlayerProfile = ({
         ['career', 'Career'],
         ['schedule', 'Schedule'],
         ['value', 'Value'],
+        ['research', 'Research'],
       ];
 
   useEffect(() => {
@@ -1096,6 +1100,8 @@ export const PlayerProfile = ({
             </section>
           </div>
         )}
+
+        {tab === 'research' && <ResearchPanel playerId={player.id} playerName={player.name} />}
       </article>
     </div>
   );

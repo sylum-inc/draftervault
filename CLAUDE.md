@@ -16,6 +16,7 @@ npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 628-player pool from nflverse production data
 npm run build:icons  # redraw the app icons (CI checks they match)
+OPENROUTER_API_KEY=sk-or-... npm run research:players   # web-research the pool
 docker compose up -d --build     # nginx on :8080
 ```
 
@@ -31,9 +32,10 @@ src/pages/Index.tsx
         ├── BudgetRail.tsx        money left per team
         ├── TeamsPanel.tsx        every roster and its open slots
         ├── MarketPanel.tsx       inflation, supply, what the room pays
-        ├── PlayerProfile.tsx     seven tabs: overview, production, usage,
-        │                         offence, career, schedule, value
+        ├── PlayerProfile.tsx     eight tabs: overview, production, usage,
+        │                         offence, career, schedule, value, research
         │                         (unit replaces production+usage for defenses)
+        ├── ResearchPanel.tsx     what the web said, with the link and the date
         ├── CompareTray.tsx       pin 2-4 players, then compare on shared scales
         ├── DraftBoard.tsx        the room: 12x16 grid, money flow, tier depletion
         ├── BudgetPlanner.tsx     what a bid leaves behind, live
@@ -53,6 +55,7 @@ src/pages/Index.tsx
 src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
+src/lib/researchContract.ts           what counts as a sourced finding (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
 src/lib/playerSearch.ts               finding a player by a name typed in a hurry
 src/lib/saveFile.ts                   hands over a file, in browser or artifact
@@ -60,6 +63,8 @@ src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
 src/services/draftAdvisor.ts          the opinion layer, deliberately separate
 src/services/nflIdentity.ts           team colors, crests, headshots
 src/services/draftSync.ts             tells other windows the draft moved
+src/services/playerResearch.ts        the researched findings, lazily
+src/data/nfl/research.json            per-player sourced findings (generated)
 src/data/nfl/pool.json                628 players: projections, values (generated)
 src/data/nfl/player-history.json      per-player season and weekly scoring (lazy)
 src/data/nfl/schedule.json            2026 season by team, with matchup difficulty
@@ -219,6 +224,34 @@ isn't one.
 never followed an undo back to zero, a reset, or a league change — all three
 land on that branch. Unit tests missed it because they called
 `reloadFromStorage()` themselves; driving two real windows caught it.
+
+**Research is a third register, and it never carries a number.** The pool knows
+what a player has done and nothing about what happened last Tuesday — a holdout,
+a torn ACL in a joint practice, a new coordinator. `scripts/research-players.mjs`
+asks a web-searching model (OpenRouter, Exa pinned as the engine) about each of
+the 628 and writes `research.json`. What comes back is findings plus a direction
+— pay up, fade, or nothing material — and _no dollar figure_, because a
+generated number sitting beside a computed one looks identical and carries none
+of its provenance. There is no price field in the schema, so an opinion has
+nowhere to masquerade as a measurement.
+
+**The model's URL is never trusted.** A model asked for sourced findings will
+produce something shaped exactly like one whether or not it found anything, and
+a plausible URL is the cheapest part to fabricate. So the response's own
+`url_citation` annotations are the allowlist: a claim citing anything else is
+dropped and counted, and what is stored is the search engine's URL rather than
+the model's rendering of it. Every finding also needs a publication date, so the
+room can see that a "questionable" tag is from March. A player whose findings all
+fail gets `NEUTRAL`, no headline, no confidence — strip the sources and the
+position goes with them, because a confident FADE with nothing under it reads
+identically to one with evidence. `researchContract.ts` holds those rules for
+the same reason `valuation.ts` holds the league: the script that writes the file
+and the panel that renders it must not be able to disagree.
+
+Nothing is fetched from the browser. An auction moves faster than a search does,
+and a key in the bundle is a key anyone can read out of it — so the output is a
+static file, which is also what makes it work in the published artifact, where
+the CSP blocks every external host.
 
 **Identity is two-tiered.** The bundled snapshot in `src/data/nfl/` paints first
 with real names, colors and faces and needs no network; `refreshIdentity()` then

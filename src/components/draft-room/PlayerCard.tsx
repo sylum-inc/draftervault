@@ -1,12 +1,23 @@
 import { memo } from 'react';
 import type { CSSProperties } from 'react';
 import type { Player } from '@/services/auctionDraftService';
+import { researchMark } from '@/services/playerResearch';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
 import { Headshot } from './Headshot';
 
 interface PlayerCardProps {
   player: Player;
   selected: boolean;
+  /**
+   * Whether the research file has finished loading.
+   *
+   * The marks themselves live in a module-level map that is filled once and
+   * never changes, so a card reads them directly rather than being handed an
+   * object — an object prop would be a new reference on every render and would
+   * defeat the memo this list depends on. This boolean flips false to true
+   * exactly once, which re-renders the board a single time with the marks in.
+   */
+  researchReady?: boolean;
   watched: boolean;
   onSelect: (player: Player) => void;
   onToggleWatch: (playerId: string) => void;
@@ -41,6 +52,7 @@ const RISK_COLOR: Record<Player['injuryRisk'], string> = {
 const PlayerCardView = ({
   player,
   selected,
+  researchReady = false,
   watched,
   pinned,
   onSelect,
@@ -48,6 +60,7 @@ const PlayerCardView = ({
   onTogglePin,
 }: PlayerCardProps) => {
   const identity = getIdentity(player.id);
+  const mark = researchReady ? researchMark(player.id) : null;
   const team = identity?.team ?? player.team;
   const { primary } = teamColors(team);
   const logo = teamLogo(team);
@@ -105,6 +118,16 @@ const PlayerCardView = ({
       onClick={() => onSelect(player)}
     >
       <span className="dr-tier dr-num">T{player.tier}</span>
+      {mark && mark.direction !== 'NEUTRAL' && (
+        <span
+          className="dr-card-research dr-research-mark"
+          style={{ color: mark.direction === 'PAY_UP' ? 'var(--dr-value)' : 'var(--dr-danger)' }}
+          title={`${mark.headline || 'Sourced findings'} — open the Research tab`}
+          aria-label={`Research: ${mark.direction === 'PAY_UP' ? 'pay up' : 'fade'}`}
+        >
+          {mark.direction === 'PAY_UP' ? '↑' : '↓'}
+        </span>
+      )}
       <span
         className="dr-card-star dr-star"
         role="button"
