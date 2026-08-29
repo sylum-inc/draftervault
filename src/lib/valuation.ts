@@ -50,6 +50,21 @@ export interface LeagueShape {
   positionLimits: Record<Position, number>;
   /** How many of each position the league rosters in total; sets replacement level. */
   rostered: Record<Position, number>;
+  /**
+   * What a catch is worth.
+   *
+   * The pool is built on nflverse's full-PPR points, which pay a point per
+   * reception. Most real leagues do not: half is the commonest setting, and a
+   * standard league pays nothing. It is the single biggest lever in fantasy
+   * scoring — a hundred-catch receiver loses a hundred points between the two
+   * ends of it — so a pool priced at the wrong end systematically overvalues
+   * everyone who catches the ball and undervalues everyone who does not.
+   *
+   * Stored here rather than baked into the pool because it is a property of the
+   * league, and because the client can re-price for it exactly: the projection
+   * carries projected catches alongside projected points.
+   */
+  receptionPoints: number;
 }
 
 /**
@@ -68,7 +83,17 @@ export const DEFAULT_LEAGUE: LeagueShape = {
   startingLineup: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 0, K: 1, DST: 1 },
   positionLimits: { QB: 3, RB: 6, WR: 7, TE: 3, K: 2, DST: 2 },
   rostered: { QB: 20, RB: 48, WR: 60, TE: 18, K: 12, DST: 12 },
+  // Full PPR, matching the points the pool is generated from. Changing this
+  // re-prices the board; it does not require rebuilding the pool.
+  receptionPoints: 1,
 };
+
+/** Scoring settings people actually use, for the ones worth naming. */
+export const RECEPTION_SCORING = [
+  { value: 1, label: 'Full PPR', hint: 'a point per catch' },
+  { value: 0.5, label: 'Half PPR', hint: 'half a point per catch' },
+  { value: 0, label: 'Standard', hint: 'catches score nothing' },
+] as const;
 
 /** Bounds a league has to stay inside for the valuation to mean anything. */
 export const LEAGUE_LIMITS = {
@@ -108,6 +133,7 @@ export const leagueShape = (
     rosterSize: overrides.rosterSize ?? DEFAULT_LEAGUE.rosterSize,
     startingLineup: overrides.startingLineup ?? DEFAULT_LEAGUE.startingLineup,
     positionLimits: overrides.positionLimits ?? DEFAULT_LEAGUE.positionLimits,
+    receptionPoints: overrides.receptionPoints ?? DEFAULT_LEAGUE.receptionPoints,
     // Only scale when the caller left it alone; an explicit table wins.
     rostered: overrides.rostered ?? rosteredForTeams(teams),
   };
@@ -138,6 +164,12 @@ export const normaliseLeague = (shape: LeagueShape): LeagueShape => {
     budget: clamp(shape.budget, LEAGUE_LIMITS.budget),
     rosterSize: clamp(shape.rosterSize, LEAGUE_LIMITS.rosterSize),
     startingLineup: lineup,
+    // Anything from nothing to a point and a half a catch; beyond that it is a
+    // typo rather than a league.
+    receptionPoints: Math.min(
+      1.5,
+      Math.max(0, Number.isFinite(shape.receptionPoints) ? shape.receptionPoints : 1)
+    ),
   };
 };
 
@@ -146,6 +178,9 @@ export const sameLeague = (a: LeagueShape, b: LeagueShape): boolean =>
   a.teams === b.teams &&
   a.budget === b.budget &&
   a.rosterSize === b.rosterSize &&
+  // Scoring changes every price, so two shapes that score differently are not
+  // the same league and a draft cannot cross between them.
+  a.receptionPoints === b.receptionPoints &&
   LINEUP_SLOTS.every((slot) => a.startingLineup[slot] === b.startingLineup[slot]) &&
   POSITIONS.every(
     (p) => a.positionLimits[p] === b.positionLimits[p] && a.rostered[p] === b.rostered[p]
@@ -182,9 +217,22 @@ export const unfilledSlotsFor = (
 /** The least a valuation needs to know about a player. */
 export interface Projected {
   position: string;
-  /** Projected points for the season. */
+  /** Projected points for the season, at full PPR. */
   points: number;
+  /** Projected catches, so the points can be restated for another scoring. */
+  receptions?: number;
 }
+
+/**
+ * What this player is projected to score in *this* league.
+ *
+ * The pool's points come from nflverse's full-PPR total, which includes a point
+ * for every catch. A league paying half takes half of them back out. Doing it
+ * by subtraction rather than by re-deriving the whole scoring keeps this exact:
+ * every other component of the total is untouched, so nothing else can drift.
+ */
+export const pointsFor = (player: Projected, league: LeagueShape): number =>
+  player.points - (1 - league.receptionPoints) * (player.receptions ?? 0);
 
 export interface Priced {
   /** Points above the last player at this position the league bothers to roster. */
@@ -205,9 +253,10 @@ export const replacementLevels = (
 ): Record<string, number> => {
   const byPosition = new Map<string, number[]>();
   for (const player of players) {
+    const scored = pointsFor(player, league);
     const list = byPosition.get(player.position);
-    if (list) list.push(player.points);
-    else byPosition.set(player.position, [player.points]);
+    if (list) list.push(scored);
+    else byPosition.set(player.position, [scored]);
   }
 
   const levels: Record<string, number> = {};
@@ -238,7 +287,9 @@ export const pricePool = (
 
   const vorps = players.map(
     (player) =>
-      Math.round(Math.max(0, player.points - (replacement[player.position] ?? 0)) * 10) / 10
+      Math.round(
+        Math.max(0, pointsFor(player, league) - (replacement[player.position] ?? 0)) * 10
+      ) / 10
   );
 
   const rosterSlots = league.teams * league.rosterSize;

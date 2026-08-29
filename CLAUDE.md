@@ -94,6 +94,25 @@ hold, walk away — and it is a separate module for that reason, off until asked
 for, rendered in its own dashed box with the reasoning that produced each call.
 Don't let a recommendation leak into `DraftAnalytics`.
 
+**Scoring is part of the league, and the pool is not built at yours.** nflverse
+gives full-PPR points and the builder took them straight, so a point a catch was
+hardcoded with no way to say otherwise. It is the biggest single lever in
+fantasy scoring — a hundred-catch receiver is a hundred points apart between
+full PPR and standard — so a half-PPR league drafting off this board was
+systematically overpaying every pass-catcher.
+
+`receptionPoints` now lives on `LeagueShape`, and the projection carries
+projected catches beside projected points, so the client restates prices
+exactly the way it already restates them for league shape — by subtraction,
+which leaves every other component of the total untouched and so cannot drift.
+Receptions run through the _identical_ recency-weighted, shrunk, age-adjusted
+pipeline as points; a shrunk points figure minus an unshrunk reception figure
+would be neither. At half PPR the replacement bar drops 28 points at tight end,
+21 at receiver and 12 at back, and is unmoved at kicker and defence. It moves
+0.3 at quarterback, because fourteen of them are projected for a fraction of a
+catch — quarterbacks do catch trick-play passes and nflverse records it, so a
+test asserting zero there would be asserting the data is wrong.
+
 **The league is one definition, not two.** `src/lib/valuation.ts` holds both the
 league shape and the arithmetic that turns projected points into dollars. The
 pool builder imports it through Node's type stripping (hence the pinned Node 22
@@ -299,7 +318,8 @@ deployment; a single-file build; a configurable league that re-prices the whole
 board; a custom-rankings import that refuses to guess; app icons and a manifest
 that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; keyboard operation, a
 non-destructive reset, a draft that ends, a draft file for the night the
-laptop dies, named teams and a board that keeps up with an auction; 197 tests.
+laptop dies, named teams, a board that keeps up with an auction and configurable
+reception scoring; 207 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

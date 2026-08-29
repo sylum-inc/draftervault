@@ -3248,3 +3248,41 @@
 .dr-team-block.is-mine {
   border-color: color-mix(in srgb, var(--dr-accent) 45%, var(--dr-line));
 }
+
+/* Scoring. Three buttons rather than a number field: these are the settings
+   real leagues use, and a free-text box invites a typo that silently re-prices
+   the whole board. */
+.dr-scoring {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dr-scoring-option {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px;
+  text-align: left;
+  border-radius: var(--dr-radius-sm);
+  border: 1px solid var(--dr-line-strong);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  cursor: pointer;
+}
+
+.dr-scoring-option.is-on {
+  border-color: var(--dr-accent);
+  background: color-mix(in srgb, var(--dr-accent) 14%, var(--dr-raised));
+  color: var(--dr-ink);
+}
+
+.dr-scoring-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dr-scoring-option .dr-meter-note {
+  margin: 0;
+}

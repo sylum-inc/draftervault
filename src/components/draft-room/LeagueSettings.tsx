@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   LEAGUE_LIMITS,
   LINEUP_SLOTS,
+  RECEPTION_SCORING,
   POSITIONS,
   leagueShape,
   normaliseLeague,
@@ -61,6 +62,7 @@ export const LeagueSettings = ({
   const [teams, setTeams] = useState(String(league.teams));
   const [budget, setBudget] = useState(String(league.budget));
   const [rosterSize, setRosterSize] = useState(String(league.rosterSize));
+  const [receptionPoints, setReceptionPoints] = useState(league.receptionPoints);
   const [lineup, setLineup] = useState<Record<LineupSlot, string>>(
     () =>
       Object.fromEntries(
@@ -91,6 +93,7 @@ export const LeagueSettings = ({
         teams: teamCount,
         budget: asNumber(budget, league.budget),
         rosterSize: asNumber(rosterSize, league.rosterSize),
+        receptionPoints,
         startingLineup: Object.fromEntries(
           LINEUP_SLOTS.map((slot) => [
             slot,
@@ -106,7 +109,7 @@ export const LeagueSettings = ({
           teamCount === poolLeague.teams ? poolLeague.rostered : rosteredForTeams(teamCount),
       })
     );
-  }, [teams, budget, rosterSize, lineup, limits, league, poolLeague]);
+  }, [teams, budget, rosterSize, lineup, limits, receptionPoints, league, poolLeague]);
 
   // Read from the pool rather than written into the copy: the last hardcoded
   // count went stale the first time the pool grew.
@@ -282,6 +285,35 @@ export const LeagueSettings = ({
               </label>
             ))}
           </div>
+        </section>
+
+        <section className="dr-modal-section">
+          <h3 className="dr-eyebrow">Scoring</h3>
+          <p className="dr-meter-note">
+            What a catch is worth is the biggest single lever in fantasy scoring — a hundred-catch
+            receiver is a hundred points apart between the ends of it. The pool is generated at full
+            PPR; anything else is priced by taking those points back out.
+          </p>
+          <div className="dr-scoring">
+            {RECEPTION_SCORING.map((option) => (
+              <button
+                type="button"
+                key={option.value}
+                className={`dr-scoring-option${receptionPoints === option.value ? ' is-on' : ''}`}
+                aria-pressed={receptionPoints === option.value}
+                onClick={() => setReceptionPoints(option.value)}
+              >
+                <span className="dr-scoring-name">{option.label}</span>
+                <span className="dr-meter-note">{option.hint}</span>
+              </button>
+            ))}
+          </div>
+          {receptionPoints !== poolLeague.receptionPoints && (
+            <p className="dr-meter-note">
+              Every projection on the board is restated for this, so pass-catchers and runners trade
+              places against each other. Nothing is regenerated.
+            </p>
+          )}
         </section>
 
         <section className="dr-modal-section">

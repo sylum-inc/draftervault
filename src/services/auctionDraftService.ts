@@ -5,6 +5,7 @@ import {
   DEFAULT_LEAGUE,
   leagueShape,
   normaliseLeague,
+  pointsFor,
   pricePool,
   sameLeague,
   startingSlots,
@@ -35,7 +36,13 @@ interface PoolEntry {
   ageRisk: 'LOW' | 'MEDIUM' | 'HIGH';
   role: 'LOCKED_STARTER' | 'MINOR_COMPETITION' | 'TIMESHARE' | 'COMMITTEE';
   trend: 'RISING' | 'STABLE' | 'DECLINING' | 'UNPROVEN';
-  projection: { points: number; pointsPerGame: number; expectedGames: number };
+  projection: {
+    points: number;
+    pointsPerGame: number;
+    expectedGames: number;
+    /** Projected catches. Absent on a pool built before scoring was configurable. */
+    receptions?: number;
+  };
   percentiles?: Record<string, number>;
   usage?: PlayerUsage | null;
   context?: TeamContext | null;
@@ -533,7 +540,11 @@ export class AuctionDraftService {
     // reproduces the stored numbers exactly (there is a test that says so),
     // and at any other shape it is the only way they could be right.
     const { replacement, priced } = pricePool(
-      entries.map((entry) => ({ position: entry.position, points: entry.projection.points })),
+      entries.map((entry) => ({
+        position: entry.position,
+        points: entry.projection.points,
+        receptions: entry.projection.receptions,
+      })),
       this.league
     );
     this.replacement = replacement;
@@ -561,7 +572,17 @@ export class AuctionDraftService {
       estimatedValue: value,
       modelValue: priced.auctionValue,
       customRanking: override,
-      projectedPoints: Math.round(entry.projection.points),
+      // What this league awards, not the full-PPR total the pool ships.
+      projectedPoints: Math.round(
+        pointsFor(
+          {
+            position: entry.position,
+            points: entry.projection.points,
+            receptions: entry.projection.receptions,
+          },
+          this.league
+        )
+      ),
       // Rank by our own valuation. It is not an average draft position and is
       // not labelled as one.
       adp: override?.rank ?? entry.rank,
@@ -580,7 +601,21 @@ export class AuctionDraftService {
       targetShare: entry.targetShare ?? undefined,
       recentTrends: entry.trend === 'UNPROVEN' ? 'STABLE' : entry.trend,
       percentiles: entry.percentiles,
-      pointsPerGame: entry.projection.pointsPerGame,
+      pointsPerGame:
+        entry.projection.expectedGames > 0
+          ? Math.round(
+              (pointsFor(
+                {
+                  position: entry.position,
+                  points: entry.projection.points,
+                  receptions: entry.projection.receptions,
+                },
+                this.league
+              ) /
+                entry.projection.expectedGames) *
+                10
+            ) / 10
+          : entry.projection.pointsPerGame,
       expectedGames: entry.projection.expectedGames,
       usage: entry.usage ?? null,
       teamContext: entry.context ?? null,

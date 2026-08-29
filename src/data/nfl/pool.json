@@ -36,11 +36,12 @@
       "TE": 18,
       "K": 12,
       "DST": 12
-    }
+    },
+    "receptionPoints": 1
   },
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-26T03:08:19.100Z",
+  "generatedAt": "2026-08-29T03:19:01.655Z",
   "players": [
     {
       "gsis": "00-0034857",
@@ -64,6 +65,7 @@
       "projection": {
         "points": 372,
         "pointsPerGame": 21.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -203,6 +205,7 @@
       "projection": {
         "points": 326.2,
         "pointsPerGame": 19.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -329,6 +332,7 @@
       "projection": {
         "points": 311.9,
         "pointsPerGame": 18.3,
+        "receptions": 59.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -460,6 +464,7 @@
       "projection": {
         "points": 311.5,
         "pointsPerGame": 18.3,
+        "receptions": 0.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -596,6 +601,7 @@
       "projection": {
         "points": 309.3,
         "pointsPerGame": 18.2,
+        "receptions": 112.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -732,6 +738,7 @@
       "projection": {
         "points": 305.1,
         "pointsPerGame": 17.9,
+        "receptions": 62.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -863,6 +870,7 @@
       "projection": {
         "points": 300.6,
         "pointsPerGame": 17.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -989,6 +997,7 @@
       "projection": {
         "points": 298.4,
         "pointsPerGame": 17.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -1120,6 +1129,7 @@
       "projection": {
         "points": 298.4,
         "pointsPerGame": 18.6,
+        "receptions": 105.3,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -1256,6 +1266,7 @@
       "projection": {
         "points": 296.8,
         "pointsPerGame": 17.5,
+        "receptions": 0.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -1382,6 +1393,7 @@
       "projection": {
         "points": 294.8,
         "pointsPerGame": 17.3,
+        "receptions": 106.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -1513,6 +1525,7 @@
       "projection": {
         "points": 294.1,
         "pointsPerGame": 17.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -1648,6 +1661,7 @@
       "projection": {
         "points": 293.5,
         "pointsPerGame": 17.3,
+        "receptions": 34.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -1788,6 +1802,7 @@
       "projection": {
         "points": 292,
         "pointsPerGame": 17.2,
+        "receptions": 0.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -1927,6 +1942,7 @@
       "projection": {
         "points": 287.6,
         "pointsPerGame": 16.9,
+        "receptions": 61.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -2063,6 +2079,7 @@
       "projection": {
         "points": 283.2,
         "pointsPerGame": 17.7,
+        "receptions": 0.5,
         "expectedGames": 17,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -2194,6 +2211,7 @@
       "projection": {
         "points": 282.8,
         "pointsPerGame": 16.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -2325,6 +2343,7 @@
       "projection": {
         "points": 281.2,
         "pointsPerGame": 17.6,
+        "receptions": 0.3,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -2455,6 +2474,7 @@
       "projection": {
         "points": 278.1,
         "pointsPerGame": 16.9,
+        "receptions": 1,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "production",
@@ -2586,6 +2606,7 @@
       "projection": {
         "points": 274.9,
         "pointsPerGame": 19.6,
+        "receptions": 0,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -2717,6 +2738,7 @@
       "projection": {
         "points": 271.7,
         "pointsPerGame": 20.2,
+        "receptions": 61.7,
         "expectedGames": 17,
         "ageMultiplier": 0.79,
         "basis": "production",
@@ -2853,6 +2875,7 @@
       "projection": {
         "points": 270.9,
         "pointsPerGame": 18.1,
+        "receptions": 0,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -2988,6 +3011,7 @@
       "projection": {
         "points": 270.3,
         "pointsPerGame": 17.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -3114,6 +3138,7 @@
       "projection": {
         "points": 260.5,
         "pointsPerGame": 15.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -3245,6 +3270,7 @@
       "projection": {
         "points": 258.1,
         "pointsPerGame": 15.2,
+        "receptions": 34.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -3381,6 +3407,7 @@
       "projection": {
         "points": 258,
         "pointsPerGame": 16.1,
+        "receptions": 0,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -3520,6 +3547,7 @@
       "projection": {
         "points": 257.5,
         "pointsPerGame": 15.1,
+        "receptions": 33.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -3651,6 +3679,7 @@
       "projection": {
         "points": 248,
         "pointsPerGame": 14.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -3777,6 +3806,7 @@
       "projection": {
         "points": 246.8,
         "pointsPerGame": 15.3,
+        "receptions": 88.1,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -3908,6 +3938,7 @@
       "projection": {
         "points": 245.3,
         "pointsPerGame": 14.4,
+        "receptions": 102.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4039,6 +4070,7 @@
       "projection": {
         "points": 244.2,
         "pointsPerGame": 14.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4138,6 +4170,7 @@
       "projection": {
         "points": 241,
         "pointsPerGame": 14.2,
+        "receptions": 0.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4268,6 +4301,7 @@
       "projection": {
         "points": 240.4,
         "pointsPerGame": 14.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4394,6 +4428,7 @@
       "projection": {
         "points": 237.8,
         "pointsPerGame": 14,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4525,6 +4560,7 @@
       "projection": {
         "points": 237,
         "pointsPerGame": 13.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4651,6 +4687,7 @@
       "projection": {
         "points": 234.3,
         "pointsPerGame": 13.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4751,6 +4788,7 @@
       "projection": {
         "points": 232.8,
         "pointsPerGame": 13.7,
+        "receptions": 84.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4882,6 +4920,7 @@
       "projection": {
         "points": 232.5,
         "pointsPerGame": 13.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -4982,6 +5021,7 @@
       "projection": {
         "points": 229.8,
         "pointsPerGame": 13.5,
+        "receptions": 53.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -5113,6 +5153,7 @@
       "projection": {
         "points": 229,
         "pointsPerGame": 14.3,
+        "receptions": 82.5,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -5249,6 +5290,7 @@
       "projection": {
         "points": 228.4,
         "pointsPerGame": 14.4,
+        "receptions": 34.7,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -5389,6 +5431,7 @@
       "projection": {
         "points": 228,
         "pointsPerGame": 13.4,
+        "receptions": 74.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -5525,6 +5568,7 @@
       "projection": {
         "points": 227.4,
         "pointsPerGame": 14.2,
+        "receptions": 78.4,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -5665,6 +5709,7 @@
       "projection": {
         "points": 226.7,
         "pointsPerGame": 16.2,
+        "receptions": 82.3,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -5805,6 +5850,7 @@
       "projection": {
         "points": 226.2,
         "pointsPerGame": 15.5,
+        "receptions": 31.7,
         "expectedGames": 17,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -5936,6 +5982,7 @@
       "projection": {
         "points": 224.9,
         "pointsPerGame": 13.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -6035,6 +6082,7 @@
       "projection": {
         "points": 224.4,
         "pointsPerGame": 13.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -6161,6 +6209,7 @@
       "projection": {
         "points": 223.8,
         "pointsPerGame": 16.4,
+        "receptions": 0,
         "expectedGames": 15,
         "ageMultiplier": 0.91,
         "basis": "production",
@@ -6287,6 +6336,7 @@
       "projection": {
         "points": 217.7,
         "pointsPerGame": 13.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "production",
@@ -6418,6 +6468,7 @@
       "projection": {
         "points": 217.3,
         "pointsPerGame": 14.5,
+        "receptions": 68.9,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -6554,6 +6605,7 @@
       "projection": {
         "points": 216.6,
         "pointsPerGame": 18,
+        "receptions": 0,
         "expectedGames": 12,
         "ageMultiplier": 1,
         "basis": "production",
@@ -6685,6 +6737,7 @@
       "projection": {
         "points": 216,
         "pointsPerGame": 12.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -6784,6 +6837,7 @@
       "projection": {
         "points": 214,
         "pointsPerGame": 13.4,
+        "receptions": 80.7,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -6924,6 +6978,7 @@
       "projection": {
         "points": 212.3,
         "pointsPerGame": 12.5,
+        "receptions": 39.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -7060,6 +7115,7 @@
       "projection": {
         "points": 212.1,
         "pointsPerGame": 13.3,
+        "receptions": 45.3,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -7196,6 +7252,7 @@
       "projection": {
         "points": 211.5,
         "pointsPerGame": 15.1,
+        "receptions": 0,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -7335,6 +7392,7 @@
       "projection": {
         "points": 209.9,
         "pointsPerGame": 12.3,
+        "receptions": 74.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -7466,6 +7524,7 @@
       "projection": {
         "points": 208.3,
         "pointsPerGame": 13.6,
+        "receptions": 77.9,
         "expectedGames": 17,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -7592,6 +7651,7 @@
       "projection": {
         "points": 207.5,
         "pointsPerGame": 12.2,
+        "receptions": 0.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -7723,6 +7783,7 @@
       "projection": {
         "points": 205.4,
         "pointsPerGame": 12.1,
+        "receptions": 74.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -7859,6 +7920,7 @@
       "projection": {
         "points": 205.3,
         "pointsPerGame": 12.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "draft round 3",
@@ -7958,6 +8020,7 @@
       "projection": {
         "points": 204.8,
         "pointsPerGame": 12,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -8057,6 +8120,7 @@
       "projection": {
         "points": 204.2,
         "pointsPerGame": 12,
+        "receptions": 0.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -8188,6 +8252,7 @@
       "projection": {
         "points": 203.8,
         "pointsPerGame": 12.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -8314,6 +8379,7 @@
       "projection": {
         "points": 202.7,
         "pointsPerGame": 11.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -8414,6 +8480,7 @@
       "projection": {
         "points": 202.6,
         "pointsPerGame": 14.9,
+        "receptions": 0.2,
         "expectedGames": 14,
         "ageMultiplier": 0.97,
         "basis": "production",
@@ -8545,6 +8612,7 @@
       "projection": {
         "points": 202.5,
         "pointsPerGame": 13,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -8666,6 +8734,7 @@
       "projection": {
         "points": 201.6,
         "pointsPerGame": 12.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -8765,6 +8834,7 @@
       "projection": {
         "points": 201.2,
         "pointsPerGame": 14.4,
+        "receptions": 0.4,
         "expectedGames": 17,
         "ageMultiplier": 0.82,
         "basis": "production",
@@ -8909,6 +8979,7 @@
       "projection": {
         "points": 200.7,
         "pointsPerGame": 11.8,
+        "receptions": 64.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -9048,6 +9119,7 @@
       "projection": {
         "points": 200.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -9142,6 +9214,7 @@
       "projection": {
         "points": 200.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -9236,6 +9309,7 @@
       "projection": {
         "points": 200.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -9330,6 +9404,7 @@
       "projection": {
         "points": 200.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -9429,6 +9504,7 @@
       "projection": {
         "points": 200.6,
         "pointsPerGame": 11.8,
+        "receptions": 1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -9555,6 +9631,7 @@
       "projection": {
         "points": 200.1,
         "pointsPerGame": 13.3,
+        "receptions": 0,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -9681,6 +9758,7 @@
       "projection": {
         "points": 199.9,
         "pointsPerGame": 11.8,
+        "receptions": 37,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -9812,6 +9890,7 @@
       "projection": {
         "points": 199.9,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -9937,6 +10016,7 @@
       "projection": {
         "points": 198.8,
         "pointsPerGame": 11.7,
+        "receptions": 43.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -10068,6 +10148,7 @@
       "projection": {
         "points": 198.7,
         "pointsPerGame": 14.6,
+        "receptions": 64.2,
         "expectedGames": 17,
         "ageMultiplier": 0.8,
         "basis": "production",
@@ -10208,6 +10289,7 @@
       "projection": {
         "points": 198.6,
         "pointsPerGame": 13.8,
+        "receptions": 0.2,
         "expectedGames": 15,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -10334,6 +10416,7 @@
       "projection": {
         "points": 198.5,
         "pointsPerGame": 13.2,
+        "receptions": 60.1,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -10478,6 +10561,7 @@
       "projection": {
         "points": 198.4,
         "pointsPerGame": 11.7,
+        "receptions": 68.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -10614,6 +10698,7 @@
       "projection": {
         "points": 198.4,
         "pointsPerGame": 11.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -10748,6 +10833,7 @@
       "projection": {
         "points": 198.2,
         "pointsPerGame": 18,
+        "receptions": 0,
         "expectedGames": 11,
         "ageMultiplier": 1,
         "basis": "production",
@@ -10883,6 +10969,7 @@
       "projection": {
         "points": 197.6,
         "pointsPerGame": 12.4,
+        "receptions": 34.1,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -11019,6 +11106,7 @@
       "projection": {
         "points": 197,
         "pointsPerGame": 11.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -11145,6 +11233,7 @@
       "projection": {
         "points": 196.4,
         "pointsPerGame": 11.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "production",
@@ -11245,6 +11334,7 @@
       "projection": {
         "points": 196.4,
         "pointsPerGame": 12.7,
+        "receptions": 1.3,
         "expectedGames": 17,
         "ageMultiplier": 0.91,
         "basis": "production",
@@ -11345,6 +11435,7 @@
       "projection": {
         "points": 195.5,
         "pointsPerGame": 12.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -11471,6 +11562,7 @@
       "projection": {
         "points": 194.9,
         "pointsPerGame": 13.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -11601,6 +11693,7 @@
       "projection": {
         "points": 194.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "undrafted baseline",
@@ -11695,6 +11788,7 @@
       "projection": {
         "points": 194.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "undrafted baseline",
@@ -11789,6 +11883,7 @@
       "projection": {
         "points": 194.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "undrafted baseline",
@@ -11883,6 +11978,7 @@
       "projection": {
         "points": 194.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "undrafted baseline",
@@ -11977,6 +12073,7 @@
       "projection": {
         "points": 194.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "undrafted baseline",
@@ -12071,6 +12168,7 @@
       "projection": {
         "points": 194.7,
         "pointsPerGame": 11.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.97,
         "basis": "undrafted baseline",
@@ -12170,6 +12268,7 @@
       "projection": {
         "points": 194.4,
         "pointsPerGame": 11.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "draft round 4",
@@ -12269,6 +12368,7 @@
       "projection": {
         "points": 194.1,
         "pointsPerGame": 13,
+        "receptions": 66,
         "expectedGames": 17,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -12409,6 +12509,7 @@
       "projection": {
         "points": 191.7,
         "pointsPerGame": 11.3,
+        "receptions": 67.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -12540,6 +12641,7 @@
       "projection": {
         "points": 191.6,
         "pointsPerGame": 11.3,
+        "receptions": 77.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -12676,6 +12778,7 @@
       "projection": {
         "points": 191.6,
         "pointsPerGame": 11.3,
+        "receptions": 56.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -12807,6 +12910,7 @@
       "projection": {
         "points": 191.4,
         "pointsPerGame": 12.2,
+        "receptions": 63.8,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -12938,6 +13042,7 @@
       "projection": {
         "points": 189.2,
         "pointsPerGame": 12.6,
+        "receptions": 75.1,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -13069,6 +13174,7 @@
       "projection": {
         "points": 188.1,
         "pointsPerGame": 11.5,
+        "receptions": 73.7,
         "expectedGames": 17,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -13205,6 +13311,7 @@
       "projection": {
         "points": 185.9,
         "pointsPerGame": 11.6,
+        "receptions": 38.4,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -13336,6 +13443,7 @@
       "projection": {
         "points": 185.8,
         "pointsPerGame": 10.9,
+        "receptions": 35.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -13467,6 +13575,7 @@
       "projection": {
         "points": 185.6,
         "pointsPerGame": 10.9,
+        "receptions": 65.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -13603,6 +13712,7 @@
       "projection": {
         "points": 180.7,
         "pointsPerGame": 13.9,
+        "receptions": 63.9,
         "expectedGames": 13,
         "ageMultiplier": 1,
         "basis": "production",
@@ -13743,6 +13853,7 @@
       "projection": {
         "points": 179.8,
         "pointsPerGame": 12.8,
+        "receptions": 70.5,
         "expectedGames": 16,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -13879,6 +13990,7 @@
       "projection": {
         "points": 178.9,
         "pointsPerGame": 10.5,
+        "receptions": 45.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -14010,6 +14122,7 @@
       "projection": {
         "points": 177.7,
         "pointsPerGame": 10.5,
+        "receptions": 59,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -14140,6 +14253,7 @@
       "projection": {
         "points": 175.3,
         "pointsPerGame": 10.9,
+        "receptions": 54.4,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -14276,6 +14390,7 @@
       "projection": {
         "points": 174.8,
         "pointsPerGame": 10.9,
+        "receptions": 77.6,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -14412,6 +14527,7 @@
       "projection": {
         "points": 172.6,
         "pointsPerGame": 10.2,
+        "receptions": 38.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -14543,6 +14659,7 @@
       "projection": {
         "points": 172.3,
         "pointsPerGame": 10.1,
+        "receptions": 30,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -14674,6 +14791,7 @@
       "projection": {
         "points": 171.8,
         "pointsPerGame": 15.5,
+        "receptions": 12.3,
         "expectedGames": 17,
         "ageMultiplier": 0.65,
         "basis": "production",
@@ -14805,6 +14923,7 @@
       "projection": {
         "points": 171.4,
         "pointsPerGame": 10.1,
+        "receptions": 54.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -14931,6 +15050,7 @@
       "projection": {
         "points": 171.1,
         "pointsPerGame": 10.8,
+        "receptions": 39.7,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -15067,6 +15187,7 @@
       "projection": {
         "points": 169.3,
         "pointsPerGame": 10,
+        "receptions": 60.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -15203,6 +15324,7 @@
       "projection": {
         "points": 168.1,
         "pointsPerGame": 9.9,
+        "receptions": 51.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -15334,6 +15456,7 @@
       "projection": {
         "points": 167.7,
         "pointsPerGame": 9.9,
+        "receptions": 27.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -15465,6 +15588,7 @@
       "projection": {
         "points": 166.3,
         "pointsPerGame": 11.4,
+        "receptions": 23.3,
         "expectedGames": 17,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -15596,6 +15720,7 @@
       "projection": {
         "points": 166.1,
         "pointsPerGame": 10.5,
+        "receptions": 31,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -15732,6 +15857,7 @@
       "projection": {
         "points": 163.9,
         "pointsPerGame": 10.9,
+        "receptions": 59.1,
         "expectedGames": 16,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -15863,6 +15989,7 @@
       "projection": {
         "points": 163.8,
         "pointsPerGame": 9.6,
+        "receptions": 28.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -15994,6 +16121,7 @@
       "projection": {
         "points": 163.6,
         "pointsPerGame": 10.2,
+        "receptions": 55.7,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -16130,6 +16258,7 @@
       "projection": {
         "points": 162.7,
         "pointsPerGame": 9.6,
+        "receptions": 55.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -16261,6 +16390,7 @@
       "projection": {
         "points": 162.3,
         "pointsPerGame": 9.5,
+        "receptions": 66.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -16397,6 +16527,7 @@
       "projection": {
         "points": 161.4,
         "pointsPerGame": 10.8,
+        "receptions": 36.2,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -16533,6 +16664,7 @@
       "projection": {
         "points": 161,
         "pointsPerGame": 11,
+        "receptions": 32.3,
         "expectedGames": 17,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -16669,6 +16801,7 @@
       "projection": {
         "points": 160.9,
         "pointsPerGame": 13.1,
+        "receptions": 28.6,
         "expectedGames": 17,
         "ageMultiplier": 0.72,
         "basis": "production",
@@ -16800,6 +16933,7 @@
       "projection": {
         "points": 160.9,
         "pointsPerGame": 11.3,
+        "receptions": 52.6,
         "expectedGames": 15,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -16936,6 +17070,7 @@
       "projection": {
         "points": 159.4,
         "pointsPerGame": 9.4,
+        "receptions": 63.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -17072,6 +17207,7 @@
       "projection": {
         "points": 157.7,
         "pointsPerGame": 10.3,
+        "receptions": 52.3,
         "expectedGames": 17,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -17203,6 +17339,7 @@
       "projection": {
         "points": 157.3,
         "pointsPerGame": 11.3,
+        "receptions": 30.7,
         "expectedGames": 15,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -17343,6 +17480,7 @@
       "projection": {
         "points": 156.6,
         "pointsPerGame": 9.2,
+        "receptions": 70.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -17474,6 +17612,7 @@
       "projection": {
         "points": 156.1,
         "pointsPerGame": 9.8,
+        "receptions": 33.5,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -17605,6 +17744,7 @@
       "projection": {
         "points": 156,
         "pointsPerGame": 11.2,
+        "receptions": 21.8,
         "expectedGames": 15,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -17736,6 +17876,7 @@
       "projection": {
         "points": 155.8,
         "pointsPerGame": 10.4,
+        "receptions": 32.2,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -17872,6 +18013,7 @@
       "projection": {
         "points": 155,
         "pointsPerGame": 9.6,
+        "receptions": 50.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -18003,6 +18145,7 @@
       "projection": {
         "points": 153.4,
         "pointsPerGame": 9,
+        "receptions": 59.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -18134,6 +18277,7 @@
       "projection": {
         "points": 153.3,
         "pointsPerGame": 9,
+        "receptions": 51.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -18265,6 +18409,7 @@
       "projection": {
         "points": 149.2,
         "pointsPerGame": 10.7,
+        "receptions": 46.3,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -18405,6 +18550,7 @@
       "projection": {
         "points": 149,
         "pointsPerGame": 9.3,
+        "receptions": 60.8,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -18536,6 +18682,7 @@
       "projection": {
         "points": 147.1,
         "pointsPerGame": 8.7,
+        "receptions": 60.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -18676,6 +18823,7 @@
       "projection": {
         "points": 146.8,
         "pointsPerGame": 8.6,
+        "receptions": 64.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -18812,6 +18960,7 @@
       "projection": {
         "points": 146.7,
         "pointsPerGame": 10.2,
+        "receptions": 53.2,
         "expectedGames": 15,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -18956,6 +19105,7 @@
       "projection": {
         "points": 146.4,
         "pointsPerGame": 9.1,
+        "receptions": 47.8,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -19087,6 +19237,7 @@
       "projection": {
         "points": 146,
         "pointsPerGame": 8.6,
+        "receptions": 44.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -19218,6 +19369,7 @@
       "projection": {
         "points": 145.8,
         "pointsPerGame": 9.7,
+        "receptions": 40.6,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -19362,6 +19514,7 @@
       "projection": {
         "points": 143.9,
         "pointsPerGame": 13.2,
+        "receptions": 45,
         "expectedGames": 13,
         "ageMultiplier": 0.84,
         "basis": "production",
@@ -19498,6 +19651,7 @@
       "projection": {
         "points": 143.7,
         "pointsPerGame": 8.5,
+        "receptions": 47.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -19638,6 +19792,7 @@
       "projection": {
         "points": 143.5,
         "pointsPerGame": 8.8,
+        "receptions": 48.2,
         "expectedGames": 17,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -19769,6 +19924,7 @@
       "projection": {
         "points": 142.2,
         "pointsPerGame": 9.5,
+        "receptions": 37.7,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -19905,6 +20061,7 @@
       "projection": {
         "points": 142.1,
         "pointsPerGame": 9.1,
+        "receptions": 52.8,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -20041,6 +20198,7 @@
       "projection": {
         "points": 136.2,
         "pointsPerGame": 8,
+        "receptions": 23.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -20172,6 +20330,7 @@
       "projection": {
         "points": 136.1,
         "pointsPerGame": 11.1,
+        "receptions": 58.2,
         "expectedGames": 17,
         "ageMultiplier": 0.72,
         "basis": "production",
@@ -20303,6 +20462,7 @@
       "projection": {
         "points": 135.2,
         "pointsPerGame": 9.5,
+        "receptions": 51.7,
         "expectedGames": 17,
         "ageMultiplier": 0.84,
         "basis": "production",
@@ -20443,6 +20603,7 @@
       "projection": {
         "points": 134.6,
         "pointsPerGame": 12.2,
+        "receptions": 27.3,
         "expectedGames": 11,
         "ageMultiplier": 1,
         "basis": "production",
@@ -20587,6 +20748,7 @@
       "projection": {
         "points": 134.6,
         "pointsPerGame": 9,
+        "receptions": 53.9,
         "expectedGames": 17,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -20718,6 +20880,7 @@
       "projection": {
         "points": 134.3,
         "pointsPerGame": 7.9,
+        "receptions": 59.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -20854,6 +21017,7 @@
       "projection": {
         "points": 133.8,
         "pointsPerGame": 7.9,
+        "receptions": 46.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -20985,6 +21149,7 @@
       "projection": {
         "points": 133.1,
         "pointsPerGame": 8.3,
+        "receptions": 48.8,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -21129,6 +21294,7 @@
       "projection": {
         "points": 131.9,
         "pointsPerGame": 7.8,
+        "receptions": 18.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -21260,6 +21426,7 @@
       "projection": {
         "points": 130.9,
         "pointsPerGame": 7.7,
+        "receptions": 49.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -21391,6 +21558,7 @@
       "projection": {
         "points": 130.8,
         "pointsPerGame": 8.2,
+        "receptions": 41.5,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -21527,6 +21695,7 @@
       "projection": {
         "points": 129.4,
         "pointsPerGame": 8.6,
+        "receptions": 49.6,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -21662,6 +21831,7 @@
       "projection": {
         "points": 128.4,
         "pointsPerGame": 7.6,
+        "receptions": 45.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -21798,6 +21968,7 @@
       "projection": {
         "points": 128.2,
         "pointsPerGame": 8.5,
+        "receptions": 57,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -21934,6 +22105,7 @@
       "projection": {
         "points": 127.5,
         "pointsPerGame": 7.5,
+        "receptions": 12.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -22065,6 +22237,7 @@
       "projection": {
         "points": 125.3,
         "pointsPerGame": 9.4,
+        "receptions": 41.4,
         "expectedGames": 14,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -22201,6 +22374,7 @@
       "projection": {
         "points": 124.4,
         "pointsPerGame": 7.3,
+        "receptions": 18.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -22336,6 +22510,7 @@
       "projection": {
         "points": 124.1,
         "pointsPerGame": 7.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -22456,6 +22631,7 @@
       "projection": {
         "points": 123.8,
         "pointsPerGame": 8.6,
+        "receptions": 43.2,
         "expectedGames": 16,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -22591,6 +22767,7 @@
       "projection": {
         "points": 122.7,
         "pointsPerGame": 7.7,
+        "receptions": 13.9,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -22717,6 +22894,7 @@
       "projection": {
         "points": 122.6,
         "pointsPerGame": 7.2,
+        "receptions": 45.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -22848,6 +23026,7 @@
       "projection": {
         "points": 122.3,
         "pointsPerGame": 9.9,
+        "receptions": 40.8,
         "expectedGames": 14,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -22984,6 +23163,7 @@
       "projection": {
         "points": 122.2,
         "pointsPerGame": 7.2,
+        "receptions": 36.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -23120,6 +23300,7 @@
       "projection": {
         "points": 121.9,
         "pointsPerGame": 9.9,
+        "receptions": 39.3,
         "expectedGames": 13,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -23256,6 +23437,7 @@
       "projection": {
         "points": 121.7,
         "pointsPerGame": 7.2,
+        "receptions": 45.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -23387,6 +23569,7 @@
       "projection": {
         "points": 121.6,
         "pointsPerGame": 12,
+        "receptions": 40.7,
         "expectedGames": 11,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -23518,6 +23701,7 @@
       "projection": {
         "points": 120.8,
         "pointsPerGame": 7.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -23638,6 +23822,7 @@
       "projection": {
         "points": 119.9,
         "pointsPerGame": 7.1,
+        "receptions": 18,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -23769,6 +23954,7 @@
       "projection": {
         "points": 119.8,
         "pointsPerGame": 8.1,
+        "receptions": 58.4,
         "expectedGames": 16,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -23905,6 +24091,7 @@
       "projection": {
         "points": 119.6,
         "pointsPerGame": 7.8,
+        "receptions": 39.6,
         "expectedGames": 17,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -24041,6 +24228,7 @@
       "projection": {
         "points": 119.4,
         "pointsPerGame": 7,
+        "receptions": 46.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -24177,6 +24365,7 @@
       "projection": {
         "points": 118.6,
         "pointsPerGame": 8.5,
+        "receptions": 24.8,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -24317,6 +24506,7 @@
       "projection": {
         "points": 118.1,
         "pointsPerGame": 6.9,
+        "receptions": 15.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -24448,6 +24638,7 @@
       "projection": {
         "points": 117.4,
         "pointsPerGame": 11.1,
+        "receptions": 44.9,
         "expectedGames": 11,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -24592,6 +24783,7 @@
       "projection": {
         "points": 117.2,
         "pointsPerGame": 6.9,
+        "receptions": 43.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -24723,6 +24915,7 @@
       "projection": {
         "points": 117.1,
         "pointsPerGame": 7.7,
+        "receptions": 43.7,
         "expectedGames": 17,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -24849,6 +25042,7 @@
       "projection": {
         "points": 117,
         "pointsPerGame": 6.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -24969,6 +25163,7 @@
       "projection": {
         "points": 116.7,
         "pointsPerGame": 7.3,
+        "receptions": 41.9,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -25109,6 +25304,7 @@
       "projection": {
         "points": 116.3,
         "pointsPerGame": 7.3,
+        "receptions": 46.6,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -25240,6 +25436,7 @@
       "projection": {
         "points": 116,
         "pointsPerGame": 6.8,
+        "receptions": 25.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -25371,6 +25568,7 @@
       "projection": {
         "points": 115.2,
         "pointsPerGame": 9.6,
+        "receptions": 46.5,
         "expectedGames": 12,
         "ageMultiplier": 1,
         "basis": "production",
@@ -25511,6 +25709,7 @@
       "projection": {
         "points": 114.9,
         "pointsPerGame": 6.8,
+        "receptions": 51.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -25647,6 +25846,7 @@
       "projection": {
         "points": 114.6,
         "pointsPerGame": 6.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -25767,6 +25967,7 @@
       "projection": {
         "points": 114.5,
         "pointsPerGame": 6.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.99,
         "basis": "production",
@@ -25887,6 +26088,7 @@
       "projection": {
         "points": 114.1,
         "pointsPerGame": 6.7,
+        "receptions": 35.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -26013,6 +26215,7 @@
       "projection": {
         "points": 113.9,
         "pointsPerGame": 6.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -26133,6 +26336,7 @@
       "projection": {
         "points": 113.7,
         "pointsPerGame": 10.9,
+        "receptions": 25,
         "expectedGames": 16,
         "ageMultiplier": 0.65,
         "basis": "production",
@@ -26272,6 +26476,7 @@
       "projection": {
         "points": 113,
         "pointsPerGame": 6.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -26392,6 +26597,7 @@
       "projection": {
         "points": 112.9,
         "pointsPerGame": 9.3,
+        "receptions": 43.6,
         "expectedGames": 16,
         "ageMultiplier": 0.76,
         "basis": "production",
@@ -26518,6 +26724,7 @@
       "projection": {
         "points": 112.8,
         "pointsPerGame": 6.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -26638,6 +26845,7 @@
       "projection": {
         "points": 112.4,
         "pointsPerGame": 6.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -26758,6 +26966,7 @@
       "projection": {
         "points": 112.3,
         "pointsPerGame": 6.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -26878,6 +27087,7 @@
       "projection": {
         "points": 112.2,
         "pointsPerGame": 6.9,
+        "receptions": 36.5,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -27009,6 +27219,7 @@
       "projection": {
         "points": 111.4,
         "pointsPerGame": 6.6,
+        "receptions": 29.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -27139,6 +27350,7 @@
       "projection": {
         "points": 111.3,
         "pointsPerGame": 6.5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -27259,6 +27471,7 @@
       "projection": {
         "points": 111.3,
         "pointsPerGame": 6.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.99,
         "basis": "production",
@@ -27374,6 +27587,7 @@
       "projection": {
         "points": 110.8,
         "pointsPerGame": 7.4,
+        "receptions": 0,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -27499,6 +27713,7 @@
       "projection": {
         "points": 110.8,
         "pointsPerGame": 6.9,
+        "receptions": 43.3,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -27635,6 +27850,7 @@
       "projection": {
         "points": 110.8,
         "pointsPerGame": 6.5,
+        "receptions": 7.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -27766,6 +27982,7 @@
       "projection": {
         "points": 109.5,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -27886,6 +28103,7 @@
       "projection": {
         "points": 109.4,
         "pointsPerGame": 7.7,
+        "receptions": 33.6,
         "expectedGames": 15,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -28021,6 +28239,7 @@
       "projection": {
         "points": 109.4,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -28141,6 +28360,7 @@
       "projection": {
         "points": 109.2,
         "pointsPerGame": 6.4,
+        "receptions": 40.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -28272,6 +28492,7 @@
       "projection": {
         "points": 109.1,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -28387,6 +28608,7 @@
       "projection": {
         "points": 109.1,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -28481,6 +28703,7 @@
       "projection": {
         "points": 108.9,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -28601,6 +28824,7 @@
       "projection": {
         "points": 108.7,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -28721,6 +28945,7 @@
       "projection": {
         "points": 108.6,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -28841,6 +29066,7 @@
       "projection": {
         "points": 108.5,
         "pointsPerGame": 8.4,
+        "receptions": 38.8,
         "expectedGames": 17,
         "ageMultiplier": 0.76,
         "basis": "production",
@@ -28967,6 +29193,7 @@
       "projection": {
         "points": 108.4,
         "pointsPerGame": 6.4,
+        "receptions": 33.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -29067,6 +29294,7 @@
       "projection": {
         "points": 108.2,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -29187,6 +29415,7 @@
       "projection": {
         "points": 107.2,
         "pointsPerGame": 6.3,
+        "receptions": 26.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -29318,6 +29547,7 @@
       "projection": {
         "points": 106.2,
         "pointsPerGame": 6.2,
+        "receptions": 38.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -29449,6 +29679,7 @@
       "projection": {
         "points": 106.2,
         "pointsPerGame": 6.2,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "draft round 4",
@@ -29543,6 +29774,7 @@
       "projection": {
         "points": 105.8,
         "pointsPerGame": 6.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -29637,6 +29869,7 @@
       "projection": {
         "points": 105.4,
         "pointsPerGame": 6.2,
+        "receptions": 21.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -29731,6 +29964,7 @@
       "projection": {
         "points": 105.3,
         "pointsPerGame": 6.7,
+        "receptions": 41.4,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -29867,6 +30101,7 @@
       "projection": {
         "points": 105.3,
         "pointsPerGame": 6.2,
+        "receptions": 35.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -29998,6 +30233,7 @@
       "projection": {
         "points": 105.1,
         "pointsPerGame": 6.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -30118,6 +30354,7 @@
       "projection": {
         "points": 105.1,
         "pointsPerGame": 6.6,
+        "receptions": 40.4,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -30249,6 +30486,7 @@
       "projection": {
         "points": 105,
         "pointsPerGame": 6.6,
+        "receptions": 0,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -30369,6 +30607,7 @@
       "projection": {
         "points": 105,
         "pointsPerGame": 7,
+        "receptions": 38.1,
         "expectedGames": 17,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -30495,6 +30734,7 @@
       "projection": {
         "points": 104.8,
         "pointsPerGame": 6.2,
+        "receptions": 31.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -30620,6 +30860,7 @@
       "projection": {
         "points": 104.2,
         "pointsPerGame": 6.5,
+        "receptions": 0,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -30735,6 +30976,7 @@
       "projection": {
         "points": 104.2,
         "pointsPerGame": 6.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -30850,6 +31092,7 @@
       "projection": {
         "points": 104,
         "pointsPerGame": 6.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -30970,6 +31213,7 @@
       "projection": {
         "points": 103.9,
         "pointsPerGame": 6.1,
+        "receptions": 39.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -31074,6 +31318,7 @@
       "projection": {
         "points": 103.7,
         "pointsPerGame": 7.2,
+        "receptions": 41.8,
         "expectedGames": 16,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -31174,6 +31419,7 @@
       "projection": {
         "points": 103.3,
         "pointsPerGame": 6.1,
+        "receptions": 41,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -31310,6 +31556,7 @@
       "projection": {
         "points": 103.3,
         "pointsPerGame": 6.5,
+        "receptions": 19.7,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -31410,6 +31657,7 @@
       "projection": {
         "points": 103.2,
         "pointsPerGame": 6.1,
+        "receptions": 30.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -31545,6 +31793,7 @@
       "projection": {
         "points": 103.1,
         "pointsPerGame": 6.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -31639,6 +31888,7 @@
       "projection": {
         "points": 102.9,
         "pointsPerGame": 6.1,
+        "receptions": 41.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -31770,6 +32020,7 @@
       "projection": {
         "points": 102.5,
         "pointsPerGame": 6.4,
+        "receptions": 21.4,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -31870,6 +32121,7 @@
       "projection": {
         "points": 102.4,
         "pointsPerGame": 6.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -31990,6 +32242,7 @@
       "projection": {
         "points": 102,
         "pointsPerGame": 12.9,
+        "receptions": 29.2,
         "expectedGames": 11,
         "ageMultiplier": 0.72,
         "basis": "production",
@@ -32134,6 +32387,7 @@
       "projection": {
         "points": 102,
         "pointsPerGame": 6,
+        "receptions": 19.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -32265,6 +32519,7 @@
       "projection": {
         "points": 101.9,
         "pointsPerGame": 6,
+        "receptions": 39.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -32395,6 +32650,7 @@
       "projection": {
         "points": 101.8,
         "pointsPerGame": 7.3,
+        "receptions": 38.2,
         "expectedGames": 17,
         "ageMultiplier": 0.82,
         "basis": "production",
@@ -32526,6 +32782,7 @@
       "projection": {
         "points": 101.7,
         "pointsPerGame": 7,
+        "receptions": 18.6,
         "expectedGames": 17,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -32652,6 +32909,7 @@
       "projection": {
         "points": 101.4,
         "pointsPerGame": 6.8,
+        "receptions": 0,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -32772,6 +33030,7 @@
       "projection": {
         "points": 101.4,
         "pointsPerGame": 7.2,
+        "receptions": 37.7,
         "expectedGames": 15,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -32903,6 +33162,7 @@
       "projection": {
         "points": 101,
         "pointsPerGame": 7.5,
+        "receptions": 36.7,
         "expectedGames": 15,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -33034,6 +33294,7 @@
       "projection": {
         "points": 100.9,
         "pointsPerGame": 5.9,
+        "receptions": 43.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -33165,6 +33426,7 @@
       "projection": {
         "points": 100.6,
         "pointsPerGame": 5.9,
+        "receptions": 34.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -33269,6 +33531,7 @@
       "projection": {
         "points": 100.5,
         "pointsPerGame": 5.9,
+        "receptions": 34.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -33405,6 +33668,7 @@
       "projection": {
         "points": 100.4,
         "pointsPerGame": 6.7,
+        "receptions": 37.6,
         "expectedGames": 17,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -33541,6 +33805,7 @@
       "projection": {
         "points": 100.2,
         "pointsPerGame": 6.3,
+        "receptions": 0,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -33661,6 +33926,7 @@
       "projection": {
         "points": 99.9,
         "pointsPerGame": 7.1,
+        "receptions": 35.6,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -33797,6 +34063,7 @@
       "projection": {
         "points": 99.4,
         "pointsPerGame": 5.8,
+        "receptions": 34.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -33928,6 +34195,7 @@
       "projection": {
         "points": 97.4,
         "pointsPerGame": 6.5,
+        "receptions": 30.6,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -34064,6 +34332,7 @@
       "projection": {
         "points": 97.4,
         "pointsPerGame": 5.7,
+        "receptions": 35.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -34200,6 +34469,7 @@
       "projection": {
         "points": 97.4,
         "pointsPerGame": 6.8,
+        "receptions": 25.4,
         "expectedGames": 15,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -34331,6 +34601,7 @@
       "projection": {
         "points": 97.1,
         "pointsPerGame": 6,
+        "receptions": 42.3,
         "expectedGames": 17,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -34462,6 +34733,7 @@
       "projection": {
         "points": 96.4,
         "pointsPerGame": 6.7,
+        "receptions": 33.9,
         "expectedGames": 16,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -34593,6 +34865,7 @@
       "projection": {
         "points": 96.3,
         "pointsPerGame": 6.3,
+        "receptions": 41.1,
         "expectedGames": 16,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -34724,6 +34997,7 @@
       "projection": {
         "points": 96.3,
         "pointsPerGame": 5.7,
+        "receptions": 10.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -34855,6 +35129,7 @@
       "projection": {
         "points": 95.9,
         "pointsPerGame": 5.9,
+        "receptions": 30.5,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -34986,6 +35261,7 @@
       "projection": {
         "points": 95.7,
         "pointsPerGame": 5.6,
+        "receptions": 34.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -35085,6 +35361,7 @@
       "projection": {
         "points": 95.6,
         "pointsPerGame": 5.6,
+        "receptions": 17.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -35180,6 +35457,7 @@
       "projection": {
         "points": 95,
         "pointsPerGame": 6,
+        "receptions": 26.4,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -35274,6 +35552,7 @@
       "projection": {
         "points": 94.8,
         "pointsPerGame": 5.9,
+        "receptions": 36.5,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -35405,6 +35684,7 @@
       "projection": {
         "points": 94.5,
         "pointsPerGame": 5.9,
+        "receptions": 13.3,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -35536,6 +35816,7 @@
       "projection": {
         "points": 94,
         "pointsPerGame": 5.5,
+        "receptions": 11.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -35667,6 +35948,7 @@
       "projection": {
         "points": 93.9,
         "pointsPerGame": 5.5,
+        "receptions": 32.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "draft round 3",
@@ -35761,6 +36043,7 @@
       "projection": {
         "points": 93.4,
         "pointsPerGame": 5.5,
+        "receptions": 21.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -35887,6 +36170,7 @@
       "projection": {
         "points": 93.4,
         "pointsPerGame": 5.5,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -36023,6 +36307,7 @@
       "projection": {
         "points": 93.2,
         "pointsPerGame": 5.5,
+        "receptions": 33.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -36159,6 +36444,7 @@
       "projection": {
         "points": 93.2,
         "pointsPerGame": 5.5,
+        "receptions": 39,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -36290,6 +36576,7 @@
       "projection": {
         "points": 92.9,
         "pointsPerGame": 5.5,
+        "receptions": 17.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -36385,6 +36672,7 @@
       "projection": {
         "points": 92.7,
         "pointsPerGame": 5.5,
+        "receptions": 19,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -36484,6 +36772,7 @@
       "projection": {
         "points": 92.7,
         "pointsPerGame": 8.4,
+        "receptions": 34.5,
         "expectedGames": 11,
         "ageMultiplier": 1,
         "basis": "production",
@@ -36620,6 +36909,7 @@
       "projection": {
         "points": 92,
         "pointsPerGame": 6.5,
+        "receptions": 31.5,
         "expectedGames": 15,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -36751,6 +37041,7 @@
       "projection": {
         "points": 91.5,
         "pointsPerGame": 7.3,
+        "receptions": 37.2,
         "expectedGames": 13,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -36887,6 +37178,7 @@
       "projection": {
         "points": 91.1,
         "pointsPerGame": 7.1,
+        "receptions": 26.8,
         "expectedGames": 15,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -37018,6 +37310,7 @@
       "projection": {
         "points": 91.1,
         "pointsPerGame": 5.4,
+        "receptions": 33.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37113,6 +37406,7 @@
       "projection": {
         "points": 91.1,
         "pointsPerGame": 5.4,
+        "receptions": 31.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37208,6 +37502,7 @@
       "projection": {
         "points": 91,
         "pointsPerGame": 5.4,
+        "receptions": 19,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37302,6 +37597,7 @@
       "projection": {
         "points": 90.9,
         "pointsPerGame": 5.3,
+        "receptions": 14.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37433,6 +37729,7 @@
       "projection": {
         "points": 90.7,
         "pointsPerGame": 5.3,
+        "receptions": 17.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37533,6 +37830,7 @@
       "projection": {
         "points": 90.5,
         "pointsPerGame": 6.7,
+        "receptions": 33.9,
         "expectedGames": 16,
         "ageMultiplier": 0.84,
         "basis": "production",
@@ -37673,6 +37971,7 @@
       "projection": {
         "points": 90.4,
         "pointsPerGame": 5.3,
+        "receptions": 16.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37777,6 +38076,7 @@
       "projection": {
         "points": 90.2,
         "pointsPerGame": 5.3,
+        "receptions": 31.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37871,6 +38171,7 @@
       "projection": {
         "points": 90.2,
         "pointsPerGame": 5.3,
+        "receptions": 33.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -37971,6 +38272,7 @@
       "projection": {
         "points": 89.9,
         "pointsPerGame": 6,
+        "receptions": 28,
         "expectedGames": 17,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -38097,6 +38399,7 @@
       "projection": {
         "points": 89.5,
         "pointsPerGame": 5.3,
+        "receptions": 17.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -38192,6 +38495,7 @@
       "projection": {
         "points": 89.4,
         "pointsPerGame": 5.3,
+        "receptions": 28.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -38323,6 +38627,7 @@
       "projection": {
         "points": 89.3,
         "pointsPerGame": 6,
+        "receptions": 29.8,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -38454,6 +38759,7 @@
       "projection": {
         "points": 89.2,
         "pointsPerGame": 6.4,
+        "receptions": 32.7,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -38590,6 +38896,7 @@
       "projection": {
         "points": 89.2,
         "pointsPerGame": 5.2,
+        "receptions": 17.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -38684,6 +38991,7 @@
       "projection": {
         "points": 89.2,
         "pointsPerGame": 5.2,
+        "receptions": 28.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -38779,6 +39087,7 @@
       "projection": {
         "points": 89.2,
         "pointsPerGame": 5.2,
+        "receptions": 17.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -38879,6 +39188,7 @@
       "projection": {
         "points": 89,
         "pointsPerGame": 6.4,
+        "receptions": 32.2,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39014,6 +39324,7 @@
       "projection": {
         "points": 88.7,
         "pointsPerGame": 5.2,
+        "receptions": 33.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39145,6 +39456,7 @@
       "projection": {
         "points": 88.6,
         "pointsPerGame": 5.9,
+        "receptions": 39.4,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39289,6 +39601,7 @@
       "projection": {
         "points": 88.5,
         "pointsPerGame": 5.2,
+        "receptions": 24.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39383,6 +39696,7 @@
       "projection": {
         "points": 88.5,
         "pointsPerGame": 5.2,
+        "receptions": 14.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39483,6 +39797,7 @@
       "projection": {
         "points": 88.4,
         "pointsPerGame": 5.2,
+        "receptions": 14.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39614,6 +39929,7 @@
       "projection": {
         "points": 88.2,
         "pointsPerGame": 5.5,
+        "receptions": 23.1,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -39745,6 +40061,7 @@
       "projection": {
         "points": 88,
         "pointsPerGame": 5.2,
+        "receptions": 30.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39844,6 +40161,7 @@
       "projection": {
         "points": 87.2,
         "pointsPerGame": 6.2,
+        "receptions": 32.7,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -39975,6 +40293,7 @@
       "projection": {
         "points": 87.2,
         "pointsPerGame": 5.1,
+        "receptions": 31.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -40074,6 +40393,7 @@
       "projection": {
         "points": 86.7,
         "pointsPerGame": 5.4,
+        "receptions": 25.4,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -40205,6 +40525,7 @@
       "projection": {
         "points": 85.9,
         "pointsPerGame": 5.1,
+        "receptions": 30.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -40336,6 +40657,7 @@
       "projection": {
         "points": 85,
         "pointsPerGame": 5,
+        "receptions": 6.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -40467,6 +40789,7 @@
       "projection": {
         "points": 84.5,
         "pointsPerGame": 5.9,
+        "receptions": 25.2,
         "expectedGames": 15,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -40603,6 +40926,7 @@
       "projection": {
         "points": 84.5,
         "pointsPerGame": 5,
+        "receptions": 18.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -40707,6 +41031,7 @@
       "projection": {
         "points": 84,
         "pointsPerGame": 5.2,
+        "receptions": 12.5,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -40802,6 +41127,7 @@
       "projection": {
         "points": 83.9,
         "pointsPerGame": 4.9,
+        "receptions": 27.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -40902,6 +41228,7 @@
       "projection": {
         "points": 83.8,
         "pointsPerGame": 4.9,
+        "receptions": 36.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -41028,6 +41355,7 @@
       "projection": {
         "points": 83.6,
         "pointsPerGame": 4.9,
+        "receptions": 29.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -41122,6 +41450,7 @@
       "projection": {
         "points": 83.6,
         "pointsPerGame": 4.9,
+        "receptions": 29.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -41222,6 +41551,7 @@
       "projection": {
         "points": 83.5,
         "pointsPerGame": 5.9,
+        "receptions": 26.1,
         "expectedGames": 15,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -41348,6 +41678,7 @@
       "projection": {
         "points": 83.3,
         "pointsPerGame": 4.9,
+        "receptions": 17.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -41447,6 +41778,7 @@
       "projection": {
         "points": 83.2,
         "pointsPerGame": 5.7,
+        "receptions": 13.3,
         "expectedGames": 17,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -41547,6 +41879,7 @@
       "projection": {
         "points": 83.2,
         "pointsPerGame": 4.9,
+        "receptions": 31.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -41647,6 +41980,7 @@
       "projection": {
         "points": 82.9,
         "pointsPerGame": 4.9,
+        "receptions": 35.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -41742,6 +42076,7 @@
       "projection": {
         "points": 82.9,
         "pointsPerGame": 5.1,
+        "receptions": 29.9,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -41842,6 +42177,7 @@
       "projection": {
         "points": 82.8,
         "pointsPerGame": 4.9,
+        "receptions": 27.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -41982,6 +42318,7 @@
       "projection": {
         "points": 82.7,
         "pointsPerGame": 5.7,
+        "receptions": 18,
         "expectedGames": 17,
         "ageMultiplier": 0.86,
         "basis": "production",
@@ -42108,6 +42445,7 @@
       "projection": {
         "points": 82,
         "pointsPerGame": 4.8,
+        "receptions": 31.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -42234,6 +42572,7 @@
       "projection": {
         "points": 81.9,
         "pointsPerGame": 5.1,
+        "receptions": 14.5,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -42333,6 +42672,7 @@
       "projection": {
         "points": 81,
         "pointsPerGame": 5,
+        "receptions": 16.1,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -42464,6 +42804,7 @@
       "projection": {
         "points": 80.9,
         "pointsPerGame": 5.1,
+        "receptions": 20.2,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -42595,6 +42936,7 @@
       "projection": {
         "points": 80.8,
         "pointsPerGame": 4.8,
+        "receptions": 25.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -42726,6 +43068,7 @@
       "projection": {
         "points": 80.8,
         "pointsPerGame": 5.7,
+        "receptions": 31.6,
         "expectedGames": 15,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -42852,6 +43195,7 @@
       "projection": {
         "points": 80.6,
         "pointsPerGame": 4.7,
+        "receptions": 25,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -42983,6 +43327,7 @@
       "projection": {
         "points": 80.5,
         "pointsPerGame": 4.7,
+        "receptions": 28.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "draft round 6",
@@ -43083,6 +43428,7 @@
       "projection": {
         "points": 80.5,
         "pointsPerGame": 5.8,
+        "receptions": 19.1,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -43209,6 +43555,7 @@
       "projection": {
         "points": 80,
         "pointsPerGame": 5,
+        "receptions": 25.3,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -43335,6 +43682,7 @@
       "projection": {
         "points": 80,
         "pointsPerGame": 4.7,
+        "receptions": 15.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -43435,6 +43783,7 @@
       "projection": {
         "points": 79.5,
         "pointsPerGame": 4.7,
+        "receptions": 19.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -43534,6 +43883,7 @@
       "projection": {
         "points": 79.5,
         "pointsPerGame": 5.2,
+        "receptions": 30.9,
         "expectedGames": 17,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -43674,6 +44024,7 @@
       "projection": {
         "points": 79.3,
         "pointsPerGame": 5,
+        "receptions": 16.2,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -43810,6 +44161,7 @@
       "projection": {
         "points": 78.9,
         "pointsPerGame": 4.6,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -43914,6 +44266,7 @@
       "projection": {
         "points": 78.8,
         "pointsPerGame": 4.6,
+        "receptions": 32,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -44050,6 +44403,7 @@
       "projection": {
         "points": 78.8,
         "pointsPerGame": 4.9,
+        "receptions": 19.3,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -44176,6 +44530,7 @@
       "projection": {
         "points": 78.7,
         "pointsPerGame": 4.6,
+        "receptions": 28.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -44276,6 +44631,7 @@
       "projection": {
         "points": 78.1,
         "pointsPerGame": 4.8,
+        "receptions": 32.2,
         "expectedGames": 17,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -44416,6 +44772,7 @@
       "projection": {
         "points": 77.8,
         "pointsPerGame": 4.6,
+        "receptions": 29,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -44552,6 +44909,7 @@
       "projection": {
         "points": 77.8,
         "pointsPerGame": 5.6,
+        "receptions": 15.7,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -44651,6 +45009,7 @@
       "projection": {
         "points": 77.7,
         "pointsPerGame": 4.6,
+        "receptions": 28.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -44781,6 +45140,7 @@
       "projection": {
         "points": 77.5,
         "pointsPerGame": 4.8,
+        "receptions": 29.1,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -44911,6 +45271,7 @@
       "projection": {
         "points": 77.4,
         "pointsPerGame": 4.6,
+        "receptions": 27.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -45011,6 +45372,7 @@
       "projection": {
         "points": 77.4,
         "pointsPerGame": 4.6,
+        "receptions": 28.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -45115,6 +45477,7 @@
       "projection": {
         "points": 77.4,
         "pointsPerGame": 4.6,
+        "receptions": 28.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -45214,6 +45577,7 @@
       "projection": {
         "points": 77.1,
         "pointsPerGame": 4.5,
+        "receptions": 27.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -45345,6 +45709,7 @@
       "projection": {
         "points": 77,
         "pointsPerGame": 4.8,
+        "receptions": 29.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -45476,6 +45841,7 @@
       "projection": {
         "points": 76.8,
         "pointsPerGame": 4.5,
+        "receptions": 36.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -45601,6 +45967,7 @@
       "projection": {
         "points": 76.6,
         "pointsPerGame": 4.5,
+        "receptions": 30.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -45727,6 +46094,7 @@
       "projection": {
         "points": 76.5,
         "pointsPerGame": 4.8,
+        "receptions": 15.4,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -45857,6 +46225,7 @@
       "projection": {
         "points": 76.5,
         "pointsPerGame": 4.7,
+        "receptions": 30.6,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -45988,6 +46357,7 @@
       "projection": {
         "points": 76,
         "pointsPerGame": 4.5,
+        "receptions": 12.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -46118,6 +46488,7 @@
       "projection": {
         "points": 75.8,
         "pointsPerGame": 4.5,
+        "receptions": 29.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -46218,6 +46589,7 @@
       "projection": {
         "points": 75.7,
         "pointsPerGame": 4.5,
+        "receptions": 9.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -46358,6 +46730,7 @@
       "projection": {
         "points": 75.5,
         "pointsPerGame": 4.4,
+        "receptions": 29.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -46452,6 +46825,7 @@
       "projection": {
         "points": 75.5,
         "pointsPerGame": 4.4,
+        "receptions": 26.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -46547,6 +46921,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -46641,6 +47016,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -46736,6 +47112,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -46830,6 +47207,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -46924,6 +47302,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47018,6 +47397,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47112,6 +47492,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47206,6 +47587,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47300,6 +47682,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47394,6 +47777,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47488,6 +47872,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47582,6 +47967,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47676,6 +48062,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47770,6 +48157,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47864,6 +48252,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -47958,6 +48347,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48052,6 +48442,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48146,6 +48537,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48240,6 +48632,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48334,6 +48727,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48428,6 +48822,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48522,6 +48917,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48616,6 +49012,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48710,6 +49107,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48804,6 +49202,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48898,6 +49297,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -48992,6 +49392,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49086,6 +49487,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49180,6 +49582,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49274,6 +49677,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49368,6 +49772,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49462,6 +49867,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49556,6 +49962,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49650,6 +50057,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49744,6 +50152,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49838,6 +50247,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -49932,6 +50342,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50026,6 +50437,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50120,6 +50532,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50214,6 +50627,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50308,6 +50722,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50402,6 +50817,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50496,6 +50912,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50590,6 +51007,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50684,6 +51102,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50778,6 +51197,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50872,6 +51292,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -50966,6 +51387,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -51060,6 +51482,7 @@
       "projection": {
         "points": 75.3,
         "pointsPerGame": 4.4,
+        "receptions": 14.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -51154,6 +51577,7 @@
       "projection": {
         "points": 75.2,
         "pointsPerGame": 4.4,
+        "receptions": 26.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -51248,6 +51672,7 @@
       "projection": {
         "points": 75.2,
         "pointsPerGame": 4.4,
+        "receptions": 26.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -51348,6 +51773,7 @@
       "projection": {
         "points": 75.2,
         "pointsPerGame": 5.3,
+        "receptions": 34,
         "expectedGames": 16,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -51479,6 +51905,7 @@
       "projection": {
         "points": 75.1,
         "pointsPerGame": 4.4,
+        "receptions": 27.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -51610,6 +52037,7 @@
       "projection": {
         "points": 75.1,
         "pointsPerGame": 4.4,
+        "receptions": 23.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -51741,6 +52169,7 @@
       "projection": {
         "points": 74.4,
         "pointsPerGame": 4.8,
+        "receptions": 26.5,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -51872,6 +52301,7 @@
       "projection": {
         "points": 74.3,
         "pointsPerGame": 4.4,
+        "receptions": 29.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -52008,6 +52438,7 @@
       "projection": {
         "points": 74.3,
         "pointsPerGame": 4.4,
+        "receptions": 11.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -52108,6 +52539,7 @@
       "projection": {
         "points": 74,
         "pointsPerGame": 4.4,
+        "receptions": 28.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -52239,6 +52671,7 @@
       "projection": {
         "points": 73.7,
         "pointsPerGame": 5,
+        "receptions": 16,
         "expectedGames": 16,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -52375,6 +52808,7 @@
       "projection": {
         "points": 73.6,
         "pointsPerGame": 4.3,
+        "receptions": 28.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -52511,6 +52945,7 @@
       "projection": {
         "points": 73.6,
         "pointsPerGame": 4.3,
+        "receptions": 21,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -52637,6 +53072,7 @@
       "projection": {
         "points": 73.4,
         "pointsPerGame": 5,
+        "receptions": 31.9,
         "expectedGames": 16,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -52773,6 +53209,7 @@
       "projection": {
         "points": 73.2,
         "pointsPerGame": 4.9,
+        "receptions": 24.2,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -52908,6 +53345,7 @@
       "projection": {
         "points": 73,
         "pointsPerGame": 4.7,
+        "receptions": 26.2,
         "expectedGames": 17,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -53034,6 +53472,7 @@
       "projection": {
         "points": 72.8,
         "pointsPerGame": 4.5,
+        "receptions": 19.4,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -53165,6 +53604,7 @@
       "projection": {
         "points": 72.8,
         "pointsPerGame": 4.5,
+        "receptions": 26.8,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -53291,6 +53731,7 @@
       "projection": {
         "points": 72.6,
         "pointsPerGame": 4.9,
+        "receptions": 9.1,
         "expectedGames": 16,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -53417,6 +53858,7 @@
       "projection": {
         "points": 72.4,
         "pointsPerGame": 4.8,
+        "receptions": 13.6,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -53512,6 +53954,7 @@
       "projection": {
         "points": 72.2,
         "pointsPerGame": 4.4,
+        "receptions": 25.3,
         "expectedGames": 17,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -53607,6 +54050,7 @@
       "projection": {
         "points": 72.2,
         "pointsPerGame": 4.5,
+        "receptions": 29.6,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -53707,6 +54151,7 @@
       "projection": {
         "points": 72.2,
         "pointsPerGame": 4.5,
+        "receptions": 29.7,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -53843,6 +54288,7 @@
       "projection": {
         "points": 72.2,
         "pointsPerGame": 4.2,
+        "receptions": 24.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -53969,6 +54415,7 @@
       "projection": {
         "points": 72.2,
         "pointsPerGame": 5.1,
+        "receptions": 21.9,
         "expectedGames": 15,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -54064,6 +54511,7 @@
       "projection": {
         "points": 71.8,
         "pointsPerGame": 4.2,
+        "receptions": 25.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -54164,6 +54612,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 25,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -54264,6 +54713,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "draft round 7",
@@ -54358,6 +54808,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -54452,6 +54903,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -54546,6 +54998,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -54640,6 +55093,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -54734,6 +55188,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -54828,6 +55283,7 @@
       "projection": {
         "points": 71.5,
         "pointsPerGame": 4.4,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -54927,6 +55383,7 @@
       "projection": {
         "points": 71,
         "pointsPerGame": 4.4,
+        "receptions": 13.6,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "draft round 5",
@@ -55027,6 +55484,7 @@
       "projection": {
         "points": 70.9,
         "pointsPerGame": 4.8,
+        "receptions": 28.4,
         "expectedGames": 16,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -55158,6 +55616,7 @@
       "projection": {
         "points": 70.8,
         "pointsPerGame": 4.4,
+        "receptions": 29.7,
         "expectedGames": 17,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -55289,6 +55748,7 @@
       "projection": {
         "points": 70.7,
         "pointsPerGame": 4.5,
+        "receptions": 11.4,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -55425,6 +55885,7 @@
       "projection": {
         "points": 70.5,
         "pointsPerGame": 4.7,
+        "receptions": 23,
         "expectedGames": 17,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -55551,6 +56012,7 @@
       "projection": {
         "points": 70,
         "pointsPerGame": 4.4,
+        "receptions": 13.4,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "undrafted baseline",
@@ -55650,6 +56112,7 @@
       "projection": {
         "points": 70,
         "pointsPerGame": 4.4,
+        "receptions": 9.6,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -55781,6 +56244,7 @@
       "projection": {
         "points": 69.8,
         "pointsPerGame": 4.5,
+        "receptions": 27.9,
         "expectedGames": 16,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -55912,6 +56376,7 @@
       "projection": {
         "points": 69.8,
         "pointsPerGame": 4.1,
+        "receptions": 32.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -56052,6 +56517,7 @@
       "projection": {
         "points": 69.6,
         "pointsPerGame": 5.1,
+        "receptions": 25.6,
         "expectedGames": 17,
         "ageMultiplier": 0.8,
         "basis": "production",
@@ -56182,6 +56648,7 @@
       "projection": {
         "points": 68.9,
         "pointsPerGame": 4.1,
+        "receptions": 26.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -56281,6 +56748,7 @@
       "projection": {
         "points": 68.6,
         "pointsPerGame": 4.2,
+        "receptions": 18.7,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -56412,6 +56880,7 @@
       "projection": {
         "points": 68.4,
         "pointsPerGame": 4,
+        "receptions": 24,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -56507,6 +56976,7 @@
       "projection": {
         "points": 68.4,
         "pointsPerGame": 4,
+        "receptions": 24,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -56607,6 +57077,7 @@
       "projection": {
         "points": 68.3,
         "pointsPerGame": 4.9,
+        "receptions": 16.7,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -56738,6 +57209,7 @@
       "projection": {
         "points": 68.3,
         "pointsPerGame": 4,
+        "receptions": 14.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -56833,6 +57305,7 @@
       "projection": {
         "points": 67.7,
         "pointsPerGame": 4.4,
+        "receptions": 13,
         "expectedGames": 17,
         "ageMultiplier": 0.9,
         "basis": "undrafted baseline",
@@ -56927,6 +57400,7 @@
       "projection": {
         "points": 67.4,
         "pointsPerGame": 5.1,
+        "receptions": 23.3,
         "expectedGames": 15,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -57058,6 +57532,7 @@
       "projection": {
         "points": 67.4,
         "pointsPerGame": 5,
+        "receptions": 22.3,
         "expectedGames": 16,
         "ageMultiplier": 0.84,
         "basis": "production",
@@ -57189,6 +57664,7 @@
       "projection": {
         "points": 67.4,
         "pointsPerGame": 4,
+        "receptions": 28.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -57288,6 +57764,7 @@
       "projection": {
         "points": 67.3,
         "pointsPerGame": 4,
+        "receptions": 27.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -57383,6 +57860,7 @@
       "projection": {
         "points": 67.3,
         "pointsPerGame": 4,
+        "receptions": 27.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -57478,6 +57956,7 @@
       "projection": {
         "points": 67.1,
         "pointsPerGame": 3.9,
+        "receptions": 19.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -57613,6 +58092,7 @@
       "projection": {
         "points": 67,
         "pointsPerGame": 4.1,
+        "receptions": 22.1,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -57739,6 +58219,7 @@
       "projection": {
         "points": 66.9,
         "pointsPerGame": 5.1,
+        "receptions": 16.3,
         "expectedGames": 13,
         "ageMultiplier": 1,
         "basis": "production",
@@ -57879,6 +58360,7 @@
       "projection": {
         "points": 66.9,
         "pointsPerGame": 3.9,
+        "receptions": 12.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -57979,6 +58461,7 @@
       "projection": {
         "points": 66.8,
         "pointsPerGame": 3.9,
+        "receptions": 17.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -58079,6 +58562,7 @@
       "projection": {
         "points": 66.6,
         "pointsPerGame": 4.6,
+        "receptions": 22.8,
         "expectedGames": 15,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -58215,6 +58699,7 @@
       "projection": {
         "points": 66.6,
         "pointsPerGame": 4.2,
+        "receptions": 28,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -58351,6 +58836,7 @@
       "projection": {
         "points": 66.6,
         "pointsPerGame": 3.9,
+        "receptions": 22.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -58451,6 +58937,7 @@
       "projection": {
         "points": 66.2,
         "pointsPerGame": 4.1,
+        "receptions": 26,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -58556,6 +59043,7 @@
       "projection": {
         "points": 66.2,
         "pointsPerGame": 4.2,
+        "receptions": 14.8,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -58650,6 +59138,7 @@
       "projection": {
         "points": 66.1,
         "pointsPerGame": 3.9,
+        "receptions": 22.9,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -58750,6 +59239,7 @@
       "projection": {
         "points": 66,
         "pointsPerGame": 4.5,
+        "receptions": 24.4,
         "expectedGames": 16,
         "ageMultiplier": 0.92,
         "basis": "production",
@@ -58881,6 +59371,7 @@
       "projection": {
         "points": 65.8,
         "pointsPerGame": 5,
+        "receptions": 30,
         "expectedGames": 14,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -59012,6 +59503,7 @@
       "projection": {
         "points": 65.4,
         "pointsPerGame": 3.8,
+        "receptions": 28.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -59142,6 +59634,7 @@
       "projection": {
         "points": 65.4,
         "pointsPerGame": 4.1,
+        "receptions": 10.4,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -59273,6 +59766,7 @@
       "projection": {
         "points": 65.4,
         "pointsPerGame": 4.1,
+        "receptions": 23.8,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -59404,6 +59898,7 @@
       "projection": {
         "points": 65,
         "pointsPerGame": 4.1,
+        "receptions": 25.7,
         "expectedGames": 17,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -59535,6 +60030,7 @@
       "projection": {
         "points": 65,
         "pointsPerGame": 4.7,
+        "receptions": 18.3,
         "expectedGames": 17,
         "ageMultiplier": 0.82,
         "basis": "production",
@@ -59661,6 +60157,7 @@
       "projection": {
         "points": 64.8,
         "pointsPerGame": 4.1,
+        "receptions": 24.9,
         "expectedGames": 17,
         "ageMultiplier": 0.94,
         "basis": "production",
@@ -59756,6 +60253,7 @@
       "projection": {
         "points": 64.5,
         "pointsPerGame": 3.8,
+        "receptions": 19.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -59887,6 +60385,7 @@
       "projection": {
         "points": 63.9,
         "pointsPerGame": 4,
+        "receptions": 12.1,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -59992,6 +60491,7 @@
       "projection": {
         "points": 63.8,
         "pointsPerGame": 5.5,
+        "receptions": 18.5,
         "expectedGames": 16,
         "ageMultiplier": 0.72,
         "basis": "production",
@@ -60128,6 +60628,7 @@
       "projection": {
         "points": 63.6,
         "pointsPerGame": 3.9,
+        "receptions": 26.1,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -60259,6 +60760,7 @@
       "projection": {
         "points": 63.3,
         "pointsPerGame": 4,
+        "receptions": 23.4,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -60399,6 +60901,7 @@
       "projection": {
         "points": 63.2,
         "pointsPerGame": 4.4,
+        "receptions": 22.1,
         "expectedGames": 17,
         "ageMultiplier": 0.84,
         "basis": "production",
@@ -60498,6 +61001,7 @@
       "projection": {
         "points": 63,
         "pointsPerGame": 4.7,
+        "receptions": 23.6,
         "expectedGames": 15,
         "ageMultiplier": 0.9,
         "basis": "production",
@@ -60603,6 +61107,7 @@
       "projection": {
         "points": 62.8,
         "pointsPerGame": 3.7,
+        "receptions": 24,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -60729,6 +61234,7 @@
       "projection": {
         "points": 62.8,
         "pointsPerGame": 3.7,
+        "receptions": 22.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -60860,6 +61366,7 @@
       "projection": {
         "points": 62.8,
         "pointsPerGame": 3.7,
+        "receptions": 28.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -60986,6 +61493,7 @@
       "projection": {
         "points": 62.8,
         "pointsPerGame": 4.2,
+        "receptions": 24.9,
         "expectedGames": 17,
         "ageMultiplier": 0.88,
         "basis": "production",
@@ -61086,6 +61594,7 @@
       "projection": {
         "points": 62.7,
         "pointsPerGame": 3.7,
+        "receptions": 25.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -61216,6 +61725,7 @@
       "projection": {
         "points": 62.3,
         "pointsPerGame": 3.7,
+        "receptions": 24.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -61347,6 +61857,7 @@
       "projection": {
         "points": 62.3,
         "pointsPerGame": 3.7,
+        "receptions": 12,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -61447,6 +61958,7 @@
       "projection": {
         "points": 62.3,
         "pointsPerGame": 3.9,
+        "receptions": 22.9,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -61573,6 +62085,7 @@
       "projection": {
         "points": 62.1,
         "pointsPerGame": 4.1,
+        "receptions": 9.5,
         "expectedGames": 15,
         "ageMultiplier": 1,
         "basis": "production",
@@ -61673,6 +62186,7 @@
       "projection": {
         "points": 61.7,
         "pointsPerGame": 3.9,
+        "receptions": 14.9,
         "expectedGames": 17,
         "ageMultiplier": 0.93,
         "basis": "production",
@@ -61803,6 +62317,7 @@
       "projection": {
         "points": 61.6,
         "pointsPerGame": 3.6,
+        "receptions": 21,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -61898,6 +62413,7 @@
       "projection": {
         "points": 61.2,
         "pointsPerGame": 3.6,
+        "receptions": 22.6,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -61998,6 +62514,7 @@
       "projection": {
         "points": 60.7,
         "pointsPerGame": 3.6,
+        "receptions": 21.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -62123,6 +62640,7 @@
       "projection": {
         "points": 60.4,
         "pointsPerGame": 3.6,
+        "receptions": 13.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -62253,6 +62771,7 @@
       "projection": {
         "points": 60.3,
         "pointsPerGame": 4.9,
+        "receptions": 21.6,
         "expectedGames": 13,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -62353,6 +62872,7 @@
       "projection": {
         "points": 60.1,
         "pointsPerGame": 3.5,
+        "receptions": 27.3,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -62484,6 +63004,7 @@
       "projection": {
         "points": 59.2,
         "pointsPerGame": 4.8,
+        "receptions": 15,
         "expectedGames": 17,
         "ageMultiplier": 0.72,
         "basis": "production",
@@ -62615,6 +63136,7 @@
       "projection": {
         "points": 59.2,
         "pointsPerGame": 3.7,
+        "receptions": 21.1,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "production",
@@ -62745,6 +63267,7 @@
       "projection": {
         "points": 59,
         "pointsPerGame": 3.5,
+        "receptions": 20.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -62880,6 +63403,7 @@
       "projection": {
         "points": 59,
         "pointsPerGame": 4.2,
+        "receptions": 21.4,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -62980,6 +63504,7 @@
       "projection": {
         "points": 58.5,
         "pointsPerGame": 4.3,
+        "receptions": 19.8,
         "expectedGames": 16,
         "ageMultiplier": 0.85,
         "basis": "production",
@@ -63111,6 +63636,7 @@
       "projection": {
         "points": 58.2,
         "pointsPerGame": 3.4,
+        "receptions": 26.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -63242,6 +63768,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -63337,6 +63864,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -63431,6 +63959,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -63525,6 +64054,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -63619,6 +64149,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -63719,6 +64250,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -63845,6 +64377,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 18.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -63971,6 +64504,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64070,6 +64604,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "draft round 7",
@@ -64164,6 +64699,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64258,6 +64794,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64352,6 +64889,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64446,6 +64984,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64540,6 +65079,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64634,6 +65174,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64728,6 +65269,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64822,6 +65364,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -64916,6 +65459,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65010,6 +65554,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65105,6 +65650,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65199,6 +65745,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65293,6 +65840,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65387,6 +65935,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65481,6 +66030,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65575,6 +66125,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65669,6 +66220,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65763,6 +66315,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65857,6 +66410,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -65951,6 +66505,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66045,6 +66600,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66140,6 +66696,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66234,6 +66791,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66328,6 +66886,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66422,6 +66981,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66516,6 +67076,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66610,6 +67171,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66704,6 +67266,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66798,6 +67361,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66892,6 +67456,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -66986,6 +67551,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67080,6 +67646,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67174,6 +67741,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67268,6 +67836,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67362,6 +67931,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67456,6 +68026,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67550,6 +68121,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67644,6 +68216,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67738,6 +68311,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67832,6 +68406,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -67926,6 +68501,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -68020,6 +68596,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -68114,6 +68691,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -68208,6 +68786,7 @@
       "projection": {
         "points": 58.1,
         "pointsPerGame": 3.4,
+        "receptions": 20.4,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "undrafted baseline",
@@ -68307,6 +68886,7 @@
       "projection": {
         "points": 57.3,
         "pointsPerGame": 4.1,
+        "receptions": 22.8,
         "expectedGames": 14,
         "ageMultiplier": 1,
         "basis": "production",
@@ -68443,6 +69023,7 @@
       "projection": {
         "points": 57.3,
         "pointsPerGame": 3.4,
+        "receptions": 19.7,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -68574,6 +69155,7 @@
       "projection": {
         "points": 56.9,
         "pointsPerGame": 3.5,
+        "receptions": 21.5,
         "expectedGames": 17,
         "ageMultiplier": 0.96,
         "basis": "production",
@@ -68669,6 +69251,7 @@
       "projection": {
         "points": 56.6,
         "pointsPerGame": 3.5,
+        "receptions": 9.5,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -68795,6 +69378,7 @@
       "projection": {
         "points": 55.8,
         "pointsPerGame": 3.5,
+        "receptions": 21.8,
         "expectedGames": 16,
         "ageMultiplier": 1,
         "basis": "production",
@@ -68890,6 +69474,7 @@
       "projection": {
         "points": 55.7,
         "pointsPerGame": 3.3,
+        "receptions": 19.8,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -68985,6 +69570,7 @@
       "projection": {
         "points": 55.5,
         "pointsPerGame": 3.3,
+        "receptions": 9.1,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -69106,6 +69692,7 @@
       "projection": {
         "points": 55.4,
         "pointsPerGame": 3.3,
+        "receptions": 22.5,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -69237,6 +69824,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.2,
+        "receptions": 17.2,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "production",
@@ -69368,6 +69956,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "draft round 7",
@@ -69467,6 +70056,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "draft round 7",
@@ -69561,6 +70151,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -69655,6 +70246,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -69749,6 +70341,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -69843,6 +70436,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -69942,6 +70536,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "draft round 7",
@@ -70037,6 +70632,7 @@
       "projection": {
         "points": 55.2,
         "pointsPerGame": 3.4,
+        "receptions": 19.3,
         "expectedGames": 17,
         "ageMultiplier": 0.95,
         "basis": "undrafted baseline",
@@ -70136,6 +70732,7 @@
       "projection": {
         "points": 45.9,
         "pointsPerGame": 2.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "draft round 4",
@@ -70230,6 +70827,7 @@
       "projection": {
         "points": 101.4,
         "pointsPerGame": 6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70298,6 +70896,7 @@
       "projection": {
         "points": 99.7,
         "pointsPerGame": 5.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70366,6 +70965,7 @@
       "projection": {
         "points": 98.3,
         "pointsPerGame": 5.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70434,6 +71034,7 @@
       "projection": {
         "points": 97.2,
         "pointsPerGame": 5.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70502,6 +71103,7 @@
       "projection": {
         "points": 94.1,
         "pointsPerGame": 5.5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70570,6 +71172,7 @@
       "projection": {
         "points": 93,
         "pointsPerGame": 5.5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70638,6 +71241,7 @@
       "projection": {
         "points": 92.7,
         "pointsPerGame": 5.5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70706,6 +71310,7 @@
       "projection": {
         "points": 91.6,
         "pointsPerGame": 5.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70774,6 +71379,7 @@
       "projection": {
         "points": 90.9,
         "pointsPerGame": 5.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70842,6 +71448,7 @@
       "projection": {
         "points": 89.9,
         "pointsPerGame": 5.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70910,6 +71517,7 @@
       "projection": {
         "points": 87.4,
         "pointsPerGame": 5.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -70978,6 +71586,7 @@
       "projection": {
         "points": 87.4,
         "pointsPerGame": 5.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71046,6 +71655,7 @@
       "projection": {
         "points": 87.1,
         "pointsPerGame": 5.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71114,6 +71724,7 @@
       "projection": {
         "points": 85,
         "pointsPerGame": 5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71182,6 +71793,7 @@
       "projection": {
         "points": 85,
         "pointsPerGame": 5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71250,6 +71862,7 @@
       "projection": {
         "points": 84.3,
         "pointsPerGame": 5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71318,6 +71931,7 @@
       "projection": {
         "points": 82.9,
         "pointsPerGame": 4.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71386,6 +72000,7 @@
       "projection": {
         "points": 82.9,
         "pointsPerGame": 4.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71454,6 +72069,7 @@
       "projection": {
         "points": 82.5,
         "pointsPerGame": 4.9,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71522,6 +72138,7 @@
       "projection": {
         "points": 81.1,
         "pointsPerGame": 4.8,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71590,6 +72207,7 @@
       "projection": {
         "points": 79.4,
         "pointsPerGame": 4.7,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71658,6 +72276,7 @@
       "projection": {
         "points": 77.6,
         "pointsPerGame": 4.6,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71726,6 +72345,7 @@
       "projection": {
         "points": 77.3,
         "pointsPerGame": 4.5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71794,6 +72414,7 @@
       "projection": {
         "points": 76.6,
         "pointsPerGame": 4.5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71862,6 +72483,7 @@
       "projection": {
         "points": 74.8,
         "pointsPerGame": 4.4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71930,6 +72552,7 @@
       "projection": {
         "points": 73.8,
         "pointsPerGame": 4.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -71998,6 +72621,7 @@
       "projection": {
         "points": 73.1,
         "pointsPerGame": 4.3,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -72066,6 +72690,7 @@
       "projection": {
         "points": 72,
         "pointsPerGame": 4.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -72134,6 +72759,7 @@
       "projection": {
         "points": 71.3,
         "pointsPerGame": 4.2,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -72202,6 +72828,7 @@
       "projection": {
         "points": 68.9,
         "pointsPerGame": 4.1,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -72270,6 +72897,7 @@
       "projection": {
         "points": 68.5,
         "pointsPerGame": 4,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",
@@ -72338,6 +72966,7 @@
       "projection": {
         "points": 59.1,
         "pointsPerGame": 3.5,
+        "receptions": 0,
         "expectedGames": 17,
         "ageMultiplier": 1,
         "basis": "2025 defensive production",

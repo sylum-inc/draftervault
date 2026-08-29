@@ -679,6 +679,9 @@ const main = async () => {
   // --- positional baselines, needed before anyone can be shrunk toward them --
   const FANTASY_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE']);
   const ppgSamples = new Map();
+  // Receptions get their own samples so a league that does not pay a full point
+  // for them can be priced. Same players, same filter, same statistic shape.
+  const recSamples = new Map();
   for (const [gsis, roster] of rostered) {
     if (!FANTASY_POSITIONS.has(roster.position)) continue;
     const seasons = seasonsByPlayer.get(gsis);
@@ -686,15 +689,19 @@ const main = async () => {
     if (!recent || recent.games < 6) continue;
     if (!ppgSamples.has(roster.position)) ppgSamples.set(roster.position, []);
     ppgSamples.get(roster.position).push(recent.pprPoints / recent.games);
+    if (!recSamples.has(roster.position)) recSamples.set(roster.position, []);
+    recSamples.get(roster.position).push(recent.receptions / recent.games);
   }
-  const positionBaseline = new Map();
-  for (const [position, samples] of ppgSamples) {
+  const median = (samples) => {
     samples.sort((a, b) => b - a);
     // The baseline is what a startable-but-unremarkable player at the position
     // produces, not the mean of everyone who took a snap.
-    const index = Math.min(samples.length - 1, Math.floor(samples.length * 0.5));
-    positionBaseline.set(position, samples[index]);
-  }
+    return samples[Math.min(samples.length - 1, Math.floor(samples.length * 0.5))];
+  };
+  const positionBaseline = new Map();
+  for (const [position, samples] of ppgSamples) positionBaseline.set(position, median(samples));
+  const receptionBaseline = new Map();
+  for (const [position, samples] of recSamples) receptionBaseline.set(position, median(samples));
 
   const age = (birthDate) => {
     if (!birthDate) return null;
@@ -709,7 +716,10 @@ const main = async () => {
     const playerAge = age(identity?.birth_date);
     const baseline = positionBaseline.get(roster.position) ?? 6;
 
+    const recBaseline = receptionBaseline.get(roster.position) ?? 0;
+
     let weighted = 0;
+    let weightedReceptions = 0;
     let weight = 0;
     let games = 0;
     for (const season of SEASONS) {
@@ -717,22 +727,33 @@ const main = async () => {
       if (!totals || !totals.games) continue;
       const w = SEASON_WEIGHTS[season] * totals.games;
       weighted += (totals.pprPoints / totals.games) * w;
+      weightedReceptions += (totals.receptions / totals.games) * w;
       weight += w;
       games += totals.games;
     }
 
     let ppg;
+    let recPpg;
     let basis;
     if (weight > 0) {
       const observed = weighted / weight;
       const prior = SHRINKAGE_GAMES[roster.position] ?? 8;
       ppg = (games * observed + prior * baseline) / (games + prior);
+      // Receptions run through the identical pipeline. They have to: the client
+      // prices a non-PPR league by subtracting them from the points, and a
+      // shrunk points figure minus an unshrunk reception figure is neither.
+      recPpg =
+        (games * (weightedReceptions / weight) + prior * recBaseline) / (games + prior);
       basis = 'production';
     } else {
       // No tape: fall back to what players drafted in this slot have produced.
       const pick = draftByGsis.get(gsis);
       const key = `${roster.position}:${Math.min(7, num(pick?.round) || 7)}`;
       ppg = rookieCurve.get(key)?.median ?? baseline * 0.45;
+      // No tape means no reception history either. Assume they catch in
+      // proportion to how much they are expected to score relative to a typical
+      // player at the position — coarse, and it only ever moves cheap players.
+      recPpg = baseline > 0 ? recBaseline * (ppg / baseline) : 0;
       basis = pick ? `draft round ${pick.round}` : 'undrafted baseline';
     }
 
@@ -740,8 +761,20 @@ const main = async () => {
     const missed = missedByGsis.get(gsis) ?? 0;
     const expectedGames = Math.max(10, 17 - Math.min(6, missed));
     const points = ppg * multiplier * expectedGames;
+    // Carried so the client can re-price for a league that pays less than a
+    // point per catch, the same way it re-prices for a different league shape.
+    const receptions = recPpg * multiplier * expectedGames;
 
-    return { ppg, points, expectedGames, ageMultiplier: multiplier, basis, playerAge, games };
+    return {
+      ppg,
+      points,
+      receptions,
+      expectedGames,
+      ageMultiplier: multiplier,
+      basis,
+      playerAge,
+      games,
+    };
   };
 
   // --- build the candidate list --------------------------------------------
@@ -838,6 +871,9 @@ const main = async () => {
       projection: {
         points: Math.round(projection.points * 10) / 10,
         pointsPerGame: Math.round(projection.ppg * 10) / 10,
+        // Projected catches, so a league paying less than a point for one can
+        // be priced without regenerating anything.
+        receptions: Math.round(projection.receptions * 10) / 10,
         expectedGames: projection.expectedGames,
         ageMultiplier: Math.round(projection.ageMultiplier * 100) / 100,
         basis: projection.basis,
@@ -1117,6 +1153,8 @@ const main = async () => {
       projection: {
         points: Math.round(points * 10) / 10,
         pointsPerGame: Math.round((points / games) * 10) / 10,
+        // A defence catches nothing, so reception scoring never moves it.
+        receptions: 0,
         expectedGames: 17,
         ageMultiplier: 1,
         basis: '2025 defensive production',

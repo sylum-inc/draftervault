@@ -6,6 +6,7 @@ import {
   POSITIONS,
   leagueShape,
   normaliseLeague,
+  pointsFor,
   pricePool,
   replacementLevels,
   rosteredForTeams,
@@ -87,6 +88,102 @@ describe('the shipped pool and the client agree', () => {
       (position) => `${position}: ${depth[position]} of ${biggest[position]}`
     );
     expect(short).toEqual([]);
+  });
+});
+
+describe('scoring', () => {
+  it('leaves the points alone at full PPR', () => {
+    const player = { position: 'WR', points: 250, receptions: 100 };
+    expect(pointsFor(player, DEFAULT_LEAGUE)).toBe(250);
+  });
+
+  it('takes back half a point a catch at half PPR', () => {
+    const player = { position: 'WR', points: 250, receptions: 100 };
+    expect(pointsFor(player, leagueShape({ receptionPoints: 0.5 }))).toBe(200);
+  });
+
+  it('takes back the whole point in a standard league', () => {
+    const player = { position: 'WR', points: 250, receptions: 100 };
+    expect(pointsFor(player, leagueShape({ receptionPoints: 0 }))).toBe(150);
+  });
+
+  it('leaves a player who catches nothing untouched at any setting', () => {
+    const qb = { position: 'QB', points: 300, receptions: 0 };
+    for (const receptionPoints of [0, 0.5, 1]) {
+      expect(pointsFor(qb, leagueShape({ receptionPoints }))).toBe(300);
+    }
+  });
+
+  it('treats a pool with no reception data as unchanged', () => {
+    // A pool built before scoring was configurable carries no catches; it must
+    // price as it always did rather than silently losing points.
+    expect(pointsFor({ position: 'WR', points: 200 }, leagueShape({ receptionPoints: 0 }))).toBe(
+      200
+    );
+  });
+
+  it('moves catchers and runners in opposite directions', () => {
+    const players: Projected[] = [
+      { position: 'RB', points: 250, receptions: 20 },
+      { position: 'RB', points: 250, receptions: 90 },
+    ];
+    const full = pricePool(
+      players,
+      leagueShape({ rostered: { ...DEFAULT_LEAGUE.rostered, RB: 2 } })
+    );
+    const half = pricePool(
+      players,
+      leagueShape({ receptionPoints: 0.5, rostered: { ...DEFAULT_LEAGUE.rostered, RB: 2 } })
+    );
+
+    // Equal points at full PPR; at half the one who got there by catching
+    // falls behind the one who did not.
+    expect(full.priced[0].vorp).toBe(full.priced[1].vorp);
+    expect(half.priced[0].vorp).toBeGreaterThan(half.priced[1].vorp);
+  });
+
+  it('lowers replacement level where catches happen and nowhere else', () => {
+    const projected = poolData.players.map((p) => ({
+      position: p.position,
+      points: p.projection.points,
+      receptions: p.projection.receptions,
+    }));
+    const full = pricePool(projected, DEFAULT_LEAGUE);
+    const half = pricePool(projected, leagueShape({ receptionPoints: 0.5 }));
+
+    // Tight ends lean on catches hardest, then receivers, then backs.
+    const drop = (position: string) => full.replacement[position] - half.replacement[position];
+    expect(drop('TE')).toBeGreaterThan(drop('WR'));
+    expect(drop('WR')).toBeGreaterThan(drop('RB'));
+    expect(drop('RB')).toBeGreaterThan(5);
+
+    // Kickers and defences never catch anything, so their bar cannot move at all.
+    expect(half.replacement.K).toBe(full.replacement.K);
+    expect(half.replacement.DST).toBe(full.replacement.DST);
+
+    // Quarterbacks do, occasionally, on trick plays — nflverse records it and
+    // fourteen of them carry a fraction of a catch. So this is nearly but not
+    // exactly zero, and asserting zero would be asserting the data is wrong.
+    expect(drop('QB')).toBeGreaterThan(0);
+    expect(drop('QB')).toBeLessThan(1);
+  });
+
+  it('is part of what makes two leagues different', () => {
+    expect(sameLeague(leagueShape(), leagueShape({ receptionPoints: 0.5 }))).toBe(false);
+  });
+
+  it('clamps a scoring nobody plays', () => {
+    expect(normaliseLeague(leagueShape({ receptionPoints: -3 })).receptionPoints).toBe(0);
+    expect(normaliseLeague(leagueShape({ receptionPoints: 99 })).receptionPoints).toBe(1.5);
+    expect(
+      normaliseLeague({ ...DEFAULT_LEAGUE, receptionPoints: Number.NaN }).receptionPoints
+    ).toBe(1);
+  });
+
+  it('ships a pool that carries catches for every player', () => {
+    // Without these the client cannot restate a single price.
+    const missing = poolData.players.filter((p) => p.projection.receptions === undefined);
+    expect(missing.map((p) => p.name)).toEqual([]);
   });
 });
 
