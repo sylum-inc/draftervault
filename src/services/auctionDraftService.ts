@@ -491,13 +491,31 @@ export class AuctionDraftService {
   /** Replacement points per position under the active league. */
   private replacement: Record<string, number> = {};
   /**
-   * Starting slots per team, derived from the lineup.
+   * Slots the reserve has to hold a dollar back for.
    *
-   * Capped at the roster size: a league that fields more players than it may
-   * roster is refused by the settings panel, but if one ever reached the engine
-   * the dollar reserve would exceed every budget and no bid could be legal.
+   * A bid is capped at the budget minus a dollar for each of these, so that a
+   * team cannot spend itself into a lineup it is unable to finish filling.
+   *
+   * That rule only holds when every roster spot has to be *bought*. In a
+   * partial auction it is wrong, and wrong in the expensive direction: this
+   * league auctions a commissioner's sheet of the best 50-100 players and fills
+   * every remaining spot by snake draft, for free, with no minimum number a
+   * team has to buy. A manager may legally put the whole $200 on three players
+   * and snake the other thirteen. Holding $8 back for slots the snake will fill
+   * caps our own bids below what the rules allow, and — worse — makes the room
+   * read as poorer than it is, so an opponent looks tapped out at $88 when they
+   * can still go to $96. Every bid we walk away from on that basis is a player
+   * we lose while holding money we were never required to hold.
+   *
+   * So the reserve exists exactly when the auction covers the whole roster.
+   *
+   * The full-auction figure stays capped at the roster size: a league that
+   * fields more players than it may roster is refused by the settings panel,
+   * but if one ever reached the engine the reserve would exceed every budget
+   * and no bid could be legal.
    */
-  private get startingSlots(): number {
+  private get reservedSlots(): number {
+    if (this.league.auctionSheetSize !== null) return 0;
     return Math.min(this.league.rosterSize, startingSlots(this.league));
   }
   /** Imported rankings, by player id. Empty unless somebody has imported some. */
@@ -713,7 +731,7 @@ export class AuctionDraftService {
     }
 
     // Every remaining starting slot still needs at least a dollar to fill.
-    const slotsToFill = Math.max(0, this.startingSlots - filled - 1);
+    const slotsToFill = Math.max(0, this.reservedSlots - filled - 1);
     const spendable = team.remaining - slotsToFill;
     if (cost > spendable) {
       return {
@@ -1111,7 +1129,7 @@ export class AuctionDraftService {
     const remaining = team.remaining - cost;
     // Every unfilled starting slot still needs a dollar in reserve, exactly as
     // validateBid enforces it.
-    const minimumHold = Math.max(0, this.startingSlots - filled - 1);
+    const minimumHold = Math.max(0, this.reservedSlots - filled - 1);
     const spendable = remaining - minimumHold;
     const affordable =
       spendable > 0
@@ -1238,7 +1256,7 @@ export class AuctionDraftService {
     const riskAdjustedValue = adjustedValue * riskFactor;
 
     const filled = Object.values(team.roster).reduce((total, count) => total + count, 0);
-    const slotsToFill = Math.max(0, this.startingSlots - filled - 1);
+    const slotsToFill = Math.max(0, this.reservedSlots - filled - 1);
     const spendable = Math.max(1, team.remaining - slotsToFill);
 
     const targetBid = Math.max(1, Math.round(riskAdjustedValue));
@@ -1276,7 +1294,7 @@ export class AuctionDraftService {
     const openSlots = this.teams.reduce(
       (total, team) =>
         total +
-        Math.max(0, this.startingSlots - Object.values(team.roster).reduce((a, b) => a + b, 0)),
+        Math.max(0, this.reservedSlots - Object.values(team.roster).reduce((a, b) => a + b, 0)),
       0
     );
     const moneyLeft = this.teams.reduce((total, team) => total + team.remaining, 0) - openSlots;

@@ -77,7 +77,7 @@ src/styles/draft-room.css             design tokens + component styles
 
 **The draft engine owns the rules.** `validateBid()` returns a typed rejection the
 UI renders verbatim; `draftPlayer()` re-checks it. Bids must be whole dollars ≥ 1,
-within budget minus a $1 reserve per unfilled starting slot, and inside the
+within budget minus the reserve (see below), and inside the
 position and roster limits. Picks persist to `localStorage` and replay on load —
 only the picks are stored, so derived numbers always come from current logic.
 
@@ -115,6 +115,19 @@ auction has ever done. The error was assuming you get first pick of what is
 left; eleven other teams are drafting too, and across both phases the league
 still rosters the same players it always did. Only the money is concentrated. A
 test now asserts no player exceeds 55% of a budget at any sheet size.
+
+**The reserve only exists when the auction buys the whole roster.** A bid is
+capped at the budget minus a dollar per unfilled starting slot, so nobody spends
+themselves into a lineup they cannot finish. That is right when every roster
+spot has to be bought and wrong the moment one does not. This league auctions a
+sheet of 50-100 and snakes the rest, with no minimum a team has to buy — $200 on
+three players is legal — so the reserve is zero whenever `auctionSheetSize` is
+set. It was wrong in the expensive direction twice over: it capped our own bids
+below the rules, and it made the room read as poorer than it is, so an opponent
+looked tapped out at $88 while they could still go to $96. Every bid walked away
+from on that basis is a player lost while holding money nobody required.
+`reservedSlots` is the one place that decides it; three tests fail if the
+condition is removed.
 
 **Scoring is part of the league, and the pool is not built at yours.** nflverse
 gives full-PPR points and the builder took them straight, so a point a catch was

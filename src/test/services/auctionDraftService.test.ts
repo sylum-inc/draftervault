@@ -13,6 +13,75 @@ describe('AuctionDraftService', () => {
     service = new AuctionDraftService();
   });
 
+  describe('the reserve, in a partial auction', () => {
+    // The $1-per-starting-slot reserve exists because every roster spot has to
+    // be bought. This league auctions a commissioner's sheet of the best
+    // players and fills the rest by snake draft, for free, with no minimum
+    // number a team has to buy — so there is nothing to reserve for, and
+    // holding money back caps bids the rules allow. It is the same mistake in
+    // both directions: it shrinks our own ceiling, and it makes the room read
+    // as poorer than it is, so an opponent looks tapped out while they can
+    // still outbid us.
+    const hybrid = () => {
+      const service = new AuctionDraftService(leagueShape({ auctionSheetSize: 50 }));
+      return service;
+    };
+
+    it('lets a team commit the whole budget when the snake fills the rest', () => {
+      const service = hybrid();
+      const player = firstAvailable(service);
+
+      expect(service.validateBid(player.id, 'team-1', 200).ok).toBe(true);
+      expect(service.draftPlayer(player.id, 'team-1', 200)).toBe(true);
+      expect(service.getTeams()[0].remaining).toBe(0);
+    });
+
+    it('still refuses a dollar more than the budget', () => {
+      const service = hybrid();
+      const player = firstAvailable(service);
+      const check = service.validateBid(player.id, 'team-1', 201);
+
+      expect(check.ok).toBe(false);
+      if (!check.ok) expect(check.code).toBe('insufficient-funds');
+    });
+
+    it('keeps the reserve when the auction covers the whole roster', () => {
+      // The rule is not deleted, it is made conditional. A full auction has to
+      // go on holding a dollar for each starting slot it still has to buy.
+      const service = new AuctionDraftService(leagueShape({ auctionSheetSize: null }));
+      const player = firstAvailable(service);
+
+      expect(service.validateBid(player.id, 'team-1', 200).ok).toBe(false);
+      expect(service.validateBid(player.id, 'team-1', 192).ok).toBe(true);
+    });
+
+    it('reports the whole budget as spendable rather than holding some back', () => {
+      const service = hybrid();
+      const spend = service.simulateSpend('team-1', 200);
+
+      expect(spend?.minimumHold).toBe(0);
+      expect(spend?.legal).toBe(true);
+      expect(spend?.remaining).toBe(0);
+    });
+
+    it('leaves a team with an empty roster and no money, which is legal here', () => {
+      // Three players, the whole budget, thirteen spots to be snaked. The
+      // engine must not treat that as a broken state.
+      const service = hybrid();
+      const players = service.getAvailablePlayers().slice(0, 3);
+
+      expect(service.draftPlayer(players[0].id, 'team-1', 100)).toBe(true);
+      expect(service.draftPlayer(players[1].id, 'team-1', 60)).toBe(true);
+      expect(service.draftPlayer(players[2].id, 'team-1', 40)).toBe(true);
+
+      const team = service.getTeams()[0];
+      expect(team.remaining).toBe(0);
+      // Still has roster room, so the draft is not over for them — the snake
+      // is what fills it.
+      expect(service.canDraft(team)).toBe(true);
+    });
+  });
+
   describe('bid validation', () => {
     it('rejects a NaN bid instead of poisoning the budget', () => {
       const player = firstAvailable(service);
