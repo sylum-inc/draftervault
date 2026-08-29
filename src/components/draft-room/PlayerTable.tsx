@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Player } from '@/services/auctionDraftService';
+import type { Player, PriceAdjuster } from '@/services/auctionDraftService';
 import { getIdentity, teamColors } from '@/services/nflIdentity';
 
 export type TableSort =
@@ -24,7 +24,8 @@ export type TableSort =
   | 'consensus'
   | 'edge'
   | 'spread'
-  | 'ownership';
+  | 'ownership'
+  | 'adjusted';
 
 export type ColumnSet = 'value' | 'production' | 'usage' | 'market';
 
@@ -48,6 +49,17 @@ interface PlayerTableProps {
   onSelect: (player: Player) => void;
   onToggleWatch: (playerId: string) => void;
   onTogglePin: (playerId: string) => void;
+  /**
+   * List prices restated at the room's inflation.
+   *
+   * A closure off the engine rather than a number written onto each player, and
+   * that is deliberate: the adjusted price changes on every single pick, and
+   * the card board's sixty memoised cards do not re-render on a pick at all
+   * because their props are stable element references. Putting this on the
+   * Player object — or handing it to a card — would undo that measured fix for
+   * every pick of the night. The table re-renders anyway, so it can have it.
+   */
+  adjust: PriceAdjuster;
 }
 
 interface Column {
@@ -55,9 +67,16 @@ interface Column {
   label: string;
   numeric?: boolean;
   title?: string;
-  read?: (player: Player) => string;
+  /**
+   * The cell's text.
+   *
+   * Takes the price adjuster as well as the player because one column is not a
+   * property of the player at all: what he costs tonight is a property of the
+   * room, and it moves with every pick while he does not.
+   */
+  read?: (player: Player, adjust: PriceAdjuster) => string;
   /** Draws a proportional bar behind the number, scaled across the visible rows. */
-  bar?: (player: Player) => number | null;
+  bar?: (player: Player, adjust: PriceAdjuster) => number | null;
   tone?: string;
 }
 
@@ -82,6 +101,14 @@ const SETS: Record<ColumnSet, Column[]> = {
       read: (p) => `$${p.estimatedValue}`,
       bar: (p) => p.estimatedValue,
       tone: 'var(--dr-value)',
+    },
+    {
+      key: 'adjusted',
+      label: 'Now',
+      numeric: true,
+      title: "What he costs at the room's current inflation, not the list price",
+      read: (p, adjust) => `$${adjust.price(p)}`,
+      bar: (p, adjust) => adjust.price(p),
     },
     {
       key: 'projected',
@@ -272,7 +299,7 @@ const SETS: Record<ColumnSet, Column[]> = {
   ],
 };
 
-const SORTS: Record<TableSort, (a: Player, b: Player) => number> = {
+const SORTS: Record<TableSort, (a: Player, b: Player, adjust: PriceAdjuster) => number> = {
   rank: (a, b) => a.adp - b.adp,
   value: (a, b) => a.estimatedValue - b.estimatedValue,
   projected: (a, b) => a.projectedPoints - b.projectedPoints,
@@ -297,6 +324,10 @@ const SORTS: Record<TableSort, (a: Player, b: Player) => number> = {
   edge: (a, b) => (a.market?.edge ?? -999) - (b.market?.edge ?? -999),
   spread: (a, b) => (a.market?.spread ?? -1) - (b.market?.spread ?? -1),
   ownership: (a, b) => (a.market?.ownership ?? -1) - (b.market?.ownership ?? -1),
+  // Inflation is one multiplier over the whole board, so this orders identically
+  // to `value` — until a sheet is in force, when off-sheet players do not move
+  // and the two genuinely diverge.
+  adjusted: (a, b, adjust) => adjust.price(a) - adjust.price(b),
 };
 
 const TREND_MARK: Record<string, { glyph: string; tone: string; label: string }> = {
@@ -331,13 +362,15 @@ export const PlayerTable = ({
   onSelect,
   onToggleWatch,
   onTogglePin,
+  adjust,
 }: PlayerTableProps) => {
   const active = SETS[columns];
 
   const rows = useMemo(() => {
-    const sorted = [...players].sort(SORTS[sort] ?? SORTS.rank);
+    const compare = SORTS[sort] ?? SORTS.rank;
+    const sorted = [...players].sort((a, b) => compare(a, b, adjust));
     return descending ? sorted.reverse() : sorted;
-  }, [players, sort, descending]);
+  }, [players, sort, descending, adjust]);
 
   // Slice after sorting, and only for rendering: `maxima` below still measures
   // the whole field, so a bar means the same thing however much is on screen.
@@ -349,10 +382,13 @@ export const PlayerTable = ({
     const out = new Map<string, number>();
     for (const column of active) {
       if (!column.bar) continue;
-      out.set(column.label, Math.max(...rows.map((player) => column.bar!(player) ?? 0), 0.0001));
+      out.set(
+        column.label,
+        Math.max(...rows.map((player) => column.bar!(player, adjust) ?? 0), 0.0001)
+      );
     }
     return out;
-  }, [rows, active]);
+  }, [rows, active, adjust]);
 
   return (
     <div className="dr-table-wrap">
@@ -471,7 +507,7 @@ export const PlayerTable = ({
                 </td>
 
                 {active.map((column) => {
-                  const bar = column.bar?.(player) ?? null;
+                  const bar = column.bar?.(player, adjust) ?? null;
                   const max = maxima.get(column.label) ?? 1;
                   return (
                     <td
@@ -486,7 +522,7 @@ export const PlayerTable = ({
                           style={{ width: `${Math.max(0, (bar / max) * 100)}%` }}
                         />
                       )}
-                      <span className="dr-cell-value">{column.read?.(player) ?? '—'}</span>
+                      <span className="dr-cell-value">{column.read?.(player, adjust) ?? '—'}</span>
                     </td>
                   );
                 })}

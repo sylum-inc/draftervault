@@ -32,6 +32,7 @@ import {
   adviseOnNomination,
   adviseOnSnakePick,
   buildAlerts,
+  readTheRoom,
 } from '@/services/draftAdvisor';
 import { openDraftSync } from '@/services/draftSync';
 import type { LeagueShape } from '@/lib/valuation';
@@ -93,6 +94,23 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     setPlayers(draftService.getPlayers());
     setTeams(draftService.getTeams());
   }, [draftService]);
+
+  /**
+   * Point the selection back at the live player object.
+   *
+   * Importing a ranking or a sheet goes through `repriceInPlace`, which rebuilds
+   * every player from the pool — so the selected object becomes an orphan still
+   * carrying its pre-import price. The nomination stage, which is the one panel
+   * a bid is actually decided from, then showed the old list price and the old
+   * adjusted price while the board a few inches away showed the new ones. The
+   * second window already re-resolves for the same reason.
+   */
+  const resync = useCallback(() => {
+    setSelected((current) =>
+      current ? (draftService.getPlayers().find((p) => p.id === current.id) ?? null) : null
+    );
+    sync();
+  }, [draftService, sync]);
 
   // Resume an interrupted draft, then quietly freshen injury status from ESPN.
   useEffect(() => {
@@ -212,7 +230,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     } catch {
       return null;
     }
-  }, [selected, teamId, draftService]);
+    // `players` is a dependency because a reprice replaces the whole array
+    // without the selection changing identity, and the analytics behind it move
+    // with the prices.
+  }, [selected, teamId, draftService, players]);
 
   /**
    * Which half of the draft the room is in.
@@ -504,16 +525,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     (overrides: Record<string, RankingOverride>) => {
       draftService.setCustomRankings(overrides);
       setImportOpen(false);
-      sync();
+      resync();
     },
-    [draftService, sync]
+    [draftService, resync]
   );
 
   const clearRankings = useCallback(() => {
     draftService.clearCustomRankings();
     setImportOpen(false);
-    sync();
-  }, [draftService, sync]);
+    resync();
+  }, [draftService, resync]);
 
   /**
    * The sheet re-prices the board and leaves the draft alone.
@@ -526,9 +547,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     (ids: string[]) => {
       draftService.setAuctionSheet(ids);
       setSheetOpen(false);
-      sync();
+      resync();
     },
-    [draftService, sync]
+    [draftService, resync]
   );
 
   const clearSheet = useCallback(() => {
@@ -537,8 +558,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // The chip goes with the sheet; left on, it would filter the board down to
     // a list nobody can see any more.
     setSheetOnly(false);
-    sync();
-  }, [draftService, sync]);
+    resync();
+  }, [draftService, resync]);
 
   const previewSheet = useCallback(
     (ids: string[]) => draftService.previewSheet(ids),
@@ -591,6 +612,37 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
   const activeTeam = teams.find((team) => team.id === teamId);
 
+  /**
+   * The team the advice is written for.
+   *
+   * Not `activeTeam`. That is whoever is selected in the winning-team box,
+   * which is a *recording* control — it says who just bought a player, and it
+   * lands on an opponent constantly through a normal auction. Advice computed
+   * against it was advice about somebody else's roster holes and somebody
+   * else's money, printed in a panel that reads as yours. `getMyTeamId` is the
+   * one statement of whose side this app is on, and it is what the advisor
+   * speaks for. With no team marked, the panel says so rather than guessing.
+   */
+  const myTeam = useMemo(() => teams.find((team) => team.id === myTeamId), [teams, myTeamId]);
+
+  /**
+   * The same pricing the stage uses, but for the owner's roster.
+   *
+   * `analytics` above is priced for whichever team is in the winning-team box,
+   * because that is what the stage's max-bid tile is about. The advisor needs
+   * the same arithmetic against our own holes and our own budget, so it gets
+   * its own call rather than reading a number computed for somebody else.
+   */
+  const myAnalytics: DraftAnalytics | null = useMemo(() => {
+    if (!selected || !myTeamId) return null;
+    try {
+      return draftService.getPlayerAnalytics(selected.id, myTeamId);
+    } catch {
+      return null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+  }, [selected, myTeamId, draftService, players]);
+
   // The opinion layer is computed only when it is switched on: it is the one
   // part of the app that is not a measurement, and it should cost nothing when
   // nobody has asked for it.
@@ -599,14 +651,19 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // The snake asks a different question and gets a different answer. Both
     // come back as one `Advice`, so the panel needs no second prop: it is the
     // same register of claim either way, and it stays in the same dashed box.
+    //
+    // The snake half is the one place the advisor does not speak for the owner,
+    // and that is not an oversight: a free pick belongs to whoever the order
+    // says is on the clock, and advice about taking him is advice about that
+    // team's slot. The panel names whose side it is on either way.
     return snake
       ? adviseOnSnakePick(selected, onTheClock?.team, players, draftService)
-      : adviseOnBid(selected, activeTeam, analytics, draftService, Number.parseInt(bid, 10) || 0);
+      : adviseOnBid(selected, myTeam, myAnalytics, draftService, Number.parseInt(bid, 10) || 0);
   }, [
     preferences.advisor,
     selected,
-    activeTeam,
-    analytics,
+    myTeam,
+    myAnalytics,
     draftService,
     bid,
     snake,
@@ -614,21 +671,57 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     players,
   ]);
 
+  /**
+   * What the room would plausibly pay for the player on the block.
+   *
+   * The estimate half of who-can-outbid-you. The legal ceilings beside it on
+   * the stage are facts and are computed whether or not the advisor is on; this
+   * is a guess about what opponents want, so it costs nothing until asked for.
+   */
+  const roomRead = useMemo(() => {
+    if (!preferences.advisor || !selected) return null;
+    return readTheRoom(selected, draftService, Number.parseInt(bid, 10) || 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+  }, [preferences.advisor, selected, bid, draftService, players, teams]);
+
   const alerts = useMemo(
-    () => (preferences.advisor ? buildAlerts(players, activeTeam, draftService) : []),
-    [preferences.advisor, players, activeTeam, draftService]
+    () => (preferences.advisor ? buildAlerts(players, myTeam, draftService) : []),
+    [preferences.advisor, players, myTeam, draftService]
   );
 
-  const nominationAdvice = useMemo(() => {
-    if (!preferences.advisor) return null;
-    const suggestion = adviseOnNomination(players, activeTeam, draftService);
-    return suggestion
-      ? {
-          name: getIdentity(suggestion.player.id)?.name ?? suggestion.player.name,
-          reason: suggestion.reason,
-        }
-      : null;
-  }, [preferences.advisor, players, activeTeam, draftService]);
+  /**
+   * What to nominate, and what to keep off the block.
+   *
+   * The watchlist goes in because it is the only place the owner has actually
+   * said which players they want, and "protect the ones you want" is
+   * meaningless without it. It is a per-person preference rather than a shared
+   * fact, which is exactly why it is passed in from here rather than read by
+   * the advisor: the engine holds nothing of the kind.
+   */
+  const nominationPlan = useMemo(
+    () =>
+      preferences.advisor
+        ? adviseOnNomination(players, myTeam, draftService, { watchlist: preferences.watchlist })
+        : null,
+    [preferences.advisor, players, myTeam, draftService, preferences.watchlist]
+  );
+
+  /**
+   * Who can legally beat the bid on the table, and what everything costs at
+   * tonight's prices. Facts, so they are computed whatever the advisor is doing.
+   */
+  const competition = useMemo(() => {
+    if (!selected || snake) return null;
+    return draftService.getBidCompetition(selected.id, Number.parseInt(bid, 10) || 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+  }, [selected, bid, snake, draftService, players, teams]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- moves with every pick
+  const adjust = useMemo(() => draftService.getPriceAdjuster(), [draftService, players, teams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- moves with every pick
+  const basis = useMemo(() => draftService.getInflationBasis(), [draftService, players, teams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- a tier empties on a pick
+  const tierBreaks = useMemo(() => draftService.getTierBreaks(), [draftService, players]);
 
   const spent = teams.reduce((total, team) => total + team.spent, 0);
   const progress = players.length ? (drafted.length / players.length) * 100 : 0;
@@ -910,6 +1003,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                   pinned={preferences.pinned}
                   columns={preferences.columns}
                   onColumns={setColumns}
+                  adjust={adjust}
                 />
               ) : (
                 <div className="dr-grid">
@@ -980,13 +1074,25 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               onUnsold={markUnsold}
               onReturnToSheet={returnToSheet}
               passedOver={!!selected && sheet.unsold.includes(selected.id)}
+              adjusted={selected && !snake ? adjust.price(selected) : null}
+              inflation={adjust.inflation}
+              competition={competition}
             />
           )}
           {preferences.advisor && (
             <AdvisorPanel
               advice={advice}
               alerts={alerts}
-              nomination={nominationAdvice}
+              plan={nominationPlan}
+              room={roomRead}
+              /* Falling back to the owner when nobody is on the clock. At the
+                 end of a hybrid draft getSnakeOnTheClock returns nothing, and
+                 collapsing that into "no team is marked as yours" told the
+                 owner to go and mark one while the alert directly beneath it
+                 named their team. */
+              speakingFor={
+                snake ? (onTheClock?.team.name ?? myTeam?.name ?? null) : (myTeam?.name ?? null)
+              }
               onDismiss={() => setAdvisor(false)}
             />
           )}
@@ -1017,7 +1123,15 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               myTeamId={myTeamId}
             />
           )}
-          {asidePanel === 'market' && <MarketPanel market={market} teams={teams} phase={phase} />}
+          {asidePanel === 'market' && (
+            <MarketPanel
+              market={market}
+              teams={teams}
+              phase={phase}
+              basis={basis}
+              tierBreaks={tierBreaks}
+            />
+          )}
           {asidePanel === 'bargains' && (
             <BargainBoard service={draftService} players={players} onSelect={nominate} />
           )}

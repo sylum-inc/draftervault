@@ -1,4 +1,11 @@
-import type { DraftPhase, MarketState, Team } from '@/services/auctionDraftService';
+import {
+  INFLATION_BOUNDS,
+  type DraftPhase,
+  type InflationBasis,
+  type MarketState,
+  type Team,
+  type TierBreak,
+} from '@/services/auctionDraftService';
 
 interface MarketPanelProps {
   market: MarketState;
@@ -12,6 +19,27 @@ interface MarketPanelProps {
    * measurement of a market that has closed.
    */
   phase: DraftPhase;
+  /**
+   * What produced the inflation number.
+   *
+   * The meter used to print a multiplier with nothing behind it, and a number
+   * nobody can interrogate is not an edge — it is the first thing to be talked
+   * out of when the bidding gets loud. Money left, value left, how many players
+   * that value is spread over, and whether the reading is clamped or frozen all
+   * come from the engine as one object, so the explanation cannot describe a
+   * different number from the one the board is pricing at.
+   */
+  basis: InflationBasis;
+  /**
+   * The shelf about to empty at each position, and the step down off it.
+   *
+   * Counts both halves of the draft: a tier is emptied by a snake pick exactly
+   * as it is by a $40 one. The dollar step is list prices of players still on
+   * the board rather than money anybody spent, which is why it survives into
+   * the snake — but it is null wherever either side of the step is not being
+   * auctioned, because a $1 floor price is not a price anybody would pay.
+   */
+  tierBreaks: TierBreak[];
 }
 
 /** Plain words for what the inflation number means for the next bid. */
@@ -32,7 +60,7 @@ const readInflation = (inflation: number): { label: string; tone: string } => {
  * players were worth, how much of each position is gone, and what it costs to
  * keep waiting at one.
  */
-export const MarketPanel = ({ market, teams, phase }: MarketPanelProps) => {
+export const MarketPanel = ({ market, teams, phase, basis, tierBreaks }: MarketPanelProps) => {
   const snake = phase === 'snake';
   const reading = snake
     ? { label: 'The money is finished — the snake fills the rest', tone: 'var(--dr-ink-muted)' }
@@ -53,6 +81,19 @@ export const MarketPanel = ({ market, teams, phase }: MarketPanelProps) => {
 
   const runsLow = market.scarcity.filter((row) => row.tierOneLeft > 0 && row.tierOneLeft <= 3);
 
+  // Fewest left first: the shelf about to empty is the one worth a glance, and
+  // a position with nine of its tier still on the board is not news.
+  //
+  // Filtered on the same conditions the alert uses, rather than each deciding
+  // separately what counts. A tier that only ever held one player is not a shelf
+  // about to empty — which is why the alert stays quiet — but the panel led with
+  // a red "QB 1/1 · then −46 pts" on an untouched board, signalling a cliff one
+  // pick away before anybody had bid. And a tier with nothing below it reported
+  // a step of zero, which reads as "no drop here" rather than "no shelf below".
+  const breaks = [...tierBreaks]
+    .filter((row) => row.started >= 2 && row.pointStep != null)
+    .sort((a, b) => a.left - b.left || (b.pointStep ?? 0) - (a.pointStep ?? 0));
+
   return (
     <section className="dr-panel dr-rail" aria-label="Market">
       <header className="dr-rail-head">
@@ -67,16 +108,23 @@ export const MarketPanel = ({ market, teams, phase }: MarketPanelProps) => {
             {market.inflation.toFixed(2)}×
           </strong>
         </div>
-        {/* 0.6 to 1.8 is the range the engine clamps to, so the bar is honest about its ends. */}
+        {/* The engine's own clamp, read rather than restated: a bar drawn to
+            different ends from the ones the number is clamped to is a bar that
+            lies about being pinned. */}
         <div className="dr-meter-track">
           <span
             className="dr-meter-fill"
             style={{
-              width: `${Math.max(0, Math.min(100, ((market.inflation - 0.6) / 1.2) * 100))}%`,
+              width: `${Math.max(0, Math.min(100, ((market.inflation - INFLATION_BOUNDS.min) / (INFLATION_BOUNDS.max - INFLATION_BOUNDS.min)) * 100))}%`,
               background: reading.tone,
             }}
           />
-          <span className="dr-meter-mark" style={{ left: `${((1 - 0.6) / 1.2) * 100}%` }} />
+          <span
+            className="dr-meter-mark"
+            style={{
+              left: `${((1 - INFLATION_BOUNDS.min) / (INFLATION_BOUNDS.max - INFLATION_BOUNDS.min)) * 100}%`,
+            }}
+          />
         </div>
         <p className="dr-meter-note" style={{ color: reading.tone }}>
           {reading.label}
@@ -97,6 +145,53 @@ export const MarketPanel = ({ market, teams, phase }: MarketPanelProps) => {
                 {premiumPct}%
               </strong>
               {' vs our numbers'}
+            </>
+          )}
+        </p>
+
+        {/*
+          What drove it.
+
+          Inflation is one division, and every term of it is here: the money
+          still in the room over the list value of everything still for sale.
+          Printing the workings is the difference between a number somebody can
+          act on and a number somebody argues with — and it is also the only way
+          to see the two states in which it has stopped being a measurement at
+          all: pinned against the clamp, and frozen through the snake.
+        */}
+        <dl className="dr-drivers">
+          <div>
+            <dt>Money left</dt>
+            <dd className="dr-num">${basis.moneyLeft}</dd>
+          </div>
+          <div>
+            <dt>Value left</dt>
+            <dd className="dr-num">${basis.valueLeft}</dd>
+          </div>
+          <div>
+            <dt>Still for sale</dt>
+            <dd className="dr-num">
+              {basis.forSaleLeft}
+              <span style={{ color: 'var(--dr-ink-faint)' }}>/{basis.forSaleTotal}</span>
+            </dd>
+          </div>
+        </dl>
+        <p className="dr-footnote">
+          {basis.frozen ? (
+            <>
+              Held at 1.00× for the snake: money left is fixed while value left keeps shrinking, so
+              a live reading would climb on its own through a phase in which nobody spends.
+            </>
+          ) : basis.clamped ? (
+            <>
+              ${basis.moneyLeft} ÷ ${basis.valueLeft} is {basis.raw.toFixed(2)}×, pinned at the{' '}
+              {basis.clamped === 'ceiling' ? INFLATION_BOUNDS.max : INFLATION_BOUNDS.min}× clamp.
+            </>
+          ) : (
+            <>
+              ${basis.moneyLeft} ÷ ${basis.valueLeft} of list value across {basis.forSaleLeft}{' '}
+              players still being auctioned.
+              {basis.openSlots > 0 && ` $${basis.openSlots} is held back by the reserve.`}
             </>
           )}
         </p>
@@ -179,6 +274,33 @@ export const MarketPanel = ({ market, teams, phase }: MarketPanelProps) => {
           })}
         </ul>
       )}
+
+      <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
+        Next tier break
+      </h3>
+      {/* The shelf currently being drafted out of at each position, and the step
+          down off it. Counts both halves — a tier is emptied by a free pick
+          exactly as it is by a $40 one — while the dollar step is list prices of
+          players still on the board, so it is absent wherever either side of the
+          step is not being auctioned at all. */}
+      <ul className="dr-premiums">
+        {breaks.map((row) => (
+          <li key={row.position}>
+            <span className="dr-supply-pos">{row.position}</span>
+            <span
+              className="dr-num"
+              style={{ color: row.left <= 2 ? 'var(--dr-danger)' : 'var(--dr-ink-muted)' }}
+            >
+              {row.left}
+              <span style={{ color: 'var(--dr-ink-faint)' }}>/{row.started}</span>
+            </span>
+            <span className="dr-premium-note">
+              tier {row.tier} · then −{row.pointStep} pts
+              {row.dollarStep != null && row.dollarStep > 0 && ` and −$${row.dollarStep}`}
+            </span>
+          </li>
+        ))}
+      </ul>
 
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
         Cost of waiting

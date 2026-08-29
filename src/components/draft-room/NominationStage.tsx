@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import type {
   BidCheck,
+  BidCompetition,
   DraftAnalytics,
   DraftPhase,
   Player,
@@ -58,6 +59,24 @@ interface NominationStageProps {
   onReturnToSheet: () => void;
   /** Whether this player has already been passed over. */
   passedOver: boolean;
+  /**
+   * What he costs at tonight's prices, and the multiplier that got there.
+   *
+   * The list price is what the board was built at; this is what the money still
+   * in the room says it is worth now. Both are printed, because a bidder
+   * arguing with the room needs the number they are arguing with. Null in the
+   * snake, where nothing is being bought.
+   */
+  adjusted: number | null;
+  inflation: number;
+  /**
+   * Who can legally beat the bid on the table.
+   *
+   * Facts, every dollar of it from the engine's `spendableFor` — the same call
+   * `validateBid` makes. Nothing here is a guess about whether they *would*;
+   * that is the advisor's, in its own box.
+   */
+  competition: BidCompetition | null;
 }
 
 const inkFor = (hex: string): string => {
@@ -99,6 +118,9 @@ export const NominationStage = ({
   onUnsold,
   onReturnToSheet,
   passedOver,
+  adjusted,
+  inflation,
+  competition,
 }: NominationStageProps) => {
   const snake = mode === 'snake';
 
@@ -204,7 +226,23 @@ export const NominationStage = ({
           <>
             <div className="dr-tile">
               <dt>Est. value</dt>
-              <dd style={{ color: 'var(--dr-value)' }}>${player.estimatedValue}</dd>
+              <dd style={{ color: 'var(--dr-value)' }}>
+                ${player.estimatedValue}
+                {/* The list price is what the board was priced at; the second
+                    number is what the money still in the room says it is worth
+                    tonight. Printed together and both labelled, because a
+                    single adjusted number with the multiplier hidden is a
+                    number nobody can argue with — and arguing with it is the
+                    job. Identical figures are not worth two lines. */}
+                {adjusted != null && adjusted !== player.estimatedValue && (
+                  <span
+                    className="dr-tile-note"
+                    title="List price restated at the room's inflation"
+                  >
+                    ${adjusted} at {inflation.toFixed(2)}×
+                  </span>
+                )}
+              </dd>
             </div>
             <div className="dr-tile">
               <dt>Max bid</dt>
@@ -267,6 +305,69 @@ export const NominationStage = ({
           </span>
         </div>
       </div>
+
+      {/*
+        Who can still take him off you.
+
+        Every figure here is a rule rather than a reading: `ceiling` is the
+        engine's `spendableFor`, which is the same call `validateBid` runs, so
+        nothing in this block can be a number the engine would then reject.
+        That was the whole risk — a ceiling beside the bid box that turns out to
+        be wrong is worse than no ceiling at all.
+
+        After the reserve went to zero in this format these numbers are simply
+        what a team has left, which is higher than the room reads. The panel
+        exists because the opposite belief cost real players: an opponent who
+        looked tapped out at $88 could still go to $96.
+
+        What none of it says is whether they *would*. That is an estimate and
+        it is in the advisor's dashed box, deliberately not here.
+      */}
+      {!snake && competition && (
+        <div className="dr-outbid">
+          <div className="dr-outbid-head">
+            <span className="dr-eyebrow">
+              {competition.currentBid > 0
+                ? `Can beat $${competition.currentBid}`
+                : 'Can bid on him'}
+            </span>
+            <span className="dr-outbid-caveat">what the rules allow</span>
+          </div>
+
+          {competition.rivals.length === 0 ? (
+            <p className="dr-outbid-empty">
+              Nobody else can.{' '}
+              {competition.blocked > 0 && `${competition.blocked} have no room for him`}
+              {competition.blocked > 0 && competition.outspent > 0 && '; '}
+              {competition.outspent > 0 && `${competition.outspent} cannot reach the bid`}
+              {(competition.blocked > 0 || competition.outspent > 0) && '.'}
+            </p>
+          ) : (
+            <ul className="dr-outbid-list">
+              {competition.rivals.slice(0, 5).map((rival) => (
+                <li key={rival.team.id}>
+                  <span className="dr-outbid-team">{rival.team.name}</span>
+                  <span className="dr-num dr-outbid-ceiling">${rival.ceiling}</span>
+                  <span className="dr-outbid-note">
+                    {rival.need > 0
+                      ? `${rival.need} ${player.position} slot${rival.need === 1 ? '' : 's'} open`
+                      : `${rival.have} at ${player.position} already`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <p className="dr-footnote">
+            {competition.rivals.length > 5 && `${competition.rivals.length - 5} more can beat it. `}
+            {!competition.mine
+              ? 'Mark a team as yours in league settings to see your own ceiling here.'
+              : !competition.mine.canRoster
+                ? `You have no room for another ${player.position}.`
+                : `You can go to $${competition.mine.ceiling}.`}
+          </p>
+        </div>
+      )}
 
       <form
         className="dr-stage-form"

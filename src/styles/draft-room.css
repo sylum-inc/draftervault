@@ -3472,3 +3472,197 @@
   align-items: center;
   color: var(--dr-ink);
 }
+
+/* --------------------------------------------------------------------------
+   who can outbid you, and what things cost tonight
+
+   Two registers again, and the styling is half the reason they cannot be
+   confused. The ceilings below sit in the ordinary surface: they are rules,
+   from the same call that validates a bid. The estimates of what a rival would
+   actually pay live inside the advisor's dashed box, further down this file,
+   and never in this block.
+   -------------------------------------------------------------------------- */
+
+.dr-tile-note {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--dr-sans);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dr-ink-faint);
+}
+
+.dr-outbid {
+  padding: 10px 14px 0;
+}
+
+.dr-outbid-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dr-outbid-caveat {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-outbid-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.dr-outbid-list li {
+  display: grid;
+  grid-template-columns: 1fr 46px auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  border-top: 1px solid var(--dr-line);
+  font-size: 12px;
+}
+
+.dr-outbid-list li:first-child {
+  border-top: none;
+}
+
+.dr-outbid-team {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-outbid-ceiling {
+  text-align: right;
+  font-weight: 600;
+}
+
+.dr-outbid-note,
+.dr-outbid-empty {
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-outbid-empty {
+  margin: 4px 0 0;
+}
+
+.dr-outbid .dr-footnote {
+  margin-top: 6px;
+}
+
+.dr-drivers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.dr-drivers dt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-drivers dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   the advisor's estimates
+
+   Inside the dashed box on purpose: every number here is a guess about what
+   somebody else wants, and it is printed beside the rule it is a guess about
+   so the two can be told apart at a glance rather than by memory.
+   -------------------------------------------------------------------------- */
+
+.dr-advice-room {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--dr-caution) 25%, transparent);
+}
+
+.dr-advice-rivals {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.dr-advice-rivals li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.dr-advice-rival-team {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-advice-rival-plausible {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dr-caution);
+}
+
+.dr-advice-rival-legal {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-advice-rival-why {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-calls {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.dr-advice-calls strong {
+  font-size: 13px;
+}
+
+.dr-advice-calls p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-kind {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--dr-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+}
+
+/* The one call that says "buy him now": the moment draining stops working and
+   a player nobody can outbid is sitting there. It should not read like the
+   other three. */
+.dr-advice-kind[data-kind='stopper'] {
+  background: color-mix(in srgb, var(--dr-value) 22%, var(--dr-raised));
+  color: var(--dr-value);
+}

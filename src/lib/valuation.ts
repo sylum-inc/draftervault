@@ -404,3 +404,21 @@ export const pricePool = (
     onSheet: players.map((_, index) => inPool.has(index)),
   };
 };
+
+/**
+ * A list price restated at the room's inflation.
+ *
+ * Money and players leave the pool at different rates, so what is left is
+ * genuinely worth more or less than the tag says: the same $200 chasing fewer
+ * dollars of value pays more for every one of them. The arithmetic is one
+ * multiply, which is exactly why it belongs here — it was already written out
+ * by hand in `getBargains`, and a second and third copy on the nomination
+ * stage and in the table is how the board comes to show two different adjusted
+ * prices for one player.
+ *
+ * Whole dollars and never below one, because that is what a bid is. Rounding
+ * once here rather than at each call site is also what keeps the number the
+ * stage prints identical to the number the table prints.
+ */
+export const inflatedPrice = (listValue: number, inflation: number): number =>
+  Math.max(1, Math.round(listValue * inflation));

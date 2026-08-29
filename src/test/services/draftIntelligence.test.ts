@@ -166,9 +166,12 @@ describe('the advisor', () => {
 
   it('nominates a player the roster does not need while budgets are full', () => {
     const team = service.getTeams()[0];
-    const suggestion = adviseOnNomination(service.getPlayers(), team, service);
-    expect(suggestion).not.toBeNull();
-    expect(suggestion!.reason).toContain('Nominate the money away');
+    const plan = adviseOnNomination(service.getPlayers(), team, service);
+    expect(plan).not.toBeNull();
+    // The plan now carries a short list rather than one name, but the first
+    // call on an untouched board is still the drain — that half was right.
+    expect(plan!.calls[0].kind).toBe('drain');
+    expect(plan!.calls[0].reason).toContain('Nominate the money away');
   });
 
   it('produces no alerts on an untouched board', () => {

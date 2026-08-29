@@ -3,6 +3,7 @@
 import poolData from '@/data/nfl/pool.json';
 import {
   DEFAULT_LEAGUE,
+  inflatedPrice,
   leagueShape,
   normaliseLeague,
   pointsFor,
@@ -372,6 +373,175 @@ export interface MarketState {
     /** Points between the best player left here and the fifth: the cost of waiting. */
     cliff: number;
   }>;
+}
+
+/**
+ * The bounds inflation is clamped to.
+ *
+ * Exported because the meter that draws it has to know where its ends are: a
+ * bar drawn 0.6 to 1.8 while the engine clamps to something else is a bar that
+ * lies about being pinned. One definition, read by both.
+ */
+export const INFLATION_BOUNDS = { min: 0.6, max: 1.8 } as const;
+
+/**
+ * Where the inflation number came from.
+ *
+ * A multiplier nobody can interrogate is not an edge — it is a number to be
+ * talked out of at the worst moment. Every input that produced it is reported
+ * beside it, including the two ways it can stop being a live reading: the
+ * clamp, and the snake phase, where it is held at 1 because no money moves.
+ */
+export interface InflationBasis {
+  /** The multiplier itself, exactly what every adjusted price on the board uses. */
+  inflation: number;
+  /** Dollars unspent, less whatever the reserve holds back. */
+  moneyLeft: number;
+  /** List value of everything still for sale. */
+  valueLeft: number;
+  /** Slots the reserve holds a dollar back for. Zero whenever a snake fills the rest. */
+  openSlots: number;
+  /** money over value before the clamp, so a pinned meter can say it is pinned. */
+  raw: number;
+  /** Which end of the clamp the raw ratio hit, if either. */
+  clamped: 'floor' | 'ceiling' | null;
+  /** True through the snake, where the ratio is frozen rather than measured. */
+  frozen: boolean;
+  /** Players the money is still chasing, and how many it ever was. */
+  forSaleLeft: number;
+  forSaleTotal: number;
+}
+
+/**
+ * A list price restated at the room's inflation, for any player on the board.
+ *
+ * Handed out as a closure rather than written onto the Player object, and that
+ * is not a style choice. The board mounts sixty memoised cards whose props are
+ * stable element references, so they do not re-render on a pick at all; an
+ * adjusted price is a number that changes on *every* pick, and putting it on
+ * the player — or passing it as a card prop — would re-render all sixty of them
+ * each time, each one re-resolving identity and team colours. Measured once at
+ * 4.3 seconds to nominate, and it is invisible to every test.
+ *
+ * So it goes where a price is actually being decided: the stage, the table's
+ * value column, and the market panel.
+ */
+export interface PriceAdjuster {
+  inflation: number;
+  frozen: boolean;
+  /** Whole dollars. Off-sheet players are unmoved: nobody is bidding on them. */
+  price(player: Player): number;
+}
+
+/**
+ * One opponent who could still take this player off you, and how far they can go.
+ *
+ * `ceiling` is a *rule*, not a guess: it comes from `spendableFor`, the same
+ * call `validateBid` runs, so a number shown beside the bid box cannot be one
+ * the engine would then reject. That was the failure this exists to prevent.
+ *
+ * After the reserve change it is essentially a team's whole remaining budget,
+ * which is higher than anybody expects it to be, and that is the point — the
+ * room reading as poorer than it is cost real players.
+ *
+ * What a rational manager would *actually* go to is a different claim entirely
+ * and is not here: it lives in `draftAdvisor`, in the estimate register.
+ */
+export interface RivalBidder {
+  team: Team;
+  /** The most the rules let them commit to this one player. */
+  ceiling: number;
+  /** What the reserve withholds from them. Zero whenever the snake fills the rest. */
+  held: number;
+  /** Starting slots this player would fill for them, through the league's own lineup. */
+  need: number;
+  /** How many of the position they already carry. */
+  have: number;
+  /** Whether this is the team the owner marked as theirs. */
+  mine: boolean;
+  /**
+   * Whether they have room for him at all.
+   *
+   * A team with a full roster or a full position is not a bidder at any price,
+   * so it is never a rival. It is still worth reporting for the owner's own
+   * team, which is why this is a flag rather than an exclusion: folding that
+   * case into the blocked *count* told the owner to mark a team as theirs when
+   * they already had, and counted them among their own opponents.
+   */
+  canRoster: boolean;
+}
+
+/** Who is left in the bidding on the player on the block. */
+export interface BidCompetition {
+  /** The bid being beaten. Zero before anybody has said a number. */
+  currentBid: number;
+  /** Opponents who can legally beat it, richest first. */
+  rivals: RivalBidder[];
+  /** The owner's own ceiling, when a team has been marked as theirs. */
+  mine: RivalBidder | null;
+  /** Teams with no room for him at all: they cannot bid at any price. */
+  blocked: number;
+  /** Teams with room whose money cannot reach the current bid. */
+  outspent: number;
+}
+
+/**
+ * How fast a position is leaving the board.
+ *
+ * Supply, so it counts both halves of the draft: a receiver taken in the snake
+ * is exactly as unavailable as one bought for $40, and waiting for him is
+ * exactly as impossible. Nothing here is money, so nothing here excludes a
+ * free pick.
+ */
+export interface PositionRun {
+  position: PlayerPosition;
+  /** Picks at this position inside the window, either half. */
+  taken: number;
+  /** How many picks the window actually covers; fewer than asked for early on. */
+  window: number;
+  /** Share of the window that was this position. */
+  share: number;
+  /** Players above replacement still on the board here. */
+  left: number;
+  /** How many of those there were when the window opened. */
+  leftBefore: number;
+}
+
+/**
+ * The shelf about to empty at a position, and the step down off it.
+ *
+ * Tiers are the shape of a position's board: inside one, players are
+ * interchangeable enough that waiting costs nothing, and the moment the last of
+ * them goes the next name is materially worse. That step is where money is won
+ * and lost, so it is reported in both currencies — points, which every player
+ * has, and dollars, which only players being auctioned have.
+ *
+ * The counts include snake picks, because a tier empties however a player left.
+ * The dollar step does not survive a player who is not for sale: his list price
+ * is the $1 floor rather than a price anybody would pay, so subtracting it
+ * would invent a cliff.
+ */
+export interface TierBreak {
+  position: PlayerPosition;
+  /** The best tier with anybody left in it: the one currently being drafted out of. */
+  tier: number;
+  /** How many of it remain. */
+  left: number;
+  /** How many it started with. */
+  started: number;
+  /** The last one, when exactly one is left — the player the warning is about. */
+  last: Player | null;
+  /**
+   * Projected points from the worst of this tier to the best of the next, or
+   * null when there is no tier below.
+   *
+   * Nullable rather than zero, because those are different claims: "there is no
+   * drop off this shelf" and "there is no shelf below this one" read the same
+   * as `−0 pts` and only one of them is ever true.
+   */
+  pointStep: number | null;
+  /** The same step in dollars, or null when either side is not being auctioned. */
+  dollarStep: number | null;
 }
 
 export interface DraftState {
@@ -1480,6 +1650,261 @@ export class AuctionDraftService {
     };
   }
 
+  // -------------------------------------------------------------------------
+  // what the room can still do
+  //
+  // Three things a bidder cannot work out from the board: who is able to beat
+  // the bid on the table, what a list price is actually worth tonight, and
+  // which shelf is about to empty. All three are observations — they report
+  // what the pick log and the rules already say — so they belong here.
+  //
+  // The matching opinions live in draftAdvisor and nowhere else: what a
+  // rational opponent would *actually* pay, and which of these facts is worth
+  // interrupting somebody for.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Every player the money is still chasing.
+   *
+   * The one public reading of the sheet mask, so nothing outside the engine
+   * ever has to write `estimatedValue > 1` again. That proxy stood in for this
+   * in five places and is wrong in exactly one case — an imported ranking
+   * prices a snake-only player above a dollar — after which the advisor starts
+   * recommending the room auction somebody nobody is auctioning.
+   *
+   * Includes players already sold: what is *for sale* and what is *left* are
+   * different questions, and callers that want the second filter on
+   * `isDrafted`, which they can see.
+   */
+  getForSale(): Player[] {
+    return this.players.filter((player) => this.forSale(player));
+  }
+
+  /**
+   * Where the inflation number came from, in the pieces that made it.
+   *
+   * `calculateMarketInflation` is this function's first field, so there is one
+   * definition of the multiplier and one of its provenance. Splitting them
+   * would let the panel explain a number the board is not using.
+   */
+  getInflationBasis(): InflationBasis {
+    const forSale = this.players.filter((p) => this.forSale(p));
+    const left = forSale.filter((p) => !p.isDrafted);
+    const valueLeft = left.reduce((total, p) => total + p.estimatedValue, 0);
+    const openSlots = this.teams.reduce(
+      (total, team) =>
+        total +
+        Math.max(0, this.reservedSlots - Object.values(team.roster).reduce((a, b) => a + b, 0)),
+      0
+    );
+    const moneyLeft = this.teams.reduce((total, team) => total + team.remaining, 0) - openSlots;
+
+    /*
+     * Nothing inflates once the money stops.
+     *
+     * In the snake, money left is fixed while value left goes on shrinking, so
+     * the ratio climbs on its own until it pins at the ceiling and the market
+     * panel reads "money is chasing scraps" for a hundred and forty picks in
+     * which nobody spends a penny. Whatever is still in the room at the end of
+     * the auction stays there.
+     */
+    const frozen = this.getPhase() === 'snake';
+    const measurable = valueLeft > 0;
+    const raw = measurable ? moneyLeft / valueLeft : 1;
+    const inflation =
+      frozen || !measurable
+        ? 1
+        : Math.max(INFLATION_BOUNDS.min, Math.min(INFLATION_BOUNDS.max, raw));
+
+    return {
+      inflation,
+      moneyLeft,
+      valueLeft,
+      openSlots,
+      raw,
+      clamped:
+        frozen || !measurable
+          ? null
+          : raw < INFLATION_BOUNDS.min
+            ? 'floor'
+            : raw > INFLATION_BOUNDS.max
+              ? 'ceiling'
+              : null,
+      frozen,
+      forSaleLeft: left.length,
+      forSaleTotal: forSale.length,
+    };
+  }
+
+  /**
+   * What everything still on the board is worth at tonight's prices.
+   *
+   * Read the inflation and the for-sale mask once, then answer per player —
+   * rather than a `getAdjustedValue(player)` that would recompute the phase and
+   * re-filter six hundred players for each of sixty table rows.
+   *
+   * A player nobody is auctioning keeps his list price untouched. Inflating a
+   * $1 snake player to $2 states that the money is chasing him, which is the
+   * one thing the sheet says it is not doing.
+   */
+  getPriceAdjuster(): PriceAdjuster {
+    const { inflation, frozen } = this.getInflationBasis();
+    const forSale = new Set(this.players.filter((p) => this.forSale(p)).map((p) => p.id));
+    return {
+      inflation,
+      frozen,
+      price: (player: Player) =>
+        forSale.has(player.id)
+          ? inflatedPrice(player.estimatedValue, inflation)
+          : player.estimatedValue,
+    };
+  }
+
+  /**
+   * Who can still take this player off you, and how far the rules let them go.
+   *
+   * Every ceiling comes from `spendableFor` — the same call `validateBid` makes
+   * — because a ceiling shown beside the bid box that the engine would then
+   * reject is the worst bug this feature could have. Teams with no room for him
+   * are counted separately rather than listed at $0: they are not quiet
+   * bidders, they cannot bid at all.
+   *
+   * Ordering is by ceiling, which is the only ordering a fact can claim.
+   * Ranking opponents by how much of a threat they *are* takes a view about
+   * what they want, and that is the advisor's job.
+   */
+  getBidCompetition(playerId: string, currentBid = 0): BidCompetition | null {
+    const player = this.players.find((p) => p.id === playerId);
+    if (!player || player.isDrafted) return null;
+
+    // A bid has to be beaten, not matched, and the floor is the dollar every
+    // player costs. A blank or half-typed bid box reads as nothing bid yet.
+    const bid = Number.isFinite(currentBid) ? Math.max(0, Math.floor(currentBid)) : 0;
+    const toBeat = Math.max(1, bid + (bid > 0 ? 1 : 0));
+
+    const rivals: RivalBidder[] = [];
+    let mine: RivalBidder | null = null;
+    let blocked = 0;
+    let outspent = 0;
+
+    for (const team of this.teams) {
+      const { spendable, held } = this.spendableFor(team);
+      const row: RivalBidder = {
+        team,
+        ceiling: Math.max(0, spendable),
+        held,
+        need: unfilledSlotsFor(player.position, team.roster, this.league),
+        have: team.roster[player.position] ?? 0,
+        mine: team.id === this.myTeamId,
+        canRoster: this.checkRoster(player, team).ok,
+      };
+
+      // The owner's own row is reported whatever it says, including that they
+      // have no room. Testing the roster first and skipping meant `mine` came
+      // back null for a team that was marked, so the panel asked the owner to
+      // do something they had already done — and counted their own team in the
+      // opponents who cannot bid.
+      if (row.mine) {
+        mine = row;
+        continue;
+      }
+      if (!row.canRoster) blocked++;
+      else if (row.ceiling >= toBeat) rivals.push(row);
+      else outspent++;
+    }
+
+    rivals.sort((a, b) => b.ceiling - a.ceiling || a.team.name.localeCompare(b.team.name));
+    return { currentBid: bid, rivals, mine, blocked, outspent };
+  }
+
+  /**
+   * How fast each position has been leaving the board.
+   *
+   * Supply, so both halves count: a receiver taken in the snake is as gone as
+   * one bought for $40. The window is the last few picks of the log whatever
+   * phase they happened in.
+   *
+   * What is *left* is counted as players above replacement rather than players
+   * for sale, and that difference matters once the snake starts: for-sale means
+   * on the sheet, and in the snake nobody left is, so a for-sale count would
+   * report every position as empty and every pick as a run.
+   */
+  getPositionRuns(window = 10): PositionRun[] {
+    const recent = this.history.slice(-Math.max(1, window));
+    const byId = new Map(this.players.map((player) => [player.id, player]));
+    const positions: PlayerPosition[] = ['QB', 'RB', 'WR', 'TE', 'K', 'DST'];
+
+    return positions.map((position) => {
+      const startable = new Set(
+        this.players
+          .filter((p) => p.position === position && p.valueOverReplacement > 0)
+          .map((p) => p.id)
+      );
+      const picked = recent.filter((pick) => byId.get(pick.playerId)?.position === position);
+      const left = [...startable].filter((id) => !byId.get(id)?.isDrafted).length;
+      return {
+        position,
+        taken: picked.length,
+        window: recent.length,
+        share: recent.length ? picked.length / recent.length : 0,
+        left,
+        // What the shelf held when the window opened, which is only the same as
+        // `left + taken` while every pick in it was somebody worth having. Six
+        // kickers off the bottom of the pool move `taken` and not `left`, and
+        // adding them would report a shelf that was never there.
+        leftBefore: left + picked.filter((pick) => startable.has(pick.playerId)).length,
+      };
+    });
+  }
+
+  /**
+   * The tier currently being drafted out of at each position, and the step off it.
+   *
+   * The break is the best tier with anybody left in it: while it holds several
+   * players waiting costs nothing, and the moment it empties the next name is
+   * materially worse. Positions with nobody left at all are dropped rather than
+   * reported as an infinitely deep cliff.
+   */
+  getTierBreaks(): TierBreak[] {
+    const positions: PlayerPosition[] = ['QB', 'RB', 'WR', 'TE', 'K', 'DST'];
+    const breaks: TierBreak[] = [];
+
+    for (const position of positions) {
+      const here = this.players.filter((p) => p.position === position);
+      const open = here.filter((p) => !p.isDrafted);
+      if (!open.length) continue;
+
+      const tier = Math.min(...open.map((p) => p.tier));
+      const inTier = open
+        .filter((p) => p.tier === tier)
+        .sort((a, b) => b.projectedPoints - a.projectedPoints);
+      const below = open
+        .filter((p) => p.tier > tier)
+        .sort((a, b) => b.projectedPoints - a.projectedPoints);
+
+      const worst = inTier[inTier.length - 1];
+      const best = below[0];
+      // Only a step both sides of which are being auctioned is a step in money:
+      // an off-sheet player sits at the $1 floor, which is not a price anybody
+      // would pay and would show as a cliff of the whole tier's value.
+      const priced = best != null && this.forSale(worst) && this.forSale(best);
+
+      breaks.push({
+        position,
+        tier,
+        left: inTier.length,
+        started: here.filter((p) => p.tier === tier).length,
+        last: inTier.length === 1 ? inTier[0] : null,
+        pointStep: best
+          ? Math.max(0, Math.round(worst.projectedPoints - best.projectedPoints))
+          : null,
+        dollarStep: priced ? Math.max(0, worst.estimatedValue - best.estimatedValue) : null,
+      });
+    }
+
+    return breaks;
+  }
+
   /**
    * Replacement level per position, straight from the generated pool.
    *
@@ -2013,9 +2438,9 @@ export class AuctionDraftService {
     const filled = Object.values(team.roster).reduce((a, b) => a + b, 0);
     const slotsLeft = Math.max(0, this.league.rosterSize - filled - 1);
     const remaining = team.remaining - cost;
-    // Every unfilled starting slot still needs a dollar in reserve, exactly as
-    // validateBid enforces it.
-    const minimumHold = Math.max(0, this.reservedSlots - filled - 1);
+    // Exactly what validateBid will hold back, read from the one place that
+    // decides it rather than recomputed here.
+    const minimumHold = this.spendableFor(team).held;
     const spendable = remaining - minimumHold;
     const affordable =
       spendable > 0
@@ -2055,8 +2480,10 @@ export class AuctionDraftService {
       .map((player) => {
         const listed = player.estimatedValue;
         // The room bids off consensus, so the expected price tracks the market
-        // rank, not ours; inflation moves both.
-        const projectedCost = Math.max(1, Math.round(listed * inflation));
+        // rank, not ours; inflation moves both. Through the shared helper, so
+        // the saving this board quotes is arithmetic with the adjusted price
+        // the stage and the table print rather than a second rounding of it.
+        const projectedCost = inflatedPrice(listed, inflation);
         return {
           player,
           edge: player.market?.edge ?? 0,
@@ -2154,9 +2581,10 @@ export class AuctionDraftService {
       (player.ageRisk === 'HIGH' ? 0.9 : player.ageRisk === 'MEDIUM' ? 0.96 : 1);
     const riskAdjustedValue = adjustedValue * riskFactor;
 
-    const filled = Object.values(team.roster).reduce((total, count) => total + count, 0);
-    const slotsToFill = Math.max(0, this.reservedSlots - filled - 1);
-    const spendable = Math.max(1, team.remaining - slotsToFill);
+    // Through spendableFor, not a second copy of the same arithmetic. The
+    // rival ceilings the room now shows lean on this number, and two hand-rolled
+    // repeats of a reserve rule that claims one owner is how they drift.
+    const spendable = Math.max(1, this.spendableFor(team).spendable);
 
     const targetBid = Math.max(1, Math.round(riskAdjustedValue));
     const maxBid = Math.max(1, Math.min(Math.round(riskAdjustedValue * 1.15), spendable));
@@ -2191,29 +2619,15 @@ export class AuctionDraftService {
    */
   private calculateMarketInflation(): number {
     /*
-     * Nothing inflates once the money stops.
+     * One definition, with its workings attached.
      *
-     * Inflation is money left over value left, and in the snake phase the first
-     * of those is frozen while the second goes on shrinking with every pick. So
-     * the ratio climbs on its own until it pins at the 1.8 clamp, and the market
-     * panel reads "money is chasing scraps — expect overpays" for a hundred and
-     * forty picks in which nobody spends a penny. Whatever money is still in the
-     * room at the end of the auction is money that stays there.
+     * This used to compute the ratio here and the market panel printed it with
+     * nothing behind it. A multiplier nobody can interrogate is not an edge, so
+     * the inputs — money left, value left, the clamp, the snake freeze — are all
+     * reported by `getInflationBasis`, and this reads the same field the board
+     * reads rather than repeating the arithmetic beside it.
      */
-    if (this.getPhase() === 'snake') return 1;
-
-    const openSlots = this.teams.reduce(
-      (total, team) =>
-        total +
-        Math.max(0, this.reservedSlots - Object.values(team.roster).reduce((a, b) => a + b, 0)),
-      0
-    );
-    const moneyLeft = this.teams.reduce((total, team) => total + team.remaining, 0) - openSlots;
-    const valueLeft = this.players
-      .filter((p) => !p.isDrafted && this.forSale(p))
-      .reduce((total, p) => total + p.estimatedValue, 0);
-    if (valueLeft <= 0) return 1;
-    return Math.max(0.6, Math.min(1.8, moneyLeft / valueLeft));
+    return this.getInflationBasis().inflation;
   }
 
   /**

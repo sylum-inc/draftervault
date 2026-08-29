@@ -245,6 +245,87 @@ because bumping the storage version would make `restore()` refuse the draft
 already sitting in the owner's browser. A pick with no `phase` is an auction
 buy, which is what it was.
 
+**A ceiling shown beside the bid box has to be the ceiling the engine will
+accept.** `getBidCompetition` answers who can still beat the number on the
+table, and every dollar of it comes from `spendableFor` — the same call
+`validateBid` makes — rather than from a second copy of the arithmetic. A test
+bids each reported ceiling and then a dollar more, and asserts the engine takes
+the first and rejects the second, because a number the room reads off the screen
+and the engine then refuses is worse than no number at all. Teams with no room
+for the player are counted rather than listed at $0: they are not quiet bidders,
+they cannot bid at any price, and the same goes for teams whose money cannot
+reach the bid. In this format the ceiling is essentially a whole remaining
+budget, which is higher than the room expects — and that is the point, because
+believing the opposite is what lost players to opponents who were never
+actually tapped out.
+
+What a rival would _actually_ go to is a different claim and it is not in the
+engine. `readTheRoom` is the advisor's, it prices the player against that team's
+own holes through the analytics the engine already computes rather than a second
+pricing model, and it is capped at the legal ceiling — an estimate above the
+rules is advice to fear something that cannot happen. The two numbers are
+rendered in different panels on purpose: the rules on the nomination stage, the
+guess in the dashed box, never interleaved in one column.
+
+**Inflation is one definition and it carries its workings.** The multiplier was
+already computed, and printed with nothing behind it; a number nobody can
+interrogate is the first thing to be talked out of when the bidding gets loud.
+`getInflationBasis` returns the ratio _and_ its terms — money left, value left,
+how many players that value is spread over, which end of the clamp it hit, and
+whether it is frozen for the snake — and `calculateMarketInflation` is now that
+object's first field, so the panel cannot explain a different number from the one
+the board is pricing at. `inflatedPrice` in `valuation.ts` is the single
+restatement of a list price; `getBargains` used to write it out by hand and now
+goes through it too.
+
+The adjusted price is handed out as a closure (`getPriceAdjuster`) rather than
+written onto the Player object, and that is not style. It changes on every pick,
+and the card board's sixty memoised cards currently do not re-render on a pick
+at all because their props are stable element references — a price prop would
+re-render all sixty every time, each re-resolving identity and team colours, and
+no test would notice. So it goes only where a price is being decided: the stage,
+the table's value column, the market panel. A player who is not on the sheet
+keeps his list price untouched, because inflating a $1 snake player to $2 states
+that the money is chasing him, which is the one thing the sheet says it is not.
+
+**The advisor speaks for the owner, and says so.** It used to be handed
+`activeTeam` — whoever is selected in the winning-team dropdown. That is a
+_recording_ control: it says who just bought a player, and through a normal
+auction it sits on an opponent most of the night, so the advice was about
+somebody else's roster holes and somebody else's money, printed in a panel that
+reads as yours. It now takes `getMyTeamId`'s team, prices its own analytics
+against that roster, and names whose side it is on in the header. With no team
+marked it says that instead of guessing. The snake half is the one exception and
+deliberately so: a free pick belongs to whoever the order says is on the clock,
+and the header names them.
+
+**Nomination is a plan, not a name.** `adviseOnNomination` was extended rather
+than replaced — the early-drain spine and its wording were right — and now
+returns up to three calls with a kind each, plus the players to keep _off_ the
+block. Protecting needs a statement of what you want, so the watchlist is passed
+in from the room; it is a per-person preference and the engine holds nothing of
+the kind. The part worth stating is the flip: draining only works while there is
+money to drain, so the room's unspent share decides the order the calls come in,
+and a player nobody left can outbid stops being protected and becomes the first
+name to call. At the very first nomination every position has an unfilled
+starting slot, so "a player you do not need" matches nobody — the drain falls
+back to the dearest player you are not protecting and says why it is still the
+right call rather than claiming a need that does not exist.
+
+**Alerts are keyed on what they are about.** They were keyed on message text,
+which collides the moment two read alike, and React drops one without saying so.
+Every alert now carries an id naming its subject — `tier-break:WR:1`,
+`position-run:RB`. Two new ones: a run, which counts _both_ halves because a
+receiver taken in the snake is exactly as unavailable as one bought for $40, and
+a tier break, which fires on the last player of the tier currently being drafted
+out of and quotes the step down off it. The step is in points always and in
+dollars only when both sides of it are being auctioned, because an off-sheet
+player sits at the $1 floor and subtracting that would invent a cliff the size
+of the whole tier. What is _left_ at a position is counted by replacement level
+rather than by the sheet, since in the snake nobody left is on the sheet at all
+and a for-sale count would report every position as empty and every pick as a
+run.
+
 **Scoring is part of the league, and the pool is not built at yours.** nflverse
 gives full-PPR points and the builder took them straight, so a point a catch was
 hardcoded with no way to say otherwise. It is the biggest single lever in
@@ -516,8 +597,11 @@ laptop dies, named teams, a board that keeps up with an auction and configurable
 reception scoring, pricing for a partial auction, the commissioner's actual
 sheet imported by paste or file, and the snake half of the hybrid draft — a
 derived phase, a fixed serpentine order, free picks that carry no price
-anywhere, and advice written for a draft where money decides nothing; 345
-tests.
+anywhere, and advice written for a draft where money decides nothing; the four
+things the owner asked for by name — who can legally outbid you and who
+plausibly would, inflation-adjusted prices that carry their workings, a
+nomination plan with the players to protect, and run and tier-break alerts with
+stable ids; 385 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
