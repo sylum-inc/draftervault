@@ -30,6 +30,15 @@ interface LeagueSettingsProps {
   draftedCount: number;
   /** Players the pool actually holds per position, to catch a league it cannot serve. */
   poolDepth: Record<string, number>;
+  /**
+   * How many players the imported sheet names, or zero when there is no sheet.
+   *
+   * A size and a list are two statements of one fact. While the list is in hand
+   * the field below reports it and does not accept another number, because a
+   * board priced off fifty-eight named players while this panel says seventy is
+   * a board that cannot be read.
+   */
+  sheetSize: number;
   onApply: (league: LeagueShape) => void;
   onClose: () => void;
 }
@@ -58,6 +67,7 @@ export const LeagueSettings = ({
   poolLeague,
   draftedCount,
   poolDepth,
+  sheetSize,
   onApply,
   onClose,
 }: LeagueSettingsProps) => {
@@ -66,7 +76,7 @@ export const LeagueSettings = ({
   const [budget, setBudget] = useState(String(league.budget));
   const [rosterSize, setRosterSize] = useState(String(league.rosterSize));
   const [receptionPoints, setReceptionPoints] = useState(league.receptionPoints);
-  const [sheetSize, setSheetSize] = useState(
+  const [sheet, setSheet] = useState(
     league.auctionSheetSize === null ? '' : String(league.auctionSheetSize)
   );
   const [lineup, setLineup] = useState<Record<LineupSlot, string>>(
@@ -100,7 +110,10 @@ export const LeagueSettings = ({
         budget: asNumber(budget, league.budget),
         rosterSize: asNumber(rosterSize, league.rosterSize),
         receptionPoints,
-        auctionSheetSize: sheetSize.trim() === '' ? null : asNumber(sheetSize, 0),
+        // The sheet's length wins while there is one: the list is the fact,
+        // and the field is only a stand-in for it before it arrives.
+        auctionSheetSize:
+          sheetSize > 0 ? sheetSize : sheet.trim() === '' ? null : asNumber(sheet, 0),
         startingLineup: Object.fromEntries(
           LINEUP_SLOTS.map((slot) => [
             slot,
@@ -116,7 +129,18 @@ export const LeagueSettings = ({
           teamCount === poolLeague.teams ? poolLeague.rostered : rosteredForTeams(teamCount),
       })
     );
-  }, [teams, budget, rosterSize, lineup, limits, receptionPoints, sheetSize, league, poolLeague]);
+  }, [
+    teams,
+    budget,
+    rosterSize,
+    lineup,
+    limits,
+    receptionPoints,
+    sheet,
+    sheetSize,
+    league,
+    poolLeague,
+  ]);
 
   // Read from the pool rather than written into the copy: the last hardcoded
   // count went stale the first time the pool grew.
@@ -304,6 +328,13 @@ export const LeagueSettings = ({
             sheet of the best players and fills the rest another way — the same money then chases
             far fewer of them, and every one costs more.
           </p>
+          {sheetSize > 0 && (
+            <p className="dr-meter-note">
+              The commissioner’s sheet is loaded: {sheetSize} named players, and the prices on the
+              board are theirs rather than our best {sheetSize}. A number typed here could only
+              disagree with the list, so it reports it instead.
+            </p>
+          )}
           <div className="dr-league-grid">
             <label className="dr-league-field">
               <span className="dr-eyebrow">Players auctioned</span>
@@ -314,10 +345,16 @@ export const LeagueSettings = ({
                 min={draft.teams}
                 max={628}
                 placeholder="all of them"
-                value={sheetSize}
-                onChange={(event) => setSheetSize(event.target.value)}
+                value={sheetSize > 0 ? String(sheetSize) : sheet}
+                readOnly={sheetSize > 0}
+                aria-readonly={sheetSize > 0}
+                onChange={(event) => setSheet(event.target.value)}
               />
-              <span className="dr-meter-note">blank means the whole board</span>
+              <span className="dr-meter-note">
+                {sheetSize > 0
+                  ? 'set by the imported sheet — remove it to choose a number'
+                  : 'blank means the whole board'}
+              </span>
             </label>
           </div>
           <dl className="dr-league-summary">

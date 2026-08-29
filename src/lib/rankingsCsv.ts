@@ -30,11 +30,17 @@ export interface Candidate {
   team: string;
 }
 
-export type Resolution =
-  | { status: 'matched'; row: RankingRow; player: Candidate }
-  | { status: 'unmatched'; row: RankingRow }
+/**
+ * Generic over the row so a caller carrying more than a name and a value keeps
+ * its own fields through matching. The auction sheet needs that: its rows carry
+ * a stated club and an id that tells two ambiguous names on one line apart, and
+ * both would be erased by widening every row to RankingRow here.
+ */
+export type Resolution<Row extends RankingRow = RankingRow> =
+  | { status: 'matched'; row: Row; player: Candidate }
+  | { status: 'unmatched'; row: Row }
   /** Two or more players answer to this name; the person has to say which. */
-  | { status: 'ambiguous'; row: RankingRow; options: Candidate[] };
+  | { status: 'ambiguous'; row: Row; options: Candidate[] };
 
 export interface ParsedRankings {
   resolutions: Resolution[];
@@ -203,7 +209,10 @@ export const parseRankings = (
  * the file narrows the field first, which is what lets "J. Smith, WR" resolve
  * where "J. Smith" alone cannot.
  */
-export const resolveRankings = (rows: RankingRow[], roster: readonly Candidate[]): Resolution[] => {
+export const resolveRankings = <Row extends RankingRow>(
+  rows: Row[],
+  roster: readonly Candidate[]
+): Array<Resolution<Row>> => {
   const byName = new Map<string, Candidate[]>();
   const byInitial = new Map<string, Candidate[]>();
 
@@ -219,7 +228,7 @@ export const resolveRankings = (rows: RankingRow[], roster: readonly Candidate[]
     if (initial) push(byInitial, initial);
   }
 
-  return rows.map((row): Resolution => {
+  return rows.map((row): Resolution<Row> => {
     const normalised = normaliseName(row.name);
 
     for (const index of [byName, byInitial]) {

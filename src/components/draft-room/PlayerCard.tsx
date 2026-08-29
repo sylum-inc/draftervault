@@ -190,6 +190,15 @@ const PlayerCardView = ({
         <span className="dr-pos">{player.position}</span>
         {team}
         {identity?.jersey && <span className="dr-num">#{identity.jersey}</span>}
+        {/* Off the commissioner's sheet is not the same as cheap. A player
+            nobody is bidding on reads as a $1 scrub otherwise, when what he
+            actually is is somebody you take in the snake for nothing. The flag
+            rides on the player object, so the memo above still holds. */}
+        {!player.onSheet && player.sheetIsStated && (
+          <span className="dr-snake" title="Not on the auction sheet — he comes up in the snake">
+            snake
+          </span>
+        )}
       </span>
 
       <dl className="dr-card-stats">

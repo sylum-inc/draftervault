@@ -233,7 +233,11 @@ describe('pricing an auction sheet', () => {
 
   it('keeps the best player inside what one team could actually pay', () => {
     const players = projected();
-    for (const size of [50, 100]) {
+    // The commissioner-sized range. Shorter sheets genuinely do concentrate the
+    // money past this bound — twelve names put the best player above a whole
+    // budget — which is why the import refuses a list whose priced top clears
+    // it rather than pretending a count is the thing that matters.
+    for (const size of [40, 50, 100, 192]) {
       const { priced } = pricePool(players, DEFAULT_LEAGUE, { onSheet: sheetOf(size) });
       const top = Math.max(...priced.map((entry) => entry.auctionValue));
       // Nobody spends three quarters of their budget on one player. A model

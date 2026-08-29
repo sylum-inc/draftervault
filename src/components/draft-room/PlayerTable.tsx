@@ -461,6 +461,13 @@ export const PlayerTable = ({
                   />
                   {identity?.name ?? player.name}
                   <span className="dr-table-team">{team}</span>
+                  {/* Nobody is bidding on him: he is filled in by the snake,
+                      which is a different thing from being worth a dollar. */}
+                  {!player.onSheet && player.sheetIsStated && (
+                    <span className="dr-snake" title="Not on the auction sheet">
+                      snake
+                    </span>
+                  )}
                 </td>
 
                 {active.map((column) => {

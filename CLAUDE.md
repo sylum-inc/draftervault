@@ -44,6 +44,7 @@ src/pages/Index.tsx
         ├── DraftFile.tsx         save the draft to a file, or load one
         ├── LeagueSettings.tsx    teams, budget, roster shape — re-prices the board
         ├── RankingsImport.tsx    bring your own values, previewed before applying
+        ├── AuctionSheetImport.tsx  the sheet the commissioner circulated
         ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
         │                         ScheduleStrip, BidLadder, PositionSwarm,
         │                         OutcomeCurve, ConsensusRange, QuadrantScatter,
@@ -57,6 +58,7 @@ src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
+src/lib/auctionSheet.ts               the commissioner's sheet, pasted or filed
 src/lib/playerSearch.ts               finding a player by a name typed in a hurry
 src/lib/saveFile.ts                   hands over a file, in browser or artifact
 src/services/auctionDraftService.ts   the draft engine (rules, bidding, state)
@@ -116,6 +118,44 @@ left; eleven other teams are drafting too, and across both phases the league
 still rosters the same players it always did. Only the money is concentrated. A
 test now asserts no player exceeds 55% of a budget at any sheet size.
 
+**The sheet is a list, not a number.** A size is a guess at the sheet — the best
+N by surplus, as though the commissioner had picked ours off our own board. He
+picks off consensus rankings, so the real list holds players we price at $2 and
+leaves out players we price at $30, and both of those are guidance the room
+needs at the moment a name is called. `src/lib/auctionSheet.ts` turns a paste
+into rows and `pricePool` is handed the mask it produces; `Player.onSheet` is
+that mask read back, so the board can say "snake" rather than "$1". Parsing is
+its own file because `parseRankings` reads one cell a line through a column map:
+"Chase, Gibbs, Robinson" out of Slack becomes one row and loses two players,
+which is the worst failure a sheet can have. Matching is not its own — it is
+`resolveRankings`, which already refuses to guess, plus one narrowing that a
+stated club buys: two Robinsons are both backs, so the position cannot separate
+them and "B. Robinson RB ATL" can. A sheet player nobody bids a dollar on is
+marked unsold rather than struck off, because shortening the list would move
+`auctionSheetSize` — re-pricing the room mid-auction and, since `sameLeague` is
+what lets a saved draft replay, refusing to restore the draft being played. The
+engine ships `removeFromSheet`/`getSheetRemaining` for it, but **nothing in the
+room calls them yet**: the control that marks a player passed over, and the
+auction-is-over condition that reads it, belong with the snake phase and are not
+built. The API exists so that work does not have to reopen the engine.
+
+A list can be too concentrated to price. The whole budget chases whatever is on
+the sheet, so twelve names put the best player at 119% of a budget — a headline
+`validateBid` must reject for every team in the league. The import prices a list
+before accepting it and refuses one whose top clears a whole budget.
+
+The bound is the budget, deliberately not the 55% the pool's own tests assert,
+because those answer different questions. 55% is a sanity check on the _model_,
+over the whole board it was fitted to. A commissioner's list is not the whole
+board: thirty good players beside thirty dollar players is a real sheet, and the
+money genuinely does concentrate on the thirty. Expensive is not broken;
+unbiddable is. And it is not a count in either direction — one star among
+thirty-five bench players concentrates the money exactly as twelve names would —
+which is why the check prices the actual list rather than measuring its length.
+Reaching it is not a setting anybody types: it happens through the paste box,
+when a surname-first export or a defence block written in nicknames resolves a
+fraction of its names and sixty quietly becomes eighteen.
+
 **The reserve only exists when the auction buys the whole roster.** A bid is
 capped at the budget minus a dollar per unfilled starting slot, so nobody spends
 themselves into a lineup they cannot finish. That is right when every roster
@@ -164,6 +204,21 @@ prices a new league does not charge, so replaying them would build a roster
 nobody could have bought — `restore()` refuses a save stamped with a different
 league for the same reason. An imported ranking only changes what the players
 still on the board are said to be worth, so a draft in progress survives it.
+
+The commissioner's sheet survives it too, and that is the exception worth
+stating because it looks like a league change: `setAuctionSheet` pins
+`auctionSheetSize` to the length of the list, so `sameLeague` afterwards reports
+a different league. The condition that makes it safe is that a sheet touches no
+roster rule and only ever loosens the reserve — which this format already holds
+at zero — so every pick already made is exactly as legal as it was and only
+prices move. What it does cost is the two gates that compare that stamp: the
+saved draft, and the stash a reset left behind. Both are re-stamped inside
+`setAuctionSheet` rather than quietly disabled — the undo-the-reset net exists
+because Reset once destroyed an afternoon's work, and importing a list is not a
+reason to cut it. Removing the sheet leaves the size where the sheet put it (the
+room still auctions that many, we simply no longer know which), because saying
+"all of them" would bring the reserve back and make bids already accepted
+retrospectively illegal.
 
 **An import may not guess.** The pool joins on ids the whole way, but a CSV
 someone exports from a spreadsheet carries only names. `rankingsCsv.ts` keeps
@@ -382,7 +437,8 @@ board; a custom-rankings import that refuses to guess; app icons and a manifest
 that describe what actually exists; CI gating `npm run validate`; a second window that follows the draft; keyboard operation, a
 non-destructive reset, a draft that ends, a draft file for the night the
 laptop dies, named teams, a board that keeps up with an auction and configurable
-reception scoring, and pricing for a partial auction; 216 tests.
+reception scoring, pricing for a partial auction and the commissioner's actual
+sheet imported by paste or file; 295 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

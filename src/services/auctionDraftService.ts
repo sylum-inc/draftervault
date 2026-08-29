@@ -77,6 +77,31 @@ export interface Player {
   modelValue: number;
   /** Present only when an imported ranking is overriding this player. */
   customRanking?: RankingOverride;
+  /**
+   * Whether the money is buying this player, or the snake is.
+   *
+   * The mask `pricePool` used, read back rather than derived again — which
+   * players are for sale decides prices, what inflation is measured over and
+   * when the auction is finished, and every one of those working it out
+   * separately is a second definition that can disagree on the only night it
+   * matters. It rides on the player object rather than arriving as a card
+   * prop: the board mounts sixty memoised cards and a prop that changes with
+   * the sheet would re-render all of them.
+   *
+   * True for everybody when the whole board is auctioned, because then there
+   * is no sheet to be off.
+   */
+  onSheet: boolean;
+  /**
+   * Whether `onSheet` is a stated list or the model's guess at one.
+   *
+   * With a size typed into the settings panel but no list imported, the mask is
+   * simply our own best N by surplus. Telling 568 players they are "not on the
+   * auction sheet" is then stating as fact something nobody has said — and it
+   * moves: removing a 60-name sheet leaves 60 players still marked, only 40 of
+   * whom were ever on it. A guess and a fact have to read differently.
+   */
+  sheetIsStated: boolean;
   projectedPoints: number;
   adp: number; // Average Draft Position
   injuryRisk: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -405,6 +430,69 @@ const writeStoredLeague = (league: LeagueShape): void => {
 const RANKINGS_STORAGE_KEY = 'draft-vault:custom-rankings:v1';
 
 /**
+ * The commissioner's sheet: which players the money is actually buying.
+ *
+ * A sheet *size* is a guess at this list — the best N by surplus, as though the
+ * commissioner had picked ours. He picked off consensus rankings, so a player
+ * we price at $2 is on it and a player we price at $30 is not. Kept in its own
+ * key for the same reason the league is: it is a league-wide fact rather than a
+ * per-person preference, and it is not a pick, so it cannot live in the pick
+ * log — which stores nothing derived.
+ *
+ * `unsold` is the sheet player nobody bid a dollar on. He is marked rather than
+ * struck off, because striking him off would shorten the sheet, and the sheet's
+ * length is the league's `auctionSheetSize` — re-pricing the board mid-auction
+ * and, since `sameLeague` is what lets a saved draft replay, refusing to
+ * restore the draft being played.
+ */
+const SHEET_STORAGE_KEY = 'draft-vault:auction-sheet:v1';
+
+/** The sheet as it is stored: who is being auctioned, and who went unsold. */
+export interface StoredSheet {
+  ids: string[];
+  unsold: string[];
+  /**
+   * What `auctionSheetSize` was before the sheet pinned it.
+   *
+   * Removing a sheet has to put the league back where it found it, and nothing
+   * else records that. Without it, applying a 60-name list to the default whole
+   * board and then removing it leaves a permanent 60-player partial auction
+   * nobody chose — the top of the board roughly doubles, 568 players sit at $1
+   * wearing a snake badge, and the only way out is a league change that throws
+   * the draft away.
+   */
+  priorSize?: number | null;
+}
+
+const EMPTY_SHEET = (): StoredSheet => ({ ids: [], unsold: [] });
+
+const readStoredSheet = (): StoredSheet => {
+  try {
+    const raw = localStorage.getItem(SHEET_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Partial<StoredSheet>) : null;
+    if (!parsed || !Array.isArray(parsed.ids)) return EMPTY_SHEET();
+    return {
+      ids: parsed.ids.filter((id): id is string => typeof id === 'string'),
+      unsold: Array.isArray(parsed.unsold)
+        ? parsed.unsold.filter((id): id is string => typeof id === 'string')
+        : [],
+      priorSize: typeof parsed.priorSize === 'number' ? parsed.priorSize : null,
+    };
+  } catch {
+    return EMPTY_SHEET();
+  }
+};
+
+const writeStoredSheet = (sheet: StoredSheet): void => {
+  try {
+    if (!sheet.ids.length) localStorage.removeItem(SHEET_STORAGE_KEY);
+    else localStorage.setItem(SHEET_STORAGE_KEY, JSON.stringify(sheet));
+  } catch {
+    /* storage unavailable — the sheet simply won't survive a reload */
+  }
+};
+
+/**
  * The draft a reset threw away.
  *
  * Reset sits next to Undo in the toolbar and used to be one unrecoverable
@@ -520,6 +608,8 @@ export class AuctionDraftService {
   }
   /** Imported rankings, by player id. Empty unless somebody has imported some. */
   private overrides: Record<string, RankingOverride> = readStoredOverrides();
+  /** The commissioner's sheet, if one has been imported. Empty ids means none. */
+  private sheet: StoredSheet = readStoredSheet();
   /** Told after every change that reached storage, so other windows can follow. */
   private listeners = new Set<() => void>();
   /**
@@ -551,23 +641,83 @@ export class AuctionDraftService {
    */
   private initializePlayers(): void {
     const entries = poolData.players as PoolEntry[];
+    const mask = this.sheetMask(entries);
 
     // The pool ships values for the league it was built for. Rather than trust
     // them, re-derive from projected points — which are league-independent —
     // through the same module the builder used. At the default shape this
     // reproduces the stored numbers exactly (there is a test that says so),
     // and at any other shape it is the only way they could be right.
-    const { replacement, priced } = pricePool(
+    const {
+      replacement,
+      priced,
+      onSheet: bought,
+    } = pricePool(
       entries.map((entry) => ({
         position: entry.position,
         points: entry.projection.points,
         receptions: entry.projection.receptions,
       })),
-      this.league
+      this.league,
+      mask ? { onSheet: mask } : {}
     );
     this.replacement = replacement;
 
-    this.players = entries.map((entry, index) => this.buildPlayer(entry, priced[index]));
+    /*
+     * Who the money bought is read back off the pricing, never worked out a
+     * second time here — that is the whole reason pricePool returns the mask.
+     *
+     * The exception is a full auction, where there is no sheet to be off. The
+     * mask is then simply the best 192 by surplus, and marking the rest
+     * snake-only would state a fact about a format this league is not playing.
+     */
+    const wholeBoard = this.league.auctionSheetSize === null && !mask;
+
+    this.players = entries.map((entry, index) =>
+      this.buildPlayer(entry, priced[index], wholeBoard || bought[index], mask !== undefined)
+    );
+  }
+
+  /**
+   * The stored sheet as a mask over the pool, parallel to `entries`.
+   *
+   * Undefined when there is no sheet, which is what leaves `pricePool` to fall
+   * back to `auctionSheetSize`. A sheet naming nobody in the pool — a file kept
+   * across a pool rebuild — is also undefined rather than an auction of no
+   * players, which would price all 628 at a dollar and lose the board.
+   */
+  /**
+   * Whether this player is one the money is chasing.
+   *
+   * Five places asked `estimatedValue > 1` and meant this. The proxy holds only
+   * while nothing overrides a price — and importing custom rankings, a shipped
+   * feature, sets a value on whoever the importer ranked, including players the
+   * commissioner left off the sheet. Those snake-only players then re-enter the
+   * inflation denominator, so the room is told prices are softer than they are
+   * for the rest of the night, and the bargain board starts recommending players
+   * nobody is auctioning.
+   *
+   * The mask `pricePool` returned is the one answer. Nothing derives it again.
+   */
+  private forSale(player: Player): boolean {
+    return player.onSheet && player.estimatedValue > 1;
+  }
+
+  private sheetMask(entries: PoolEntry[]): boolean[] | undefined {
+    if (!this.sheet.ids.length) return undefined;
+    const wanted = new Set(this.sheet.ids);
+    // Anybody already sold was, by definition, bought with money, so he belongs
+    // on the sheet whatever the pasted list says. Sheets arrive late and arrive
+    // incomplete — pasted after bidding has started, or with a row that came
+    // back ambiguous — and without this a player sold for $55 is re-priced at $1
+    // the moment the list lands. His grade becomes a D, and every drafted player
+    // is summed at his post-import dollar, so the room is told it is paying a
+    // 29% premium on evidence that is entirely an artefact of the import.
+    const sold = new Set(
+      this.players.filter((player) => player.isDrafted).map((player) => player.id)
+    );
+    const mask = entries.map((entry) => wanted.has(entry.gsis) || sold.has(entry.gsis));
+    return mask.some(Boolean) ? mask : undefined;
   }
 
   /**
@@ -575,7 +725,12 @@ export class AuctionDraftService {
    * ranking. The model's number stays on `modelValue` either way, so nothing
    * downstream has to choose between showing ours and showing theirs.
    */
-  private buildPlayer(entry: PoolEntry, priced: { vorp: number; auctionValue: number }): Player {
+  private buildPlayer(
+    entry: PoolEntry,
+    priced: { vorp: number; auctionValue: number },
+    onSheet: boolean,
+    sheetIsStated: boolean
+  ): Player {
     const override = this.overrides[entry.gsis];
     const value = override?.value ?? priced.auctionValue;
 
@@ -643,6 +798,8 @@ export class AuctionDraftService {
       breakoutSeason: entry.breakoutSeason ?? null,
       draftCapital: entry.draft ?? null,
       defense: entry.defense,
+      onSheet,
+      sheetIsStated,
       isDrafted: false,
     };
   }
@@ -886,7 +1043,7 @@ export class AuctionDraftService {
 
     const positions: PlayerPosition[] = ['QB', 'RB', 'WR', 'TE', 'K', 'DST'];
     const scarcity = positions.map((position) => {
-      const startable = this.players.filter((p) => p.position === position && p.estimatedValue > 1);
+      const startable = this.players.filter((p) => p.position === position && this.forSale(p));
       const sold = drafted.filter((p) => p.position === position);
       const soldFor = sold.reduce((total, p) => total + (p.draftCost ?? 0), 0);
       const soldList = sold.reduce((total, p) => total + p.estimatedValue, 0);
@@ -920,7 +1077,7 @@ export class AuctionDraftService {
       premium: listed > 0 ? spent / listed : null,
       moneyLeft: this.teams.reduce((total, team) => total + team.remaining, 0),
       valueLeft: this.players
-        .filter((p) => !p.isDrafted && p.estimatedValue > 1)
+        .filter((p) => !p.isDrafted && this.forSale(p))
         .reduce((total, p) => total + p.estimatedValue, 0),
       scarcity,
     };
@@ -1022,13 +1179,33 @@ export class AuctionDraftService {
    */
   getPricePreview(league: LeagueShape): { top: number; median: number; bought: number } {
     const entries = poolData.players as PoolEntry[];
+    const wanted = normaliseLeague(league);
+
+    /*
+     * The stored sheet counts here only while the shape being previewed
+     * auctions exactly as many players as the sheet names.
+     *
+     * This method takes a *hypothetical* league — the one being typed into the
+     * settings panel — and an explicit mask overrides `auctionSheetSize`
+     * entirely. Hand the mask over unconditionally and dragging "Players
+     * auctioned" would show the current sheet's prices at every value of the
+     * field: the number would move and the preview would not, which is worse
+     * than showing nothing. Equal lengths is the one case where the field and
+     * the list are saying the same thing. Anywhere else the field is the
+     * question being asked, and it is answered from the size alone, which is
+     * what that field is for.
+     */
+    const mask = this.sheetMask(entries);
+    const usingSheet = mask && wanted.auctionSheetSize === this.sheet.ids.length;
+
     const { priced } = pricePool(
       entries.map((entry) => ({
         position: entry.position,
         points: entry.projection.points,
         receptions: entry.projection.receptions,
       })),
-      normaliseLeague(league)
+      wanted,
+      usingSheet ? { onSheet: mask } : {}
     );
     const sold = priced
       .map((entry) => entry.auctionValue)
@@ -1072,6 +1249,289 @@ export class AuctionDraftService {
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
     this.announce();
+  }
+
+  // -------------------------------------------------------------------------
+  // the commissioner's sheet
+  //
+  // A sheet size is our guess at the list; this is the list. It changes what
+  // the money is buying, which changes every price on the board — but it
+  // changes no rule, so unlike a league change a draft in progress survives it.
+  // -------------------------------------------------------------------------
+
+  /** The sheet in force: who is being auctioned, and who went unsold. */
+  getAuctionSheet(): StoredSheet {
+    return { ids: [...this.sheet.ids], unsold: [...this.sheet.unsold] };
+  }
+
+  /** How many players the imported sheet names. Zero when there is no sheet. */
+  getSheetCount(): number {
+    return this.sheet.ids.length;
+  }
+
+  /**
+   * Apply the commissioner's actual sheet.
+   *
+   * This is an import, not a league change. A sheet touches no roster rule and
+   * only ever loosens the reserve — which this format already holds at zero —
+   * so every pick already made stays exactly as legal as it was, and the draft
+   * in progress survives. That is the same reasoning a rankings import runs on.
+   *
+   * The league's `auctionSheetSize` is pinned to the length of the list,
+   * because a size and a list are two statements of one fact and a board priced
+   * off one while a panel reports the other cannot be read. `LeagueSettings`
+   * makes that field read-only for the same reason.
+   *
+   * Moving the league is what makes the stashed draft need re-stamping below:
+   * `clearedPickCount` and `restoreClearedDraft` both refuse a stash bid under
+   * a different league, and that net exists because Reset once destroyed an
+   * afternoon's work. Importing a list is not a reason to quietly cut it.
+   *
+   * Returns how many of the ids the pool actually knows.
+   */
+  setAuctionSheet(ids: readonly string[]): number {
+    const known = new Set(this.players.map((player) => player.id));
+    const wanted = [...new Set(ids)].filter((id) => known.has(id));
+    if (!wanted.length || this.tooConcentrated(wanted)) return 0;
+
+    const onSheet = new Set(wanted);
+    this.sheet = {
+      ids: wanted,
+      unsold: this.sheet.unsold.filter((id) => onSheet.has(id)),
+      // Only on the first sheet: replacing one sheet with another must not
+      // forget the size the board had before any of them arrived.
+      priorSize: this.sheet.ids.length ? this.sheet.priorSize : this.league.auctionSheetSize,
+    };
+    writeStoredSheet(this.sheet);
+
+    this.league = normaliseLeague({ ...this.league, auctionSheetSize: wanted.length });
+    writeStoredLeague(this.league);
+    this.restampStored();
+    this.repriceInPlace();
+    // persist() deletes the saved draft when there are no picks, so an empty
+    // board announces without writing: the re-stamp above is what a saved
+    // draft nobody has resumed yet needs.
+    if (this.history.length) this.persist();
+    else this.announce();
+    return wanted.length;
+  }
+
+  /**
+   * The shortest sheet that still prices sanely.
+   *
+   * The whole budget chases whatever is on the sheet, so a short one prices the
+   * top of the board above what any single team holds — measured at 12 teams and
+   * $200: twelve names put the best player at $238, or 119% of a budget, which
+   * `validateBid` must reject for every team in the league. The board would then
+   * carry a headline number nobody can legally bid.
+   *
+   * This is not a hypothetical setting somebody types. It is reached by accident
+   * through the paste box: a surname-first export, or a defence block written in
+   * nicknames, resolves a fraction of its names, and a sixty-name sheet quietly
+   * becomes eighteen. Refusing here is what makes the import panel say so
+   * instead. `normaliseLeague` also clamps the size up to the team count, so
+   * anything below that would leave the stored size and the stored list
+   * disagreeing about how many players are being auctioned.
+   */
+  private tooConcentrated(ids: readonly string[]): boolean {
+    return this.previewSheet(ids).top > this.maxBiddablePrice();
+  }
+
+  /**
+   * The most a player can be listed at and still be buyable: a whole budget.
+   *
+   * The whole budget chases whatever is on the sheet, so a list that is too
+   * short prices its best player above what any single team holds — twelve names
+   * put him at 119% of a budget — and `validateBid` must then reject that number
+   * for every team in the league. The board would carry a headline price nobody
+   * could legally bid.
+   *
+   * The bound is the budget rather than the 55% the pool's own tests assert,
+   * because those two are answering different questions. 55% is a sanity check
+   * on the *model*, over the whole board it was fitted to. A commissioner's list
+   * is not the whole board: thirty good players beside thirty dollar players is
+   * a real sheet, and the money genuinely does concentrate on the thirty. That
+   * is expensive, not broken. Unbiddable is broken.
+   *
+   * Reaching it is not a setting anybody types. It happens through the paste box,
+   * when a surname-first export or a defence block written in nicknames resolves
+   * a fraction of its names and sixty quietly becomes eighteen.
+   */
+  maxBiddablePrice(): number {
+    return this.league.budget;
+  }
+
+  /**
+   * Drop the list.
+   *
+   * What happens to `auctionSheetSize` depends on whether anything was bought
+   * under it, and the two cases are genuinely different.
+   *
+   * With picks on the board the size stays where the sheet put it. Those bids
+   * were accepted under a zero reserve, and restoring a whole-board auction
+   * would bring the reserve back and make picks already taken retrospectively
+   * illegal. The room still auctions that many players; we simply no longer
+   * know which, so pricing falls back to the best N by surplus.
+   *
+   * With an empty board there are no such bids, so keeping the size would strand
+   * the owner in a partial auction they never chose. Removing a sheet has to be
+   * an undo.
+   */
+  clearAuctionSheet(): void {
+    if (!this.sheet.ids.length) return;
+    const { priorSize } = this.sheet;
+    this.sheet = EMPTY_SHEET();
+    writeStoredSheet(this.sheet);
+
+    if (!this.history.length && priorSize !== undefined) {
+      this.league = normaliseLeague({ ...this.league, auctionSheetSize: priorSize });
+      writeStoredLeague(this.league);
+      this.restampStored();
+    }
+
+    this.repriceInPlace();
+    if (this.history.length) this.persist();
+    else this.announce();
+  }
+
+  /**
+   * A sheet player the room passed over: nobody bid even a dollar.
+   *
+   * Marked, never struck off. The snake phase decides the auction is finished
+   * when every sheet player is gone, and one unsold player would otherwise hold
+   * that condition false forever — stranding the app in an auction the room
+   * left twenty minutes ago. Deleting him instead would shorten the sheet,
+   * which moves `auctionSheetSize`, which re-prices everyone still for sale
+   * mid-auction and makes the draft being played unreplayable. A marker settles
+   * who is left without touching a price.
+   */
+  removeFromSheet(playerId: string): boolean {
+    if (!this.sheet.ids.includes(playerId)) return false;
+    if (this.sheet.unsold.includes(playerId)) return false;
+    this.sheet = { ...this.sheet, unsold: [...this.sheet.unsold, playerId] };
+    writeStoredSheet(this.sheet);
+    this.announce();
+    return true;
+  }
+
+  /** Put an unsold player back up: the room came back to him. */
+  returnToSheet(playerId: string): boolean {
+    if (!this.sheet.unsold.includes(playerId)) return false;
+    this.sheet = { ...this.sheet, unsold: this.sheet.unsold.filter((id) => id !== playerId) };
+    writeStoredSheet(this.sheet);
+    this.announce();
+    return true;
+  }
+
+  /**
+   * Sheet players still to come: not sold, not passed over.
+   *
+   * Derived from the pick log and the sheet rather than counted anywhere, so it
+   * cannot drift from either. This is the condition the snake phase begins on.
+   */
+  getSheetRemaining(): Player[] {
+    if (!this.sheet.ids.length) return [];
+    const unsold = new Set(this.sheet.unsold);
+    const onSheet = new Set(this.sheet.ids);
+    return this.players.filter(
+      (player) => onSheet.has(player.id) && !player.isDrafted && !unsold.has(player.id)
+    );
+  }
+
+  /**
+   * What a sheet would do to the board, without committing to it.
+   *
+   * The import panel has to show the shift before it is applied: a sheet is the
+   * largest single input to a price in this format, and a list that quietly
+   * doubles what the top of the board costs should say so first. Facts only —
+   * what each player costs now, and what he would cost then.
+   */
+  previewSheet(ids: readonly string[]): {
+    top: number;
+    median: number;
+    bought: number;
+    movers: Array<{ id: string; name: string; from: number; to: number }>;
+  } {
+    const entries = poolData.players as PoolEntry[];
+    const wanted = new Set(ids);
+    const mask = entries.map((entry) => wanted.has(entry.gsis));
+    const size = mask.filter(Boolean).length;
+    if (!size) return { top: 0, median: 0, bought: 0, movers: [] };
+
+    const { priced } = pricePool(
+      entries.map((entry) => ({
+        position: entry.position,
+        points: entry.projection.points,
+        receptions: entry.projection.receptions,
+      })),
+      normaliseLeague({ ...this.league, auctionSheetSize: size }),
+      { onSheet: mask }
+    );
+
+    const now = new Map(this.players.map((player) => [player.id, player.modelValue]));
+    const movers = entries
+      .map((entry, index) => ({
+        id: entry.gsis,
+        name: entry.name,
+        from: now.get(entry.gsis) ?? 1,
+        to: priced[index].auctionValue,
+        on: mask[index],
+      }))
+      .filter((entry) => entry.on && entry.to !== entry.from)
+      .sort((a, b) => b.to - b.from - (a.to - a.from))
+      .slice(0, 5)
+      .map(({ id, name, from, to }) => ({ id, name, from, to }));
+
+    const sold = priced
+      .map((entry) => entry.auctionValue)
+      .filter((value) => value > 1)
+      .sort((a, b) => b - a);
+
+    return {
+      top: sold[0] ?? 0,
+      median: sold[Math.floor(sold.length / 2)] ?? 0,
+      bought: sold.length,
+      movers,
+    };
+  }
+
+  /**
+   * Re-stamp storage whose league differs *only* by the auction sheet size.
+   *
+   * A saved draft and the stash a reset left behind are both refused when their
+   * stamp disagrees with the league in force, which is right: those bids bought
+   * players at prices this league does not charge. A sheet import moves
+   * `auctionSheetSize` and nothing else, so that refusal would throw away work
+   * for no reason — hence the re-stamp.
+   *
+   * The condition is the whole point, and it was missing. Re-stamping whatever
+   * is there rewrites stamps that were being *correctly* refused: reset a draft,
+   * change the league from twelve teams to ten, import a sheet, and the stash is
+   * silently re-stamped as a ten-team draft. Restoring it then replays picks at
+   * budgets and prices they were never bid under, and drops the ones that no
+   * longer fit without saying so. That stash is the undo-the-reset net added
+   * after a real 192-pick draft caught Reset destroying an afternoon, and an
+   * unrelated import must not be able to cut its only guard.
+   */
+  private restampStored(): void {
+    for (const key of [AuctionDraftService.STORAGE_KEY, CLEARED_STORAGE_KEY]) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const saved = JSON.parse(raw) as Record<string, unknown>;
+        if (!Array.isArray(saved.picks) || !saved.league) continue;
+
+        // Everything but the sheet size has to already agree. Anything else is
+        // a stamp that should go on being refused.
+        const stamp = normaliseLeague(leagueShape(saved.league as Partial<LeagueShape>));
+        const asIfResized = { ...stamp, auctionSheetSize: this.league.auctionSheetSize };
+        if (!sameLeague(normaliseLeague(asIfResized), this.league)) continue;
+
+        localStorage.setItem(key, JSON.stringify({ ...saved, league: this.league }));
+      } catch {
+        /* unreadable or unavailable — nothing to re-stamp */
+      }
+    }
   }
 
   /**
@@ -1191,7 +1651,7 @@ export class AuctionDraftService {
   }> {
     const inflation = this.calculateMarketInflation();
     return this.players
-      .filter((p) => !p.isDrafted && p.market?.consensusRank != null && p.estimatedValue > 1)
+      .filter((p) => !p.isDrafted && p.market?.consensusRank != null && this.forSale(p))
       .map((player) => {
         const listed = player.estimatedValue;
         // The room bids off consensus, so the expected price tracks the market
@@ -1325,7 +1785,7 @@ export class AuctionDraftService {
     );
     const moneyLeft = this.teams.reduce((total, team) => total + team.remaining, 0) - openSlots;
     const valueLeft = this.players
-      .filter((p) => !p.isDrafted && p.estimatedValue > 1)
+      .filter((p) => !p.isDrafted && this.forSale(p))
       .reduce((total, p) => total + p.estimatedValue, 0);
     if (valueLeft <= 0) return 1;
     return Math.max(0.6, Math.min(1.8, moneyLeft / valueLeft));
@@ -1349,7 +1809,7 @@ export class AuctionDraftService {
 
   /** Share of the position's startable players already off the board. */
   private calculatePositionScarcity(position: string): number {
-    const startable = this.players.filter((p) => p.position === position && p.estimatedValue > 1);
+    const startable = this.players.filter((p) => p.position === position && this.forSale(p));
     if (!startable.length) return 0;
     const gone = startable.filter((p) => p.isDrafted).length;
     return gone / startable.length;
@@ -1498,6 +1958,9 @@ export class AuctionDraftService {
     try {
       this.league = normaliseLeague(readStoredLeague());
       this.overrides = readStoredOverrides();
+      // The sheet decides what the money is buying, so it has to be back in
+      // hand before the board is priced rather than after it.
+      this.sheet = readStoredSheet();
       const stored = readStoredTeams();
       this.teamNames = stored.names ?? {};
       this.myTeamId = stored.mine ?? null;
@@ -1635,6 +2098,11 @@ export class AuctionDraftService {
         version: 1,
         savedAt: new Date().toISOString(),
         league: this.league,
+        // The sheet travels beside the league because it is now part of what
+        // set the prices: the same picks under the same league but a different
+        // list describe a different auction. A draft carried to a backup laptop
+        // has to price identically, not approximately.
+        auctionSheet: this.sheet,
         // Who the teams are travels with the draft: a pick log full of
         // "Team 7" is a worse record of the night than it needs to be.
         teamNames: this.teamNames,
@@ -1661,6 +2129,7 @@ export class AuctionDraftService {
     let saved: {
       kind?: string;
       league?: LeagueShape;
+      auctionSheet?: Partial<StoredSheet>;
       teamNames?: Record<string, string>;
       myTeamId?: string | null;
       budgets?: Array<{ id: string; budget: number }>;
@@ -1681,6 +2150,18 @@ export class AuctionDraftService {
 
     this.league = saved.league ? normaliseLeague(leagueShape(saved.league)) : this.league;
     writeStoredLeague(this.league);
+    // A file with no sheet replaces the board with a board that has none: the
+    // import replaces what is here rather than merging into it, and a stale
+    // list left behind would price this draft as no draft was ever priced.
+    this.sheet = Array.isArray(saved.auctionSheet?.ids)
+      ? {
+          ids: saved.auctionSheet.ids.filter((id): id is string => typeof id === 'string'),
+          unsold: Array.isArray(saved.auctionSheet.unsold)
+            ? saved.auctionSheet.unsold.filter((id): id is string => typeof id === 'string')
+            : [],
+        }
+      : EMPTY_SHEET();
+    writeStoredSheet(this.sheet);
     if (saved.teamNames) this.teamNames = saved.teamNames;
     if (saved.myTeamId !== undefined) this.myTeamId = saved.myTeamId;
     writeStoredTeams({ names: this.teamNames, mine: this.myTeamId });

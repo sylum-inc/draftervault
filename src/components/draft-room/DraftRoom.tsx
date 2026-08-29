@@ -24,6 +24,7 @@ import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
 import { LeagueSettings } from './LeagueSettings';
 import { RankingsImport } from './RankingsImport';
+import { AuctionSheetImport } from './AuctionSheetImport';
 import { DraftFile } from './DraftFile';
 import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
 import { openDraftSync } from '@/services/draftSync';
@@ -69,6 +70,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [compareOpen, setCompareOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetOnly, setSheetOnly] = useState(false);
   const [followedAt, setFollowedAt] = useState(0);
   const [confirmReset, setConfirmReset] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
@@ -112,13 +115,18 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
   const available = useMemo(() => {
     const needle = searchable(query.trim());
-    return players
-      .filter((player) => !player.isDrafted)
-      .filter((player) => position === 'ALL' || player.position === position)
-      .filter((player) => !watchedOnly || preferences.watchlist.includes(player.id))
-      .filter((player) => matchesSearch(searchKeys.get(player.id) ?? '', needle))
-      .sort(SORTS[sort]);
-  }, [players, query, position, sort, watchedOnly, preferences.watchlist, searchKeys]);
+    return (
+      players
+        .filter((player) => !player.isDrafted)
+        .filter((player) => position === 'ALL' || player.position === position)
+        .filter((player) => !watchedOnly || preferences.watchlist.includes(player.id))
+        // Everything the money is actually buying. Off the sheet is a snake pick,
+        // which is a different question from what is left on the board.
+        .filter((player) => !sheetOnly || player.onSheet)
+        .filter((player) => matchesSearch(searchKeys.get(player.id) ?? '', needle))
+        .sort(SORTS[sort])
+    );
+  }, [players, query, position, sort, watchedOnly, sheetOnly, preferences.watchlist, searchKeys]);
 
   /**
    * How many cards to actually mount.
@@ -152,7 +160,18 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // Any change to what is being shown starts the list again from the top.
   useEffect(() => {
     setCardLimit(CARD_PAGE);
-  }, [query, position, sort, watchedOnly, preferences.view, tableSort, tableDescending]);
+  }, [
+    query,
+    position,
+    sort,
+    watchedOnly,
+    // The sheet chip changes the list like any other filter; leaving it out
+    // leaves the paging window wherever the last list had scrolled to.
+    sheetOnly,
+    preferences.view,
+    tableSort,
+    tableDescending,
+  ]);
 
   useEffect(() => {
     const sentinel = moreRef.current;
@@ -330,6 +349,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     compareOpen ||
     leagueOpen ||
     importOpen ||
+    // A modal missing from this is a modal that lets "/" and "u" through, so
+    // typing into its paste box undoes picks.
+    sheetOpen ||
     confirmReset;
 
   /**
@@ -390,12 +412,54 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     sync();
   }, [draftService, sync]);
 
+  /**
+   * The sheet re-prices the board and leaves the draft alone.
+   *
+   * It changes what the money is buying, not what anybody is allowed to do, so
+   * every pick already made stays legal — this is an import, like a ranking,
+   * and not a league change.
+   */
+  const applySheet = useCallback(
+    (ids: string[]) => {
+      draftService.setAuctionSheet(ids);
+      setSheetOpen(false);
+      sync();
+    },
+    [draftService, sync]
+  );
+
+  const clearSheet = useCallback(() => {
+    draftService.clearAuctionSheet();
+    setSheetOpen(false);
+    // The chip goes with the sheet; left on, it would filter the board down to
+    // a list nobody can see any more.
+    setSheetOnly(false);
+    sync();
+  }, [draftService, sync]);
+
+  const previewSheet = useCallback(
+    (ids: string[]) => draftService.previewSheet(ids),
+    [draftService]
+  );
+
   // Re-read on every sync: a league change replaces the teams array, which is
   // the signal that these numbers moved.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const league = useMemo(() => draftService.getLeagueShape(), [draftService, teams]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const customCount = useMemo(() => draftService.getCustomRankingCount(), [draftService, players]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const sheet = useMemo(() => draftService.getAuctionSheet(), [draftService, players]);
+
+  // The chip is only rendered while a sheet exists, but the filter always runs,
+  // so anything that drops the sheet without going through the local Remove —
+  // a second window removing it, a draft file loaded with no sheet in it —
+  // leaves the board filtered with no visible control to switch it off. That is
+  // the board showing sixty players and search finding nobody, mid-auction.
+  useEffect(() => {
+    if (!sheet.ids.length) setSheetOnly(false);
+  }, [sheet.ids.length]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const myTeamId = useMemo(() => draftService.getMyTeamId(), [draftService, teams]);
@@ -517,6 +581,14 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         </button>
         <button
           className="dr-button"
+          aria-pressed={sheet.ids.length > 0}
+          onClick={() => setSheetOpen(true)}
+          title="The commissioner's sheet — the players money actually buys"
+        >
+          {sheet.ids.length > 0 ? `Sheet (${sheet.ids.length})` : 'Auction sheet'}
+        </button>
+        <button
+          className="dr-button"
           onClick={() => setLeagueOpen(true)}
           title="Teams, budget and roster shape — every price is computed from them"
         >
@@ -615,6 +687,18 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             >
               ★ {preferences.watchlist.length}
             </button>
+
+            {sheet.ids.length > 0 && (
+              <button
+                type="button"
+                className="dr-chip"
+                aria-pressed={sheetOnly}
+                onClick={() => setSheetOnly((current) => !current)}
+                title="Show only the players being auctioned"
+              >
+                Sheet
+              </button>
+            )}
 
             <div className="dr-segmented" role="group" aria-label="Board layout">
               <button
@@ -836,6 +920,19 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         />
       )}
 
+      {sheetOpen && (
+        <AuctionSheetImport
+          players={players}
+          activeCount={sheet.ids.length}
+          unsoldCount={sheet.unsold.length}
+          maxPrice={draftService.maxBiddablePrice()}
+          preview={previewSheet}
+          onApply={applySheet}
+          onClear={clearSheet}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
+
       {fileOpen && (
         <DraftFile
           service={draftService}
@@ -891,6 +988,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           poolLeague={draftService.getPoolLeagueShape()}
           draftedCount={drafted.length}
           poolDepth={draftService.getPoolDepth()}
+          sheetSize={sheet.ids.length}
           teamList={teams}
           myTeamId={myTeamId}
           onRenameTeam={(id, name) => {

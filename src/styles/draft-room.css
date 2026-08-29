@@ -975,6 +975,22 @@
   background: #39445a;
 }
 
+/* Off the commissioner's sheet: the snake fills him in for nothing. Marked
+   quietly, because it is a fact about the format rather than a warning — but
+   marked, because a $1 price tag on a player nobody is bidding on and a $1
+   price tag on a scrub look identical otherwise. */
+.dr-snake {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+  border: 1px solid var(--dr-line);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 1.5;
+  flex: none;
+}
+
 .dr-star {
   border: none;
   background: none;

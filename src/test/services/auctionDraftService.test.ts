@@ -941,4 +941,339 @@ describe('AuctionDraftService', () => {
       expect(service.getPlayers().every((p) => Number.isInteger(p.estimatedValue))).toBe(true);
     });
   });
+
+  describe('what a sheet import must not touch', () => {
+    const sheetOf = (service: AuctionDraftService, n: number) =>
+      service
+        .getAvailablePlayers()
+        .slice(0, n)
+        .map((player) => player.id);
+
+    it('refuses a list that prices one player above what a team can pay', () => {
+      // The whole budget chases whatever is on the sheet, so too few names — or
+      // one star among bench players — prices the top of the board above a
+      // budget, which validateBid must then reject for every team in the league.
+      const service = new AuctionDraftService(leagueShape({ teams: 12, budget: 200 }));
+      expect(service.setAuctionSheet(sheetOf(service, 12))).toBe(0);
+      expect(service.getSheetCount()).toBe(0);
+    });
+
+    it('accepts a commissioner-sized sheet and keeps the top inside a budget', () => {
+      const service = new AuctionDraftService(leagueShape({ teams: 12, budget: 200 }));
+      expect(service.setAuctionSheet(sheetOf(service, 60))).toBe(60);
+
+      const top = Math.max(...service.getPlayers().map((player) => player.estimatedValue));
+      expect(top).toBeLessThanOrEqual(service.maxBiddablePrice());
+      // Expensive is allowed; unbiddable is not.
+      expect(top).toBeGreaterThan(0);
+    });
+
+    it('leaves a stash from a different league refused', () => {
+      // The stash a reset leaves behind is refused when its stamp disagrees
+      // with the league in force, because those bids bought players at prices
+      // this league does not charge. A sheet import moves auctionSheetSize and
+      // nothing else, so it re-stamps to avoid throwing work away for no
+      // reason — but re-stamping whatever is there rewrites stamps that were
+      // being correctly refused, and this stash is the undo-the-reset net.
+      const twelve = new AuctionDraftService(leagueShape({ teams: 12 }));
+      twelve.draftPlayer(twelve.getAvailablePlayers()[0].id, 'team-1', 20);
+      twelve.draftPlayer(twelve.getAvailablePlayers()[0].id, 'team-11', 15);
+      twelve.resetDraft();
+
+      const ten = new AuctionDraftService(leagueShape({ teams: 10 }));
+      expect(ten.clearedPickCount()).toBe(0);
+
+      ten.setAuctionSheet(sheetOf(ten, 60));
+
+      // Still refused. An unrelated import may not cut the only guard on it.
+      expect(ten.clearedPickCount()).toBe(0);
+      expect(ten.restoreClearedDraft()).toBe(0);
+    });
+
+    it('keeps a stash that differs only by the sheet size restorable', () => {
+      // The case the re-stamp exists for: same league throughout, so the work
+      // must survive the import rather than being silently discarded.
+      const service = new AuctionDraftService(leagueShape({ auctionSheetSize: 60 }));
+      const player = service.getAvailablePlayers()[0];
+      service.draftPlayer(player.id, 'team-1', 20);
+      service.resetDraft();
+      expect(service.clearedPickCount()).toBe(1);
+
+      service.setAuctionSheet(sheetOf(service, 40));
+
+      expect(service.clearedPickCount()).toBe(1);
+      expect(service.restoreClearedDraft()).toBe(1);
+    });
+
+    it('puts the league back when a sheet is removed from an empty board', () => {
+      // Applying a list to the default whole board and then removing it used to
+      // leave a permanent partial auction nobody chose.
+      const service = new AuctionDraftService(leagueShape({ auctionSheetSize: null }));
+      service.setAuctionSheet(sheetOf(service, 60));
+      expect(service.getLeagueShape().auctionSheetSize).toBe(60);
+
+      service.clearAuctionSheet();
+      expect(service.getLeagueShape().auctionSheetSize).toBeNull();
+    });
+
+    it('keeps the size once bids have been accepted under it', () => {
+      // Those bids were taken with no reserve held back. Restoring a whole-board
+      // auction would bring the reserve back and make them retrospectively
+      // illegal, so here the size stays where the sheet put it.
+      const service = new AuctionDraftService(leagueShape({ auctionSheetSize: null }));
+      service.setAuctionSheet(sheetOf(service, 60));
+      service.draftPlayer(service.getAvailablePlayers()[0].id, 'team-1', 30);
+
+      service.clearAuctionSheet();
+      expect(service.getLeagueShape().auctionSheetSize).toBe(60);
+    });
+  });
+
+  describe("the commissioner's sheet", () => {
+    /**
+     * The engine used to know only how many players are auctioned and assumed
+     * they were our own best N. The real sheet is a specific list off somebody
+     * else's consensus rankings, so it holds players we price at $2 and leaves
+     * out players we price at $30 — and every price on the board is computed
+     * from which of them the money is buying.
+     */
+    const sheetOf = (svc: AuctionDraftService, count: number) => {
+      const byValue = [...svc.getPlayers()]
+        .filter((player) => player.valueOverReplacement > 0)
+        .sort((a, b) => b.modelValue - a.modelValue);
+      // Deliberately not our top N: half of it is the best players, and half is
+      // the dollar-and-two players a list drawn off consensus rankings actually
+      // contains, which is the case the old sheet *size* could not represent.
+      return [...byValue.slice(0, count / 2), ...byValue.slice(-count / 2)].map(
+        (player) => player.id
+      );
+    };
+
+    it('prices the list it is given rather than our best N', () => {
+      const ids = sheetOf(service, 60);
+      const cheap = ids[59];
+      const off = service.getPlayers().find((p) => !ids.includes(p.id) && p.modelValue > 20)!;
+
+      expect(service.setAuctionSheet(ids)).toBe(60);
+
+      const priced = service.getPlayers();
+      // A $2 player the commissioner put on the sheet is now bid on with real
+      // money, and a $30 player he left off is somebody you take in the snake.
+      expect(priced.find((p) => p.id === cheap)!.estimatedValue).toBeGreaterThan(1);
+      expect(priced.find((p) => p.id === off.id)!.estimatedValue).toBe(1);
+    });
+
+    it('marks who the money is buying on the player, not beside him', () => {
+      const ids = sheetOf(service, 60);
+      service.setAuctionSheet(ids);
+
+      const players = service.getPlayers();
+      expect(
+        players
+          .filter((player) => player.onSheet)
+          .map((player) => player.id)
+          .sort()
+      ).toEqual([...ids].sort());
+    });
+
+    it('marks everybody when the whole board is auctioned', () => {
+      // There is no sheet to be off in a full auction, and marking the bottom
+      // four hundred snake-only would state a fact about another format.
+      expect(service.getPlayers().every((player) => player.onSheet)).toBe(true);
+    });
+
+    it('pins the auctioned count to the length of the list', () => {
+      service.setAuctionSheet(sheetOf(service, 60));
+      expect(service.getLeagueShape().auctionSheetSize).toBe(60);
+      expect(service.getSheetCount()).toBe(60);
+    });
+
+    it('leaves a draft in progress alone, because it changes no rule', () => {
+      const [a, b] = service.getAvailablePlayers();
+      service.draftPlayer(a.id, 'team-1', 40);
+      service.draftPlayer(b.id, 'team-2', 20);
+
+      service.setAuctionSheet(sheetOf(service, 60));
+
+      // A sheet moves prices and nothing else: the money spent is still spent,
+      // so unlike a league change the picks survive it.
+      expect(service.getDraftedPlayers()).toHaveLength(2);
+      expect(service.getTeams()[0].remaining).toBe(160);
+      expect(service.getPlayers().find((p) => p.id === a.id)!.draftCost).toBe(40);
+    });
+
+    it('keeps the draft resumable across an import', () => {
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 40);
+      service.setAuctionSheet(sheetOf(service, 60));
+
+      // The stamp on the saved draft has to move with the league the sheet
+      // pinned, or the next reload silently refuses to replay it.
+      const reloaded = new AuctionDraftService();
+      expect(reloaded.restore()).toBe(1);
+      expect(reloaded.getSheetCount()).toBe(60);
+    });
+
+    it('keeps the undo-the-reset net across an import', () => {
+      // This net exists because Reset once destroyed an afternoon's work, and
+      // both ends of it refuse a stash stamped with a different league. A sheet
+      // moves the league without making a single stashed bid illegal.
+      const player = firstAvailable(service);
+      service.draftPlayer(player.id, 'team-1', 30);
+      service.resetDraft();
+      expect(service.clearedPickCount()).toBe(1);
+
+      service.setAuctionSheet(sheetOf(service, 60));
+
+      expect(service.clearedPickCount()).toBe(1);
+      expect(service.restoreClearedDraft()).toBe(1);
+    });
+
+    it('remembers the sheet across a reload', () => {
+      const ids = sheetOf(service, 60);
+      service.setAuctionSheet(ids);
+
+      const reloaded = new AuctionDraftService();
+      expect(reloaded.getAuctionSheet().ids).toEqual(ids);
+      expect(reloaded.getSheetCount()).toBe(60);
+    });
+
+    it('follows a sheet another window imported', () => {
+      const elsewhere = new AuctionDraftService();
+      elsewhere.setAuctionSheet(sheetOf(elsewhere, 60));
+
+      service.reloadFromStorage();
+      expect(service.getSheetCount()).toBe(60);
+      expect(service.getPlayers().filter((player) => player.onSheet)).toHaveLength(60);
+    });
+
+    it('carries the sheet in a draft file, so a backup laptop prices the same', () => {
+      const ids = sheetOf(service, 60);
+      service.setAuctionSheet(ids);
+      const player = service.getPlayers().find((p) => p.id === ids[59])!;
+      service.draftPlayer(player.id, 'team-1', 12);
+      const file = service.exportDraft();
+
+      localStorage.clear();
+      const elsewhere = new AuctionDraftService();
+      expect(elsewhere.importDraft(file)).toMatchObject({ ok: true, restored: 1 });
+
+      expect(elsewhere.getAuctionSheet().ids).toEqual(ids);
+      // The same picks under the same league but a different list would be a
+      // different auction, so identical pricing is the thing being asserted.
+      expect(elsewhere.getPlayers().find((p) => p.id === player.id)!.modelValue).toBe(
+        player.modelValue
+      );
+    });
+
+    it('drops a stale sheet when a file carries none', () => {
+      const elsewhere = new AuctionDraftService();
+      const file = elsewhere.exportDraft();
+
+      service.setAuctionSheet(sheetOf(service, 60));
+      service.importDraft(file);
+
+      expect(service.getSheetCount()).toBe(0);
+    });
+
+    it('marks a player nobody bid on rather than striking him off', () => {
+      const ids = sheetOf(service, 60);
+      service.setAuctionSheet(ids);
+      const passed = service.getPlayers().find((p) => p.id === ids[0])!;
+
+      expect(service.removeFromSheet(passed.id)).toBe(true);
+
+      // The snake phase ends the auction when every sheet player is gone, and
+      // one unsold player would otherwise hold that false forever. Striking him
+      // off instead would shorten the sheet, which is the league's auctioned
+      // count — re-pricing everyone still for sale in the middle of the room.
+      expect(service.getSheetCount()).toBe(60);
+      expect(service.getLeagueShape().auctionSheetSize).toBe(60);
+      expect(service.getPlayers().find((p) => p.id === passed.id)!.estimatedValue).toBe(
+        passed.estimatedValue
+      );
+      expect(service.getAuctionSheet().unsold).toEqual([passed.id]);
+      expect(service.getSheetRemaining().some((p) => p.id === passed.id)).toBe(false);
+    });
+
+    it('counts down the sheet as it sells, and can put an unsold player back', () => {
+      const ids = sheetOf(service, 60);
+      service.setAuctionSheet(ids);
+      expect(service.getSheetRemaining()).toHaveLength(60);
+
+      service.draftPlayer(ids[0], 'team-1', 5);
+      service.removeFromSheet(ids[1]);
+      expect(service.getSheetRemaining()).toHaveLength(58);
+
+      expect(service.returnToSheet(ids[1])).toBe(true);
+      expect(service.getSheetRemaining()).toHaveLength(59);
+    });
+
+    it('keeps the format when the list is removed', () => {
+      const player = firstAvailable(service);
+      service.setAuctionSheet(sheetOf(service, 60));
+      service.draftPlayer(player.id, 'team-1', 100);
+
+      service.clearAuctionSheet();
+
+      // The room still auctions sixty players; we simply no longer know which,
+      // so pricing falls back to the best sixty by surplus. Saying "all of
+      // them" instead would bring back a reserve this format does not have and
+      // make a $100 bid already accepted retrospectively illegal.
+      expect(service.getSheetCount()).toBe(0);
+      expect(service.getLeagueShape().auctionSheetSize).toBe(60);
+      expect(service.getDraftedPlayers()).toHaveLength(1);
+      expect(service.getPlayers().every((player) => player.onSheet === false)).toBe(false);
+    });
+
+    it('ignores ids the pool has never heard of', () => {
+      expect(service.setAuctionSheet(['nobody-at-all'])).toBe(0);
+      expect(service.getSheetCount()).toBe(0);
+      expect(service.getLeagueShape().auctionSheetSize).toBe(null);
+    });
+
+    it('previews a hypothetical league from its size, not from the stored sheet', () => {
+      const ids = sheetOf(service, 60);
+      service.setAuctionSheet(ids);
+
+      const league = service.getLeagueShape();
+      const atSixty = service.getPricePreview(league);
+      const atHundred = service.getPricePreview({ ...league, auctionSheetSize: 100 });
+
+      // The settings panel hands this a league somebody is still typing. An
+      // explicit sheet overrides the size entirely, so using it at every size
+      // would leave the number moving and the preview frozen.
+      expect(atHundred.bought).not.toBe(atSixty.bought);
+      expect(atHundred.top).toBeLessThan(atSixty.top);
+    });
+
+    it('previews the sheet itself when the size being asked about is the sheet’s', () => {
+      const ids = sheetOf(service, 60);
+      service.setAuctionSheet(ids);
+
+      const preview = service.getPricePreview(service.getLeagueShape());
+      const board = service
+        .getPlayers()
+        .map((player) => player.modelValue)
+        .filter((value) => value > 1)
+        .sort((a, b) => b - a);
+
+      expect(preview.top).toBe(board[0]);
+      expect(preview.bought).toBe(board.length);
+    });
+
+    it('shows what a sheet would do before it is applied', () => {
+      const ids = sheetOf(service, 60);
+      const before = service.getPlayers().find((p) => p.id === ids[0])!.modelValue;
+      const preview = service.previewSheet(ids);
+
+      expect(preview.bought).toBeGreaterThan(0);
+      expect(preview.top).toBeGreaterThan(before);
+      // Nothing is committed by looking.
+      expect(service.getSheetCount()).toBe(0);
+
+      service.setAuctionSheet(ids);
+      expect(service.getPricePreview(service.getLeagueShape()).top).toBe(preview.top);
+    });
+  });
 });
