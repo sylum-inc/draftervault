@@ -7,7 +7,8 @@
  * Replaces the hand-typed player list with ~600 players drawn from actual
  * rosters, actual production, and a projection model documented below. Nothing
  * here is invented: every number either comes from a source file or from the
- * model in `project()`, which is deliberately simple enough to audit.
+ * model in `src/lib/projection.ts`, which is deliberately simple enough to
+ * audit and, since it moved out of this file, simple enough to backtest.
  *
  * Sources (all free, no keys):
  *   nflverse  players.csv                 cross-source id map (gsis <-> espn <-> pfr)
@@ -274,73 +275,18 @@ const normalizeWeek = (row) => ({
 // ---------------------------------------------------------------------------
 // projection model
 //
-// Deliberately transparent. A player's rate of scoring is the recency-weighted
-// average of their points per game, shrunk toward the positional baseline in
-// proportion to how little we have seen of them, then adjusted for age. Volume
-// is expected games, discounted by how much time they have actually missed.
+// It used to live here. It now lives in `src/lib/projection.ts` and is imported
+// above, for the reason that file states at length: every dollar on the board
+// is a linear function of the points it produces, so the only question worth
+// asking of it is whether it beats the cheat sheet the other eleven managers
+// are holding — and a backtest can only answer that about the model this
+// builder actually runs. The arithmetic is unchanged:
 //
 //   points = shrunk_ppg x age_multiplier x expected_games
 //
-// Every constant is named and sits in one place so it can be argued with.
+// Every constant is still named and still sits in one place; that place is now
+// somewhere a test can reach.
 // ---------------------------------------------------------------------------
-
-/** Recency weights for the three seasons of tape. */
-const SEASON_WEIGHTS = { 2023: 0.2, 2024: 0.3, 2025: 0.5 };
-
-/**
- * Games of prior to blend in. Higher means the position regresses harder toward
- * its baseline. Kicking barely predicts itself from one season to the next, so
- * kickers are shrunk until the spread between them nearly disappears — which is
- * why a real auction prices them all at a dollar.
- */
-const SHRINKAGE_GAMES = { QB: 8, RB: 8, WR: 8, TE: 8, K: 60 };
-
-/** Peak window and decline rate per position, from the shape of aging curves. */
-const AGE_CURVE = {
-  QB: { peakStart: 26, peakEnd: 34, declinePerYear: 0.02, risePerYear: 0.03 },
-  RB: { peakStart: 23, peakEnd: 27, declinePerYear: 0.07, risePerYear: 0.05 },
-  WR: { peakStart: 25, peakEnd: 29, declinePerYear: 0.04, risePerYear: 0.05 },
-  TE: { peakStart: 26, peakEnd: 30, declinePerYear: 0.04, risePerYear: 0.06 },
-  K: { peakStart: 24, peakEnd: 36, declinePerYear: 0.01, risePerYear: 0.01 },
-};
-
-const ageMultiplier = (position, age) => {
-  const curve = AGE_CURVE[position];
-  if (!curve || !age) return 1;
-  if (age < curve.peakStart) return 1 - (curve.peakStart - age) * curve.risePerYear;
-  if (age > curve.peakEnd) return Math.max(0.45, 1 - (age - curve.peakEnd) * curve.declinePerYear);
-  return 1;
-};
-
-/**
- * What a rookie is worth before anyone has seen them play, by draft capital.
- * Derived empirically in `rookieBaselines()` from every drafted skill player
- * since 2010 — not guessed.
- */
-const rookieBaselines = (draftPicks, seasonsByPlayer) => {
-  const buckets = new Map(); // `${position}:${round}` -> points per game samples
-  for (const pick of draftPicks) {
-    const position = pick.position;
-    if (!AGE_CURVE[position] || position === 'K') continue;
-    const year = num(pick.season);
-    if (year < 2010 || year > 2024) continue;
-    const seasons = seasonsByPlayer.get(pick.gsis_id);
-    const rookieYear = seasons?.get(year);
-    if (!rookieYear || rookieYear.games < 4) continue;
-    const key = `${position}:${Math.min(7, num(pick.round))}`;
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(rookieYear.pprPoints / rookieYear.games);
-  }
-  const baseline = new Map();
-  for (const [key, samples] of buckets) {
-    samples.sort((a, b) => a - b);
-    baseline.set(key, {
-      median: samples[Math.floor(samples.length / 2)],
-      n: samples.length,
-    });
-  }
-  return baseline;
-};
 
 // ---------------------------------------------------------------------------
 // play-by-play: where a touch happened, and what a team likes to do
@@ -678,7 +624,20 @@ const main = async () => {
   const draftPicks = [...readCsv(paths['draft_picks.csv'])];
   const draftByGsis = new Map();
   for (const pick of draftPicks) if (pick.gsis_id) draftByGsis.set(pick.gsis_id, pick);
-  const rookieCurve = rookieBaselines(draftPicks, seasonsByPlayer);
+  // What a rookie is worth before anyone has seen him play, by draft capital,
+  // derived from every drafted skill player since 2010 rather than guessed. The
+  // rows are mapped to the model's own shape here: `projection.ts` knows about
+  // players and seasons and deliberately nothing about CSV column names.
+  const rookieCurve = rookieBaselines(
+    draftPicks.map((pick) => ({
+      playerId: pick.gsis_id,
+      season: num(pick.season),
+      round: num(pick.round),
+      position: pick.position,
+    })),
+    seasonsByPlayer,
+    { through: rookieCurveThrough(CURRENT_SEASON) }
+  );
 
   // --- the fantasy-side id crosswalk ----------------------------------------
   // Sleeper carries a gsis_id for only 3,893 of its 12,224 players, and almost
@@ -714,103 +673,44 @@ const main = async () => {
 
   // --- positional baselines, needed before anyone can be shrunk toward them --
   const FANTASY_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE']);
-  const ppgSamples = new Map();
-  // Receptions get their own samples so a league that does not pay a full point
-  // for them can be priced. Same players, same filter, same statistic shape.
-  const recSamples = new Map();
+  // Last season's rate for everyone rostered at a fantasy position, which is
+  // what the median in `positionBaselines` is taken over. Receptions ride along
+  // in the same sample so a league that does not pay a full point for one can
+  // be priced from the same players, the same filter and the same statistic.
+  const baselineSamples = [];
   for (const [gsis, roster] of rostered) {
     if (!FANTASY_POSITIONS.has(roster.position)) continue;
-    const seasons = seasonsByPlayer.get(gsis);
-    const recent = seasons?.get(2025);
-    if (!recent || recent.games < 6) continue;
-    if (!ppgSamples.has(roster.position)) ppgSamples.set(roster.position, []);
-    ppgSamples.get(roster.position).push(recent.pprPoints / recent.games);
-    if (!recSamples.has(roster.position)) recSamples.set(roster.position, []);
-    recSamples.get(roster.position).push(recent.receptions / recent.games);
+    const recent = seasonsByPlayer.get(gsis)?.get(CURRENT_SEASON - 1);
+    if (!recent) continue;
+    baselineSamples.push({ position: roster.position, ...recent });
   }
-  const median = (samples) => {
-    samples.sort((a, b) => b - a);
-    // The baseline is what a startable-but-unremarkable player at the position
-    // produces, not the mean of everyone who took a snap.
-    return samples[Math.min(samples.length - 1, Math.floor(samples.length * 0.5))];
-  };
-  const positionBaseline = new Map();
-  for (const [position, samples] of ppgSamples) positionBaseline.set(position, median(samples));
-  const receptionBaseline = new Map();
-  for (const [position, samples] of recSamples) receptionBaseline.set(position, median(samples));
+  const baselines = positionBaselines(baselineSamples);
 
-  const age = (birthDate) => {
-    if (!birthDate) return null;
-    const born = new Date(birthDate);
-    if (Number.isNaN(born.getTime())) return null;
-    return CURRENT_SEASON - born.getFullYear();
-  };
-
+  /**
+   * The model, applied to one rostered player.
+   *
+   * A thin wrapper and nothing more: everything that decides a number lives in
+   * `src/lib/projection.ts`, and this only gathers what that function needs out
+   * of the files this script has read. Age comes back out alongside because the
+   * player card prints it and this is the only place it is worked out.
+   */
   const project = (gsis, roster) => {
-    const seasons = seasonsByPlayer.get(gsis);
     const identity = byGsis.get(gsis);
-    const playerAge = age(identity?.birth_date);
-    const baseline = positionBaseline.get(roster.position) ?? 6;
-
-    const recBaseline = receptionBaseline.get(roster.position) ?? 0;
-
-    let weighted = 0;
-    let weightedReceptions = 0;
-    let weight = 0;
-    let games = 0;
-    for (const season of SEASONS) {
-      const totals = seasons?.get(season);
-      if (!totals || !totals.games) continue;
-      const w = SEASON_WEIGHTS[season] * totals.games;
-      weighted += (totals.pprPoints / totals.games) * w;
-      weightedReceptions += (totals.receptions / totals.games) * w;
-      weight += w;
-      games += totals.games;
-    }
-
-    let ppg;
-    let recPpg;
-    let basis;
-    if (weight > 0) {
-      const observed = weighted / weight;
-      const prior = SHRINKAGE_GAMES[roster.position] ?? 8;
-      ppg = (games * observed + prior * baseline) / (games + prior);
-      // Receptions run through the identical pipeline. They have to: the client
-      // prices a non-PPR league by subtracting them from the points, and a
-      // shrunk points figure minus an unshrunk reception figure is neither.
-      recPpg =
-        (games * (weightedReceptions / weight) + prior * recBaseline) / (games + prior);
-      basis = 'production';
-    } else {
-      // No tape: fall back to what players drafted in this slot have produced.
-      const pick = draftByGsis.get(gsis);
-      const key = `${roster.position}:${Math.min(7, num(pick?.round) || 7)}`;
-      ppg = rookieCurve.get(key)?.median ?? baseline * 0.45;
-      // No tape means no reception history either. Assume they catch in
-      // proportion to how much they are expected to score relative to a typical
-      // player at the position — coarse, and it only ever moves cheap players.
-      recPpg = baseline > 0 ? recBaseline * (ppg / baseline) : 0;
-      basis = pick ? `draft round ${pick.round}` : 'undrafted baseline';
-    }
-
-    const multiplier = ageMultiplier(roster.position, playerAge);
-    const missed = missedByGsis.get(gsis) ?? 0;
-    const expectedGames = Math.max(10, 17 - Math.min(6, missed));
-    const points = ppg * multiplier * expectedGames;
-    // Carried so the client can re-price for a league that pays less than a
-    // point per catch, the same way it re-prices for a different league shape.
-    const receptions = recPpg * multiplier * expectedGames;
-
-    return {
-      ppg,
-      points,
-      receptions,
-      expectedGames,
-      ageMultiplier: multiplier,
-      basis,
-      playerAge,
-      games,
-    };
+    const playerAge = seasonAge(identity?.birth_date, CURRENT_SEASON);
+    const pick = draftByGsis.get(gsis);
+    const projection = projectPlayer(
+      {
+        position: roster.position,
+        age: playerAge,
+        seasons: seasonsByPlayer.get(gsis),
+        gamesMissed: missedByGsis.get(gsis) ?? 0,
+        draftRound: pick ? num(pick.round) : null,
+      },
+      baselines,
+      rookieCurve,
+      CURRENT_SEASON
+    );
+    return { ...projection, playerAge };
   };
 
   // --- build the candidate list --------------------------------------------
@@ -1213,11 +1113,12 @@ const main = async () => {
     });
   }
   // Team defense is even noisier than kicking year to year, so each defense is
-  // pulled most of the way to the league average before it is priced.
+  // pulled most of the way to the league average before it is priced. The
+  // weight is the model's, beside every other constant that decides a number.
   const defenseMean =
     defenses.reduce((total, d) => total + d.projection.points, 0) / (defenses.length || 1);
   for (const defense of defenses) {
-    const regressed = defense.projection.points * 0.35 + defenseMean * 0.65;
+    const regressed = regressedDefensePoints(defense.projection.points, defenseMean);
     defense.projection.points = Math.round(regressed * 10) / 10;
     defense.projection.pointsPerGame = Math.round((regressed / 17) * 10) / 10;
   }
