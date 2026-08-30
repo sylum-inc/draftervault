@@ -184,6 +184,43 @@ Reaching it is not a setting anybody types: it happens through the paste box,
 when a surname-first export or a defence block written in nicknames resolves a
 fraction of its names and sixty quietly becomes eighteen.
 
+**Two buttons, and the order they are pressed in changed the board.** Found
+driving the owner's real sixty-name sheet, and the more dangerous of the two
+because the wrong order is the natural one — press the recommended button, then
+paste the sheet when the commissioner sends it.
+
+"Use consensus" reads dollar values off our surplus curve for a board where the
+money buys 192 players. Importing a sheet re-prices that curve for a board where
+the same money buys sixty. The overrides then held the old numbers and won,
+because `buildPlayer` prefers an override to the price it has just computed — so
+the whole sheet read about 35% cheap. Gibbs showed $55 against the $94 the room
+would actually pay: a board that loses every player while its owner believes he
+is being disciplined. `setAuctionSheet` and `clearAuctionSheet` now re-derive a
+market board after re-pricing, and `MARKET_BOARD_KEY` is what distinguishes
+values we derived from values somebody stated. It is its own storage key rather
+than a read of the overrides' `notes`, because a CSV with a notes column saying
+"consensus" would otherwise have the owner's own numbers silently replaced.
+
+The second bug was underneath it and only appears once a real sheet is in force.
+The reorder is a **permutation of a value curve, and a permutation only conserves
+money if it stays inside the set the money is spread across.** Reordering across
+the sheet boundary handed a highly-ranked off-sheet player a real dollar value
+and pushed a sheet player to the floor: $436 of the room's $2,400 leaked onto
+fourteen players nobody was going to bid on, and the sheet itself came out $422
+light. `ConsensusSubject.forSale` is what keeps the permutation inside the
+auction; with no sheet it is everybody, which is why nothing showed until a
+sheet existed. Four tests hold both orders to the same prices and the sheet to
+the room's whole budget.
+
+**A club abbreviation that is also a first name may not be admitted.** The same
+real sheet wrote Arizona as "AZ", which was not in the alias map — and because
+an unrecognised trailing token blocks the position token before it, "Trey
+McBride TE AZ" failed to resolve a correctly spelled name. `AZ` and `PHL` are in
+now. `PHIL`, `JACK`, `WASH` and `PITT` deliberately are not: a club token is
+stripped out of the name, so admitting them would turn "Phil Dorsett" into
+"Dorsett of Philadelphia" — a worse failure than the one it fixes, because it
+resolves to somebody rather than to nobody.
+
 **A paste can fail in the middle, and that is the one nobody catches.** The
 import already names every ambiguous, unmatched, duplicated and skipped row,
 and already refuses a list too concentrated to bid on. Between those sits the
@@ -1416,7 +1453,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-593 tests.
+599 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

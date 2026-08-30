@@ -61,6 +61,21 @@ export interface ConsensusSubject {
    * two incompatible scales.
    */
   adp?: number | null;
+  /**
+   * Whether the money is buying him.
+   *
+   * Load-bearing once a commissioner's sheet is in force. The reorder is a
+   * *permutation* of a value curve, and a permutation only conserves money if
+   * it stays inside the set the money is spread across. Reordering across the
+   * sheet boundary hands a highly-ranked off-sheet player a real dollar value
+   * and pushes a sheet player to the floor — measured on the owner's own
+   * sixty-name sheet, $436 of the room's $2,400 leaked onto fourteen players
+   * nobody was going to bid on, and the sheet itself came out $422 light.
+   *
+   * Undefined means "everybody", which is the full-auction case where there is
+   * no sheet to be off.
+   */
+  forSale?: boolean;
 }
 
 /** Which signal spoke for a player, so the panel can name it honestly. */
@@ -108,7 +123,10 @@ export const consensusOverrides = (
   // keeps ADP and consensus from being interleaved by number: the global order
   // already encodes "drafted before not drafted", and the per-position pass
   // only ever preserves it.
-  const ordered = marketOrder(players);
+  // Only the players the money is actually buying. Everybody else keeps the
+  // dollar floor he already sits at, which is the honest price for somebody no
+  // money is chasing.
+  const ordered = marketOrder(players).filter((player) => player.forSale !== false);
   const byPosition = new Map<string, Array<(typeof ordered)[number]>>();
   for (const player of ordered) {
     const list = byPosition.get(player.position);
@@ -135,8 +153,9 @@ export const consensusOverrides = (
 export const consensusCoverage = (
   players: readonly ConsensusSubject[]
 ): { ranked: number; of: number; fromAdp: number; fromConsensus: number } => {
-  const fromAdp = players.filter((player) => player.adp != null).length;
-  const fromConsensus = players.filter(
+  const buying = players.filter((player) => player.forSale !== false);
+  const fromAdp = buying.filter((player) => player.adp != null).length;
+  const fromConsensus = buying.filter(
     (player) => player.adp == null && player.consensusRank != null
   ).length;
   return { ranked: fromAdp + fromConsensus, of: players.length, fromAdp, fromConsensus };

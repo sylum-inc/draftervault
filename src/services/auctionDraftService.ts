@@ -714,6 +714,21 @@ const LEAGUE_STORAGE_KEY = 'draft-vault:league:v1';
  * plays that.
  */
 const LEAGUE_CONFIRMED_KEY = 'draft-vault:league-confirmed:v1';
+/**
+ * Whether the overrides in force were *derived* rather than stated.
+ *
+ * Its own key for the same reason `LEAGUE_CONFIRMED_KEY` is: it answers a
+ * different question from the overrides themselves. An imported CSV carries
+ * dollar values somebody chose, and nothing may recompute them. The market
+ * board carries dollar values read off our own surplus curve, so the moment
+ * that curve moves — which is exactly what importing a sheet does — they are
+ * stale and have to be derived again.
+ *
+ * Reading it off the overrides' `notes` instead would work until somebody's
+ * CSV had a notes column saying "consensus", and the cost of that collision is
+ * silently replacing their stated values with ours.
+ */
+const MARKET_BOARD_KEY = 'draft-vault:market-board:v1';
 
 const readStoredLeague = (): LeagueShape => {
   try {
@@ -2738,6 +2753,9 @@ export class AuctionDraftService {
    * Only what the remaining players are said to be worth moves.
    */
   setCustomRankings(overrides: Record<string, RankingOverride>): void {
+    // Stated until proven derived: `applyConsensusBoard` sets the marker back
+    // immediately after calling this, and an imported CSV never does.
+    this.forgetMarketBoard();
     this.overrides = { ...overrides };
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
@@ -2769,7 +2787,51 @@ export class AuctionDraftService {
   applyConsensusBoard(): { ranked: number; of: number; fromAdp: number; fromConsensus: number } {
     const subjects = this.marketSubjects();
     this.setCustomRankings(consensusOverrides(subjects));
+    // After setCustomRankings, which clears it: these values are derived, so
+    // they have to be re-derived whenever the curve underneath them moves.
+    try {
+      localStorage.setItem(MARKET_BOARD_KEY, '1');
+    } catch {
+      // A browser refusing storage costs the re-derive, not the board.
+    }
     return consensusCoverage(subjects);
+  }
+
+  private forgetMarketBoard(): void {
+    try {
+      localStorage.removeItem(MARKET_BOARD_KEY);
+    } catch {
+      // Nothing to do; the marker is an optimisation, not a source of truth.
+    }
+  }
+
+  /** Whether the prices on the board were derived by us rather than stated. */
+  private marketBoardInForce(): boolean {
+    if (!Object.keys(this.overrides).length) return false;
+    try {
+      return !!localStorage.getItem(MARKET_BOARD_KEY);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Re-derive the market board after anything that moves the curve under it.
+   *
+   * The bug this exists for was found driving a real commissioner's sheet.
+   * "Use consensus" reads dollar values off our surplus curve for a board where
+   * the money buys 192 players; importing a sheet re-prices that curve for a
+   * board where the same money buys sixty. The overrides then held the old
+   * numbers and won, because `buildPlayer` prefers an override to the price it
+   * just computed — so the whole sheet read about 35% cheap. Gibbs showed $55
+   * against the $94 the room would actually pay, which is a board that loses
+   * every player while its owner believes he is being disciplined. And it
+   * happened in the order somebody would naturally use: press the recommended
+   * button, then paste the sheet when the commissioner sends it.
+   */
+  private refreshMarketBoard(): void {
+    if (!this.marketBoardInForce()) return;
+    this.applyConsensusBoard();
   }
 
   /**
@@ -2899,12 +2961,17 @@ export class AuctionDraftService {
       // A market-only player has no gsis and no projection; his ADP is the only
       // thing anybody knows about him, and it is exactly what this needs.
       adp: adp.get(player.id) ?? absent.get(player.id) ?? null,
+      // The reorder is a permutation of a value curve, so it has to stay inside
+      // the set the money is spread across; a sheet player swapped for an
+      // off-sheet one moves budget out of the auction entirely.
+      forSale: player.onSheet,
     }));
   }
 
   /** Drop the import and go back to what the model says. */
   clearCustomRankings(): void {
     if (!Object.keys(this.overrides).length) return;
+    this.forgetMarketBoard();
     this.overrides = {};
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
@@ -2971,6 +3038,7 @@ export class AuctionDraftService {
     // persist() deletes the saved draft when there are no picks, so an empty
     // board announces without writing: the re-stamp above is what a saved
     // draft nobody has resumed yet needs.
+    this.refreshMarketBoard();
     if (this.history.length) this.persist();
     else this.announce();
     return wanted.length;
@@ -3050,6 +3118,9 @@ export class AuctionDraftService {
     }
 
     this.repriceInPlace();
+    // Removing a sheet moves the curve exactly as adding one does, so a derived
+    // board has to be derived again here too.
+    this.refreshMarketBoard();
     if (this.history.length) this.persist();
     else this.announce();
   }

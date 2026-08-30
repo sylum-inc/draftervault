@@ -86,3 +86,33 @@ describe('sheetLoss', () => {
     expect(loss('')).toMatchObject({ lost: 0, of: 0, share: 0, severity: 'none' });
   });
 });
+
+/**
+ * Club abbreviations as people actually type them.
+ *
+ * From the real commissioner's sheet: "Trey McBride TE AZ" did not resolve, and
+ * the name was spelled correctly. An unrecognised trailing token blocks the
+ * position token before it, so one unknown club costs the whole row.
+ */
+describe('club tokens', () => {
+  const squad: Candidate[] = [
+    { id: 'mcb', name: 'Trey McBride', position: 'TE', team: 'ARI' },
+    { id: 'saq', name: 'Saquon Barkley', position: 'RB', team: 'PHI' },
+    { id: 'phil', name: 'Phil Dorsett', position: 'WR', team: 'HOU' },
+  ];
+  const resolve = (text: string) => readAuctionSheet(text, squad).resolutions[0];
+
+  it('reads AZ as Arizona and PHL as Philadelphia', () => {
+    expect(resolve('Trey McBride TE AZ').status).toBe('matched');
+    expect(resolve('Saquon Barkley RB PHL').status).toBe('matched');
+  });
+
+  it('leaves a club spelling that is also a first name alone', () => {
+    // Admitting PHIL would strip it out of the name and turn this row into
+    // "Dorsett of Philadelphia" — a worse failure than the one it fixes,
+    // because it resolves to somebody rather than to nobody.
+    const row = resolve('Phil Dorsett WR HOU');
+    expect(row.status).toBe('matched');
+    expect(row.status === 'matched' && row.player.id).toBe('phil');
+  });
+});
