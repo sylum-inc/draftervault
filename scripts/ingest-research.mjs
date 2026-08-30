@@ -51,7 +51,8 @@ const existing = existsSync(out)
 const players = { ...(existing.players ?? {}) };
 
 const batches = JSON.parse(readFileSync(input, 'utf8'));
-const tally = { players: 0, kept: 0, dropped: 0, silent: 0, unknown: 0 };
+const tally = { players: 0, kept: 0, dropped: 0, silent: 0, unknown: 0, mismatched: 0 };
+const complaints = [];
 const now = new Date().toISOString();
 
 for (const batch of Array.isArray(batches) ? batches : []) {
@@ -66,6 +67,27 @@ for (const batch of Array.isArray(batches) ? batches : []) {
     const player = known.get(entry?.gsis);
     if (!player) {
       tally.unknown += 1;
+      complaints.push(`no player has id ${entry?.gsis} (given as ${entry?.name})`);
+      continue;
+    }
+
+    /*
+     * The id and the name have to agree, and this is not belt-and-braces.
+     *
+     * A wrong id does not fail loudly: every id in this pool belongs to
+     * *somebody*, so a transposed one silently writes one player's findings
+     * onto another. It happened on the first run of this script — four ids in
+     * ten were wrong, and a receiver's injury report landed on a tight end who
+     * was perfectly fit. That is the worst shape a data error can take here,
+     * because the room renders it with a source and a date and every reason to
+     * be believed.
+     *
+     * The name is right there in the record. Refusing to guess between them is
+     * the same rule the rankings importer lives by.
+     */
+    if (typeof entry?.name === 'string' && entry.name.trim() && entry.name !== player.name) {
+      tally.mismatched += 1;
+      complaints.push(`${entry.name} was given the id of ${player.name} (${entry.gsis})`);
       continue;
     }
     const record = validateResearch(entry, allowed);
@@ -85,7 +107,10 @@ for (const batch of Array.isArray(batches) ? batches : []) {
 }
 
 console.log('\nDraft Vault — folding in what the agents found\n');
-console.log(`  players      ${tally.players} researched, ${tally.unknown} not in the pool`);
+console.log(
+  `  players      ${tally.players} researched, ${tally.unknown} unknown, ${tally.mismatched} whose id and name disagreed`
+);
+for (const complaint of complaints.slice(0, 12)) console.log(`               ! ${complaint}`);
 console.log(`  findings     ${tally.kept} kept, ${tally.dropped} dropped for no source or no date`);
 console.log(`  silent       ${tally.silent} had nothing to report`);
 console.log(`  file now     ${Object.keys(players).length} players\n`);

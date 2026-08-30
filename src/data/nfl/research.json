@@ -1,7 +1,296 @@
 {
-  "generatedAt": null,
-  "model": null,
-  "engine": "exa",
-  "contract": "Every finding cites a URL the search engine returned and a publication date. Claims that could not do both were dropped. No value, price or projection is produced here.",
-  "players": {}
+  "generatedAt": "2026-08-30T02:33:09.595Z",
+  "model": "claude-code-agents",
+  "engine": "websearch",
+  "league": {
+    "receptionPoints": 1
+  },
+  "contract": "Every finding cites a URL a search returned and a publication date. Claims that could not do both were dropped. No value, price or projection is produced here.",
+  "players": {
+    "00-0039139": {
+      "name": "Jahmyr Gibbs",
+      "position": "RB",
+      "team": "DET",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "PAY_UP",
+      "confidence": "HIGH",
+      "headline": "David Montgomery traded to Houston and Campbell has named Gibbs the bell cow; hold-in ended with an extension",
+      "findings": [
+        {
+          "claim": "Gibbs sat out the first week of training camp on a hold-in, then signed a three-year extension and returned to full practice; he called the negotiation extremely stressful and said he is relieved to move on.",
+          "url": "https://www.detroitlions.com/news/lions-daily-gibbs-relieved-with-deal-done-moves-focus-to-field",
+          "source": "detroitlions.com",
+          "published": "2026-08-07",
+          "impact": "CONTEXT"
+        },
+        {
+          "claim": "The Lions traded David Montgomery to Houston for a pick and OL Juice Scruggs and have anointed Gibbs their bell cow, meaning he takes over the heavy lifting out of the backfield in 2026; Isiah Pacheco was signed on a one-year deal but injuries have limited him the past two seasons and the split is not expected to be as balanced as the Gibbs/Montgomery one.",
+          "url": "https://www.si.com/nfl/lions/onsi/why-detroit-lions-won-t-miss-rb-david-montgomery-2026",
+          "source": "si.com",
+          "published": "2026-07-21",
+          "impact": "POSITIVE"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0036900": {
+      "name": "Ja'Marr Chase",
+      "position": "WR",
+      "team": "CIN",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "NEUTRAL",
+      "confidence": "MEDIUM",
+      "headline": "Slight left-knee hyperextension in camp; rested precautionarily and says he could play a game tomorrow",
+      "findings": [
+        {
+          "claim": "Chase slightly hyperextended his left knee on a downfield route in Tuesday's practice, did not practice Wednesday and will not play the preseason finale against Philadelphia; he wore a sleeve on the leg and said \"If I had a game tomorrow, I'd play.\" The team called it precautionary.",
+          "url": "https://www.si.com/nfl/bengals/onsi/ja-marr-chase-s-latest-practice-status-revealed-following-knee-injury-in-training-camp-01m0yx08fas5",
+          "source": "si.com",
+          "published": "2026-08-26",
+          "impact": "CONTEXT"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0038542": {
+      "name": "Bijan Robinson",
+      "position": "RB",
+      "team": "ATL",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "NEUTRAL",
+      "confidence": "MEDIUM",
+      "headline": "Hold-in ended with a record extension; new HC Stefanski runs a run-heavy scheme, but the quarterback job is unsettled",
+      "findings": [
+        {
+          "claim": "New head coach Kevin Stefanski is installing a run-heavy system with Robinson as the centerpiece, but the quarterback situation is unsettled: the Falcons released Kirk Cousins to commit to Michael Penix Jr. and then signed Tua Tagovailoa as veteran insurance.",
+          "url": "https://www.foxnews.com/outkick-sports/kevin-stefanski-bijan-robinson-new-look-offense-give-falcons-cautious-optimism",
+          "source": "foxnews.com",
+          "published": "2026-08-23",
+          "impact": "CONTEXT"
+        },
+        {
+          "claim": "Robinson ended a training-camp hold-in by signing a three-year extension through 2030 with the highest guarantee ever given a running back; he had been a non-participant through the first week of camp.",
+          "url": "https://www.atlantafalcons.com/news/bijan-robinson-contract-extension",
+          "source": "atlantafalcons.com",
+          "published": "2026-08-04",
+          "impact": "CONTEXT"
+        },
+        {
+          "claim": "Tyler Allgeier, Robinson's backfield complement since 2023, left in free agency for Arizona; Atlanta signed Brian Robinson Jr. from San Francisco to take that complementary role and expects him to see meaningful touches in short-yardage and goal-line work.",
+          "url": "https://www.atlantafalcons.com/news/falcons-2026-training-camp-preview-running-backs",
+          "source": "atlantafalcons.com",
+          "published": "2026-07-13",
+          "impact": "CONTEXT"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0039075": {
+      "name": "Puka Nacua",
+      "position": "WR",
+      "team": "LAR",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "FADE",
+      "confidence": "MEDIUM",
+      "headline": "Out with psoas soreness since 11 August and still not in team drills a fortnight later, with Week 1 uncertain",
+      "findings": [
+        {
+          "claim": "Nacua has been sidelined since the 11 August joint practice with Dallas with psoas soreness, missing practices on 20 and 24 August; he remains out of team drills doing side work only, is not expected in the 27 August preseason finale, and it is uncertain whether he will be available for the 10 September opener against San Francisco.",
+          "url": "https://heavy.com/sports/nfl/los-angeles-rams/rams-puka-nacua-injury-update-side-work/",
+          "source": "heavy.com",
+          "published": "2026-08-24",
+          "impact": "NEGATIVE"
+        },
+        {
+          "claim": "Sean McVay said on 13 August that Nacua was dealing with psoas soreness and was \"expecting to be back next week, ready to go\" — a timeline that has since slipped.",
+          "url": "https://www.therams.com/news/rams-puka-nacua-injury-update-cowboys-joint-practice-psoas",
+          "source": "therams.com",
+          "published": "2026-08-13",
+          "impact": "CONTEXT"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0036223": {
+      "name": "Jonathan Taylor",
+      "position": "RB",
+      "team": "IND",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "NEUTRAL",
+      "confidence": "MEDIUM",
+      "headline": "Extension signed with no hold-in and no injury on the report; simply rested through the preseason",
+      "findings": [
+        {
+          "claim": "Taylor was held out of the preseason finale against Detroit while the other starters played 8-12 snaps; he does not appear among the players with reported injuries or limitations.",
+          "url": "https://www.colts.com/news/colts-hopeful-alec-pierce-returns-to-practice-this-week-starters-minus-daniel-jones-jonathan-taylor-to-play-8-12-plays-in-preseason-finale-vs-detroit-lions",
+          "source": "colts.com",
+          "published": "2026-08-25",
+          "impact": "CONTEXT"
+        },
+        {
+          "claim": "Taylor signed his second Colts extension on 6 August after leading the NFL in carries (323), rushing touchdowns (18) and total touchdowns (20) in 2025; owner Carlie Irsay-Gordon called him \"one of our pillars.\" He did not hold in during negotiations.",
+          "url": "https://www.colts.com/news/colts-sign-rb-jonathan-taylor-to-contract-extension",
+          "source": "colts.com",
+          "published": "2026-08-06",
+          "impact": "CONTEXT"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0036963": {
+      "name": "Amon-Ra St. Brown",
+      "position": "WR",
+      "team": "DET",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "NEUTRAL",
+      "confidence": "LOW",
+      "headline": "",
+      "findings": [],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0039040": {
+      "name": "De'Von Achane",
+      "position": "RB",
+      "team": "MIA",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "PAY_UP",
+      "confidence": "MEDIUM",
+      "headline": "Hill released and Waddle traded leave Achane the hub of a run-heavy new staff's offence, with his shoulder fully cleared",
+      "findings": [
+        {
+          "claim": "With Tyreek Hill and Jaylen Waddle both gone, Achane figures to become an even more central component of Miami's offence; he already leads all running backs with 145 receptions over the past two seasons, and first-year head coach Jeff Hafley and coordinator Bobby Slowik are emphasising a physical, run-heavy approach. Ollie Gordon II and Jaylen Wright are the backups behind him.",
+          "url": "https://www.tsn.ca/nfl/article/with-achanes-workload-safe-dolphins-sorting-out-backups-pecking-order-n1-49564317/",
+          "source": "tsn.ca",
+          "published": "2026-08-09",
+          "impact": "POSITIVE"
+        },
+        {
+          "claim": "Achane was cleared for full participation in training camp with no restrictions after offseason shoulder surgery that had limited him in the spring; he had missed Miami's final game of the 2025 season with the shoulder.",
+          "url": "https://www.upi.com/Sports_News/NFL/2026/07/28/Miami-Dolphins-DeVon-Achane-cleared-training-camp/1111785253444/",
+          "source": "upi.com",
+          "published": "2026-07-28",
+          "impact": "POSITIVE"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0033280": {
+      "name": "Christian McCaffrey",
+      "position": "RB",
+      "team": "SF",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "NEUTRAL",
+      "confidence": "MEDIUM",
+      "headline": "Missed a fortnight of camp with unspecified tightness amid unconfirmed contract speculation, but is back in pads",
+      "findings": [
+        {
+          "claim": "McCaffrey returned to a padded practice after a couple of weeks off, taking roughly seven team reps; the absence is framed as deliberate veteran load management rather than an injury, with Kaelon Black and Jordan James developed as depth behind him.",
+          "url": "https://sfstandard.com/2026/08/24/christian-mccaffrey-49ers-what-we-learned-training-camp/",
+          "source": "sfstandard.com",
+          "published": "2026-08-24",
+          "impact": "CONTEXT"
+        },
+        {
+          "claim": "McCaffrey missed a string of practices with what the 49ers described only as \"tightness,\" without specifying a location; Pro Football Talk reported unconfirmed speculation in league circles that he had tapped the brakes on practice to seek an adjustment to a contract paying a non-guaranteed $12.5M in 2026.",
+          "url": "https://www.nbcsportsbayarea.com/nfl/san-francisco-49ers/christian-mccaffrey-training-camp-absence-rumor/1957138/",
+          "source": "nbcsportsbayarea.com",
+          "published": "2026-08-17",
+          "impact": "CONTEXT"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0037840": {
+      "name": "Kyren Williams",
+      "position": "RB",
+      "team": "LAR",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "FADE",
+      "confidence": "LOW",
+      "headline": "Blake Corum arrived visibly leaner and more explosive, and the Rams are signalling a more balanced split",
+      "findings": [
+        {
+          "claim": "Analysis of the Rams' backfield expects a more balanced distribution than 2025, when Williams took 55.7% of rushing attempts to Corum's 31.2%, with heavier 12 and 13 personnel used to keep Williams' snaps up as a receiver while giving Corum more carries.",
+          "url": "https://www.si.com/nfl/rams/onsi/rams-running-back-usage-kyren-williams-blake-corum",
+          "source": "si.com",
+          "published": "2026-08-02",
+          "impact": "CONTEXT"
+        },
+        {
+          "claim": "Williams himself said Corum is \"a lot leaner for sure, he looks a lot more explosive\"; the improved conditioning is described as potentially cutting into Williams' workload, with the split called one of September's most intriguing early-season storylines.",
+          "url": "https://www.nbcsports.com/fantasy/football/player-news/2026-08-01/blake-corum-a-lot-leaner-in-rams-training-camp",
+          "source": "nbcsports.com",
+          "published": "2026-08-01",
+          "impact": "NEGATIVE"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    },
+    "00-0037248": {
+      "name": "James Cook",
+      "position": "RB",
+      "team": "BUF",
+      "researchedAt": "2026-08-30T02:33:09.595Z",
+      "direction": "PAY_UP",
+      "confidence": "MEDIUM",
+      "headline": "New HC Joe Brady and OC Pete Carmichael import a Saints scheme that throws to the back; Cook caught only 33 passes last year",
+      "findings": [
+        {
+          "claim": "Carmichael has said directly he wants Cook more involved in the passing game via the screen game, while also stressing \"making sure that the week-to-week, the workload doesn't get too overbearing\" — implying more targets but potentially fewer carries.",
+          "url": "https://www.si.com/nfl/bills/onsi/james-cook-bigger-stronger-faster-combined-with-oc-carmichael-could-spell-trouble-for-rest-of-nfl",
+          "source": "si.com",
+          "published": "2026-06-20",
+          "impact": "CONTEXT"
+        },
+        {
+          "claim": "Joe Brady was hired as Bills head coach with Pete Carmichael as offensive coordinator; their scheme features running backs as pass-catchers (Kamara, Sproles, Bush), and Cook recorded only 33 receptions for 291 yards in 2025 despite winning the rushing title.",
+          "url": "https://www.si.com/nfl/bills/onsi/how-bills-james-cook-s-role-could-expand-under-new-head-coach-joe-brady",
+          "source": "si.com",
+          "published": "2026-02-09",
+          "impact": "POSITIVE"
+        }
+      ],
+      "dropped": {
+        "unsourced": 0,
+        "undated": 0,
+        "malformed": 0
+      }
+    }
+  }
 }
