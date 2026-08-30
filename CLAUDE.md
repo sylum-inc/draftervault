@@ -1435,6 +1435,28 @@ Open, roughly in order of value:
    a real design change rather than a route to add. The published artifact
    cannot have it either way: its CSP blocks every external host.
 
+## The night, driven end to end
+
+The whole thing has been driven in a browser at the league actually being
+played — twelve teams, $200, sixteen spots, **half PPR with one flex** — rather
+than at the defaults. In order: the first-run gate set to half PPR and a flex;
+"Use consensus" repricing 390 of 628 (218 from real drafts, 172 from expert
+consensus where drafts stop); a fifty-name sheet pasted and resolved 50/50 with
+nothing ambiguous, unmatched or duplicated; all fifty sold through the keyboard
+path; the phase moving to the snake by itself when the sheet emptied; nineteen
+snake picks, **none of them carrying a cost**; and no console error anywhere
+across sixty-nine picks.
+
+The run ends where it should. The driver takes whatever is top of the board
+regardless of who is on the clock, so it eventually offered a fourth tight end
+to a team holding three, and the stage refused it in words — "Team 5 cannot
+carry more than 3 at TE" — with the draft button disabled rather than accepting
+and rejecting afterwards. That is `checkRoster` doing its job through
+`validateSnakePick`, and it is the correct end to that particular script rather
+than a defect. Visible in the same frame: Mark Andrews carrying both the `age
+31` and `tight end` blind-spot chips from `modelTrust`, and the card marked
+"snake" where a price would be.
+
 ## Related
 
 The published preview artifact lives at
