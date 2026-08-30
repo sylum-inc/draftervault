@@ -678,6 +678,20 @@ const POOL_LEAGUE: LeagueShape = leagueShape(
  */
 const LEAGUE_STORAGE_KEY = 'draft-vault:league:v1';
 
+/**
+ * That somebody has actually said what league this is.
+ *
+ * Deliberately its own key rather than the presence of the league itself:
+ * `writeStoredLeague` removes that key when the shape matches the pool's, since
+ * there is nothing to remember — which makes "a league is stored" mean "the
+ * league differs from the default", not "the league has been confirmed". They
+ * are different questions, and the one worth gating a first run on is the
+ * second: a league that happens to match the defaults still has to have been
+ * looked at, because the defaults are full PPR with no flex and almost nobody
+ * plays that.
+ */
+const LEAGUE_CONFIRMED_KEY = 'draft-vault:league-confirmed:v1';
+
 const readStoredLeague = (): LeagueShape => {
   try {
     const raw = localStorage.getItem(LEAGUE_STORAGE_KEY);
@@ -2929,6 +2943,25 @@ export class AuctionDraftService {
    * that no longer exist. The picks are cleared rather than silently
    * reinterpreted. Returns false when the shape would not change anything.
    */
+  /**
+   * Record that somebody has actually said what league this is.
+   *
+   * `setLeagueShape` returns early when nothing changed, and rightly so — it
+   * clears the draft, and there is no reason to throw one away over a no-op.
+   * But that means confirming the defaults exactly as they stand writes nothing,
+   * and the first-run gate would ask again on every load. Writing the league it
+   * already holds is the whole job: it costs nothing and it settles the
+   * question.
+   */
+  confirmLeague(): void {
+    writeStoredLeague(this.league);
+    try {
+      localStorage.setItem(LEAGUE_CONFIRMED_KEY, new Date().toISOString());
+    } catch {
+      /* storage unavailable — the gate simply will not have been recorded */
+    }
+  }
+
   setLeagueShape(next: LeagueShape): boolean {
     const wanted = normaliseLeague(next);
     if (sameLeague(wanted, this.league)) return false;
@@ -3735,6 +3768,28 @@ export class AuctionDraftService {
   }
 
   /** Whether a resumable draft is sitting in storage. */
+  /**
+   * Whether anybody has ever said what league this is.
+   *
+   * With nothing stored the engine falls back to the league the *pool* was
+   * built for, which is a valid league and is almost certainly not yours: it is
+   * full PPR with no flex, because that is what nflverse scores and what the
+   * builder had to pick. Every price on the board is computed from it, so a
+   * fresh browser on draft night prices a hundred-catch receiver about fifty
+   * points too high — silently, and on exactly the position group the auction
+   * is about. Making scoring configurable did not fix that; it only made the
+   * fix reachable.
+   */
+  static hasStoredLeague(): boolean {
+    try {
+      return !!localStorage.getItem(LEAGUE_CONFIRMED_KEY);
+    } catch {
+      // Storage unavailable: asking on every load would be worse than not
+      // asking at all, and there would be nowhere to record the answer.
+      return true;
+    }
+  }
+
   static hasSavedDraft(): boolean {
     try {
       return !!localStorage.getItem(AuctionDraftService.STORAGE_KEY);

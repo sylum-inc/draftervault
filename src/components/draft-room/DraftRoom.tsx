@@ -96,6 +96,18 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
+  /**
+   * Whether anybody has ever confirmed what league this is.
+   *
+   * With nothing stored the board prices at the league the pool was built for —
+   * full PPR, no flex, because that is what the source data scores. It is a
+   * valid league and almost certainly not this one, and every number on every
+   * card comes from it. So the first run asks before a dollar is bid, rather
+   * than letting a whole auction happen under somebody else's rules.
+   */
+  const [leagueConfirmed, setLeagueConfirmed] = useState(() =>
+    AuctionDraftService.hasStoredLeague()
+  );
   const [importOpen, setImportOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetOnly, setSheetOnly] = useState(false);
@@ -567,6 +579,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const applyLeague = useCallback(
     (next: LeagueShape) => {
       draftService.setLeagueShape(next);
+      // Always recorded, even when the answer was "these defaults are right":
+      // the point of the first-run gate is that somebody said so.
+      draftService.confirmLeague();
+      setLeagueConfirmed(true);
       setLeagueOpen(false);
       setResumed(0);
       setSelected(null);
@@ -634,6 +650,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     boardOpen ||
     compareOpen ||
     leagueOpen ||
+    !leagueConfirmed ||
     importOpen ||
     // A modal missing from this is a modal that lets "/" and "u" through, so
     // typing into its paste box undoes picks.
@@ -1545,8 +1562,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         </div>
       )}
 
-      {leagueOpen && (
+      {(leagueOpen || !leagueConfirmed) && (
         <LeagueSettings
+          firstRun={!leagueConfirmed}
           league={league}
           poolLeague={draftService.getPoolLeagueShape()}
           draftedCount={drafted.length}

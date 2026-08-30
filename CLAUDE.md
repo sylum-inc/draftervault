@@ -342,6 +342,31 @@ rather than by the sheet, since in the snake nobody left is on the sheet at all
 and a for-sale count would report every position as empty and every pick as a
 run.
 
+**Nobody has confirmed the league until somebody says so.** With nothing in
+storage the board prices at the league the _pool_ was built for — full PPR, no
+flex — because that is what nflverse scores and what the builder had to choose.
+It is a valid league and almost certainly not the one being played, and every
+number on every card derives from it. Making scoring configurable did not fix
+that; it only made the fix reachable, and a fresh browser on draft night still
+opened priced under somebody else's rules. Measured on the shipped pool, half
+PPR puts Ja'Marr Chase at $48 where full PPR says $53 and moves Puka Nacua $50
+to $46, while the backs hold — about 9% of a top receiver, on the position group
+an auction is mostly about.
+
+So the first run is gated: the settings panel opens over everything, cannot be
+escaped or dismissed, and states what the defaults are and why they are probably
+wrong. Confirming is the only way out.
+
+The confirmation has **its own storage key**, and that is not redundancy.
+`writeStoredLeague` removes the league key when the shape matches the pool's,
+since there is nothing to remember — so "a league is stored" means "the league
+differs from the default", which is a different question from "somebody has
+looked at it". A league that happens to match the defaults still has to have
+been chosen. `confirmLeague` also exists because `setLeagueShape` returns early
+on a no-op, rightly, since it clears the draft: without it, confirming the
+defaults exactly as they stand wrote nothing and the gate asked again on every
+load.
+
 **Scoring is part of the league, and the pool is not built at yours.** nflverse
 gives full-PPR points and the builder took them straight, so a point a catch was
 hardcoded with no way to say otherwise. It is the biggest single lever in

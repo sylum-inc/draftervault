@@ -32,6 +32,10 @@ describe('the record, corrected and kept, from the room', () => {
     savedFile.mockImplementation(async (filename: string) => ({ status: 'saved', filename }));
     copied.mockImplementation(async () => true);
     service = new AuctionDraftService(leagueShape({ auctionSheetSize: 60 }));
+    // A room whose league nobody has confirmed opens the first-run gate over
+    // everything, which is the point of it — so these tests answer it once, as
+    // an owner does, before exercising anything else.
+    service.confirmLeague();
     ids = [...service.getPlayers()]
       .filter((player) => player.valueOverReplacement > 0)
       .sort((a, b) => b.modelValue - a.modelValue)

@@ -40,6 +40,17 @@ interface LeagueSettingsProps {
    */
   sheetSize: number;
   onApply: (league: LeagueShape) => void;
+  /**
+   * Nobody has said what league this is yet.
+   *
+   * With nothing stored the board is priced at the league the *pool* was built
+   * for — full PPR, no flex — which is what nflverse scores, not what anybody
+   * plays. Every number on every card is computed from these fields, so the
+   * first run asks rather than assuming, and confirming is what makes the ask
+   * stop. It is the cheapest possible check against the most expensive possible
+   * mistake: pricing a whole auction under somebody else's rules.
+   */
+  firstRun?: boolean;
   onClose: () => void;
 }
 
@@ -69,6 +80,7 @@ export const LeagueSettings = ({
   poolDepth,
   sheetSize,
   onApply,
+  firstRun = false,
   onClose,
 }: LeagueSettingsProps) => {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -96,11 +108,12 @@ export const LeagueSettings = ({
   useEffect(() => {
     closeRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      // Escape is a way out, and on a first run there is nowhere out to go.
+      if (event.key === 'Escape' && !firstRun) onClose();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, firstRun]);
 
   const draft = useMemo<LeagueShape>(() => {
     const teamCount = asNumber(teams, league.teams);
@@ -183,7 +196,10 @@ export const LeagueSettings = ({
   })).filter((entry) => entry.has > 0 && entry.has < entry.wants);
 
   const apply = () => {
-    if (problems.length || unchanged) return;
+    // `unchanged` is not a reason to refuse on a first run: confirming that the
+    // defaults are in fact your league is exactly the answer being asked for,
+    // and refusing it left the gate asking the same question on every load.
+    if (problems.length || (unchanged && !firstRun)) return;
     onApply(draft);
   };
 
@@ -212,23 +228,35 @@ export const LeagueSettings = ({
 
   return (
     <div className="dr-modal" role="dialog" aria-modal="true" aria-label="League settings">
+      {/* On a first run there is nothing behind this worth clicking to: the
+          board is priced under a league nobody has confirmed. */}
       <button
         type="button"
         className="dr-modal-scrim"
         aria-label="Close league settings"
-        onClick={onClose}
+        onClick={firstRun ? undefined : onClose}
+        disabled={firstRun}
       />
 
       <article className="dr-modal-panel dr-league">
         <header className="dr-results-head">
           <div>
             <h2 className="dr-stage-name" style={{ fontSize: 26 }}>
-              League settings
+              {firstRun ? 'What league is this?' : 'League settings'}
             </h2>
             <p className="dr-meter-note">
               Every dollar value on the board is computed from these numbers — change one and all{' '}
               {poolSize} players are re-priced, not relabelled.
             </p>
+            {firstRun && (
+              <p className="dr-league-warning">
+                These are the pool&rsquo;s own defaults, not yours: full PPR with no flex, because
+                that is what the source data scores. If your league is half PPR, every pass-catcher
+                on this board is currently worth about fifty points more than he is to you — and the
+                auction is mostly pass-catchers. Check the scoring and the starting lineup before
+                anything is bid.
+              </p>
+            )}
           </div>
           <button
             ref={closeRef}
@@ -236,6 +264,7 @@ export const LeagueSettings = ({
             className="dr-modal-close"
             onClick={onClose}
             aria-label="Close"
+            hidden={firstRun}
           >
             ✕
           </button>
@@ -504,13 +533,19 @@ export const LeagueSettings = ({
             type="button"
             className="dr-button dr-button-primary"
             onClick={apply}
-            disabled={unchanged || problems.length > 0}
+            disabled={problems.length > 0 || (unchanged && !firstRun)}
           >
-            {unchanged ? 'No change' : 'Apply and re-price'}
+            {firstRun
+              ? 'These are my league’s rules'
+              : unchanged
+                ? 'No change'
+                : 'Apply and re-price'}
           </button>
-          <button type="button" className="dr-button" onClick={onClose}>
-            Cancel
-          </button>
+          {!firstRun && (
+            <button type="button" className="dr-button" onClick={onClose}>
+              Cancel
+            </button>
+          )}
           {!sameLeague(league, poolLeague) && (
             <button type="button" className="dr-button" onClick={() => onApply(poolLeague)}>
               Back to {poolLeague.teams} × ${poolLeague.budget}

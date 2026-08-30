@@ -596,3 +596,55 @@ describe('what the record must never quietly get wrong', () => {
     expect(before).toBeTruthy();
   });
 });
+
+describe('the league nobody has confirmed', () => {
+  /**
+   * With nothing stored the board prices at the league the *pool* was built
+   * for — full PPR, no flex — because that is what the source data scores. It
+   * is a valid league and almost certainly not the one being played, and every
+   * number on every card comes from it. Measured against the shipped pool, a
+   * half-PPR league prices Ja'Marr Chase at $48 where full PPR says $53: about
+   * 9% of a top receiver, on the position group an auction is mostly about, and
+   * silently.
+   */
+  beforeEach(() => localStorage.clear());
+
+  it('knows nobody has said what league this is', () => {
+    expect(AuctionDraftService.hasStoredLeague()).toBe(false);
+  });
+
+  it('records a confirmation even when the defaults were already right', () => {
+    // setLeagueShape returns early on a no-op, and rightly so — it clears the
+    // draft. But that meant confirming the defaults exactly as they stand wrote
+    // nothing, and the gate asked the same question on every load.
+    const service = new AuctionDraftService();
+    service.confirmLeague();
+
+    expect(AuctionDraftService.hasStoredLeague()).toBe(true);
+  });
+
+  it('does not mistake "differs from the default" for "somebody looked at it"', () => {
+    // writeStoredLeague removes its key when the shape matches the pool's,
+    // since there is nothing to remember — so the league key cannot answer
+    // whether the league was ever confirmed. Two questions, two keys.
+    const service = new AuctionDraftService();
+    service.confirmLeague();
+
+    expect(localStorage.getItem('draft-vault:league:v1')).toBeNull();
+    expect(AuctionDraftService.hasStoredLeague()).toBe(true);
+  });
+
+  it('prices a half-PPR league away from the full-PPR default', () => {
+    const full = new AuctionDraftService(leagueShape({ receptionPoints: 1 }));
+    const half = new AuctionDraftService(leagueShape({ receptionPoints: 0.5 }));
+
+    const receiver = full
+      .getPlayers()
+      .filter((p) => p.position === 'WR')
+      .sort((a, b) => b.estimatedValue - a.estimatedValue)[0];
+    const sameUnderHalf = half.getPlayers().find((p) => p.id === receiver.id)!;
+
+    // The top receiver is worth materially less when a catch is worth half.
+    expect(sameUnderHalf.estimatedValue).toBeLessThan(receiver.estimatedValue);
+  });
+});
