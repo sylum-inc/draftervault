@@ -28,12 +28,21 @@
  * Writes pool.json, schedule.json, player-history.json and team-context.json
  * into src/data/nfl, or into whatever `--out` names.
  */
-import { mkdirSync, readFileSync, writeFileSync, existsSync, createWriteStream } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Readable } from 'node:stream';
-import { pipeline } from 'node:stream/promises';
-import { gunzipSync } from 'node:zlib';
+// Reading these files, and turning a week of them into points, is shared with
+// `backtest-projections.mjs`. Kicker scoring is the reason it has to be: the
+// backtest scores a kicker's actual season, and if it did that with different
+// arithmetic from the projection it would be measuring two things at once.
+import {
+  NFLVERSE,
+  canonicalTeam,
+  makeCache,
+  normalizeWeek,
+  num,
+  readCsv,
+} from './nflverse.mjs';
 // The league shape and the points-to-dollars maths live in the client tree so
 // that the browser and this script cannot disagree about what a player is
 // worth. Node strips the types on import (v22.18+); CI pins that version.
@@ -60,7 +69,6 @@ import {
 } from '../src/lib/projection.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const NFLVERSE = 'https://github.com/nflverse/nflverse-data/releases/download';
 const DYNASTYPROCESS = 'https://github.com/dynastyprocess/data/raw/master/files';
 
 const args = process.argv.slice(2);
@@ -120,10 +128,6 @@ const SOURCES = {
   'db_fpecr_latest.csv': `${DYNASTYPROCESS}/db_fpecr_latest.csv`,
 };
 
-/** nflverse spells a few teams differently from ESPN. */
-const TEAM_ALIASES = { LA: 'LAR', JAC: 'JAX', AZ: 'ARI', WAS: 'WSH', SD: 'LAC', OAK: 'LV', STL: 'LAR' };
-const canonicalTeam = (abbr) => TEAM_ALIASES[abbr] ?? abbr;
-
 /**
  * League shape the shipped valuations assume: twelve teams, $200 each, sixteen
  * roster spots. It is imported rather than declared here — src/lib/valuation.ts
@@ -132,145 +136,10 @@ const canonicalTeam = (abbr) => TEAM_ALIASES[abbr] ?? abbr;
  */
 const LEAGUE = DEFAULT_LEAGUE;
 
-/** Scoring for kickers, who carry no PPR value in the source data. */
-const kickerPoints = (row) => {
-  const n = (key) => num(row[key]);
-  const short = n('fg_made_0_19') + n('fg_made_20_29') + n('fg_made_30_39');
-  const mid = n('fg_made_40_49');
-  const long = n('fg_made_50_59') + n('fg_made_60_');
-  const bucketed = short + mid + long;
-  // Fall back to an average field-goal value when the buckets are absent.
-  const fromFgs = bucketed > 0 ? short * 3 + mid * 4 + long * 5 : n('fg_made') * 3.4;
-  return fromFgs + n('pat_made');
-};
-
-// ---------------------------------------------------------------------------
-// fetching and CSV
-// ---------------------------------------------------------------------------
-
-const cached = async (name) => {
-  const path = join(cacheDir, name);
-  if (existsSync(path)) return path;
-  if (offline) throw new Error(`--offline and ${name} is not cached`);
-  mkdirSync(cacheDir, { recursive: true });
-  process.stdout.write(`  fetching ${name}… `);
-  const res = await fetch(SOURCES[name], { redirect: 'follow' });
-  if (!res.ok) throw new Error(`${SOURCES[name]} -> ${res.status}`);
-  await pipeline(Readable.fromWeb(res.body), createWriteStream(path));
-  console.log('done');
-  return path;
-};
-
-/**
- * Minimal RFC 4180 reader. These files quote any field containing a comma —
- * college names, injury descriptions and every play-by-play description do —
- * so splitting on commas silently corrupts rows.
- *
- * `wanted` narrows each record to a handful of columns. Play-by-play carries
- * 372 of them across ~50k rows; materialising all of it is 18M property writes
- * and gigabytes of strings for the dozen fields anything here actually reads.
- */
-function* readCsv(path, wanted) {
-  const text = path.endsWith('.gz')
-    ? gunzipSync(readFileSync(path)).toString('utf8')
-    : readFileSync(path, 'utf8');
-  const header = [];
-  let keep = null;
-  let field = '';
-  let row = [];
-  let quoted = false;
-  let isHeader = true;
-
-  const endField = () => {
-    row.push(field);
-    field = '';
-  };
-  const endRow = () => {
-    endField();
-    if (isHeader) {
-      header.push(...row);
-      isHeader = false;
-      if (wanted) {
-        const set = new Set(wanted);
-        keep = header.map((name, index) => (set.has(name) ? index : -1)).filter((i) => i >= 0);
-      }
-    } else if (row.length > 1) {
-      const record = {};
-      if (keep) for (const i of keep) record[header[i]] = row[i] ?? '';
-      else for (let i = 0; i < header.length; i++) record[header[i]] = row[i] ?? '';
-      return record;
-    }
-    row = [];
-    return null;
-  };
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    if (quoted) {
-      if (char === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i++;
-        } else quoted = false;
-      } else field += char;
-      continue;
-    }
-    if (char === '"') quoted = true;
-    else if (char === ',') endField();
-    else if (char === '\n') {
-      const record = endRow();
-      row = [];
-      if (record) yield record;
-    } else if (char !== '\r') field += char;
-  }
-  if (field || row.length) {
-    const record = endRow();
-    if (record) yield record;
-  }
-}
-
-const num = (value) => {
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-// ---------------------------------------------------------------------------
-// weekly stats: two schema generations, one shape
-//
-// The 1999-2024 asset carries 53 columns; the 2025 asset carries 150 and renamed
-// several of them. Everything downstream reads this normalized row instead.
-// ---------------------------------------------------------------------------
-
-const normalizeWeek = (row) => ({
-  playerId: row.player_id,
-  season: num(row.season),
-  week: num(row.week),
-  position: row.position,
-  team: row.recent_team || row.team || '',
-  seasonType: row.season_type,
-  passingYards: num(row.passing_yards),
-  passingTds: num(row.passing_tds),
-  interceptions: num(row.interceptions ?? row.passing_interceptions),
-  carries: num(row.carries),
-  rushingYards: num(row.rushing_yards),
-  rushingTds: num(row.rushing_tds),
-  targets: num(row.targets),
-  receptions: num(row.receptions),
-  receivingYards: num(row.receiving_yards),
-  receivingTds: num(row.receiving_tds),
-  receivingAirYards: num(row.receiving_air_yards),
-  yardsAfterCatch: num(row.receiving_yards_after_catch),
-  targetShare: num(row.target_share),
-  airYardsShare: num(row.air_yards_share),
-  wopr: num(row.wopr),
-  racr: num(row.racr),
-  receivingEpa: num(row.receiving_epa),
-  rushingEpa: num(row.rushing_epa),
-  passingEpa: num(row.passing_epa),
-  receivingFirstDowns: num(row.receiving_first_downs),
-  rushingFirstDowns: num(row.rushing_first_downs),
-  fantasyPointsPpr: row.position === 'K' ? kickerPoints(row) : num(row.fantasy_points_ppr),
-});
+// The CSV reader, the kicker scoring and the weekly-stat shape moved to
+// `scripts/nflverse.mjs` when a second script started reading these files.
+const cache = makeCache({ dir: cacheDir, offline });
+const cached = (name) => cache(name, SOURCES[name]);
 
 // ---------------------------------------------------------------------------
 // projection model

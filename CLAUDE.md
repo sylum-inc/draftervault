@@ -20,6 +20,7 @@ npm run build:single # one self-contained HTML file in dist-single/
 npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 628-player pool from nflverse production data
+npm run backtest     # score the projection model against 2023-25, and the baselines
 npm run build:icons  # redraw the app icons (CI checks they match)
 OPENROUTER_API_KEY=sk-or-... npm run research:players   # web-research the pool
 npm run server       # the optional backend on 127.0.0.1:8788 (see docs/SERVER.md)
@@ -66,6 +67,7 @@ src/hooks/use-draft-preferences.ts    view, watchlist, queue, clock length
 src/hooks/use-draft-server.ts         discovery + autosave, inert with no server
 
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
+src/lib/projection.ts                 the projection model itself (shared)
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
 src/lib/serverContract.ts             the wire between app and server (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
@@ -85,6 +87,8 @@ src/data/nfl/player-history.json      per-player season and weekly scoring (lazy
 src/data/nfl/schedule.json            2026 season by team, with matchup difficulty
 src/data/nfl/team-context.json        per-offence pace, PROE, red-zone rate
 scripts/build-player-pool.mjs         builds the pool from nflverse
+scripts/backtest-projections.mjs      scores the model against seasons that happened
+scripts/nflverse.mjs                  reading those files, shared by both
 scripts/fetch-nfl-data.mjs            builds team identity from ESPN
 scripts/build-icons.mjs               draws public/icons/ with no image library
 server/index.mjs                      the optional server: config, HTTP, static
@@ -886,8 +890,11 @@ property writes for the dozen fields anything reads.
 **The pool is generated, not typed.** `scripts/build-player-pool.mjs` builds 628
 players from nflverse: 2023-2025 weekly production, 2026 rosters, snap counts,
 injuries, draft capital and the published schedule. Projections come from the
-model documented in that file — recency-weighted points per game, shrunk toward
-a positional baseline by sample size, age-adjusted, times expected games. Dollar
+model in `src/lib/projection.ts` — recency-weighted points per game, shrunk
+toward a positional baseline by sample size, age-adjusted, times expected games.
+It has been measured against three seasons it did not see, and it loses to the
+draft market on what a bid actually buys; read "What the model is worth" below
+before trusting a price. Dollar
 values are value over replacement converted to a share of the league's budget.
 Kickers and defenses are regressed hard because their scoring barely predicts
 itself year to year, which is why they price out at a dollar or two.
@@ -923,6 +930,199 @@ different measurement entirely (touches against EPA per touch).
 
 Legacy services under `src/services/` named `real*` still generate numbers with
 `Math.random()`. Nothing live reads them. Don't build on them.
+
+## What the model is worth
+
+**Nobody had ever checked, and the answer is not the one the board wants.**
+Every price here is a linear function of `projection.points` — VORP, the auction
+value, the bargain board, the tier breaks, the advisor's entire case — so if the
+model were worse than the cheat sheet the other eleven managers are holding, the
+edge would run backwards and the honest advice would be to draft off consensus.
+That was a real possible answer and it had to be reachable. `npm run backtest`
+reached most of it: **on the measure that decides a bid, the market's board beat
+this board in every season tested.**
+
+**The model moved out of the builder so the backtest could measure it rather
+than a copy.** `src/lib/projection.ts` is the fourth module of the shape
+`valuation.ts`, `researchContract.ts` and `serverContract.ts` already have: one
+definition, imported by a `.mjs` script through Node's type stripping and
+reachable from the client tree, so two halves cannot come to disagree. A
+backtest that reimplemented recency weighting and shrinkage would have scored
+its own arithmetic, and a copy scoring well is evidence about the copy.
+`scripts/nflverse.mjs` came out for the same reason one layer down: the backtest
+adds up a player's _actual_ season, and if it did that with different scoring
+from the projection, part of the reported error would be the gap between two
+scoring systems with no way to say how much.
+
+The extraction was proved rather than asserted. `build:pool` was run to a
+staging directory before the change and again after; all four generated files
+are identical apart from their timestamp, including all 628 auction values,
+VORPs and replacement levels. A refactor of a projection model that moves one
+number is a different model, and there would be no way to tell afterwards which
+of the two the pool had been built with.
+
+**How it is scored.** Three seasons are held out one at a time — 2023, 2024,
+2025 — because one season can flatter or damn a model by the accident of one
+year's injuries, and a finding that does not repeat is not a finding. For each,
+projections are rebuilt from weekly production strictly before it (enforced on
+the season number, not on which file a row came from), injuries from the season
+before, and the draft classes the model's own window admits. The universe is
+that season's _week-one_ roster; a season-long roster file knows who survived
+the year. Points are restated to half PPR on both sides through `pointsFor`, so
+projection and outcome are always compared under the owner's scoring.
+
+The baselines are last season's actual points, a positional-mean floor, and the
+market. **Historical FantasyPros consensus could not be found and is not faked**:
+DynastyProcess publishes ECR as a single _latest_ snapshot
+(`db_fpecr_latest.csv`, stamped 2026-08-21) with no dated archive, so what
+FantasyPros said before a backtested season is not recoverable from the feed the
+pool already uses. What stands in for it is Fantasy Football Calculator's public
+ADP archive, taken at **half PPR** to match the league everything else here is
+scored at — 4,576 twelve-team drafts in the week before the 2023 season, 906
+before 2024, 718 before 2025. That is a market rather than a panel of experts,
+which makes it a better proxy for what the room does and a worse one for what
+FantasyPros says, and it is labelled ADP everywhere it appears. It carries no
+ids, so it is matched on names under the same refusal to guess `rankingsCsv`
+lives by; 161, 153 and 140 rows resolved into the universe, none ambiguously.
+The full-PPR feed has eight thousand-odd drafts and was run too, since the
+smaller sample is a real cost; every conclusion below is the same under it.
+
+### The headline was wrong once, and how it was wrong is the useful part
+
+The first version of this section led with Spearman against raw fantasy points,
+pooled over every position, on the players the room was drafting, and reported
+that the model was the best of the four in all three seasons — 0.510, 0.491,
+0.564 against ADP's 0.470, 0.402, 0.432. Those numbers are real and are still
+printed by the script. The conclusion drawn from them was backwards.
+
+Pooling positions and ranking on raw points means most of that correlation is
+_not_ "did this board sort the players". In half PPR a starting quarterback
+outscores a starting running back by well over a hundred points, so any board
+that knows quarterbacks score more gets paid for knowing it — and every board
+knows, and no auction pays a dollar for it, because you start one. The proof is
+sitting in the same table: the `position mean` floor, which gives every player
+at a position the identical number and therefore cannot tell two receivers
+apart by construction, scored 0.282, 0.358 and 0.306 on it. A measure a
+constant scores a third on is measuring something other than the players.
+
+What a bid buys is points above the man you could have had for a dollar at the
+same position. `auctionValue` is a linear function of `vorp`, so surplus over
+replacement _is_ the board's own ordering — which makes it, and not the pooled
+table, the measure of the thing being sold. Scored that way the position-mean
+floor scores nothing at all, exactly as it should, and:
+
+| season | the model | last season | position mean | ADP (market) |
+| ------ | --------- | ----------- | ------------- | ------------ |
+| 2023   | 0.368     | 0.392       | —             | **0.533**    |
+| 2024   | 0.378     | 0.329       | —             | **0.472**    |
+| 2025   | 0.428     | 0.276       | —             | **0.486**    |
+
+Asked one position at a time on the same players, the same answer: the market's
+board sorted the position better in **11 of the 12 position-seasons** (model
+against ADP — QB −0.065/0.290, 0.458/0.466, −0.030/**−0.079**; RB 0.338/0.386,
+0.531/0.560, 0.629/0.710; WR 0.638/0.712, 0.207/0.447, 0.410/0.487; TE
+0.110/0.375, 0.133/0.478, −0.114/−0.046). The one the model won it won by
+0.05 on a position where both boards were scoring approximately zero.
+
+So the pooled table is still printed, under the surplus table and under that
+explanation, rather than deleted — because it is the number somebody will
+otherwise recompute and be encouraged by.
+
+### The other two findings, which point the same way
+
+_Where the model departs most sharply from the market, the market is usually
+right._ Taking the fifteen players each way whose model rank and ADP rank
+disagreed most, the actual finish was nearer the market's rank on 20, 18 and 17
+of 30, and the market's side of those disagreements was worth about twice as
+much in hindsight dollars ($13.7 against $7.1 in 2023, $13.2 against $6.7 in
+2024, $11.9 against $10.1 in 2025). Some of that is a selection effect — pick
+any estimator's most extreme opinions and regression to the mean will punish
+them — but the direction repeats across three seasons and so does the shape of
+the names. The model's confident departures are veterans it is still paying for
+old tape (Joe Mixon, Najee Harris, Brandon Aiyuk, Brian Robinson); the market's
+are young players with a job and little history (Malik Nabers, Marvin Harrison
+Jr., Xavier Worthy, Tetairoa McMillan).
+
+_Over the whole field the model loses badly to last season's points_ — rho
+0.556, 0.526, 0.514 against 0.629, 0.676, 0.661, and mean absolute error of
+about 61 points against about 33. Almost all of that is one thing the baseline
+can say and the model cannot: _this man will not play_. Last season's points
+give a zero to the three hundred rostered players who are nobody, and most of
+them are nobody again. The model shrinks everyone toward a startable baseline
+and multiplies by expected games, which are discounted only for _injury_
+absences, so a healthy fourth receiver who was active for six games is projected
+for a full season's work. It over-projects the field by 43 to 48 points a man.
+A roughly uniform inflation mostly cancels through replacement level and so
+costs little in dollars — but it means the board's tail is not ranking players,
+it is ranking positions.
+
+### Where it is worst, specifically
+
+By games of tape the projection saw, in 2023, 2024, 2025:
+
+| tape          | rho                | over-projects by |
+| ------------- | ------------------ | ---------------- |
+| none (rookie) | 0.51 / 0.33 / 0.39 | +34 / +47 / +43  |
+| 1-16 games    | 0.21 / 0.13 / 0.04 | +62 / +58 / +72  |
+| 17-33 games   | 0.49 / 0.56 / 0.43 | +43 / +40 / +45  |
+| 34+ games     | 0.68 / 0.75 / 0.65 | +41 / +23 / +27  |
+
+A partial season of tape is the single worst input this model takes, every year,
+and by a distance: at one to sixteen games it is doing nothing at all, while
+last season's points score 0.52 to 0.58 on the same players. The mechanism is
+visible in the arithmetic — six games at a high rate shrink to a respectable
+rate against an eight-game prior, and then get multiplied by seventeen games
+nobody has any reason to expect. It is also the bucket a draft room argues about
+most, because a player with six good games is exactly what a sleeper is.
+
+Tight end is where the board should be trusted least against the room: 0.110,
+0.133 and −0.114 against ADP's 0.375, 0.478 and −0.046. By age, thirty-and-over
+is the worst group (0.414 against last season's 0.753 in 2025): the age curve
+discounts, but not nearly enough or early enough.
+
+### In dollars it is a dead heat with last season's points
+
+Priced through the same `pricePool` at 12 teams / $200 / 16 spots / half PPR,
+over the 192 players who turned out to be worth owning, the model's price is off
+by $8.18, $8.57 and $7.45 a man; last season's points are off by $7.76, $8.77
+and $7.77. Three years of modelling buys a few cents. The disagreements are
+large individually and cancel — in 2025 the model was closer on 9 of the twenty
+biggest and last season on 10, right about Christian McCaffrey by $39 and wrong
+about CeeDee Lamb by $18.
+
+### What this means on the night
+
+The board is not worthless and it is not an edge over the room's ordering. What
+it is good at is the arithmetic nobody at the table is doing: converting a
+ranking into dollars under _this_ league's scoring and roster shape, tracking
+what is left at each position, and knowing what a bid leaves behind. Read it
+that way.
+
+- **A sharp disagreement with consensus is a reason to doubt the board, not a
+  bargain.** This is the reversal of what the bargain board's framing implies,
+  and it is the single most actionable line here. Three seasons, same direction.
+- **Trust the room over the board at tight end**, and on any player with a
+  partial season behind him or thirty-plus years on him. Those are the
+  documented failure profiles, all three years.
+- **Treat everything below the top hundred or so as position labels**, not
+  rankings.
+- **Import the commissioner's sheet or a consensus ranking and let it drive**
+  — `RankingsImport` already replaces our values everywhere including in the
+  advice, and `player.modelValue` keeps ours beside it. On this evidence that is
+  the recommended way to run the night, not a fallback.
+- A dollar figure is worth about what last year's points would have said.
+
+The script takes `--season` (one or a comma-separated list), `--offline` and
+`--json`, so the whole thing re-runs against a fourth season the moment one
+exists. Two limitations it does not hide: the universe filters on week-one
+roster status, which is set after drafts happen, so a player cut in the final
+week is out of every board's scoring alike; and ADP can be ranked but never
+scored for error, so the MAE column is blank for it and compares only the boards
+that emit points. Kickers and defenses are out of it entirely, for reasons the
+file states — a defense never goes through `projectPlayer` at all, and
+nflverse's pre-2025 weekly asset contains no kickers whatsoever, so every kicker
+in a held-out season would arrive with no tape and score the no-tape fallback
+while being reported as the model.
 
 ## Conventions
 
@@ -1003,7 +1203,12 @@ tunnel; and the record made correctable and safe — any pick amended from the
 cell that shows it with what the amendment costs named first, an undo that can
 be undone, a visible count of how many picks stand between the board and the
 last copy of it that left this browser, and that copy one keystroke away as a
-file or on the clipboard; 477 tests.
+file or on the clipboard; and the model finally measured — extracted into
+`src/lib/projection.ts` so a backtest scores the real one, run against three
+held-out seasons against last-season points, a positional floor and real
+draft-market ADP, with the answer written down as it came out rather than as it
+was hoped for: on what a bid actually buys, the room's board beat ours in every
+season, and the advice for the night changed accordingly; 514 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
