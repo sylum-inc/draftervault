@@ -273,6 +273,64 @@ export interface Priced {
  * Positions shorter than their rostered count fall back to their own worst
  * player rather than to zero, which would price every one of them as a stud.
  */
+/**
+ * How many extra RB/WR/TE the league ends up owning because it starts a flex.
+ *
+ * `rostered` answers "how many of this position does the league own", and on
+ * its own it cannot see a flex at all: roster size is fixed, so turning one on
+ * changed nothing, and every one of the 628 prices came out identical. That is
+ * wrong in a way worth stating precisely, because the obvious objection to
+ * fixing it is also right. A flex does *not* make the league own more players —
+ * twelve teams still own twelve times sixteen. What it does is convert a
+ * speculative bench spot into one that has to be filled by somebody startable,
+ * so the composition moves: a team carries one fewer lottery ticket and one
+ * more flex-worthy back or receiver. The counts have room for exactly that,
+ * because they sum to 170 of the 192 spots a twelve-team league fills — the
+ * balance being the deep fliers nobody would call rostered at a position.
+ *
+ * Which positions absorb it is derived rather than typed. A fixed 45/45/10
+ * split would be a guess that never moves, and it is wrong in both directions
+ * for real leagues: in standard scoring backs fill most flexes, in full PPR
+ * receivers do. So the answer comes from the pool itself — rank every
+ * flex-eligible player by what he scores *under this league's scoring*, skip
+ * the ones the dedicated slots already account for, and see who the next ones
+ * actually are. That makes the allocation follow `receptionPoints` for free,
+ * which is the whole reason the split cannot be a constant.
+ *
+ * Returns zeroes when no flex is started, so a league without one prices
+ * exactly as it did before this existed — which is what keeps the shipped
+ * pool's 628 values reproducible.
+ */
+export const flexDemand = (
+  players: readonly Projected[],
+  league: LeagueShape
+): Record<string, number> => {
+  const demand: Record<string, number> = {};
+  for (const position of FLEX_ELIGIBLE) demand[position] = 0;
+
+  const slots = league.teams * (league.startingLineup.FLEX ?? 0);
+  if (slots <= 0) return demand;
+
+  const eligible = players
+    .filter((player) => (FLEX_ELIGIBLE as readonly string[]).includes(player.position))
+    .map((player) => ({ position: player.position, points: pointsFor(player, league) }))
+    .sort((a, b) => b.points - a.points);
+
+  const seen: Record<string, number> = {};
+  let filled = 0;
+  for (const entry of eligible) {
+    if (filled >= slots) break;
+    const rank = (seen[entry.position] ?? 0) + 1;
+    seen[entry.position] = rank;
+    // The dedicated slots at his own position come first; he only counts as
+    // flex demand once those are already spoken for.
+    if (rank <= league.teams * (league.startingLineup[entry.position as LineupSlot] ?? 0)) continue;
+    demand[entry.position] += 1;
+    filled += 1;
+  }
+  return demand;
+};
+
 export const replacementLevels = (
   players: readonly Projected[],
   league: LeagueShape
@@ -285,10 +343,11 @@ export const replacementLevels = (
     else byPosition.set(player.position, [scored]);
   }
 
+  const flex = flexDemand(players, league);
   const levels: Record<string, number> = {};
   for (const [position, points] of byPosition) {
     points.sort((a, b) => b - a);
-    const wanted = league.rostered[position as Position] ?? league.teams;
+    const wanted = (league.rostered[position as Position] ?? league.teams) + (flex[position] ?? 0);
     const index = Math.min(points.length - 1, Math.max(0, wanted - 1));
     levels[position] = points[index] ?? 0;
   }

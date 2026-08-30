@@ -347,6 +347,32 @@ rather than by the sheet, since in the snake nobody left is on the sheet at all
 and a for-sale count would report every position as empty and every pick as a
 run.
 
+**A flex used to change nothing at all, and the objection to fixing it is also
+right.** `rostered` answers "how many of this position does the league own",
+and roster size is fixed, so turning a flex on left all 628 prices identical —
+measured, not suspected. The objection is that a flex genuinely does not make
+the league own more players: twelve teams still own twelve times sixteen. What
+it does is convert a speculative bench spot into one that has to be filled by
+somebody startable, so the composition moves — a team carries one fewer lottery
+ticket and one more flex-worthy back. The counts have room for exactly that,
+because they sum to 170 of the 192 spots a twelve-team league fills, the balance
+being deep fliers nobody would call rostered at a position.
+
+Which positions absorb it is derived rather than typed. A fixed 45/45/10 split
+is a guess that never moves and is wrong in both directions — in standard
+scoring backs fill most flexes, in full PPR receivers do — so `flexDemand` ranks
+every flex-eligible player at _this league's_ scoring, skips the ones the
+dedicated slots already account for, and sees who the next ones actually are.
+That makes the allocation follow `receptionPoints` for free, which is the whole
+reason it cannot be a constant, and a test drives standard against full PPR to
+prove it does. On the shipped pool at half PPR one flex sends eleven of the
+twelve slots to backs and one to a receiver, drops RB replacement 101.2 to 91.1,
+and moves 108 players: the top comes down $2-3 (Chase $48 to $45) and depth
+backs go up $3 (Aaron Jones $1 to $4), which is what a flex does in a real room.
+At zero flex it returns zeroes and is a no-op to the last cent — which is what
+keeps the shipped pool's 628 values reproducible, and three tests fail if the
+condition is removed.
+
 **Nobody has confirmed the league until somebody says so.** With nothing in
 storage the board prices at the league the _pool_ was built for — full PPR, no
 flex — because that is what nflverse scores and what the builder had to choose.

@@ -3,6 +3,7 @@ import poolData from '@/data/nfl/pool.json';
 import {
   DEFAULT_LEAGUE,
   LEAGUE_LIMITS,
+  flexDemand,
   POSITIONS,
   leagueShape,
   normaliseLeague,
@@ -550,5 +551,90 @@ describe('the sheet pricePool actually used', () => {
     const league = leagueShape({ auctionSheetSize: null });
     const { onSheet } = pricePool(field, league);
     expect(onSheet.filter(Boolean)).toHaveLength(league.teams * league.rosterSize);
+  });
+});
+
+/**
+ * A flex used to change nothing at all.
+ *
+ * `rostered` answers "how many does the league own", roster size is fixed, so
+ * turning a flex on left every one of the 628 prices identical — measured, not
+ * suspected. These pin the fix and, more importantly, pin the thing that makes
+ * it safe: at zero flex it is a no-op to the last cent.
+ */
+describe('flexDemand', () => {
+  const pool = [
+    ...Array.from({ length: 80 }, (_, i) => ({ position: 'RB', points: 300 - i * 2 })),
+    ...Array.from({ length: 90 }, (_, i) => ({
+      position: 'WR',
+      points: 295 - i * 2,
+      receptions: 90,
+    })),
+    ...Array.from({ length: 30 }, (_, i) => ({
+      position: 'TE',
+      points: 200 - i * 3,
+      receptions: 60,
+    })),
+    ...Array.from({ length: 30 }, (_, i) => ({ position: 'QB', points: 400 - i * 5 })),
+  ];
+  const at = (FLEX: number, receptionPoints = 0.5) =>
+    leagueShape({
+      teams: 12,
+      receptionPoints,
+      startingLineup: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX, K: 1, DST: 1 },
+    });
+
+  it('is nothing at all without a flex, so a no-flex league prices as it always did', () => {
+    expect(flexDemand(pool, at(0))).toEqual({ RB: 0, WR: 0, TE: 0 });
+    const none = pricePool(pool, at(0));
+    const again = pricePool(pool, at(0));
+    expect(none.priced).toEqual(again.priced);
+  });
+
+  it('allocates exactly one slot per team per flex, never more', () => {
+    const one = flexDemand(pool, at(1));
+    expect(one.RB + one.WR + one.TE).toBe(12);
+    const two = flexDemand(pool, at(2));
+    expect(two.RB + two.WR + two.TE).toBe(24);
+  });
+
+  it('never hands a flex to a position that cannot fill one', () => {
+    // Superflex is a different league and this is not it. A quarterback
+    // absorbing flex demand would deepen QB replacement and cheapen every
+    // quarterback on the board, which is the opposite of what a superflex does.
+    expect(Object.keys(flexDemand(pool, at(2)))).toEqual(['RB', 'WR', 'TE']);
+  });
+
+  it('follows the scoring rather than a typed split — the whole reason it is derived', () => {
+    // A constant 45/45/10 would be wrong in both directions. Catches are the
+    // biggest lever in fantasy scoring, so who fills a flex has to move with
+    // them: receivers absorb more of it the more a catch is worth.
+    const standard = flexDemand(pool, at(2, 0));
+    const fullPpr = flexDemand(pool, at(2, 1));
+    expect(fullPpr.WR).toBeGreaterThan(standard.WR);
+    expect(fullPpr.RB).toBeLessThan(standard.RB);
+  });
+
+  it('deepens replacement only where the flex landed, and never raises it', () => {
+    const before = replacementLevels(pool, at(0));
+    const after = replacementLevels(pool, at(1));
+    for (const position of ['RB', 'WR', 'TE']) {
+      expect(after[position]).toBeLessThanOrEqual(before[position]);
+    }
+    // Nothing a flex cannot start may move.
+    expect(after.QB).toBe(before.QB);
+  });
+
+  it('makes depth at a flex position worth money, which is what a flex does', () => {
+    const before = pricePool(pool, at(0));
+    const after = pricePool(pool, at(1));
+    const depthRb = pool.findIndex((p, i) => p.position === 'RB' && i > 30);
+    expect(after.priced[depthRb].vorp).toBeGreaterThan(before.priced[depthRb].vorp);
+  });
+
+  it('does not fall over when the pool is shorter than the flex demand', () => {
+    const thin = [{ position: 'RB', points: 200 }];
+    expect(() => flexDemand(thin, at(1))).not.toThrow();
+    expect(flexDemand(thin, at(1))).toEqual({ RB: 0, WR: 0, TE: 0 });
   });
 });
