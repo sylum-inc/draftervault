@@ -35,6 +35,21 @@ const flag = (name, fallback = null) => {
   return at === -1 || at === args.length - 1 ? fallback : args[at + 1];
 };
 const out = flag('out', join(ROOT, 'src/data/nfl/research.json'));
+/**
+ * URLs an audit pass could not stand behind, one per line.
+ *
+ * A citation that has been checked and does not hold up is worse than one
+ * nobody looked at: it has been through the process and come out wearing the
+ * process's authority. So the audit's answer feeds back into the file rather
+ * than sitting in a report — findings citing anything on this list are dropped
+ * and counted, exactly as an unsourced claim is.
+ */
+const rejects = new Set(
+  (flag('reject') ? readFileSync(flag('reject'), 'utf8') : '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+);
 const dryRun = args.includes('--dry-run');
 
 if (!input) {
@@ -51,7 +66,7 @@ const existing = existsSync(out)
 const players = { ...(existing.players ?? {}) };
 
 const batches = JSON.parse(readFileSync(input, 'utf8'));
-const tally = { players: 0, kept: 0, dropped: 0, silent: 0, unknown: 0, mismatched: 0 };
+const tally = { players: 0, kept: 0, dropped: 0, silent: 0, unknown: 0, mismatched: 0, refuted: 0 };
 const complaints = [];
 const now = new Date().toISOString();
 
@@ -90,7 +105,25 @@ for (const batch of Array.isArray(batches) ? batches : []) {
       complaints.push(`${entry.name} was given the id of ${player.name} (${entry.gsis})`);
       continue;
     }
-    const record = validateResearch(entry, allowed);
+    const checked = validateResearch(entry, allowed);
+    const surviving = checked.findings.filter((finding) => !rejects.has(finding.url));
+    const refuted = checked.findings.length - surviving.length;
+    tally.refuted += refuted;
+    // Losing the evidence loses the position with it, exactly as it does when a
+    // claim arrives unsourced: a FADE with nothing under it reads identically
+    // to one with a page behind it.
+    const record = !surviving.length
+      ? { ...checked, findings: [], direction: 'NEUTRAL', confidence: 'LOW', headline: '' }
+      : refuted
+        ? // Some evidence held and some did not, so the findings stand but the
+          // one-line summary of them cannot: it was written against everything,
+          // including the part that turned out to be wrong. Josh Jacobs kept a
+          // headline reading "after missing most of camp with a groin injury"
+          // after the page making that claim was found to say the opposite —
+          // and a headline is the line most likely to be read and least likely
+          // to be checked.
+          { ...checked, findings: surviving, headline: '', confidence: 'LOW' }
+        : { ...checked, findings: surviving };
     tally.players += 1;
     tally.kept += record.findings.length;
     tally.dropped += Object.values(record.dropped).reduce((a, b) => a + b, 0);
@@ -111,7 +144,9 @@ console.log(
   `  players      ${tally.players} researched, ${tally.unknown} unknown, ${tally.mismatched} whose id and name disagreed`
 );
 for (const complaint of complaints.slice(0, 12)) console.log(`               ! ${complaint}`);
-console.log(`  findings     ${tally.kept} kept, ${tally.dropped} dropped for no source or no date`);
+console.log(
+  `  findings     ${tally.kept} kept, ${tally.dropped} dropped for no source or no date, ${tally.refuted} refused by the audit`
+);
 console.log(`  silent       ${tally.silent} had nothing to report`);
 console.log(`  file now     ${Object.keys(players).length} players\n`);
 

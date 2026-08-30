@@ -646,6 +646,39 @@ generated number sitting beside a computed one looks identical and carries none
 of its provenance. There is no price field in the schema, so an opinion has
 nowhere to masquerade as a measurement.
 
+**There are two doors into the research file, and the same lock on both.**
+`scripts/research-players.mjs` asks OpenRouter, which needs a key and spends
+money. `scripts/ingest-research.mjs` folds in what a Claude Code workflow found
+with its own web search, which needs neither. Both come through
+`validateResearch`, so a finding either door admits is a finding the other would
+have admitted too.
+
+The allowlist is the one thing that differs and it is weaker on the agent side,
+so it is written down rather than glossed: OpenRouter attaches the search
+engine's own `url_citation` annotations, which a model cannot forge, while an
+agent reports the URLs its own searches returned. Two things close some of that
+gap. An audit pass re-fetches a sample of the strongest claims and checks the
+page says what was claimed — on the first full run that was 24 of 232 findings,
+of which 14 held entirely, 9 held in part and 1 could not be read at all. And
+its answer feeds back: `--reject` takes the URLs that did not stand up and drops
+every finding citing them, because a citation that has been checked and failed
+is worse than one nobody looked at — it has been through the process and comes
+out wearing the process's authority.
+
+When a refusal lands, the headline goes too. Josh Jacobs kept a summary reading
+"after missing most of camp with a groin injury" after the page making that
+claim was found to say the opposite. The findings that survived are still shown;
+the one line that summarised all of them, including the wrong part, is not — it
+is the line most likely to be read and least likely to be checked.
+
+**A wrong id does not fail loudly, so the name is checked too.** Every id in the
+pool belongs to somebody, so a transposed one silently writes one player's
+findings onto another. On the first agent run four ids in ten were wrong and
+Puka Nacua's psoas injury landed on Tucker Kraft, who was perfectly fit. The
+ingester refuses any record whose id belongs to a different player than the name
+beside it — the same refusal to guess that `rankingsCsv` and `auctionSheet`
+already live by, turned on our own pipeline rather than somebody else's paste.
+
 **The model's URL is never trusted.** A model asked for sourced findings will
 produce something shaped exactly like one whether or not it found anything, and
 a plausible URL is the cheapest part to fabricate. So the response's own
