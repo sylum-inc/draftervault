@@ -16,6 +16,7 @@
 
     /* Type Safety - Progressive strictness */
     "strict": false,
+    "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noImplicitAny": false,
@@ -31,5 +32,23 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src/main.tsx",
+    "src/vite-env.d.ts",
+    "src/pages",
+    "src/components/draft-room",
+    "src/components/ui",
+    "src/hooks/use-draft-preferences.ts",
+    "src/hooks/use-draft-server.ts",
+    "src/hooks/use-toast.ts",
+    "src/hooks/use-mobile.tsx",
+    "src/services/auctionDraftService.ts",
+    "src/services/draftAdvisor.ts",
+    "src/services/nflIdentity.ts",
+    "src/services/playerHistory.ts",
+    "src/services/nflSchedule.ts",
+    "src/lib",
+    "src/utils",
+    "src/test"
+  ]
 }

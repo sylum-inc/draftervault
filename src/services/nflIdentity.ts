@@ -12,7 +12,7 @@
  *      stale identity is much better than a blank card.
  */
 import teamsData from '@/data/nfl/teams.json';
-import poolIdentityData from '@/data/nfl/pool-identity.json';
+import poolData from '@/data/nfl/pool.json';
 import { logWarn } from '@/lib/logger';
 
 export interface NflTeam {
@@ -27,13 +27,10 @@ export interface NflTeam {
 }
 
 export interface PlayerIdentity {
+  /** nflverse gsis id, which is also the player's id in the draft pool. */
   poolId: string;
-  poolName: string;
-  poolTeam: string;
-  /** 'exact' | 'fuzzy(n)' | 'moved' — anything but 'exact' means the pool data disagrees with ESPN. */
-  confidence: string;
-  note: string | null;
-  espnId: string;
+  /** ESPN athlete id, used for headshots. Null for team defenses. */
+  espnId: string | null;
   name: string;
   team: string;
   position: string;
@@ -76,8 +73,43 @@ const teams = new Map<string, NflTeam>(
   (teamsData.teams as NflTeam[]).map((team) => [team.abbr, team])
 );
 
+interface PoolEntry {
+  gsis: string;
+  espnId: string | null;
+  name: string;
+  position: string;
+  team: string;
+  jersey: string | null;
+  age: number | null;
+  experience: number | null;
+  college: string | null;
+}
+
+/**
+ * Identity comes straight out of the pool, which is generated from nflverse
+ * rosters — so a player's name, team and face can never disagree with the
+ * numbers printed beside them.
+ */
 const identities = new Map<string, PlayerIdentity>(
-  (poolIdentityData.players as PlayerIdentity[]).map((player) => [player.poolId, player])
+  (poolData.players as PoolEntry[]).map((entry) => [
+    entry.gsis,
+    {
+      poolId: entry.gsis,
+      espnId: entry.espnId,
+      name: entry.name,
+      team: entry.team,
+      position: entry.position,
+      jersey: entry.jersey,
+      age: entry.age,
+      experience: entry.experience,
+      heightInches: null,
+      weightPounds: null,
+      college: entry.college,
+      headshot: null,
+      status: null,
+      injury: null,
+    },
+  ])
 );
 
 /** Live overrides keyed by ESPN athlete id, merged over the bundled snapshot. */
@@ -94,7 +126,9 @@ export const allTeams = (): NflTeam[] => [...teams.values()];
 export const getIdentity = (poolId: string): PlayerIdentity | undefined => {
   const base = identities.get(poolId);
   if (!base) return undefined;
-  const live = liveOverrides.get(base.espnId);
+  // Team defenses have no ESPN athlete id, so there is never a live override
+  // for them and the lookup must not be attempted with a null key.
+  const live = base.espnId ? liveOverrides.get(base.espnId) : undefined;
   return live ? { ...base, ...live } : base;
 };
 
@@ -128,7 +162,7 @@ const embedded = (): EmbeddedAssets =>
  * ~240 KB each and there are sixty of them on the board at once.
  */
 export const headshotUrl = (identity: Pick<PlayerIdentity, 'espnId'>, width = 200): string =>
-  embedded().headshots?.[identity.espnId] ??
+  embedded().headshots?.[identity.espnId ?? ''] ??
   `https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/${identity.espnId}.png&w=${width}&h=${Math.round(
     width * 0.73
   )}&scale=crop&cquality=80`;
@@ -139,13 +173,11 @@ export const headshotUrl = (identity: Pick<PlayerIdentity, 'espnId'>, width = 20
  */
 export const loadDefenseUnits = async (abbr: string): Promise<DefenseUnits | undefined> => {
   const module = await import('@/data/nfl/defense-units.json');
-  const byTeam = (module.default ?? module).teams as Record<string, DefenseUnits>;
+  // The generated JSON is structurally a DefenseUnits map but TypeScript widens
+  // every null literal in it, so the shapes never formally overlap.
+  const byTeam = (module.default ?? module).teams as unknown as Record<string, DefenseUnits>;
   return byTeam[canonicalTeam(abbr)];
 };
-
-/** Pool entries whose identity ESPN disagrees with — surfaced in the UI, not hidden. */
-export const identityWarnings = (): PlayerIdentity[] =>
-  [...identities.values()].filter((player) => player.confidence !== 'exact');
 
 export const snapshotMeta = (): { season: number | null; generatedAt: string } => ({
   season: (teamsData as { season?: number }).season ?? null,
@@ -204,6 +236,18 @@ interface EspnAthlete {
  * updated, or 0 when the network is unavailable — never rejects.
  */
 export const refreshIdentity = async (): Promise<number> => {
+  /*
+   * Somewhere that cannot reach ESPN at all, so do not try.
+   *
+   * The published artifact's CSP blocks every external host, and this call asks
+   * for all 32 rosters — thirty-two requests that can only fail, each printed
+   * to the console. The bundled snapshot already paints real names, colours and
+   * faces without any of it, which is the whole reason the artifact build
+   * embeds them. `build-artifact.mjs` sets the flag; nothing else does, because
+   * a laptop on draft-night wifi genuinely benefits from the live injury merge.
+   */
+  if ((globalThis as { __DV_OFFLINE__?: boolean }).__DV_OFFLINE__) return 0;
+
   const cached = readCache();
   if (cached) {
     liveOverrides = new Map(cached.overrides);
@@ -218,6 +262,7 @@ export const refreshIdentity = async (): Promise<number> => {
     for (const player of identities.values()) {
       const team = getTeam(player.team);
       if (!team) continue;
+      if (!player.espnId) continue;
       const bucket = wanted.get(team.espnId) ?? new Set<string>();
       bucket.add(player.espnId);
       wanted.set(team.espnId, bucket);

@@ -30,3 +30,13 @@ coverage
 *.sln
 *.sw?
 .cache/
+
+# Saved drafts and job output the optional server writes. Somebody's draft
+# history, not project content.
+.draft-vault-data/
+
+# TypeScript incremental build state
+*.tsbuildinfo
+
+# Scratch worktrees the agent harness creates for isolated runs. Never project content.
+.claude/worktrees/

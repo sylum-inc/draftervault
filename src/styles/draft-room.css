@@ -95,6 +95,10 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  /* Wraps at any width: the bar carries a wordmark, three readouts, a clock and
+     three buttons, which stop fitting long before a phone. */
+  flex-wrap: wrap;
+  row-gap: 10px;
   padding: 10px 18px;
   background: linear-gradient(180deg, #0d121b 0%, var(--dr-ground) 100%);
   border-bottom: 1px solid var(--dr-line);
@@ -748,7 +752,6 @@
   }
 
   .dr-topbar {
-    flex-wrap: wrap;
     gap: 10px 14px;
   }
 }
@@ -857,4 +860,2989 @@
   background: color-mix(in srgb, var(--dr-caution) 12%, transparent);
   border-color: color-mix(in srgb, var(--dr-caution) 34%, transparent);
   color: #ffdfae;
+}
+
+/* --------------------------------------------------------------------------
+   dense table — the working view for six hundred players
+   -------------------------------------------------------------------------- */
+
+.dr-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius);
+  background: var(--dr-surface);
+}
+
+.dr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dr-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--dr-raised);
+  border-bottom: 1px solid var(--dr-line-strong);
+  padding: 0;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-table th.is-numeric,
+.dr-table td.is-numeric {
+  text-align: right;
+}
+
+.dr-th-button {
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  text-align: inherit;
+}
+
+.dr-th-button:hover {
+  color: var(--dr-ink);
+}
+
+.dr-table th:not(:has(.dr-th-button)) {
+  padding: 8px 10px;
+}
+
+.dr-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--dr-line);
+  color: var(--dr-ink-muted);
+}
+
+.dr-table tbody tr {
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.dr-table tbody tr:hover {
+  background: var(--dr-raised);
+}
+
+.dr-table tbody tr.is-selected {
+  background: color-mix(in srgb, var(--dr-accent) 18%, transparent);
+  box-shadow: inset 2px 0 0 var(--dr-accent);
+}
+
+.dr-table-name {
+  color: var(--dr-ink);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.dr-table-team {
+  color: var(--dr-ink-faint);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+/* Tier as a colored dot: four steps, readable without reading a number. */
+.dr-tier-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 2px;
+}
+
+.dr-tier-dot[data-tier='1'] {
+  background: #f2c14b;
+}
+.dr-tier-dot[data-tier='2'] {
+  background: #7cc6f2;
+}
+.dr-tier-dot[data-tier='3'] {
+  background: #6f7f99;
+}
+.dr-tier-dot[data-tier='4'] {
+  background: #39445a;
+}
+
+/* Off the commissioner's sheet: the snake fills him in for nothing. Marked
+   quietly, because it is a fact about the format rather than a warning — but
+   marked, because a $1 price tag on a player nobody is bidding on and a $1
+   price tag on a scrub look identical otherwise. */
+.dr-snake {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+  border: 1px solid var(--dr-line);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 1.5;
+  flex: none;
+}
+
+.dr-star {
+  border: none;
+  background: none;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--dr-ink-faint);
+}
+
+.dr-star[aria-pressed='true'] {
+  color: var(--dr-caution);
+}
+
+.dr-star:hover {
+  color: var(--dr-caution);
+}
+
+.dr-segmented {
+  display: inline-flex;
+  border: 1px solid var(--dr-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.dr-segmented button {
+  padding: 7px 13px;
+  border: none;
+  background: transparent;
+  color: var(--dr-ink-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dr-segmented button[aria-pressed='true'] {
+  background: var(--dr-ink);
+  color: var(--dr-ground);
+}
+
+.dr-card-star {
+  position: absolute;
+  z-index: 2;
+  top: 5px;
+  right: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   profile: season shape, defensive personnel
+   -------------------------------------------------------------------------- */
+
+.dr-spark {
+  margin: 10px 0 0;
+}
+
+.dr-spark svg {
+  display: block;
+  overflow: visible;
+}
+
+.dr-spark-caption {
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-spark-caption strong {
+  color: var(--dr-ink);
+  font-weight: 600;
+}
+
+.dr-table-compact td,
+.dr-table-compact th {
+  padding: 4px 9px;
+}
+
+.dr-crest-photo {
+  object-fit: contain;
+  padding: 10px;
+  background: rgb(0 0 0 / 0.25);
+}
+
+.dr-units {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.dr-unit ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dr-unit li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--dr-ink);
+}
+
+.dr-unit-pos {
+  min-width: 22px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--dr-accent);
+}
+
+.dr-unit-jersey {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-footnote {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--dr-ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   clock, market meters, team rosters
+   -------------------------------------------------------------------------- */
+
+.dr-clock {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 11px;
+  border: 1px solid var(--dr-line);
+  border-radius: 999px;
+  background: var(--dr-surface);
+  white-space: nowrap;
+}
+
+.dr-clock-team {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dr-ink);
+}
+
+.dr-clock-time {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dr-ink-muted);
+}
+
+.dr-clock[data-urgent] {
+  border-color: color-mix(in srgb, var(--dr-danger) 55%, transparent);
+}
+
+.dr-clock[data-urgent] .dr-clock-time {
+  color: var(--dr-danger);
+}
+
+.dr-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.dr-meter-track {
+  position: relative;
+  display: block;
+  height: 5px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Where a neutral market would sit, so the bar has a meaning to read against. */
+.dr-meter-mark {
+  position: absolute;
+  top: -2px;
+  width: 1px;
+  height: 9px;
+  background: var(--dr-ink-faint);
+}
+
+.dr-meter-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--dr-ink-muted);
+}
+
+.dr-supply {
+  display: grid;
+  grid-template-columns: 30px 1fr 52px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.dr-supply-pos {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--dr-ink-muted);
+}
+
+.dr-supply-track {
+  margin-top: 0;
+  overflow: visible;
+}
+
+.dr-supply-count {
+  font-size: 11px;
+  text-align: right;
+}
+
+.dr-bargains {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+.dr-bargains button {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 0;
+  border: none;
+  background: none;
+  border-top: 1px solid var(--dr-line);
+  font-size: 12px;
+  text-align: left;
+}
+
+.dr-bargains li:first-child button {
+  border-top: none;
+}
+
+.dr-bargains button:hover .dr-bargain-name {
+  color: var(--dr-ink);
+}
+
+.dr-bargain-name {
+  color: var(--dr-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-bargain-rate {
+  font-size: 10px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-team-block {
+  padding: 8px 0;
+  border-top: 1px solid var(--dr-line);
+}
+
+.dr-team-block:first-of-type {
+  border-top: none;
+}
+
+.dr-team-block.is-active {
+  box-shadow: inset 2px 0 0 var(--dr-accent);
+  padding-left: 8px;
+}
+
+.dr-team-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+}
+
+.dr-team-name {
+  color: var(--dr-ink-muted);
+  font-weight: 600;
+}
+
+.dr-team-head:hover .dr-team-name {
+  color: var(--dr-ink);
+}
+
+.dr-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+/* Filled slots are solid; open ones stay hollow, so a team's needs read as a shape. */
+.dr-slot {
+  padding: 1px 4px;
+  border: 1px solid var(--dr-line-strong);
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--dr-ink-faint);
+}
+
+.dr-slot[data-filled] {
+  background: var(--dr-value);
+  border-color: transparent;
+  color: var(--dr-ground);
+}
+
+.dr-team-roster {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-team-roster li {
+  display: flex;
+  gap: 7px;
+  padding: 1px 0;
+}
+
+.dr-team-cost {
+  min-width: 26px;
+  color: var(--dr-value);
+}
+
+.dr-aside-tabs {
+  width: 100%;
+}
+
+.dr-aside-tabs button {
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.dr-premiums {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+.dr-premiums li {
+  display: grid;
+  grid-template-columns: 30px 46px 1fr;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  border-top: 1px solid var(--dr-line);
+  font-size: 12px;
+}
+
+.dr-premiums li:first-child {
+  border-top: none;
+}
+
+.dr-premium-note {
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   results
+   -------------------------------------------------------------------------- */
+
+.dr-results {
+  width: min(860px, 100%);
+  padding: 16px;
+}
+
+.dr-results-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dr-results-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dr-grade {
+  display: inline-block;
+  min-width: 26px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--dr-ground);
+}
+
+.dr-grade[data-grade='A'] {
+  background: var(--dr-value);
+}
+.dr-grade[data-grade='B'] {
+  background: #7cc6f2;
+}
+.dr-grade[data-grade='C'] {
+  background: var(--dr-caution);
+}
+.dr-grade[data-grade='D'] {
+  background: var(--dr-danger);
+}
+
+@media print {
+  .dr-modal-scrim,
+  .dr-results-actions,
+  .dr-modal-close {
+    display: none;
+  }
+
+  .dr-modal,
+  .dr-modal-panel {
+    position: static;
+    max-height: none;
+    box-shadow: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   profile: tabs and the charts inside them
+   -------------------------------------------------------------------------- */
+
+.dr-profile {
+  width: min(760px, 100%);
+}
+
+.dr-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--dr-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.dr-tab {
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--dr-ink-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease;
+}
+
+.dr-tab:hover {
+  color: var(--dr-ink-muted);
+}
+
+.dr-tab[aria-selected='true'] {
+  color: var(--dr-ink);
+  border-bottom-color: var(--dr-accent);
+}
+
+.dr-tabpanel {
+  animation: dr-fade-in 180ms ease;
+}
+
+@keyframes dr-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.dr-profile-tiles {
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-verdict-line {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--dr-ink);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* --- likely season ------------------------------------------------------- */
+
+.dr-range {
+  margin-top: 10px;
+}
+
+.dr-range-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+}
+
+.dr-range-span {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--dr-value) 25%, transparent),
+    color-mix(in srgb, var(--dr-value) 70%, transparent)
+  );
+}
+
+.dr-range-point {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 20px;
+  margin-left: -1.5px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--dr-ink);
+}
+
+.dr-range-replacement {
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 16px;
+  background: var(--dr-ink-faint);
+}
+
+.dr-range-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px;
+}
+
+.dr-range-labels span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-range-labels em {
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-range-labels strong {
+  font-size: 14px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-range-mid {
+  align-items: center;
+}
+
+.dr-range-mid strong {
+  color: var(--dr-ink);
+}
+
+.dr-range-end {
+  align-items: flex-end;
+}
+
+/* --- percentiles --------------------------------------------------------- */
+
+.dr-percentiles {
+  margin-top: 8px;
+}
+
+.dr-percentile {
+  display: grid;
+  grid-template-columns: 108px 1fr 46px 40px;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 0;
+}
+
+.dr-percentile-label {
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-percentile-track {
+  position: relative;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-percentile-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--dr-value);
+  transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dr-percentile-median {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background: var(--dr-ground);
+}
+
+.dr-percentile-value {
+  font-size: 12px;
+  text-align: right;
+  color: var(--dr-ink);
+}
+
+.dr-percentile-rank {
+  font-size: 11px;
+  text-align: right;
+  color: var(--dr-ink-faint);
+}
+
+.dr-percentile-rank em {
+  font-style: normal;
+  font-size: 8px;
+}
+
+/* --- season small multiples ---------------------------------------------- */
+
+.dr-multiples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.dr-multiple {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-ground);
+}
+
+.dr-multiple figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-multiple figcaption strong {
+  color: var(--dr-ink-faint);
+  font-weight: 600;
+}
+
+.dr-multiple figcaption em {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+/* --- schedule ------------------------------------------------------------ */
+
+.dr-schedule-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  gap: 3px;
+  margin-top: 8px;
+}
+
+.dr-week {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  font-size: 10px;
+}
+
+.dr-week-number {
+  font-size: 8px;
+  /* Sits on a tinted fill, so it needs more than the faint ink. */
+  color: var(--dr-ink-muted);
+  mix-blend-mode: screen;
+}
+
+.dr-week-opponent {
+  color: var(--dr-ink);
+  font-weight: 600;
+}
+
+.dr-week.is-bye {
+  border-style: dashed;
+}
+
+.dr-week.is-bye .dr-week-opponent {
+  color: var(--dr-ink-faint);
+}
+
+/* The weeks a fantasy season is decided in. */
+.dr-week.is-playoff {
+  border-color: var(--dr-line-strong);
+  box-shadow: inset 0 -2px 0 var(--dr-caution);
+}
+
+.dr-schedule-key {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-schedule-ramp {
+  flex: none;
+  width: 56px;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--dr-value) 12%, transparent),
+    color-mix(in srgb, var(--dr-value) 74%, transparent)
+  );
+}
+
+.dr-schedule-bye {
+  margin-left: auto;
+}
+
+/* --- yards split --------------------------------------------------------- */
+
+.dr-split {
+  display: flex;
+  gap: 2px;
+  margin-top: 8px;
+}
+
+.dr-split-part {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-value) 55%, transparent);
+  color: var(--dr-ground);
+  min-width: 74px;
+}
+
+.dr-split-part.is-secondary {
+  flex: 1;
+  background: var(--dr-raised);
+  color: var(--dr-ink);
+}
+
+.dr-split-part em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.dr-split-part strong {
+  font-size: 14px;
+}
+
+/* --- bid ladder ---------------------------------------------------------- */
+
+.dr-ladder {
+  margin-top: 16px;
+}
+
+.dr-ladder-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+}
+
+.dr-ladder-band {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: color-mix(in srgb, var(--dr-value) 45%, transparent);
+}
+
+.dr-ladder-band.is-premium {
+  background: color-mix(in srgb, var(--dr-caution) 45%, transparent);
+}
+
+.dr-ladder-tick {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 18px;
+  background: var(--dr-ink-muted);
+}
+
+.dr-ladder-tick.is-limit {
+  background: var(--dr-danger);
+}
+
+.dr-ladder-live {
+  position: absolute;
+  top: -26px;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--dr-ink);
+  color: var(--dr-ground);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dr-ladder-live::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 2px;
+  height: 9px;
+  margin-left: -1px;
+  background: var(--dr-ink);
+}
+
+.dr-ladder-live.is-over {
+  background: var(--dr-danger);
+  color: #fff;
+}
+
+.dr-ladder-live.is-over::after {
+  background: var(--dr-danger);
+}
+
+.dr-ladder-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 11px;
+}
+
+.dr-ladder-labels span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-ladder-labels em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-ladder-labels strong {
+  font-size: 14px;
+  color: var(--dr-ink);
+}
+
+.dr-stage-range {
+  padding: 12px 14px 0;
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-stage-signals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.dr-stage-signals span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-stage-signals em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-stage-signals strong {
+  font-size: 13px;
+  color: var(--dr-ink);
+}
+
+/* --------------------------------------------------------------------------
+   position palette
+   Six hues at one job: tinting a mark that ALWAYS carries its position letter.
+   Constructed in OKLCH inside the dark-mode lightness band and checked with the
+   dataviz validator (adjacent-pair CVD deltaE 16.0, normal-vision 18.2). Six
+   categorical hues cannot clear the deltaE 8 target across *all* pairs, which is
+   exactly why the letter is the encoding and the colour only reinforces it.
+   -------------------------------------------------------------------------- */
+
+.draft-room {
+  --dr-pos-qb: #597bd6;
+  --dr-pos-rb: #47a47d;
+  --dr-pos-wr: #8e5100;
+  --dr-pos-te: #794c8d;
+  --dr-pos-k: #00a3bb;
+  --dr-pos-dst: #ab5a48;
+}
+
+/* --------------------------------------------------------------------------
+   charts: shared furniture
+   -------------------------------------------------------------------------- */
+
+.dr-axis-title,
+.dr-quadrant,
+.dr-consensus-tick {
+  font-family: var(--dr-mono);
+  font-size: 8px;
+  fill: var(--dr-ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.dr-quadrant {
+  font-family: var(--dr-sans);
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  fill: var(--dr-ink-faint);
+  opacity: 0.75;
+}
+
+.dr-consensus-tick {
+  fill: var(--dr-ink-muted);
+}
+
+/* distribution ----------------------------------------------------------- */
+
+.dr-swarm {
+  margin: 0 0 14px;
+}
+
+.dr-swarm-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.dr-swarm-readout {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--dr-ink-muted);
+  min-width: 0;
+}
+
+.dr-swarm-readout strong {
+  color: var(--dr-ink);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-swarm-readout strong.is-subject {
+  color: var(--dr-value);
+}
+
+.dr-swarm svg circle {
+  transition: r 90ms ease;
+}
+
+.dr-swarm-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-swarm-axis em {
+  font-style: normal;
+  color: var(--dr-caution);
+}
+
+/* uncertainty ------------------------------------------------------------ */
+
+.dr-curve,
+.dr-consensus,
+.dr-arc,
+.dr-flow,
+.dr-scatter {
+  margin: 10px 0 0;
+}
+
+.dr-curve-key,
+.dr-consensus-key,
+.dr-arc-key,
+.dr-flow-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 4px;
+}
+
+.dr-curve-key span,
+.dr-consensus-key span,
+.dr-arc-key span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dr-curve-key em,
+.dr-consensus-key em,
+.dr-arc-key em {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-curve-key strong,
+.dr-consensus-key strong,
+.dr-arc-key strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* scatter ---------------------------------------------------------------- */
+
+.dr-scatter svg {
+  display: block;
+  background: color-mix(in srgb, var(--dr-ground) 55%, transparent);
+  border-radius: var(--dr-radius-sm);
+}
+
+.dr-scatter-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+  min-height: 18px;
+}
+
+.dr-scatter-readout strong {
+  color: var(--dr-ink);
+}
+
+.dr-pos-chip {
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+}
+
+/* flow and depletion ----------------------------------------------------- */
+
+.dr-flow-key {
+  align-items: center;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-flow-total {
+  color: var(--dr-value);
+  font-size: 12px;
+}
+
+.dr-runs {
+  margin-top: 10px;
+}
+
+.dr-runs-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.dr-run-cell {
+  width: 17px;
+  height: 17px;
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  /* A 2px ground gap so adjacent cells never merge into one block. */
+  outline: 2px solid var(--dr-surface);
+  outline-offset: -1px;
+}
+
+.dr-depletion {
+  display: grid;
+  gap: 6px;
+}
+
+.dr-depletion-row {
+  display: grid;
+  grid-template-columns: 34px 1fr 54px;
+  align-items: center;
+  gap: 8px;
+}
+
+.dr-depletion-position {
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-depletion-track {
+  position: relative;
+  display: flex;
+  height: 14px;
+  gap: 2px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dr-depletion-ghost {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--dr-raised);
+  border-radius: 3px;
+}
+
+.dr-depletion-seg {
+  position: relative;
+  background: var(--dr-value);
+  border-radius: 2px;
+  min-width: 0;
+}
+
+.dr-depletion-count {
+  font-size: 11px;
+  text-align: right;
+  color: var(--dr-ink);
+}
+
+.dr-depletion-count em {
+  font-style: normal;
+  color: var(--dr-ink-faint);
+}
+
+/* career arc ------------------------------------------------------------- */
+
+.dr-arc svg {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   compare tray and head-to-head
+   -------------------------------------------------------------------------- */
+
+.dr-tray {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--dr-surface) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--dr-line-strong);
+}
+
+.dr-tray-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.dr-tray-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 3px;
+  border-radius: 999px;
+  background: var(--dr-raised);
+  border: 1px solid var(--dr-line);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dr-tray-chip:hover {
+  border-color: var(--dr-line-strong);
+}
+
+.dr-tray-face {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dr-tray-chip em {
+  font-style: normal;
+  color: var(--dr-ink-faint);
+}
+
+.dr-compare {
+  width: min(1080px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 18px;
+}
+
+.dr-compare-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dr-compare-head h2 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.dr-compare-players,
+.dr-compare-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 168px) repeat(var(--dr-compare-count, 2), minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+.dr-compare-players {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 0 10px;
+  background: var(--dr-surface);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-compare-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  min-width: 0;
+}
+
+.dr-compare-face {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--dr-raised);
+}
+
+.dr-compare-player strong {
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.dr-compare-meta {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-compare-body section {
+  margin-top: 14px;
+}
+
+.dr-compare-body section h3 {
+  margin: 0 0 4px;
+}
+
+.dr-compare-row {
+  padding: 3px 0;
+  border-top: 1px solid color-mix(in srgb, var(--dr-line) 60%, transparent);
+}
+
+.dr-compare-label {
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-compare-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dr-compare-bar {
+  position: absolute;
+  inset: 2px auto 2px 0;
+  background: color-mix(in srgb, var(--dr-value) 20%, transparent);
+  border-radius: 2px;
+}
+
+.dr-compare-value {
+  position: relative;
+  font-size: 12px;
+}
+
+.dr-compare-value.is-best {
+  color: var(--dr-value);
+  font-weight: 600;
+}
+
+.dr-linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dr-linkish:hover {
+  color: var(--dr-ink-muted);
+}
+
+/* --------------------------------------------------------------------------
+   the room: league draft board
+   -------------------------------------------------------------------------- */
+
+.dr-boardview {
+  width: min(1240px, 97vw);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 18px;
+}
+
+.dr-boardview-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.dr-boardview-charts h3 {
+  margin: 0 0 6px;
+}
+
+.dr-gridboard {
+  overflow-x: auto;
+}
+
+.dr-gridboard-head,
+.dr-gridboard-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(124px, 1fr);
+  gap: 4px;
+}
+
+.dr-gridboard-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-bottom: 6px;
+  background: var(--dr-surface);
+}
+
+.dr-gridboard-team {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 6px;
+  border-bottom: 2px solid var(--dr-line-strong);
+  font-size: 11px;
+}
+
+.dr-gridboard-team span {
+  color: var(--dr-value);
+  font-size: 12px;
+}
+
+.dr-gridboard-body {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.dr-gridboard-pick {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 5px;
+  border-left: 3px solid var(--dr-line-strong);
+  border-radius: 3px;
+  background: var(--dr-raised);
+  font-size: 11px;
+}
+
+.dr-gridboard-pick em {
+  font-style: normal;
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-gridboard-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-gridboard-empty {
+  display: block;
+  height: 23px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--dr-raised) 45%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   budget planner and bargain board
+   -------------------------------------------------------------------------- */
+
+.dr-planner {
+  padding: 12px;
+}
+
+.dr-planner-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dr-planner-amount {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--dr-ink);
+}
+
+.dr-planner-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 10px;
+}
+
+.dr-planner-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.dr-planner-grid dt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-planner-grid dd {
+  margin: 1px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.dr-planner-bar {
+  position: relative;
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-planner-spent {
+  background: var(--dr-value);
+}
+
+.dr-planner-reserve {
+  background: repeating-linear-gradient(45deg, var(--dr-caution) 0 3px, transparent 3px 6px);
+  margin-left: 2px;
+}
+
+.dr-planner-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-bargains {
+  padding: 10px;
+}
+
+.dr-bargains-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dr-bargain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+/* What the backtest found, said where the gap is being read rather than only in
+   CLAUDE.md. Sits above the list because it changes how every row below it
+   should be taken, and a footnote under a scrolling list is a footnote nobody
+   reaches. */
+.dr-bargain-verdict {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dr-caution);
+  background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
+  color: var(--dr-dim);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.dr-bargain-caveat {
+  margin-left: 5px;
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--dr-caution) 45%, transparent);
+  border-radius: 2px;
+  color: var(--dr-caution);
+  font-size: 9px;
+  font-style: normal;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.dr-bargain {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 4px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--dr-line) 55%, transparent);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dr-bargain:hover {
+  background: var(--dr-raised);
+}
+
+.dr-bargain-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-bargain-name strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-bargain-name em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-bargain-gap {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-bargain-fill {
+  display: block;
+  height: 100%;
+  background: var(--dr-value);
+  border-radius: 3px;
+}
+
+.dr-bargain-fill.is-negative {
+  background: var(--dr-caution);
+}
+
+.dr-bargain-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-bargain-numbers em {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-bargain-edge {
+  min-width: 26px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.dr-bargain-price {
+  color: var(--dr-value);
+}
+
+/* --------------------------------------------------------------------------
+   the advisor
+   Deliberately unlike everything else on screen. A dashed border and a badge,
+   because this is the one panel that holds an opinion rather than a measurement
+   and the difference has to survive a glance.
+   -------------------------------------------------------------------------- */
+
+.dr-advisor {
+  border: 1px dashed var(--dr-caution);
+  border-radius: var(--dr-radius);
+  background: color-mix(in srgb, var(--dr-caution) 6%, var(--dr-surface));
+  padding: 10px 12px;
+}
+
+.dr-advisor-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dr-advisor-badge {
+  font-family: var(--dr-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dr-ground);
+  background: var(--dr-caution);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.dr-advisor-caveat {
+  flex: 1;
+  font-size: 10px;
+  font-style: italic;
+  color: var(--dr-ink-faint);
+}
+
+.dr-advice-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dr-advice-verdict strong {
+  font-family: var(--dr-display);
+  font-size: 21px;
+  letter-spacing: 0.01em;
+}
+
+.dr-advice-verdict span {
+  font-size: 12px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-headline {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  color: var(--dr-ink);
+}
+
+.dr-advice-reasons {
+  margin: 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 3px;
+}
+
+.dr-advice-reasons li {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-nomination {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--dr-caution) 25%, transparent);
+}
+
+.dr-advice-nomination strong {
+  display: block;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+.dr-advice-nomination p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advisor-idle {
+  margin: 0;
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-advisor-alerts {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.dr-advisor-alerts li {
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 4px 7px;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+}
+
+.dr-advisor-alerts li.is-warning {
+  color: var(--dr-caution);
+  background: color-mix(in srgb, var(--dr-caution) 12%, var(--dr-raised));
+}
+
+/* --------------------------------------------------------------------------
+   denser card and table
+   -------------------------------------------------------------------------- */
+
+.dr-card-pin {
+  position: absolute;
+  top: 6px;
+  right: 28px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--dr-ink-faint);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.dr-card-pin:hover,
+.dr-card-pin.is-pinned {
+  color: var(--dr-value);
+  background: color-mix(in srgb, var(--dr-value) 14%, transparent);
+}
+
+.dr-card-signals {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.dr-card-signal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 3px 5px 5px;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-card-signal em {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-card-signal span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* The bar is the percentile within the position; the number above is the raw
+   figure, so neither is ever the only evidence. */
+.dr-card-signal-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--dr-value);
+  opacity: 0.75;
+}
+
+.dr-card-edge {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.dr-table-sets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 8px;
+  flex-wrap: wrap;
+}
+
+.dr-table td {
+  position: relative;
+}
+
+.dr-cell-bar {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  background: color-mix(in srgb, var(--dr-value) 15%, transparent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.dr-cell-value {
+  position: relative;
+}
+
+.dr-pin {
+  color: var(--dr-ink-faint);
+}
+
+.dr-pin.is-pinned {
+  color: var(--dr-value);
+}
+
+.dr-profile-pin {
+  margin-left: auto;
+}
+
+.dr-facts-note {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-facts-list {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+/* --------------------------------------------------------------------------
+   narrow screens
+   The tray, the compare grid and the league board are the three surfaces that
+   would otherwise force the page to scroll sideways on a phone.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  .dr-compare-players,
+  .dr-compare-row {
+    grid-template-columns: 92px repeat(var(--dr-compare-count, 2), minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .dr-compare-label {
+    font-size: 10px;
+  }
+
+  .dr-compare-value {
+    font-size: 11px;
+  }
+
+  .dr-boardview-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .dr-planner-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dr-tray {
+    padding: 6px 10px;
+  }
+
+  .dr-card-signals {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   League settings
+
+   The panel that changes what every price on the board means. It is laid out
+   as a form rather than a dashboard because it is the one screen in the app
+   where a number is typed in rather than read out.
+   --------------------------------------------------------------------------- */
+
+.dr-league {
+  width: min(620px, 100%);
+}
+
+.dr-league-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px 14px;
+  margin-top: 10px;
+}
+
+.dr-league-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dr-league-field .dr-input {
+  width: 100%;
+}
+
+.dr-league-field .dr-meter-note {
+  margin: 0;
+}
+
+.dr-league-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px 16px;
+  margin: 10px 0;
+}
+
+.dr-league-summary dt {
+  font: 600 10px/1.2 var(--dr-font-mono, monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-league-summary dd {
+  margin: 3px 0 0;
+  font: 600 18px/1.1 var(--dr-font-mono, monospace);
+  color: var(--dr-ink);
+}
+
+.dr-league-problems {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--dr-danger);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dr-league-warning {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--dr-danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dr-danger) 34%, transparent);
+  color: var(--dr-ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* The stage's primary button is full-width by design; in this row it sits
+   beside a cancel, so it takes its natural share instead. */
+.dr-league .dr-results-actions {
+  padding: 14px 16px;
+  border-top: 1px solid var(--dr-line);
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.dr-league .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Rankings import
+
+   A preview screen more than a form: what it shows before you press the button
+   is the point, because a file that imports cleanly against the wrong players
+   is worse than one that fails.
+   --------------------------------------------------------------------------- */
+
+.dr-import {
+  width: min(660px, 100%);
+}
+
+.dr-import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dr-import-paste {
+  display: block;
+}
+
+.dr-import-textarea {
+  width: 100%;
+  margin-top: 5px;
+  resize: vertical;
+  font-family: var(--dr-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.dr-import-rows {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dr-import-rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.dr-import-rows strong {
+  font-weight: 600;
+  color: var(--dr-ink);
+}
+
+.dr-import-rows .dr-meter-note {
+  margin: 0;
+}
+
+.dr-import-line {
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+  min-width: 52px;
+}
+
+.dr-import .dr-results-actions {
+  padding: 14px 16px;
+  border-top: 1px solid var(--dr-line);
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.dr-import .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}
+
+/* A value somebody imported is theirs, and says so rather than passing for
+   ours. The marker is deliberately quiet: it should read as provenance, not
+   as an alert. */
+.dr-custom-value {
+  position: relative;
+  border-bottom: 1px dotted currentColor;
+}
+
+.dr-custom-value::after {
+  content: '·';
+  margin-left: 2px;
+  color: var(--dr-accent);
+  font-weight: 700;
+}
+
+/* A change that came from another window of the same draft. Keyed on the
+   change count so it replays per pick; quiet enough to ignore on the board
+   screen, present enough to prove the two windows are talking. */
+.dr-synced {
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-value);
+  opacity: 0;
+  animation: dr-synced-pulse 2.4s ease-out;
+  white-space: nowrap;
+}
+
+@keyframes dr-synced-pulse {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dr-synced {
+    animation: none;
+    opacity: 0.75;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Draft night safety
+
+   Clearing the draft and reaching the end of it are both moments where the
+   room needs to be told plainly what has happened.
+   --------------------------------------------------------------------------- */
+
+.dr-ticker-warn {
+  color: var(--dr-ink);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--dr-caution) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--dr-caution) 34%, transparent);
+}
+
+/* A button that reads as a link: the recovery is an offer, not a command. */
+.dr-linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--dr-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.dr-linkish:hover {
+  filter: brightness(1.2);
+}
+
+.dr-confirm {
+  width: min(440px, 100%);
+  padding: 20px;
+}
+
+.dr-confirm .dr-meter-note {
+  margin: 8px 0 16px;
+}
+
+.dr-confirm .dr-results-actions {
+  margin-bottom: 0;
+}
+
+.dr-confirm .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}
+
+/* The board is finished: this replaces the bid controls entirely, so it should
+   read as an ending rather than as another panel waiting for input. */
+.dr-stage-done {
+  padding: 20px 16px;
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius);
+  background: var(--dr-surface);
+}
+
+.dr-stage-done .dr-meter-note {
+  margin: 8px 0 16px;
+}
+
+.dr-stage-done .dr-results-actions {
+  margin-bottom: 0;
+}
+
+.dr-stage-done .dr-button-primary {
+  width: auto;
+  flex: 1 1 auto;
+}
+
+/* The board renders a page at a time; this both marks the edge and is the
+   sentinel that asks for the next one. */
+.dr-more {
+  padding: 18px 4px 28px;
+  text-align: center;
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+/* Naming the room. One person runs this app while eleven others bid, so the
+   difference between "Team 7" and a name is the difference between reading the
+   board and translating it. */
+.dr-owners {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.dr-owner-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dr-owner-row .dr-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dr-owner-mine {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 30px;
+  border-radius: var(--dr-radius-sm);
+  border: 1px solid var(--dr-line-strong);
+  background: var(--dr-raised);
+  color: var(--dr-ink-faint);
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.dr-owner-mine.is-mine {
+  background: var(--dr-accent);
+  border-color: transparent;
+  color: var(--dr-accent-ink);
+  font-weight: 700;
+}
+
+/* Your own team in the roster list. Quiet, but never ambiguous. */
+.dr-mine-tag {
+  margin-left: 6px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--dr-accent);
+  color: var(--dr-accent-ink);
+  font-family: var(--dr-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dr-team-block.is-mine {
+  border-color: color-mix(in srgb, var(--dr-accent) 45%, var(--dr-line));
+}
+
+/* Scoring. Three buttons rather than a number field: these are the settings
+   real leagues use, and a free-text box invites a typo that silently re-prices
+   the whole board. */
+.dr-scoring {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dr-scoring-option {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px;
+  text-align: left;
+  border-radius: var(--dr-radius-sm);
+  border: 1px solid var(--dr-line-strong);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  cursor: pointer;
+}
+
+.dr-scoring-option.is-on {
+  border-color: var(--dr-accent);
+  background: color-mix(in srgb, var(--dr-accent) 14%, var(--dr-raised));
+  color: var(--dr-ink);
+}
+
+.dr-scoring-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dr-scoring-option .dr-meter-note {
+  margin: 0;
+}
+
+/* Research — claims somebody else published
+   ------------------------------------------------------------------------
+   A third register, distinct from both a measurement and an opinion. The
+   advisor is dashed amber because it is arguing; this is a solid rule in the
+   neutral ink because it is quoting. Every line ends in a link, which is the
+   point: the panel is asking to be checked, not believed. */
+.dr-research {
+  border: 1px solid var(--dr-line);
+  border-left: 3px solid var(--dr-dim);
+  border-radius: 4px;
+  padding: 14px 16px;
+  background: var(--dr-surface);
+}
+
+.dr-research-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dr-research-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dr-ink);
+  border: 1px solid var(--dr-line);
+  border-radius: 3px;
+  padding: 2px 7px;
+}
+
+.dr-research-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dr-research-confidence,
+.dr-research-stale {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-dim);
+}
+
+.dr-research-stale {
+  color: var(--dr-caution);
+  border: 1px solid var(--dr-caution);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.dr-research-findings {
+  list-style: none;
+  margin: 12px 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dr-research-findings li {
+  display: flex;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--dr-line);
+}
+
+.dr-research-impact {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--dr-dim);
+  width: 12px;
+  flex: none;
+}
+
+.dr-research-claim {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--dr-ink);
+}
+
+.dr-research-source {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--dr-dim);
+}
+
+.dr-research-source a {
+  color: var(--dr-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dr-research-source a:hover {
+  color: var(--dr-ink);
+}
+
+/* The board's one-glyph version of the same thing: enough to say "there is
+   something to read here", never enough to act on without opening it. */
+.dr-research-mark {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   The snake half.
+
+   This league auctions the commissioner's sheet and then fills every remaining
+   roster spot by serpentine draft. The stage changes shape rather than merely
+   disabling the bid box, so nobody types a price into a pick that has none.
+   --------------------------------------------------------------------------- */
+
+/* Who is on the clock, above the player. The auction has a nomination clock in
+   the top bar; the snake's turn is the whole of what the stage is asking. */
+.dr-stage-clock {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-stage-clock strong {
+  font-size: 15px;
+  color: var(--dr-ink);
+}
+
+/* The order the snake is called in. Numbered because the number is the point:
+   round one runs down it and round two runs back up. */
+.dr-order-list {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.dr-order-list li {
+  display: grid;
+  grid-template-columns: 26px 1fr auto auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--dr-line);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.dr-order-list li.is-mine {
+  border-color: color-mix(in srgb, var(--dr-accent) 45%, var(--dr-line));
+}
+
+.dr-order-name {
+  display: flex;
+  align-items: center;
+  color: var(--dr-ink);
+}
+
+/* --------------------------------------------------------------------------
+   who can outbid you, and what things cost tonight
+
+   Two registers again, and the styling is half the reason they cannot be
+   confused. The ceilings below sit in the ordinary surface: they are rules,
+   from the same call that validates a bid. The estimates of what a rival would
+   actually pay live inside the advisor's dashed box, further down this file,
+   and never in this block.
+   -------------------------------------------------------------------------- */
+
+.dr-tile-note {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--dr-sans);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dr-ink-faint);
+}
+
+.dr-outbid {
+  padding: 10px 14px 0;
+}
+
+.dr-outbid-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dr-outbid-caveat {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-outbid-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.dr-outbid-list li {
+  display: grid;
+  grid-template-columns: 1fr 46px auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  border-top: 1px solid var(--dr-line);
+  font-size: 12px;
+}
+
+.dr-outbid-list li:first-child {
+  border-top: none;
+}
+
+.dr-outbid-team {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-outbid-ceiling {
+  text-align: right;
+  font-weight: 600;
+}
+
+.dr-outbid-note,
+.dr-outbid-empty {
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-outbid-empty {
+  margin: 4px 0 0;
+}
+
+.dr-outbid .dr-footnote {
+  margin-top: 6px;
+}
+
+.dr-drivers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.dr-drivers dt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-drivers dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   the advisor's estimates
+
+   Inside the dashed box on purpose: every number here is a guess about what
+   somebody else wants, and it is printed beside the rule it is a guess about
+   so the two can be told apart at a glance rather than by memory.
+   -------------------------------------------------------------------------- */
+
+.dr-advice-room {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--dr-caution) 25%, transparent);
+}
+
+.dr-advice-rivals {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.dr-advice-rivals li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.dr-advice-rival-team {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-advice-rival-plausible {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dr-caution);
+}
+
+.dr-advice-rival-legal {
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-advice-rival-why {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-calls {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.dr-advice-calls strong {
+  font-size: 13px;
+}
+
+.dr-advice-calls p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-advice-kind {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--dr-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+}
+
+/* The one call that says "buy him now": the moment draining stops working and
+   a player nobody can outbid is sitting there. It should not read like the
+   other three. */
+.dr-advice-kind[data-kind='stopper'] {
+  background: color-mix(in srgb, var(--dr-value) 22%, var(--dr-raised));
+  color: var(--dr-value);
+}
+
+/* ---------------------------------------------------------------------------
+   The server panel.
+
+   Wider than the import panels because it holds four unrelated sections —
+   connection, backup, saved drafts, rebuilds — and a job log that is only
+   readable at a monospace width. Everything it shows is an extra; the panel
+   leans on the existing modal and import styles rather than inventing a look,
+   so that it reads as one more drawer of the same cabinet and not as a
+   connection status somebody has to keep an eye on.
+   --------------------------------------------------------------------------- */
+
+.dr-server {
+  width: min(760px, 100%);
+}
+
+/* A batch job prints alignment-sensitive tables — replacement levels, the
+   priciest players by column — so it is monospace and it scrolls in its own
+   box rather than widening the panel or wrapping into nonsense. */
+.dr-server-log {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--dr-line);
+  border-radius: 4px;
+  background: var(--dr-sunken, var(--dr-raised));
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--dr-ink-muted);
+  white-space: pre;
+}
+
+/* --------------------------------------------------------------------------
+   correcting the record, and keeping it
+   -------------------------------------------------------------------------- */
+
+/*
+ * The board is a dialog and has always said so in its ARIA role, but nothing
+ * ever positioned it: it rendered in the page flow, below the whole room, so
+ * "The room" opened somewhere off the bottom of a scrolled auction. The cell
+ * editor lives inside it, and an editor you have to go looking for is an
+ * editor nobody uses mid-draft.
+ */
+.dr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(4 6 10 / 0.78);
+  backdrop-filter: blur(3px);
+}
+
+/* Every pick in the grid is a button now, so the cell has to stop looking like
+   one everywhere except the edge that carries its position colour. */
+.dr-gridboard-pick {
+  width: 100%;
+  border: none;
+  border-left: 3px solid var(--dr-line-strong);
+  text-align: left;
+  font-family: inherit;
+}
+
+.dr-gridboard-pick:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--dr-accent) 18%, var(--dr-raised));
+}
+
+/*
+ * How far the record is from a copy that is not in this browser.
+ *
+ * Deliberately quiet at the bottom and loud at the top: this sits in a top bar
+ * somebody stares at for four hours, and a control that shouts from the first
+ * pick is one that has stopped meaning anything by the fortieth.
+ */
+.dr-exposure {
+  border: 1px solid var(--dr-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dr-ink-faint);
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.dr-exposure[data-level='clear'] {
+  color: var(--dr-value);
+  border-color: color-mix(in srgb, var(--dr-value) 40%, transparent);
+}
+
+.dr-exposure[data-level='warn'] {
+  color: var(--dr-caution);
+  border-color: color-mix(in srgb, var(--dr-caution) 50%, transparent);
+  background: color-mix(in srgb, var(--dr-caution) 12%, transparent);
+}
+
+.dr-exposure[data-level='urgent'] {
+  color: var(--dr-danger);
+  border-color: color-mix(in srgb, var(--dr-danger) 60%, transparent);
+  background: color-mix(in srgb, var(--dr-danger) 16%, transparent);
+  font-weight: 600;
+}
+
+.dr-pickedit .dr-field {
+  margin-top: 10px;
+}
+
+.dr-pickedit-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+}
+
+.dr-pickedit-matches {
+  list-style: none;
+  margin: 6px 0 4px;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.dr-pickedit-matches button {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.dr-pickedit-matches button[aria-pressed='true'] {
+  color: var(--dr-accent);
+  text-decoration: underline;
+}
+
+.dr-pickedit-matches em {
+  font-style: normal;
+  font-family: var(--dr-mono);
+  font-size: 10px;
+  color: var(--dr-ink-faint);
+}
+
+.dr-pickedit-lost {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--dr-ink-muted);
 }

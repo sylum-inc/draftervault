@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# A second push to the same branch makes the first run's answer irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Type-check, lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # scripts/build-player-pool.mjs imports src/lib/valuation.ts directly
+          # and relies on Node stripping the types (unflagged since 22.18), so
+          # the major version here is load-bearing, not incidental.
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Validate
+        run: npm run validate
+
+      # The app is only useful if it builds; type-check does not prove that,
+      # because Vite resolves aliases and assets that tsc never sees.
+      - name: Build
+        run: npm run build
+
+      # The single-file page is a second shipping path with its own failure
+      # modes — the module script lives in <head>, and the bundle registers a
+      # service worker that is useless in a self-contained page — and it is what
+      # the published artifact is built from. Breaking it used to surface only
+      # at publish time, which is the wrong moment to find out.
+      - name: Build the self-contained page
+        run: npm run build:single
+
+  pool:
+    name: Pool builder still runs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # Not a rebuild — that needs a 19MB play-by-play download and does not
+      # belong in CI. The builder's own correctness is covered by lint, which
+      # runs no-undef over scripts/: `node --check` used to stand in here and
+      # proved only that the file parsed, so it passed a builder referencing a
+      # variable a refactor had deleted. What lint cannot check is this import
+      # seam, which needs Node to actually strip the types.
+      - name: Check the shared valuation module loads under Node
+        run: |
+          node -e "
+            import('./src/lib/valuation.ts').then((m) => {
+              for (const name of ['pricePool', 'startingSlots', 'rosteredForTeams']) {
+                if (typeof m[name] !== 'function') throw new Error('valuation lost ' + name);
+              }
+              console.log('valuation module loads under Node type stripping');
+            })
+          "
+
+      - name: Regenerate icons and check they are committed
+        run: |
+          npm run build:icons
+          git diff --exit-code -- public/icons \
+            || (echo "public/icons is out of date; run npm run build:icons" && exit 1)
