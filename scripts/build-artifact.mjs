@@ -90,7 +90,9 @@ const main = async () => {
 
   for (const player of wanted) {
     if (bytes > BUDGET_BYTES) {
-      console.log(`[artifact] stopped at the image budget after ${Object.keys(headshots).length} faces`);
+      console.log(
+        `[artifact] stopped at the image budget after ${Object.keys(headshots).length} faces`
+      );
       break;
     }
     const buffer = await cached(
@@ -130,6 +132,14 @@ const main = async () => {
   const prelude =
     `<script>` +
     `try{Object.defineProperty(navigator,'serviceWorker',{value:undefined,configurable:true});}catch(e){}` +
+    // The live identity refresh reaches ESPN for all 32 rosters. Here the CSP
+    // blocks every one of them, so it is thirty-two requests that can only
+    // fail, and a browser prints each failure to the console whether or not it
+    // was speculative. That is the same reasoning the server's discovery is
+    // built on: a page of red under a board somebody is drafting off is a
+    // reason to distrust the board. The bundled snapshot is what paints here
+    // anyway — that is why this build embeds the crests and faces at all.
+    `window.__DV_OFFLINE__=true;` +
     `window.__DV_ASSETS__=${JSON.stringify({ headshots, logos })};` +
     `</script>`;
   const assets = prelude;

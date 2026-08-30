@@ -1046,6 +1046,18 @@ on a republish carries that declaration forward, so it only needs restating if
 it is ever cleared. `scripts/build-artifact.mjs` embeds the 260 most valuable
 players' faces and all 32 crests as data URIs (the CSP blocks external hosts),
 strips the document shell, and adds the viewport meta the viewer's head lacks.
+It also sets `__DV_OFFLINE__`, which `refreshIdentity` reads and returns on
+immediately: the live merge asks ESPN for all 32 rosters, and there every one of
+those is a request that can only fail and be printed to the console. Driving the
+built page with every external host blocked took it from 32 attempts to one —
+the Google font, which is on the viewer's allowlist. The bar is the same one the
+server's discovery is held to: not that the failure is caught, but that no
+request was made.
+
+The whole flow has been driven that way — the first-run gate, a fifty-name sheet
+import, a sale, and a research tab with its sources — served from a static file
+with everything but its own origin refused. Sixty cards, thirty-seven research
+marks, no errors.
 
 Two traps that file exists to remember. Vite puts the module script in `<head>`,
 and the single-file build inlines the whole 2 MB bundle there — extracting only

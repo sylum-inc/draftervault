@@ -236,6 +236,18 @@ interface EspnAthlete {
  * updated, or 0 when the network is unavailable — never rejects.
  */
 export const refreshIdentity = async (): Promise<number> => {
+  /*
+   * Somewhere that cannot reach ESPN at all, so do not try.
+   *
+   * The published artifact's CSP blocks every external host, and this call asks
+   * for all 32 rosters — thirty-two requests that can only fail, each printed
+   * to the console. The bundled snapshot already paints real names, colours and
+   * faces without any of it, which is the whole reason the artifact build
+   * embeds them. `build-artifact.mjs` sets the flag; nothing else does, because
+   * a laptop on draft-night wifi genuinely benefits from the live injury merge.
+   */
+  if ((globalThis as { __DV_OFFLINE__?: boolean }).__DV_OFFLINE__) return 0;
+
   const cached = readCache();
   if (cached) {
     liveOverrides = new Map(cached.overrides);

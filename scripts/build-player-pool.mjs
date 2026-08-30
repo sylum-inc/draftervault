@@ -42,6 +42,21 @@ import {
   pricePool,
   rosteredForTeams,
 } from '../src/lib/valuation.ts';
+// The projection model lives beside it, for the same reason and one sharper
+// one: every price in the app is a linear function of the points it produces,
+// so "is the model any good" is the question that decides whether the board is
+// worth drafting off. A backtest that reimplemented this arithmetic would
+// answer that about a copy. `scripts/backtest-projections.mjs` imports the very
+// functions this builder calls.
+import {
+  positionBaselines,
+  projectPlayer,
+  projectionSeasons,
+  regressedDefensePoints,
+  rookieBaselines,
+  rookieCurveThrough,
+  seasonAge,
+} from '../src/lib/projection.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const NFLVERSE = 'https://github.com/nflverse/nflverse-data/releases/download';
@@ -71,11 +86,15 @@ const offline = args.includes('--offline');
  */
 const OUT = resolve(ROOT, flag('out', join(ROOT, 'src/data/nfl')));
 
-/** The seasons that inform a projection. Older tape exists but stops mattering. */
-const SEASONS = [2023, 2024, 2025];
+const CURRENT_SEASON = 2026;
+/**
+ * The seasons that inform a projection. Older tape exists but stops mattering.
+ * Derived from the model rather than typed, so the two cannot disagree about
+ * which three seasons the recency weights are being applied to.
+ */
+const SEASONS = projectionSeasons(CURRENT_SEASON);
 /** Injury history reaches back further: durability is a slower-moving trait. */
 const INJURY_SEASONS = [2023, 2024, 2025];
-const CURRENT_SEASON = 2026;
 
 const SOURCES = {
   'players.csv': `${NFLVERSE}/players/players.csv`,
