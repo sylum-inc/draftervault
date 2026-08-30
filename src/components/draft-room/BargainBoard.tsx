@@ -40,7 +40,9 @@ export const BargainBoard = ({ service, players, onSelect }: BargainBoardProps) 
     return <p className="dr-empty dr-panel">No market data for the players still available.</p>;
   }
 
-  const widest = Math.max(...rows.map((row) => Math.abs(row.edge)), 1);
+  // Scaled on the dollar gap, which is now the sort key: a bar drawn from the
+  // rank difference would have the longest bar on a row near the bottom.
+  const widest = Math.max(...rows.map((row) => Math.abs(row.gap)), 1);
 
   return (
     <div className="dr-bargains dr-panel">
@@ -56,7 +58,7 @@ export const BargainBoard = ({ service, players, onSelect }: BargainBoardProps) 
       <ol className="dr-bargain-list">
         {rows.map((row) => {
           const name = getIdentity(row.player.id)?.name ?? row.player.name;
-          const positive = row.edge > 0;
+          const positive = row.gap > 0;
           // Only where our board is the one claiming the edge. On a player the
           // room likes more than we do, our number is not what a bid would be
           // trusting, so a caveat about our accuracy is noise at the moment it
@@ -80,7 +82,7 @@ export const BargainBoard = ({ service, players, onSelect }: BargainBoardProps) 
                 <span className="dr-bargain-gap" aria-hidden="true">
                   <span
                     className={`dr-bargain-fill${positive ? '' : ' is-negative'}`}
-                    style={{ width: `${(Math.abs(row.edge) / widest) * 100}%` }}
+                    style={{ width: `${(Math.abs(row.gap) / widest) * 100}%` }}
                   />
                 </span>
 
@@ -95,9 +97,9 @@ export const BargainBoard = ({ service, players, onSelect }: BargainBoardProps) 
                   <span
                     className="dr-num dr-bargain-edge"
                     style={{ color: positive ? 'var(--dr-value)' : 'var(--dr-caution)' }}
+                    title={`We price him $${row.player.modelValue}; at the market's rank he prices $${row.player.modelValue - row.gap}. The room should pay about $${row.projectedCost}.`}
                   >
-                    {positive ? '+' : ''}
-                    {row.edge}
+                    {positive ? '+' : '−'}${Math.abs(row.gap)}
                   </span>
                   <span className="dr-num dr-bargain-price">${row.listed}</span>
                 </span>
@@ -108,9 +110,11 @@ export const BargainBoard = ({ service, players, onSelect }: BargainBoardProps) 
       </ol>
 
       <p className="dr-footnote">
-        A positive gap means the consensus ranks him below our board — the bidding should stay
-        quiet. Negative means expect company. Prices are our own valuation. Amber chips mark the
-        three places the backtest found our board least reliable; hover one for what was measured.
+        The dollar figure is what the disagreement is worth: ours minus what he prices at the
+        market&rsquo;s rank. Positive means the bidding should stay quiet, negative means expect
+        company. Sorted by that rather than by rank difference, because a hundred places between two
+        $2 players is a dollar. Amber chips mark the three places the backtest found our board least
+        reliable; hover one for what was measured.
       </p>
     </div>
   );

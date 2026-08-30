@@ -560,3 +560,75 @@ export const AUCTION_SHEET_EXAMPLE = [
   'Jahmyr Gibbs, Malik Nabers, Brock Bowers',
   'Puka Nacua\tWR\tLAR',
 ].join('\n');
+
+/**
+ * What a paste lost, and how alarmed to be about it.
+ *
+ * The panel already names every failure, and the price check already refuses a
+ * list too concentrated to bid on. Between them sits the failure this exists
+ * for: a paste that loses a chunk out of the *middle* of a sheet. Sixty names
+ * become forty, the top twenty still price perfectly sensibly, every check
+ * passes — and `auctionSheetSize` is now forty, so the whole board has been
+ * re-priced for an auction the room is not holding.
+ *
+ * A count cannot carry that. Twelve lost out of four hundred is a commissioner
+ * listing some defences by nickname; twelve lost out of thirty is a broken
+ * paste, and the two need to read differently at a glance. So this reports the
+ * share and bands it, and hands back the actual text of every row that fell
+ * out — because the only useful thing to do with a broken paste is fix it, and
+ * fixing it means knowing which lines to look at.
+ */
+export interface SheetLoss {
+  /** Rows that named nobody: ambiguous, unmatched, duplicated or skipped. */
+  lost: number;
+  /** Every row the paste produced, kept or not. */
+  of: number;
+  /** `lost / of`, or zero when there was nothing to lose. */
+  share: number;
+  /**
+   * `some` below one row in eight, `much` at or above it.
+   *
+   * Banded rather than one alarm because a warning that shouts at the first
+   * lost defence means nothing by the fortieth — the same reasoning the export
+   * counter's colours already live by. One in eight is where it stops being
+   * housekeeping: eight names off a sixty-name sheet are eight players the
+   * room will now snake rather than buy, and `auctionSheetSize` drops with
+   * them, which re-prices every player on the board.
+   */
+  severity: 'none' | 'some' | 'much';
+  /** The raw text of each lost row, `line: text`, ready to be copied out. */
+  lines: string[];
+}
+
+export const sheetLoss = (
+  parsed: ParsedSheet,
+  /** Ambiguous rows the operator has since bound by hand, keyed by `SheetRow.id`. */
+  bindings: Record<number, string> = {}
+): SheetLoss => {
+  const lines: string[] = [];
+  for (const resolution of parsed.resolutions) {
+    if (resolution.status === 'matched') continue;
+    // An ambiguity somebody has answered is not a loss; it is the mechanism
+    // working. Only one still sitting unanswered costs a name.
+    if (resolution.status === 'ambiguous' && bindings[resolution.row.id]) continue;
+    const why = resolution.status === 'ambiguous' ? 'fits more than one player' : 'not in the pool';
+    lines.push(`${resolution.row.line}: ${resolution.row.name} — ${why}`);
+  }
+  for (const duplicate of parsed.duplicates) {
+    lines.push(`${duplicate.line}: ${duplicate.name} — already on the sheet`);
+  }
+  for (const skipped of parsed.skipped) {
+    lines.push(`${skipped.line}: ${skipped.text} — ${skipped.reason}`);
+  }
+
+  const of = parsed.resolutions.length + parsed.duplicates.length + parsed.skipped.length;
+  const lost = lines.length;
+  const share = of ? lost / of : 0;
+  return {
+    lost,
+    of,
+    share,
+    severity: lost === 0 ? 'none' : share >= 1 / 8 ? 'much' : 'some',
+    lines,
+  };
+};

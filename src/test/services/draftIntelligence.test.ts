@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AuctionDraftService } from '@/services/auctionDraftService';
 import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
+import { inflatedPrice } from '@/lib/valuation';
 
 const firstAvailable = (service: AuctionDraftService, position?: string) =>
   service.getAvailablePlayers().find((p) => !position || p.position === position)!;
@@ -112,12 +113,60 @@ describe('bargain board', () => {
     service = new AuctionDraftService();
   });
 
-  it('sorts by the gap between our board and the consensus', () => {
+  it('sorts by what the disagreement is worth in dollars, not by rank gap', () => {
     const rows = service.getBargains(10);
     expect(rows.length).toBe(10);
     for (let i = 1; i < rows.length; i++) {
-      expect(rows[i - 1].edge).toBeGreaterThanOrEqual(rows[i].edge);
+      expect(rows[i - 1].gap).toBeGreaterThanOrEqual(rows[i].gap);
     }
+  });
+
+  it('does not lead with dollar players the consensus happens to rank far lower', () => {
+    // The old sort was on `market.edge`, a difference of ranks, which put a $2
+    // bench receiver 160 places below us at the top of a panel about bargains.
+    // A hundred and sixty places there is worth a dollar: below the top hundred
+    // both boards are ranking noise, and the gap measures how little either
+    // knows rather than how much money is on the table.
+    const rows = service.getBargains(10);
+    const dearest = Math.max(...rows.map((row) => row.player.modelValue));
+    expect(dearest).toBeGreaterThan(10);
+    const byRank = [...rows].sort((a, b) => b.edge - a.edge);
+    expect(byRank[0].player.id).not.toBe(rows[0].player.id);
+  });
+
+  it('quotes a price the room would pay, taken from the market’s number', () => {
+    // The old arithmetic claimed the expected price tracks the market rank and
+    // then computed it from ours, making up the difference with a bare
+    // `edge * 0.12` that nobody derived.
+    const inflation = service.getInflationBasis().inflation;
+    for (const row of service.getBargains(8)) {
+      const theirs = row.player.modelValue - row.gap;
+      // The room's price is their number moved by the room's inflation, and it
+      // goes through the same `inflatedPrice` the stage and the table print —
+      // so the saving quoted here cannot disagree with the price on screen.
+      expect(row.projectedCost).toBe(inflatedPrice(theirs, inflation));
+      expect(row.saving).toBe(row.player.modelValue - row.projectedCost);
+    }
+  });
+
+  it('measures the disagreement against our own board, not the applied one', () => {
+    // Otherwise pressing "Use consensus" would re-derive the gap against the
+    // consensus board itself and report that we agree with everybody about
+    // everything. The row *set* legitimately shrinks — a player consensus
+    // prices at a dollar stops being a bargain candidate, which is `forSale`
+    // doing its job — so the invariant is per player, not per list.
+    const before = new Map(service.getBargains(30).map((row) => [row.player.id, row.gap]));
+    expect(before.size).toBeGreaterThan(10);
+    service.applyConsensusBoard();
+    const after = service.getBargains(30);
+    expect(after.length).toBeGreaterThan(5);
+    let compared = 0;
+    for (const row of after) {
+      if (!before.has(row.player.id)) continue;
+      expect(row.gap).toBe(before.get(row.player.id));
+      compared += 1;
+    }
+    expect(compared).toBeGreaterThan(5);
   });
 
   it('drops players once they are drafted', () => {

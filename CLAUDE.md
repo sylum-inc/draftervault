@@ -178,6 +178,21 @@ Reaching it is not a setting anybody types: it happens through the paste box,
 when a surname-first export or a defence block written in nicknames resolves a
 fraction of its names and sixty quietly becomes eighteen.
 
+**A paste can fail in the middle, and that is the one nobody catches.** The
+import already names every ambiguous, unmatched, duplicated and skipped row,
+and already refuses a list too concentrated to bid on. Between those sits the
+failure `sheetLoss` exists for: a paste that loses a chunk out of the _middle_.
+The top twenty still price perfectly sensibly, every check passes, and
+`auctionSheetSize` is now forty rather than sixty — which has re-priced the
+whole board for an auction the room is not holding. A count cannot carry that,
+because twelve lost out of four hundred is a commissioner listing some defences
+by nickname and twelve out of thirty is a broken paste. So it reports the share
+and bands it at one row in eight, and hands back the text of every lost row to
+be copied out, because the only useful thing to do with a broken paste is fix
+it. The lists are no longer truncated at six and eight either: the panel said
+"every one is listed above" while showing the first six, which is the one claim
+a panel about lost names may not get wrong.
+
 **The reserve only exists when the auction buys the whole roster.** A bid is
 capped at the budget minus a dollar per unfilled starting slot, so nobody spends
 themselves into a lineup they cannot finish. That is right when every roster
@@ -333,6 +348,22 @@ name to call. At the very first nomination every position has an unfilled
 starting slot, so "a player you do not need" matches nobody — the drain falls
 back to the dearest player you are not protecting and says why it is still the
 right call rather than claiming a need that does not exist.
+
+**A bargain board sorted on ranks leads with dollar players.** It sorted on
+`market.edge`, a difference of _ranks_, which put a $2 bench receiver the
+consensus has 160 places lower at the top of a panel about bargains. A hundred
+and sixty places there is worth a dollar: below the top hundred both boards are
+ranking noise, and the gap measures how little either of them knows rather than
+how much money is on the table. The arithmetic also did not do what its own
+comment said — it claimed the expected price tracks the market rank, computed
+that price from _our_ value, and made up the difference with a bare
+`edge * 0.12`, a constant nobody derived. `consensusOverrides` makes the
+market's dollar opinion computable, so `gap` is now ours minus theirs in money,
+the sort key is that, the projected cost is their number moved by the room's
+inflation through the shared `inflatedPrice`, and the fudge is gone. Both `gap`
+and the tie-break read `modelValue` rather than the live price, so pressing
+"Use consensus" cannot re-derive the disagreement against itself and report
+that we agree with everybody about everything.
 
 **Alerts are keyed on what they are about.** They were keyed on message text,
 which collides the moment two read alike, and React drops one without saying so.
@@ -1321,7 +1352,9 @@ season, and the advice for the night changed accordingly, with the three blind
 spots it named now flagged on the bargain board and beside the name on the
 block, a flex that finally moves the prices it should, and the market's own
 ordering one button away because a measured blend of the two was worse than the
-market alone; 545 tests.
+market alone, a sheet paste that says how much of itself it lost and hands the
+failures back to be fixed, a bargain board sorted by money rather than by rank,
+and 73,407 lines of dead tree finally gone; 555 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1332,18 +1365,7 @@ out as `.txt`.
 
 Open, roughly in order of value:
 
-1. **Dead code**: 132 files and ~79k lines under `src/` unreachable from
-   `main.tsx`, about 40k of it `src/data/playerDatabase/`. Deleting it was
-   measured, not estimated: removing the 89 non-shadcn files leaves type-check,
-   all 133 tests and the production build passing, with exactly one breakage —
-   `src/components/ui/sidebar.tsx` imports `@/hooks/use-mobile`, and because
-   `tsconfig.app.json` includes the whole `src/components/ui` directory, every
-   shadcn file is an effective typecheck entry point even though nothing in the
-   app imports it. So the safe deletion is those 89 files minus
-   `src/hooks/use-mobile.tsx`, or those 89 plus `sidebar.tsx`. The 43 unused
-   shadcn primitives are a separate call: they are a vendored library, and
-   people add components from it later.
-2. **A draft shared beyond one browser.** Two windows on one machine stay in
+1. **A draft shared beyond one browser.** Two windows on one machine stay in
    step (`draftSync.ts`), which covers the laptop-and-television case. The
    optional server does _not_ extend that and was not built to: it stores copies
    of the draft, it does not carry one, and nothing about whose turn it is

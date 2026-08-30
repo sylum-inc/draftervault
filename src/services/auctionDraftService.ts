@@ -3077,40 +3077,79 @@ export class AuctionDraftService {
   }
 
   /**
-   * Where our board and the market's disagree, in dollars.
+   * Where our board and the market's disagree, sorted by what the disagreement
+   * is worth.
    *
-   * `market.edge` is a difference of ranks; this converts it into what it is
-   * worth tonight by pricing each player at the room's current inflation. A
-   * player the consensus ranks 40 spots below us is only a bargain if he is
-   * still going to be cheap when he comes up.
+   * It used to sort on `market.edge`, which is a difference of *ranks*, and
+   * that put a $2 bench receiver the consensus has 160 places lower at the top
+   * of a panel about bargains. A hundred and sixty places is a huge number and
+   * a dollar of saving: below the top hundred or so, both boards are ranking
+   * noise, and a rank gap there measures how little either of them knows
+   * rather than how much money is on the table.
+   *
+   * The old arithmetic also did not do what its own comment said. It claimed
+   * the expected price tracks the market rank rather than ours, then computed
+   * that price from *our* value, and made up the difference with a bare
+   * `edge * 0.12` — a constant nobody derived, converting ranks to dollars by
+   * assertion. Consensus dollars are computable now, through the same module
+   * that prices the consensus board, so there is one definition of what the
+   * market thinks a player is worth and the fudge is gone.
+   *
+   * `gap` is therefore ours minus theirs in dollars: positive means we like
+   * him more than the room does, which is what makes him cheap to buy and is
+   * also — per the backtest — the direction in which our board is most often
+   * the one that is wrong. Both facts belong to the same number, which is why
+   * `modelTrust`'s caveats render on exactly these rows.
+   *
+   * Taken off `modelValue` rather than the live price, so applying the
+   * consensus board does not then re-derive the disagreement against itself
+   * and report that we agree with everybody about everything.
    */
   getBargains(limit = 24): Array<{
     player: Player;
+    /** Ours minus the market's, in dollars. The sort key. */
+    gap: number;
+    /** The rank difference, kept because the panel prints both ranks. */
     edge: number;
     listed: number;
     projectedCost: number;
     saving: number;
   }> {
     const inflation = this.calculateMarketInflation();
-    return this.players
-      .filter((p) => !p.isDrafted && p.market?.consensusRank != null && this.forSale(p))
-      .map((player) => {
-        const listed = player.estimatedValue;
-        // The room bids off consensus, so the expected price tracks the market
-        // rank, not ours; inflation moves both. Through the shared helper, so
-        // the saving this board quotes is arithmetic with the adjusted price
-        // the stage and the table print rather than a second rounding of it.
-        const projectedCost = inflatedPrice(listed, inflation);
-        return {
-          player,
-          edge: player.market?.edge ?? 0,
-          listed,
-          projectedCost,
-          saving: Math.round(listed - projectedCost + (player.market?.edge ?? 0) * 0.12),
-        };
-      })
-      .sort((a, b) => b.edge - a.edge || b.listed - a.listed)
-      .slice(0, limit);
+    const market = consensusOverrides(
+      this.players.map((player) => ({
+        gsis: player.id,
+        position: player.position,
+        auctionValue: player.modelValue,
+        consensusRank: player.market?.consensusRank ?? null,
+      }))
+    );
+    return (
+      this.players
+        .filter((p) => !p.isDrafted && p.market?.consensusRank != null && this.forSale(p))
+        .map((player) => {
+          const listed = player.estimatedValue;
+          const theirs = market[player.id]?.value ?? player.modelValue;
+          // What the room will actually pay: their number, moved by the room's
+          // inflation. Through the shared helper, so this is arithmetic with the
+          // same adjusted price the stage and the table print rather than a
+          // second rounding of it.
+          const projectedCost = inflatedPrice(theirs, inflation);
+          return {
+            player,
+            gap: player.modelValue - theirs,
+            edge: player.market?.edge ?? 0,
+            listed,
+            projectedCost,
+            saving: player.modelValue - projectedCost,
+          };
+        })
+        // Tie-broken on our own number rather than the live one, for the same
+        // reason the gap is: off `listed`, applying the consensus board would
+        // silently reshuffle every row whose gap ties with another.
+        .sort((a, b) => b.gap - a.gap || b.player.modelValue - a.player.modelValue)
+        .slice(0, limit)
+    );
   }
 
   /**

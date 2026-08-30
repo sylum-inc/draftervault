@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AUCTION_SHEET_EXAMPLE,
   readAuctionSheet,
+  sheetLoss,
   sheetPlayerIds,
   type ParsedSheet,
 } from '@/lib/auctionSheet';
+import { copyTextToClipboard } from '@/lib/saveFile';
 import type { Candidate } from '@/lib/rankingsCsv';
 import type { Player } from '@/services/auctionDraftService';
 
@@ -68,6 +70,7 @@ export const AuctionSheetImport = ({
   onClear,
   onClose,
 }: AuctionSheetImportProps) => {
+  const [copiedLoss, setCopiedLoss] = useState<'copied' | 'failed' | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState('');
@@ -100,12 +103,14 @@ export const AuctionSheetImport = ({
   );
   const prices = useMemo(() => (ids.length ? preview(ids) : null), [ids, preview]);
   const tooShort = prices !== null && prices.top > maxPrice;
-  const lost = ambiguous.length + unmatched.length + (parsed?.skipped.length ?? 0);
+  const loss = useMemo(() => (parsed ? sheetLoss(parsed, bindings) : null), [parsed, bindings]);
+  const lost = loss?.lost ?? 0;
 
   const readFile = async (file: File | undefined) => {
     if (!file) return;
     setSource(file.name);
     setBindings({});
+    setCopiedLoss(null);
     setText(await file.text());
   };
 
@@ -184,6 +189,7 @@ export const AuctionSheetImport = ({
               onChange={(event) => {
                 setText(event.target.value);
                 setBindings({});
+                setCopiedLoss(null);
                 setSource(event.target.value.trim() ? 'pasted' : '');
               }}
             />
@@ -266,16 +272,13 @@ export const AuctionSheetImport = ({
 
             {unmatched.length > 0 && (
               <ul className="dr-import-rows">
-                {unmatched.slice(0, 6).map((row) => (
+                {unmatched.map((row) => (
                   <li key={`${row.row.line}-${row.row.name}`}>
                     <span className="dr-import-line">line {row.row.line}</span>
                     <strong>{row.row.name}</strong>
                     <span className="dr-meter-note">no player of this name in the pool</span>
                   </li>
                 ))}
-                {unmatched.length > 6 && (
-                  <li className="dr-meter-note">and {unmatched.length - 6} more</li>
-                )}
               </ul>
             )}
 
@@ -302,16 +305,13 @@ export const AuctionSheetImport = ({
                   Skipped {parsed.skipped.length} line{parsed.skipped.length === 1 ? '' : 's'}
                 </h3>
                 <ul className="dr-import-rows">
-                  {parsed.skipped.slice(0, 8).map((row) => (
+                  {parsed.skipped.map((row) => (
                     <li key={`${row.line}-${row.text}`}>
                       <span className="dr-import-line">line {row.line}</span>
                       <span className="dr-import-name">{row.text}</span>
                       <span className="dr-meter-note">{row.reason}</span>
                     </li>
                   ))}
-                  {parsed.skipped.length > 8 && (
-                    <li className="dr-meter-note">and {parsed.skipped.length - 8} more</li>
-                  )}
                 </ul>
               </section>
             )}
@@ -361,11 +361,48 @@ export const AuctionSheetImport = ({
             check the {lost} row{lost === 1 ? '' : 's'} listed above before applying.
           </p>
         )}
-        {!tooShort && lost > 0 && ids.length > 0 && (
+        {/* The failure between the two checks above.
+            `tooShort` catches a list too concentrated to bid on, and the rows
+            above name every individual loss. What neither catches is a paste
+            that loses a chunk out of the *middle*: the top twenty still price
+            perfectly sensibly, every check passes, and `auctionSheetSize` is
+            now forty rather than sixty — which has re-priced the whole board
+            for an auction the room is not holding. So the share gets its own
+            warning, banded, and the failures can be copied out, because the
+            only useful thing to do with a broken paste is fix it. */}
+        {!tooShort && loss && loss.severity === 'much' && ids.length > 0 && (
+          <p className="dr-league-warning">
+            {loss.lost} of {loss.of} rows did not make it onto the sheet —{' '}
+            {Math.round(loss.share * 100)}% of the paste. Every one is named above. This is usually
+            the paste rather than the sheet: a surname-first export, a defence written in nicknames,
+            or names run together without commas. Applying it anyway auctions {ids.length} players
+            instead of {loss.of}, and the sheet size is what prices the whole board.
+          </p>
+        )}
+        {!tooShort && loss && loss.severity === 'some' && ids.length > 0 && (
           <p className="dr-meter-note">
-            {lost} row{lost === 1 ? '' : 's'} did not make it onto the sheet. Every one is listed
+            {lost} row{lost === 1 ? '' : 's'} did not make it onto the sheet. Every one is named
             above — a name that fits two players is never bound to a guess.
           </p>
+        )}
+        {loss && loss.lost > 0 && (
+          <div className="dr-results-actions" style={{ paddingBottom: 0 }}>
+            <button
+              type="button"
+              className="dr-button"
+              onClick={() => {
+                void copyTextToClipboard(loss.lines.join('\n')).then((ok) =>
+                  setCopiedLoss(ok ? 'copied' : 'failed')
+                );
+              }}
+            >
+              {copiedLoss === 'copied'
+                ? `Copied ${loss.lost}`
+                : copiedLoss === 'failed'
+                  ? 'Clipboard refused — they are listed above'
+                  : `Copy the ${loss.lost} that failed`}
+            </button>
+          </div>
         )}
 
         <div className="dr-results-actions">
