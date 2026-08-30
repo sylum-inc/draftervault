@@ -43,6 +43,15 @@ interface PoolEntry {
     expectedGames: number;
     /** Projected catches. Absent on a pool built before scoring was configurable. */
     receptions?: number;
+    /**
+     * Games of real tape the projection was built from.
+     *
+     * Carried through to the client rather than left in the pool file because
+     * the backtest identified it as the model's worst input — one to sixteen
+     * games is the bucket where it has no ranking signal at all — and
+     * `modelTrust.ts` needs it to say so beside a price.
+     */
+    gamesObserved?: number;
   };
   percentiles?: Record<string, number>;
   usage?: PlayerUsage | null;
@@ -141,6 +150,8 @@ export interface Player {
   percentiles?: Record<string, number>;
   pointsPerGame?: number;
   expectedGames?: number;
+  /** Games of tape behind the projection. See `modelTrust.ts`. */
+  gamesObserved?: number;
   usage?: PlayerUsage | null;
   teamContext?: TeamContext | null;
   durability?: Durability;
@@ -1236,6 +1247,7 @@ export class AuctionDraftService {
             ) / 10
           : entry.projection.pointsPerGame,
       expectedGames: entry.projection.expectedGames,
+      gamesObserved: entry.projection.gamesObserved,
       usage: entry.usage ?? null,
       teamContext: entry.context ?? null,
       durability: entry.durability,

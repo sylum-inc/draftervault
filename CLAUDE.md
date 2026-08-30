@@ -68,6 +68,7 @@ src/hooks/use-draft-server.ts         discovery + autosave, inert with no server
 
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/projection.ts                 the projection model itself (shared)
+src/lib/modelTrust.ts                 where the backtest says not to trust it
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
 src/lib/serverContract.ts             the wire between app and server (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
@@ -1092,6 +1093,22 @@ about CeeDee Lamb by $18.
 
 ### What this means on the night
 
+`src/lib/modelTrust.ts` is where that stops being a document and starts being
+something the room can see. It holds the verdict line the bargain board leads
+with and the three blind spots the backtest actually printed — one to sixteen
+games of tape, thirty and over, tight end — and nothing else, because a caveat
+nobody measured is indistinguishable on screen from the three that were and
+spends their credibility. It renders in two places and they are chosen: the
+bargain board, whose entire subject is the size of a gap, and the nomination
+stage's name line, which is what somebody is looking at while money is on the
+table. A finding that lives only in this file is a finding nobody has at the
+moment a name is called.
+
+It is deliberately not in `draftAdvisor.ts`. The advisor takes a position on a
+player; this states a measured property of our own board, which is a fact and
+belongs with the facts — and it carries no dollar figure for the same reason
+`researchContract.ts` has no price field.
+
 The board is not worthless and it is not an edge over the room's ordering. What
 it is good at is the arithmetic nobody at the table is doing: converting a
 ranking into dollars under _this_ league's scoring and roster shape, tracking
@@ -1208,7 +1225,9 @@ file or on the clipboard; and the model finally measured — extracted into
 held-out seasons against last-season points, a positional floor and real
 draft-market ADP, with the answer written down as it came out rather than as it
 was hoped for: on what a bid actually buys, the room's board beat ours in every
-season, and the advice for the night changed accordingly; 514 tests.
+season, and the advice for the night changed accordingly, with the three blind
+spots it named now flagged on the bargain board and beside the name on the
+block; 522 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

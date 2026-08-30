@@ -9,6 +9,7 @@ import type {
   Team,
 } from '@/services/auctionDraftService';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
+import { modelCaveats } from '@/lib/modelTrust';
 import { Headshot } from './Headshot';
 import { RangeBar } from './charts/RangeBar';
 
@@ -202,6 +203,18 @@ export const NominationStage = ({
             {team}
             {identity?.jersey && <span className="dr-num">#{identity.jersey}</span>}
             {identity?.age && <span className="dr-num">{identity.age}y</span>}
+            {/* Where the backtest found this board least reliable, said at the
+                moment money is on the table rather than only in the browsing
+                panel. `npm run backtest` scores the model against three
+                held-out seasons of real draft-market ADP and the market wins
+                on what a bid buys, so the price two tiles down is worth a
+                caveat exactly here — a finding kept in a document is a finding
+                nobody has while a name is being called. */}
+            {modelCaveats(player).map((caveat) => (
+              <span key={caveat.id} className="dr-bargain-caveat" title={caveat.detail}>
+                {caveat.label}
+              </span>
+            ))}
           </p>
         </div>
       </div>

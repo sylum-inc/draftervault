@@ -2546,6 +2546,32 @@
   overflow-y: auto;
 }
 
+/* What the backtest found, said where the gap is being read rather than only in
+   CLAUDE.md. Sits above the list because it changes how every row below it
+   should be taken, and a footnote under a scrolling list is a footnote nobody
+   reaches. */
+.dr-bargain-verdict {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dr-caution);
+  background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
+  color: var(--dr-dim);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.dr-bargain-caveat {
+  margin-left: 5px;
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--dr-caution) 45%, transparent);
+  border-radius: 2px;
+  color: var(--dr-caution);
+  font-size: 9px;
+  font-style: normal;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 .dr-bargain {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 42px auto;
