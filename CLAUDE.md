@@ -69,6 +69,7 @@ src/hooks/use-draft-server.ts         discovery + autosave, inert with no server
 src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/projection.ts                 the projection model itself (shared)
 src/lib/modelTrust.ts                 where the backtest says not to trust it
+src/lib/consensusBoard.ts             the market's order, our dollars
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
 src/lib/serverContract.ts             the wire between app and server (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
@@ -1117,7 +1118,71 @@ large individually and cancel — in 2025 the model was closer on 9 of the twent
 biggest and last season on 10, right about Christian McCaffrey by $39 and wrong
 about CeeDee Lamb by $18.
 
+### Blending the two does not help, which was worth measuring
+
+The obvious response to that table is an ensemble — two estimators with
+uncorrelated errors usually average to something better than both — and it had
+to be measured rather than assumed, because the obvious response to a table is
+also what produced the wrong headline the first time.
+
+ADP is a draft position with no points behind it, so a blend cannot be an
+average of two numbers; it happens in rank space. Within each position, rank by
+our surplus and by ADP, average the two ranks at weight `w`, then read the
+blended rank back off our own sorted surplus curve. That last step is what makes
+the result a _board_ rather than an ordering: the gaps between surpluses are
+what turn into dollars, so the blend takes its order from both and its shape
+from ours. Within position, because ADP pools positions and blending global
+ranks walks straight back into the confound above.
+
+Sweeping `w` and reporting the best one would be fitting three seasons and
+scoring the same three. So the sweep is printed and labelled in-sample, and the
+honest column is leave-one-season-out — the weight picked on the other two
+seasons and scored on this one:
+
+| season | w=0 (market) | 0.25  | 0.50  | 0.75  | w=1 (ours) | LOO picks |
+| ------ | ------------ | ----- | ----- | ----- | ---------- | --------- |
+| 2023   | **0.510**    | 0.497 | 0.444 | 0.398 | 0.368      | w = 0     |
+| 2024   | **0.482**    | 0.464 | 0.449 | 0.409 | 0.378      | w = 0     |
+| 2025   | 0.481        | 0.482 | 0.467 | 0.454 | 0.428      | w = 0     |
+
+The curve is monotone and leave-one-out picks **zero weight on our own ordering
+in all three seasons**. Averaging only helps when two estimators are comparably
+good; ours is not, so the blend dilutes the better signal. A negative result,
+and the one that decided what got built.
+
 ### What this means on the night
+
+`src/lib/consensusBoard.ts` is that decision as a button. It takes the ordering
+from the consensus already bundled with the pool and the _dollars_ from us —
+which is exactly the `w = 0` board measured above, and the second half is the
+part easy to miss. A rank is not a price. What turns an ordering into dollars is
+the size of the gaps between players, and consensus publishes a rank with no
+gaps in it at all; our surplus curve has them, is derived from this league's own
+scoring and roster shape, and is the one thing the backtest found the board is
+genuinely good at. Permuting values along that curve keeps every dollar the
+league had to spend and only changes who receives them, which a test asserts
+position by position.
+
+It reorders **within a position, never across**, for the same reason the
+headline was wrong: a pooled consensus list ranks the best quarterback above
+every receiver, and letting that cross positions hands the board the positional
+ordering no auction pays for.
+
+It is expressed as overrides and goes through `setCustomRankings` rather than
+being a second pricing mode, because an imported CSV and the built-in consensus
+are the same claim from different sources — somebody else's ordering, our
+dollars — and a second path would be a second place a price is decided.
+Everything the import already earns comes free: the advisor follows it,
+`modelValue` keeps ours beside it, and a draft in progress survives it. It reads
+`modelValue` rather than the live price so that applying it twice lands where
+applying it once did; off the live price it would re-order an already re-ordered
+board and drift a little further on every press.
+
+The honest number is not 628. FantasyPros ranks 383 of them and the panel says
+so; the other 245 keep our price, which is right rather than a gap — they are
+the $1-2 bench players consensus does not bother to rank, they already sit at
+the floor, and inventing a market opinion for them would be inventing the one
+thing the whole module exists to defer to.
 
 `src/lib/modelTrust.ts` is where that stops being a document and starts being
 something the room can see. It holds the verdict line the bargain board leads
@@ -1149,10 +1214,11 @@ that way.
   documented failure profiles, all three years.
 - **Treat everything below the top hundred or so as position labels**, not
   rankings.
-- **Import the commissioner's sheet or a consensus ranking and let it drive**
-  — `RankingsImport` already replaces our values everywhere including in the
-  advice, and `player.modelValue` keeps ours beside it. On this evidence that is
-  the recommended way to run the night, not a fallback.
+- **Press "Use consensus" and let the market drive.** It needs no file: the
+  panel's first control re-prices the board at the bundled consensus, and
+  `player.modelValue` keeps ours beside it. On this evidence that is the
+  recommended way to run the night, not a fallback. An imported commissioner's
+  sheet or a better ranking comes through the same door and overrides it.
 - A dollar figure is worth about what last year's points would have said.
 
 The script takes `--season` (one or a comma-separated list), `--offline` and
@@ -1253,7 +1319,9 @@ draft-market ADP, with the answer written down as it came out rather than as it
 was hoped for: on what a bid actually buys, the room's board beat ours in every
 season, and the advice for the night changed accordingly, with the three blind
 spots it named now flagged on the bargain board and beside the name on the
-block; 522 tests.
+block, a flex that finally moves the prices it should, and the market's own
+ordering one button away because a measured blend of the two was worse than the
+market alone; 545 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

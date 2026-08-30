@@ -16,6 +16,14 @@ interface RankingsImportProps {
   onImport: (overrides: Record<string, RankingOverride>) => void;
   onClear: () => void;
   onClose: () => void;
+  /**
+   * Re-price at the consensus already in the pool, returning what it covered.
+   *
+   * Here rather than in league settings because this is the panel about whose
+   * numbers drive the board, and a built-in consensus is the same claim a
+   * pasted CSV makes from a source that needs no pasting.
+   */
+  onUseConsensus: () => { ranked: number; of: number };
 }
 
 const asCandidates = (players: Player[]): Candidate[] =>
@@ -40,7 +48,9 @@ export const RankingsImport = ({
   onImport,
   onClear,
   onClose,
+  onUseConsensus,
 }: RankingsImportProps) => {
+  const [consensus, setConsensus] = useState<{ ranked: number; of: number } | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState('');
@@ -116,7 +126,42 @@ export const RankingsImport = ({
           </button>
         </header>
 
+        {/* The measured recommendation, above the file picker because it is
+            the one somebody should reach for first. `npm run backtest` swept
+            blends of our ordering against real pre-season ADP over three
+            held-out seasons, and the best weight on our own ordering was zero
+            every time, including under leave-one-season-out. This is that
+            board, and it needs no file. */}
         <section className="dr-modal-section">
+          <h3 className="dr-eyebrow">Recommended · the market&rsquo;s order, our dollars</h3>
+          <p className="dr-meter-note">
+            Measured over three held-out seasons, expert consensus sorted players better than our
+            model in 11 of 12 position-seasons, and every blend of the two scored between them
+            rather than above. This re-prices the board at the consensus already bundled with it —
+            their ordering, our dollar curve, position by position. Nothing to paste.
+          </p>
+          <div className="dr-import-actions">
+            <button
+              type="button"
+              className="dr-button is-primary"
+              onClick={() => {
+                const coverage = onUseConsensus();
+                setConsensus(coverage);
+              }}
+            >
+              Use consensus
+            </button>
+            {consensus && (
+              <span className="dr-meter-note" style={{ margin: 0, alignSelf: 'center' }}>
+                Repriced {consensus.ranked} of {consensus.of}. The rest keep our number — consensus
+                does not rank the dollar tail.
+              </span>
+            )}
+          </div>
+        </section>
+
+        <section className="dr-modal-section">
+          <h3 className="dr-eyebrow">Or bring your own</h3>
           <div className="dr-import-actions">
             <button type="button" className="dr-button" onClick={() => fileRef.current?.click()}>
               Choose CSV…

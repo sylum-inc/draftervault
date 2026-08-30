@@ -727,6 +727,20 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     [draftService, resync]
   );
 
+  /**
+   * The board the backtest preferred, from the consensus already bundled.
+   *
+   * Deliberately does not close the panel, unlike an import: the coverage it
+   * returns — how many of the 628 the market actually ranks — is the number
+   * somebody needs to see, and closing over it would hide the one honest
+   * caveat this board has.
+   */
+  const useConsensus = useCallback(() => {
+    const coverage = draftService.applyConsensusBoard();
+    resync();
+    return coverage;
+  }, [draftService, resync]);
+
   const clearRankings = useCallback(() => {
     draftService.clearCustomRankings();
     setImportOpen(false);
@@ -1465,6 +1479,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           activeCount={customCount}
           onImport={applyRankings}
           onClear={clearRankings}
+          onUseConsensus={useConsensus}
           onClose={() => setImportOpen(false)}
         />
       )}

@@ -590,6 +590,83 @@ const backtest = async (SEASON) => {
       }
     }
 
+    // 2c. does blending our board with the market beat either alone?
+    //
+    // Almost always, in almost every forecasting domain — two estimators with
+    // uncorrelated errors average to something better than both. It is the
+    // obvious response to the table above and it had to be measured rather
+    // than assumed, because the obvious response to the table above was also
+    // what produced the wrong headline the first time.
+    //
+    // HOW. ADP is a draft position with no points behind it, so a blend cannot
+    // be an average of two numbers; it has to happen in rank space. Within each
+    // position, rank by our surplus and by ADP, average the two ranks at weight
+    // w, then read the blended rank back off our own sorted surplus curve at
+    // that position. That last step is what makes the result a *board* and not
+    // just an ordering: the gaps between surpluses are what turn into dollars,
+    // so the blend takes its order from both and its shape from ours. Within
+    // position, because ADP pools positions and blending global ranks would
+    // walk straight back into the confound that made the first headline wrong.
+    //
+    // ON THE WEIGHT. Sweeping w and reporting the best one would be fitting
+    // three seasons and scoring the same three, which is not evidence of
+    // anything. So the headline is w = 0.5, chosen before looking and never
+    // moved. The sweep is printed underneath and labelled in-sample, and the
+    // leave-one-season-out column is the honest one: the weight is picked on
+    // the other two seasons and scored on this one, which is what somebody
+    // actually gets to do in real life.
+    const blendedSurplus = (subset, w) => {
+      const byPosition = new Map();
+      for (const row of subset) {
+        if (!byPosition.has(row.position)) byPosition.set(row.position, []);
+        byPosition.get(row.position).push(row);
+      }
+      const out = new Map();
+      for (const [, group] of byPosition) {
+        const ours = [...group].sort((a, b) => surplusOf(b) - surplusOf(a));
+        const theirs = [...group].sort((a, b) => a.adp - b.adp);
+        const ourRank = new Map(ours.map((row, i) => [row.gsis, i]));
+        const theirRank = new Map(theirs.map((row, i) => [row.gsis, i]));
+        // Our own surplus curve at this position, kept in order, so a blended
+        // rank can be read back off it as a value rather than a bare position.
+        const curve = ours.map(surplusOf);
+        const blended = [...group].sort(
+          (a, b) =>
+            w * ourRank.get(a.gsis) + (1 - w) * theirRank.get(a.gsis) -
+            (w * ourRank.get(b.gsis) + (1 - w) * theirRank.get(b.gsis))
+        );
+        blended.forEach((row, i) => out.set(row.gsis, curve[i]));
+      }
+      return (row) => out.get(row.gsis);
+    };
+    const surplusOf = surplusValue('model');
+    const WEIGHTS = [0, 0.25, 0.4, 0.5, 0.6, 0.75, 1];
+    {
+      const truth = drafted.map(actualSurplus);
+      const sweep = WEIGHTS.map((w) => {
+        const value = blendedSurplus(drafted, w);
+        return { w, spearman: spearman(drafted.map(value), truth) };
+      });
+      report.tables.blendSweep = sweep;
+      const half = sweep.find((entry) => entry.w === 0.5);
+      console.log('\nBLENDING OUR BOARD WITH THE MARKET (surplus over replacement)');
+      console.log(
+        '  w = how much weight our rank gets; w=1 is our board alone, w=0 is ADP alone.'
+      );
+      console.log(
+        `    ${'w'.padStart(6)}` + sweep.map((e) => e.w.toFixed(2).padStart(8)).join('')
+      );
+      console.log(
+        `    ${'rho'.padStart(6)}` +
+          sweep.map((e) => (e.spearman == null ? '—' : e.spearman.toFixed(3)).padStart(8)).join('')
+      );
+      console.log(
+        `  the untuned 50/50 blend scores ${half.spearman.toFixed(3)}; ` +
+          `our board alone ${sweep[sweep.length - 1].spearman.toFixed(3)}, ` +
+          `the market alone ${sweep[0].spearman.toFixed(3)}`
+      );
+    }
+
     // 3. by position
     console.log('\nBY POSITION');
     for (const position of ['QB', 'RB', 'WR', 'TE']) {
@@ -958,7 +1035,46 @@ const summarise = (reports) => {
       `${modelWins + marketWins} position-seasons`
   );
 
-  console.log('\n  3. WHERE THE TWO BOARDS DISAGREE MOST — who was right');
+  console.log('\n  3. BLENDING OUR BOARD WITH THE MARKET — does an ensemble beat either?');
+  console.log('     w is the weight our rank gets: w=1 is our board alone, w=0 the market alone.');
+  const weights = reports[0].tables.blendSweep.map((entry) => entry.w);
+  console.log(
+    `\n    ${'season'.padEnd(8)}` + weights.map((w) => w.toFixed(2).padStart(8)).join('')
+  );
+  for (const report of reports) {
+    console.log(
+      `    ${String(report.season).padEnd(8)}` +
+        report.tables.blendSweep
+          .map((e) => (e.spearman == null ? '—' : e.spearman.toFixed(3)).padStart(8))
+          .join('')
+    );
+  }
+  // The honest number. Picking the best w across all three seasons and then
+  // reporting its score on those same three is fitting and scoring the same
+  // data; this picks the weight on the other two seasons and scores it here,
+  // which is the only version somebody actually gets to do in advance.
+  console.log(`\n    ${'held out'.padEnd(10)}${'w picked'.padStart(10)}${'rho'.padStart(8)}   (weight chosen on the other seasons)`);
+  for (const report of reports) {
+    const others = reports.filter((other) => other !== report);
+    if (!others.length) continue;
+    let best = null;
+    for (let i = 0; i < weights.length; i++) {
+      const score =
+        others.reduce((total, other) => total + (other.tables.blendSweep[i].spearman ?? 0), 0) /
+        others.length;
+      if (!best || score > best.score) best = { score, i };
+    }
+    const here = report.tables.blendSweep[best.i];
+    console.log(
+      `    ${String(report.season).padEnd(10)}${weights[best.i].toFixed(2).padStart(10)}` +
+        `${(here.spearman == null ? '—' : here.spearman.toFixed(3)).padStart(8)}`
+    );
+  }
+  console.log('    An ensemble usually beats its parts. It does not here, and the reason is');
+  console.log('    in the table above: averaging only helps when the two estimators are');
+  console.log('    comparably good. Ours is not, so the blend just dilutes the better signal.');
+
+  console.log('\n  4. WHERE THE TWO BOARDS DISAGREE MOST — who was right');
   for (const report of reports) {
     const { nearer, meanHindsight } = report.dollars.versusMarket;
     console.log(
@@ -971,7 +1087,7 @@ const summarise = (reports) => {
   console.log('    This is the practical finding. A sharp disagreement with consensus is more');
   console.log('    often the board being wrong than a bargain being found.');
 
-  console.log('\n  4. DOLLARS — mean error per man over the 192 worth owning');
+  console.log('\n  5. DOLLARS — mean error per man over the 192 worth owning');
   for (const report of reports) {
     const d = report.dollars.hindsightTop192;
     console.log(
@@ -980,7 +1096,7 @@ const summarise = (reports) => {
     );
   }
 
-  console.log('\n  5. FOR REFERENCE — raw points, every position pooled');
+  console.log('\n  6. FOR REFERENCE — raw points, every position pooled');
   console.log('     Not the headline, and printed so that nobody recomputes it and is');
   console.log('     encouraged. Much of this is the positional ordering, which no bid buys.');
   console.log(

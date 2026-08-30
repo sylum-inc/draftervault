@@ -14,6 +14,7 @@ import {
   type LeagueShape,
 } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
+import { consensusCoverage, consensusOverrides } from '@/lib/consensusBoard';
 
 interface PoolEntry {
   gsis: string;
@@ -2619,6 +2620,41 @@ export class AuctionDraftService {
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
     this.announce();
+  }
+
+  /**
+   * Re-price the board at the market's ordering, from the consensus already in
+   * the pool.
+   *
+   * This is the board `npm run backtest` measured and preferred. Sweeping
+   * blends of our ordering against real pre-season ADP, the best weight on our
+   * own was zero in all three held-out seasons and under leave-one-season-out:
+   * the market alone scored 0.510, 0.482 and 0.481 on surplus over
+   * replacement against our 0.368, 0.378 and 0.428. So this is not a fallback
+   * for a night the import fails; it is the recommended board.
+   *
+   * It goes through `setCustomRankings` rather than being a second pricing
+   * mode, because an imported CSV and the built-in consensus are the same
+   * claim from different sources — somebody else's ordering, our dollars — and
+   * a second path would be a second place a price is decided. Everything the
+   * import already earns comes free: the advisor follows it, `modelValue`
+   * keeps ours beside it, and a draft in progress survives it.
+   *
+   * Returns the coverage, because the honest number is not 628. FantasyPros
+   * ranks 383 of them; the rest keep our price and are the dollar players it
+   * does not bother with.
+   */
+  applyConsensusBoard(): { ranked: number; of: number } {
+    const subjects = this.players.map((player) => ({
+      gsis: player.id,
+      position: player.position,
+      // Our own model's price, never a price an earlier import already moved —
+      // applying this twice must land in the same place as applying it once.
+      auctionValue: player.modelValue,
+      consensusRank: player.market?.consensusRank ?? null,
+    }));
+    this.setCustomRankings(consensusOverrides(subjects));
+    return consensusCoverage(subjects);
   }
 
   /** Drop the import and go back to what the model says. */
