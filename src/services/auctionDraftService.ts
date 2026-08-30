@@ -16,7 +16,7 @@ import {
 } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { consensusCoverage, consensusOverrides } from '@/lib/consensusBoard';
-import { validateMarket, type MarketSnapshot } from '@/lib/marketContract';
+import { validateMarket, type MarketAbsentee, type MarketSnapshot } from '@/lib/marketContract';
 
 interface PoolEntry {
   gsis: string;
@@ -155,6 +155,14 @@ export interface Player {
   expectedGames?: number;
   /** Games of tape behind the projection. See `modelTrust.ts`. */
   gamesObserved?: number;
+  /**
+   * The market drafts him and the pool has never heard of him.
+   *
+   * He carries no projection, so every number on his card is absent rather
+   * than zero, and he is outside the arithmetic that sets replacement level.
+   * True only for entries built from the market snapshot's `absent` list.
+   */
+  marketOnly?: boolean;
   usage?: PlayerUsage | null;
   teamContext?: TeamContext | null;
   durability?: Durability;
@@ -1075,6 +1083,14 @@ export class AuctionDraftService {
     (AuctionDraftService.market?.entries ?? []).map((entry) => [entry.gsis, entry.adp])
   );
 
+  /** Keyed by the synthetic id `buildAbsentee` mints, since they have no gsis. */
+  private static readonly adpByAbsentee: Map<string, number> = new Map(
+    (AuctionDraftService.market?.absent ?? []).map((row) => [
+      `market:${row.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      row.adp,
+    ])
+  );
+
   private overrides: Record<string, RankingOverride> = readStoredOverrides();
   /** The commissioner's sheet, if one has been imported. Empty ids means none. */
   private sheet: StoredSheet = readStoredSheet();
@@ -1144,6 +1160,95 @@ export class AuctionDraftService {
     this.players = entries.map((entry, index) =>
       this.buildPlayer(entry, priced[index], wholeBoard || bought[index], mask !== undefined)
     );
+
+    /*
+     * The players the room drafts that the pool has never heard of.
+     *
+     * Appended *after* pricing, and that ordering is the whole design. They
+     * have no projection — no tape, no usage, no schedule join — so they are
+     * never in the array `pricePool` and `replacementLevels` see. Letting a
+     * player with no projected points into that arithmetic would drag his
+     * position's replacement level down and change every price on the board on
+     * the strength of a number nobody has. So they cost the board nothing and
+     * are simply also on it.
+     *
+     * That leaves them at the dollar floor until the market board is applied,
+     * which is honest rather than convenient: $1 is not a claim that Keenan
+     * Allen is worth a dollar, it is where every player we cannot price sits.
+     * `consensusOverrides` then slots him onto his position's curve at the rank
+     * real drafts give him, which is the only opinion about him anybody has.
+     */
+    for (const absentee of AuctionDraftService.market?.absent ?? []) {
+      this.players.push(this.buildAbsentee(absentee, wholeBoard));
+    }
+  }
+
+  /**
+   * A player the market drafts and the pool lacks, made nominable.
+   *
+   * The zeroes here are not measurements and must never be read as any. `Player`
+   * requires numbers on every headline field, so widening a dozen of them to
+   * null for fifteen players would be a large change to the type every panel
+   * reads. Instead `marketOnly` is the flag that carries "we know nothing", and
+   * the rule it buys is that no panel may print one of these numbers — the same
+   * discipline `draftCost` follows by staying undefined on a snake pick, since
+   * a zero in a sum is indistinguishable from a measurement.
+   *
+   * He is also outside every average the board computes, because he is outside
+   * `pricePool` entirely: these values are only ever read back, never summed.
+   */
+  private buildAbsentee(absentee: MarketAbsentee, wholeBoard: boolean): Player {
+    const id = `market:${absentee.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    // The same override the pool's own players go through. Without it the
+    // market board would price him and the board would keep showing the dollar
+    // floor, which is the one number we know to be meaningless for him.
+    const override = this.overrides[id];
+    const value = override?.value ?? 1;
+    // A commissioner's sheet can name him — he is a candidate the paste matches
+    // against like any other — and `sheetMask` cannot see him because it runs
+    // over pool entries, so his membership is read straight off the sheet.
+    const onSheet = this.sheet.ids.length ? this.sheet.ids.includes(id) : wholeBoard;
+    return {
+      id,
+      name: absentee.name,
+      position: absentee.position as PlayerPosition,
+      team: absentee.team,
+      tier: 4,
+      baseValue: value,
+      estimatedValue: value,
+      modelValue: 1,
+      customRanking: override,
+      onSheet,
+      sheetIsStated: this.sheet.ids.length > 0,
+      projectedPoints: 0,
+      adp: 0,
+      injuryRisk: 'MEDIUM',
+      valueOverReplacement: 0,
+      upside: 0,
+      floor: 0,
+      consistency: 0,
+      byeWeek: 0,
+      ageRisk: 'MEDIUM',
+      competitionLevel: 'MINOR_COMPETITION',
+      recentTrends: 'STABLE',
+      isDrafted: false,
+      /** The one thing known about him, and the reason he is here at all. */
+      marketOnly: true,
+      market: {
+        consensusRank: null,
+        positionRank: null,
+        rawEcr: null,
+        best: null,
+        worst: null,
+        spread: null,
+        ownership: null,
+        searchRank: null,
+        depthChartOrder: null,
+        source: AuctionDraftService.market?.source ?? 'draft market',
+        asOf: AuctionDraftService.market?.to ?? null,
+        edge: null,
+      },
+    } as Player;
   }
 
   /**
@@ -2685,12 +2790,15 @@ export class AuctionDraftService {
    */
   private marketSubjects() {
     const adp = AuctionDraftService.adpByGsis;
+    const absent = AuctionDraftService.adpByAbsentee;
     return this.players.map((player) => ({
       gsis: player.id,
       position: player.position,
       auctionValue: player.modelValue,
       consensusRank: player.market?.consensusRank ?? null,
-      adp: adp.get(player.id) ?? null,
+      // A market-only player has no gsis and no projection; his ADP is the only
+      // thing anybody knows about him, and it is exactly what this needs.
+      adp: adp.get(player.id) ?? absent.get(player.id) ?? null,
     }));
   }
 

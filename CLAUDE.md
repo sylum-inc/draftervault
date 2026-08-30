@@ -1414,7 +1414,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-569 tests.
+577 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1434,6 +1434,35 @@ Open, roughly in order of value:
    things the pick-log-is-the-only-shared-fact rule exists to prevent — so it is
    a real design change rather than a route to add. The published artifact
    cannot have it either way: its CSP blocks every external host.
+
+**A player the room drafts and the pool has never heard of is still draftable.**
+nflverse's roster file lags signings, so Keenan Allen, Stefon Diggs and Deebo
+Samuel were inside the top 230 of real drafts and absent from a pool built the
+same week — and a player the room is taking that this board cannot even put on
+the block is the worst shape a gap can take on the night. `fetch-adp` keeps them
+in the snapshot's `absent` list rather than dropping them, and the engine builds
+them into the board.
+
+The load-bearing part is _where_: they are appended **after** `pricePool` has
+run, so they are never in the array `replacementLevels` sees. A player with no
+projected points inside that arithmetic would drag his position's replacement
+level down and move every price on the board on the strength of a number nobody
+has. They cost the board nothing and are simply also on it.
+
+That leaves them at the dollar floor until the market board is applied, which is
+honest rather than convenient: $1 is not a claim about Keenan Allen, it is where
+every player we cannot price sits. `consensusOverrides` then slots him onto his
+position's curve at the rank real drafts give him — WR60, as it happens, which
+is why he prices at a dollar anyway. The gain here is nominability, not price:
+these are all late-round names, and the point is that a commissioner's sheet
+naming one does not hit a board that has never heard of him.
+
+`Player` requires numbers on a dozen headline fields, so widening them to null
+for fourteen players would be a large change to the type every panel reads.
+Instead `marketOnly` carries "we know nothing", and the rule it buys is that no
+panel may print one of those placeholder zeroes. The card and the nomination
+stage both show `—` and say why; the stage matters most, because "Projected 0"
+beside a bid box reads as a measurement and the measurement does not exist.
 
 ## The night, driven end to end
 

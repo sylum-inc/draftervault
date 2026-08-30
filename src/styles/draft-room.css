@@ -3846,3 +3846,27 @@
   font-size: 11px;
   color: var(--dr-ink-muted);
 }
+
+/* A player the market drafts and the pool has never heard of. Marked rather
+   than quietly shown, because every headline number on his card is a
+   placeholder the type demanded and not a measurement anybody made. */
+.dr-card-marketonly {
+  margin: 4px 0 0;
+  padding: 4px 6px;
+  border-left: 2px solid var(--dr-caution);
+  background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
+  color: var(--dr-dim);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+/* Said on the stage, where money is decided, and not only on the card. */
+.dr-stage-marketonly {
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dr-caution);
+  background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
+  color: var(--dr-dim);
+  font-size: 10px;
+  line-height: 1.45;
+}

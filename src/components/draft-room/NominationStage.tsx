@@ -263,24 +263,42 @@ export const NominationStage = ({
             </div>
           </>
         )}
+        {/* A market-only player carries placeholder zeroes because `Player`
+            requires numbers here. This is the panel where money is decided, so
+            it is the last place that may print one: "Projected 0" beside a bid
+            box reads as a measurement, and the measurement does not exist. */}
         <div className="dr-tile">
           <dt>Projected</dt>
-          <dd>{player.projectedPoints}</dd>
+          <dd>{player.marketOnly ? '—' : player.projectedPoints}</dd>
         </div>
         <div className="dr-tile">
           <dt>VORP</dt>
-          <dd>{player.valueOverReplacement}</dd>
+          <dd>{player.marketOnly ? '—' : player.valueOverReplacement}</dd>
         </div>
       </dl>
 
+      {player.marketOnly && (
+        <p className="dr-stage-marketonly">
+          <strong>No projection.</strong> The pool has never heard of him — nflverse&rsquo;s roster
+          file does not carry him yet. He is on the board because real drafts are taking him
+          {player.customRanking?.rank
+            ? ` around ${player.position}${player.customRanking.rank}`
+            : ''}
+          , and his price is whatever that rank buys on our curve. Every other number here would be
+          invented, so none is shown.
+        </p>
+      )}
+
       <div className="dr-stage-range">
-        <RangeBar
-          floor={player.floor}
-          projection={player.projectedPoints}
-          ceiling={player.upside}
-          replacement={player.projectedPoints - player.valueOverReplacement || undefined}
-        />
-        <div className="dr-stage-signals">
+        {!player.marketOnly && (
+          <RangeBar
+            floor={player.floor}
+            projection={player.projectedPoints}
+            ceiling={player.upside}
+            replacement={player.projectedPoints - player.valueOverReplacement || undefined}
+          />
+        )}
+        <div className="dr-stage-signals" hidden={player.marketOnly}>
           {player.percentiles?.points != null && (
             <span title={`${player.percentiles.points}th percentile among ${player.position}s`}>
               <em>vs {player.position}</em>

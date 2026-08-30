@@ -214,20 +214,31 @@ const PlayerCardView = ({
             ${player.estimatedValue}
           </dd>
         </div>
+        {/* A market-only player carries placeholder zeroes because `Player`
+            requires numbers on these fields, and printing one would state a
+            measurement nobody made — "projected 0" reads identically to a
+            projection of zero. The dash is what we actually know. */}
         <div className="dr-card-stat">
           <dt>Proj</dt>
-          <dd>{player.projectedPoints}</dd>
+          <dd>{player.marketOnly ? '—' : player.projectedPoints}</dd>
         </div>
         <div className="dr-card-stat">
           <dt>Rank</dt>
-          <dd>{player.adp}</dd>
+          <dd>{player.marketOnly ? '—' : player.adp}</dd>
         </div>
       </dl>
+
+      {player.marketOnly && (
+        <p className="dr-card-marketonly">
+          No projection — the pool has never heard of him. He is here because real drafts are taking
+          him, and his price is whatever the market&rsquo;s rank buys on our curve.
+        </p>
+      )}
 
       {/* The three numbers that explain the projection, each with its standing
           in the position — a share means nothing without one. */}
       <div className="dr-card-signals">
-        {signals.map((signal) => (
+        {(player.marketOnly ? [] : signals).map((signal) => (
           <span className="dr-card-signal" key={signal.label} title={signal.title}>
             <em>{signal.label}</em>
             <span className="dr-num">{signal.value}</span>

@@ -113,7 +113,13 @@ const main = async () => {
       continue;
     }
     if (!found) {
-      missing.push(`${row.name} (${position} ${row.team})`);
+      // Kept, not dropped. Some of these are 2026 rookies with no NFL tape and
+      // some are veterans nflverse's roster file has not caught up with — and
+      // the second kind are being taken in real drafts right now. A player the
+      // room drafts but this board cannot even nominate is the worst shape a
+      // gap can take on the night, so the snapshot carries them and the app
+      // makes them draftable.
+      missing.push({ name: row.name, position, team: row.team, adp: row.adp });
       continue;
     }
     entries.push({
@@ -137,6 +143,8 @@ const main = async () => {
     to: feed.meta?.end_date ?? '',
     fetchedAt: new Date().toISOString(),
     entries,
+    // Everybody the market drafts that the pool has never heard of.
+    absent: missing.sort((a, b) => a.adp - b.adp),
   };
 
   // Refuse to write something the client would then refuse to read. The two
@@ -152,8 +160,10 @@ const main = async () => {
     for (const name of ambiguous) console.log(`    ${name}`);
   }
   if (missing.length) {
-    console.log(`  ${missing.length} not in the pool (rookies, cuts, deep bench):`);
-    for (const name of missing.slice(0, 12)) console.log(`    ${name}`);
+    console.log(`  ${missing.length} not in the pool — carried so they stay draftable:`);
+    for (const row of missing.slice(0, 12)) {
+      console.log(`    ADP ${String(row.adp).padStart(5)}  ${row.name} (${row.position} ${row.team})`);
+    }
     if (missing.length > 12) console.log(`    …and ${missing.length - 12} more`);
   }
   console.log(`  ${describeMarket(snapshot)}`);

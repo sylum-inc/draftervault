@@ -42,6 +42,28 @@ export interface MarketRankEntry {
   stdev?: number;
 }
 
+/**
+ * Somebody the market drafts that the pool has never heard of.
+ *
+ * Two kinds, and only one of them is a rookie. nflverse's roster file lags
+ * signings, so established players on new clubs — Keenan Allen, Stefon Diggs,
+ * Deebo Samuel on the 2026 board — can be inside the top 230 of real drafts
+ * and absent from a pool built the same week. A player the room is taking that
+ * this board cannot even put on the block is the worst shape a gap can take on
+ * draft night, so they are carried rather than dropped.
+ *
+ * What is deliberately *not* here is a projection. We have none: no tape, no
+ * usage, no schedule join. Inventing points for them would put a made-up number
+ * into replacement level and out the other side into every price on the board,
+ * which is the one thing the pool's arithmetic must not absorb.
+ */
+export interface MarketAbsentee {
+  name: string;
+  position: string;
+  team: string;
+  adp: number;
+}
+
 export interface MarketSnapshot {
   /** Human-readable provenance, e.g. "Fantasy Football Calculator half-PPR". */
   source: string;
@@ -57,6 +79,8 @@ export interface MarketSnapshot {
   /** When the file was written, ISO. What `marketAge` measures against. */
   fetchedAt: string;
   entries: MarketRankEntry[];
+  /** Drafted by the room, unknown to the pool. May be absent on an old file. */
+  absent?: MarketAbsentee[];
 }
 
 /** The contract number, bumped when the shape changes incompatibly. */
@@ -136,7 +160,17 @@ export const validateMarket = (value: unknown): MarketSnapshot | null => {
     entries.push(entry as MarketRankEntry);
   }
   if (!entries.length) return null;
+  const absent: MarketAbsentee[] = [];
+  for (const row of Array.isArray(snapshot.absent) ? snapshot.absent : []) {
+    if (!row || typeof row !== 'object') continue;
+    const { name, position, team, adp } = row as MarketAbsentee;
+    if (typeof name !== 'string' || !name.trim()) continue;
+    if (typeof position !== 'string' || !position.trim()) continue;
+    if (typeof adp !== 'number' || !Number.isFinite(adp) || adp <= 0) continue;
+    absent.push({ name, position, team: typeof team === 'string' ? team : '', adp });
+  }
   return {
+    absent,
     source: snapshot.source,
     scoring: typeof snapshot.scoring === 'string' ? snapshot.scoring : 'unknown',
     teams: typeof snapshot.teams === 'number' ? snapshot.teams : 0,
