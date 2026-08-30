@@ -15,7 +15,8 @@ import {
   type LeagueShape,
 } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
-import { consensusCoverage, consensusOverrides } from '@/lib/consensusBoard';
+import { consensusCoverage, consensusOverrides, marketOrder } from '@/lib/consensusBoard';
+import { snakeOutlook, type SnakeOutlook } from '@/lib/snakeOutlook';
 import { validateMarket, type MarketAbsentee, type MarketSnapshot } from '@/lib/marketContract';
 
 interface PoolEntry {
@@ -2769,6 +2770,105 @@ export class AuctionDraftService {
     const subjects = this.marketSubjects();
     this.setCustomRankings(consensusOverrides(subjects));
     return consensusCoverage(subjects);
+  }
+
+  /**
+   * What the snake will hand you free, and therefore what a bid is buying.
+   *
+   * The arithmetic specific to this format, and the piece nobody else at the
+   * table is doing. `vorp` measures a player against the last man the *league*
+   * rosters — the sixtieth receiver — which is the right bar only when the
+   * auction buys the whole roster. Here it does not: the alternative is
+   * whoever survives to your own snake slot, and paying for the gap to the
+   * sixtieth receiver when you are only buying the gap to the twenty-fifth is
+   * how a budget disappears into players you did not need to buy.
+   *
+   * The ordering the room is assumed to snake in comes through `marketOrder`,
+   * the same rule the consensus board uses, rather than off the live price:
+   * every off-sheet player is priced at the dollar floor by construction, so
+   * price cannot order the snake pool at all.
+   */
+  getSpendOutlook(): SnakeOutlook {
+    const positions: string[] = ['RB', 'WR', 'TE', 'QB', 'K', 'DST'];
+    if (this.league.auctionSheetSize === null) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason:
+          'This league auctions the whole board, so there is no snake half to measure against.',
+      };
+    }
+    const mine = this.myTeamId;
+    if (!mine) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason:
+          'Mark which team is yours in league settings — an outlook without it is somebody else’s draft.',
+      };
+    }
+    if (!this.getSnakeOrder().length) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason: 'Set the snake order first; where you pick is what decides what survives to you.',
+      };
+    }
+
+    // Where you pick next, counted among snake picks. During the auction this
+    // walks the order from the start, which is exactly the projected snake.
+    const upcoming = this.getSnakeUpcoming(this.teams.length * 3);
+    const yours = upcoming.find((slot) => slot.team.id === mine);
+    if (!yours) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason: 'Your roster is full — the snake has nothing left to hand you.',
+      };
+    }
+
+    // One ordering for the whole board, so a snake pick and an auction buy are
+    // ranked by the same rule. Anybody neither source ranks sorts after
+    // everybody either source does, keeping our own model as the tail-breaker.
+    const ranked = marketOrder(this.marketSubjects());
+    const order = new Map(ranked.map((entry, index) => [entry.gsis, index]));
+    const subject = (player: Player) => ({
+      id: player.id,
+      name: player.name,
+      position: player.position,
+      points: player.projectedPoints,
+      price: player.estimatedValue,
+      order: order.get(player.id) ?? ranked.length + player.adp,
+    });
+
+    const live = this.players.filter((player) => !player.isDrafted);
+    return snakeOutlook({
+      snakePool: live.filter((player) => !player.onSheet).map(subject),
+      forSale: live.filter((player) => player.onSheet).map(subject),
+      yourNextSnakePick: yours.overall,
+      positions,
+    });
+  }
+
+  /**
+   * What buying *this* player gains over the free alternative at his position.
+   *
+   * The panel version ranks positions; this is the same arithmetic pointed at
+   * the man on the block, which is the number somebody needs while money is on
+   * the table. Null when the outlook cannot honestly be computed at all.
+   */
+  gainOverSnake(playerId: string): { gain: number; free: string; freePoints: number } | null {
+    const outlook = this.getSpendOutlook();
+    if (!outlook.positions) return null;
+    const player = this.players.find((entry) => entry.id === playerId);
+    if (!player || player.marketOnly) return null;
+    const row = outlook.positions.find((entry) => entry.position === player.position);
+    if (!row?.free) return null;
+    return {
+      gain: Math.round(player.projectedPoints - row.free.points),
+      free: row.free.name,
+      freePoints: row.free.points,
+    };
   }
 
   /** What the market says, or null when no snapshot is bundled. */

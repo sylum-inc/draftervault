@@ -48,6 +48,7 @@ src/pages/Index.tsx
         ├── DraftBoard.tsx        the room: 12x16 grid, money flow, tier depletion
         ├── PickEditor.tsx        correcting one pick, from the cell showing it
         ├── BudgetPlanner.tsx     what a bid leaves behind, live
+        ├── SpendOutlook.tsx      where money beats the snake, and where it does not
         ├── BargainBoard.tsx      our board against expert consensus
         ├── AdvisorPanel.tsx      the opinion layer, off by default
         ├── DraftFile.tsx         save the draft to a file, or load one
@@ -71,6 +72,7 @@ src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/projection.ts                 the projection model itself (shared)
 src/lib/modelTrust.ts                 where the backtest says not to trust it
 src/lib/consensusBoard.ts             the market's order, our dollars
+src/lib/snakeOutlook.ts               what the snake gives free, so a bid has a bar
 src/lib/marketContract.ts             what a market snapshot is (shared)
 src/data/nfl/market-adp.json          live half-PPR ADP, keyed by gsis (generated)
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
@@ -1414,7 +1416,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-577 tests.
+593 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1434,6 +1436,45 @@ Open, roughly in order of value:
    things the pick-log-is-the-only-shared-fact rule exists to prevent — so it is
    a real design change rather than a route to add. The published artifact
    cannot have it either way: its CSP blocks every external host.
+
+**What the snake gives you free is what a bid is competing with, and `vorp` is
+the wrong bar for it.** This is the one piece of arithmetic here that is
+specific to the format, and it is the piece nobody else at the table is doing.
+In an ordinary auction every roster spot has to be bought, so the only question
+is how to divide the money. Here fifty-odd are bought and eleven or twelve seats
+a team are snaked for nothing, with no minimum anybody must spend — so the
+question is not what a player is worth, it is how much better he is than the man
+you get for free at the same position.
+
+VORP cannot answer that, and the reason is worth stating rather than treating
+this as a refinement of it. VORP measures against the last man the _league_
+rosters — about the sixtieth receiver — which is right when the auction buys the
+whole roster, because then he really is the alternative. Here he is not: the
+alternative is whoever survives to _your_ snake slot. Paying for the gap to the
+sixtieth receiver when you are only buying the gap to the twenty-fifth is how a
+budget disappears into players nobody needed to buy.
+
+`snakeOutlook` takes two orders and **using one for both is the mistake the
+whole module exists to prevent**. Who is _gone_ is the room's call, so it comes
+off the room's order — the market's, through the same `marketOrder` the
+consensus board uses, because every off-sheet player is priced at the dollar
+floor by construction and price cannot order the snake pool at all. Who _you
+take_ from what is left is your call, and you take the best of them by projected
+points. Ordering both by the room inflates the gain, sometimes wildly: on the
+shipped board it made the best free back a rookie the market likes and this
+model does not, at 61 points, when a back worth two and a half times that was
+sitting untaken beside him — and the auction then looked like the only way to
+get a running back, which is exactly the conclusion a budget should not be spent
+on. The corrected numbers at half PPR with one flex, picking third: RB and WR
+buy 1.4 points a dollar, quarterback and tight end 1.1, and Josh Allen at $63
+buys seventy-one points over a Dak Prescott the snake hands you.
+
+It refuses rather than guesses on every input it lacks — no sheet, no team
+marked as yours, no snake order — because an outlook computed without knowing
+where you pick is an outlook for somebody else's draft and looks exactly as
+authoritative as a real one. The same number is pointed at the man on the block
+from the nomination stage, since that is where it is needed while money is on
+the table.
 
 **A player the room drafts and the pool has never heard of is still draftable.**
 nflverse's roster file lags signings, so Keenan Allen, Stefon Diggs and Deebo

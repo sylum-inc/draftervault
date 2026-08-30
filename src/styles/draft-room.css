@@ -3870,3 +3870,100 @@
   font-size: 10px;
   line-height: 1.45;
 }
+
+/* ---- what money buys over the snake -------------------------------------
+   The panel specific to a hybrid draft: the gain is in points, so the bar is
+   scaled on points and the rate is kept beside it rather than replacing it —
+   a big gain at a big price is a different decision from a big gain cheap. */
+
+.dr-outlook {
+  padding: 10px;
+}
+
+.dr-outlook-verdict {
+  margin: 6px 0 10px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dr-value);
+  background: color-mix(in srgb, var(--dr-value) 8%, transparent);
+  color: var(--dr-ink-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.dr-outlook-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.dr-outlook-list li {
+  padding: 7px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--dr-line) 55%, transparent);
+}
+
+.dr-outlook-list li:last-child {
+  border-bottom: 0;
+}
+
+.dr-outlook-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dr-outlook-gain {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dr-outlook-rate {
+  color: var(--dr-ink-faint);
+  font-size: 10px;
+  min-width: 38px;
+  text-align: right;
+}
+
+.dr-outlook-gap {
+  height: 3px;
+  margin: 5px 0 5px;
+  background: color-mix(in srgb, var(--dr-line) 70%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.dr-outlook-fill {
+  display: block;
+  height: 100%;
+  background: var(--dr-value);
+}
+
+.dr-outlook-fill.is-flat {
+  background: var(--dr-ink-faint);
+}
+
+.dr-outlook-detail {
+  margin: 0;
+  font-size: 10px;
+  color: var(--dr-ink-muted);
+}
+
+.dr-outlook-free {
+  color: var(--dr-ink-faint);
+}
+
+.dr-outlook-none {
+  font-style: italic;
+}
+
+/* The hybrid's decisive number, said where the bid is being typed. */
+.dr-stage-snakegain {
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dr-line-strong);
+  color: var(--dr-ink-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
