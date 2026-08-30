@@ -37,11 +37,12 @@
       "K": 12,
       "DST": 12
     },
-    "receptionPoints": 1
+    "receptionPoints": 1,
+    "auctionSheetSize": null
   },
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-29T03:19:01.655Z",
+  "generatedAt": "2026-08-30T14:49:42.571Z",
   "season": 2025,
   "teams": {
     "ARI": {

@@ -1480,6 +1480,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           onImport={applyRankings}
           onClear={clearRankings}
           onUseConsensus={useConsensus}
+          market={draftService.getMarketSnapshot()}
           onClose={() => setImportOpen(false)}
         />
       )}

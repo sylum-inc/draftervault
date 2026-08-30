@@ -43,7 +43,51 @@ export interface ConsensusSubject {
   auctionValue: number;
   /** Where the market has him. Null or absent means we keep our own number. */
   consensusRank?: number | null;
+  /**
+   * Average draft position, when a market snapshot is bundled.
+   *
+   * Preferred over `consensusRank` wherever it exists, because ADP is the
+   * signal `npm run backtest` actually measured — thousands of real half-PPR
+   * drafts — while expert consensus is an analyst panel that was substituted
+   * for it without evidence. They disagree where it costs most: on the 2026
+   * board ADP has Gibbs, Bijan, Nacua, Chase and consensus has Chase, Gibbs,
+   * Nacua, Bijan.
+   *
+   * ADP does not replace consensus, it outranks it. Real drafts stop caring
+   * after about 230 players where consensus ranks 383, so a player with a
+   * consensus rank and no ADP is by definition one the room was not drafting
+   * — he sorts after every ADP'd player at his position, in consensus order.
+   * That is an ordering claim both sources agree on rather than a splice of
+   * two incompatible scales.
+   */
+  adp?: number | null;
 }
+
+/** Which signal spoke for a player, so the panel can name it honestly. */
+export type MarketSource = 'adp' | 'consensus' | 'none';
+
+/**
+ * One ordering out of two sources, without ever comparing their numbers.
+ *
+ * The tempting mistake is to blend an ADP of 41.2 with a consensus rank of 55
+ * — different scales measuring different things, and the average is not a
+ * quantity. What is comparable is the *claim*: a player real drafts took is
+ * ahead of a player real drafts did not take. So ADP sorts among ADP, consensus
+ * sorts among consensus, and every ADP'd player precedes every one that is not.
+ */
+export const marketOrder = (
+  players: readonly ConsensusSubject[]
+): Array<ConsensusSubject & { marketSource: MarketSource }> => {
+  const drafted = players
+    .filter((player) => player.adp != null)
+    .sort((a, b) => (a.adp as number) - (b.adp as number))
+    .map((player) => ({ ...player, marketSource: 'adp' as const }));
+  const rankedOnly = players
+    .filter((player) => player.adp == null && player.consensusRank != null)
+    .sort((a, b) => (a.consensusRank as number) - (b.consensusRank as number))
+    .map((player) => ({ ...player, marketSource: 'consensus' as const }));
+  return [...drafted, ...rankedOnly];
+};
 
 /**
  * Overrides that reprice the board at consensus, in the same shape an imported
@@ -60,9 +104,13 @@ export interface ConsensusSubject {
 export const consensusOverrides = (
   players: readonly ConsensusSubject[]
 ): Record<string, RankingOverride> => {
-  const byPosition = new Map<string, ConsensusSubject[]>();
-  for (const player of players) {
-    if (player.consensusRank == null) continue;
+  // One ordering first, then split by position. Doing it this way round is what
+  // keeps ADP and consensus from being interleaved by number: the global order
+  // already encodes "drafted before not drafted", and the per-position pass
+  // only ever preserves it.
+  const ordered = marketOrder(players);
+  const byPosition = new Map<string, Array<(typeof ordered)[number]>>();
+  for (const player of ordered) {
     const list = byPosition.get(player.position);
     if (list) list.push(player);
     else byPosition.set(player.position, [player]);
@@ -72,19 +120,11 @@ export const consensusOverrides = (
   for (const [, group] of byPosition) {
     // Our prices at this position, largest first: the curve, kept intact.
     const curve = group.map((player) => player.auctionValue).sort((a, b) => b - a);
-    // The same players in the market's order. Ties broken by our own price, so
-    // the result is deterministic rather than dependent on pool order — two
-    // runs disagreeing about a dollar is the kind of thing nobody notices until
-    // a second window shows a different number.
-    const ordered = [...group].sort(
-      (a, b) =>
-        (a.consensusRank as number) - (b.consensusRank as number) || b.auctionValue - a.auctionValue
-    );
-    ordered.forEach((player, index) => {
+    group.forEach((player, index) => {
       overrides[player.gsis] = {
         value: curve[index],
-        rank: player.consensusRank as number,
-        notes: 'consensus',
+        rank: index + 1,
+        notes: player.marketSource === 'adp' ? 'adp' : 'consensus',
       };
     });
   }
@@ -94,7 +134,10 @@ export const consensusOverrides = (
 /** How many of a pool the market actually has an opinion about. */
 export const consensusCoverage = (
   players: readonly ConsensusSubject[]
-): { ranked: number; of: number } => ({
-  ranked: players.filter((player) => player.consensusRank != null).length,
-  of: players.length,
-});
+): { ranked: number; of: number; fromAdp: number; fromConsensus: number } => {
+  const fromAdp = players.filter((player) => player.adp != null).length;
+  const fromConsensus = players.filter(
+    (player) => player.adp == null && player.consensusRank != null
+  ).length;
+  return { ranked: fromAdp + fromConsensus, of: players.length, fromAdp, fromConsensus };
+};

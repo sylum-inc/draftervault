@@ -91,16 +91,22 @@ describe('consensusBoard', () => {
     expect(twice().b.value).toBe(10);
   });
 
-  it('carries the market rank and marks whose number it is', () => {
-    const out = consensusOverrides([player('a', 'QB', 15, 7)]);
-    expect(out.a.rank).toBe(7);
+  it('carries the market’s position rank and marks which source spoke', () => {
+    // The stored rank is the player's place among his own position on the
+    // market's ordering, not the raw ADP or the raw consensus number. With two
+    // sources feeding one ordering, a raw figure would be incomparable between
+    // rows — 41.2 from real drafts beside 55 from a panel — while a position
+    // index means the same thing whichever source produced it.
+    const out = consensusOverrides([player('a', 'QB', 15, 7), player('b', 'QB', 9, 2)]);
+    expect(out.b.rank).toBe(1);
+    expect(out.a.rank).toBe(2);
     expect(out.a.notes).toBe('consensus');
   });
 
   it('reports how much of the pool the market actually covers', () => {
     expect(
       consensusCoverage([player('a', 'WR', 1, 4), player('b', 'WR', 1), player('c', 'WR', 1, 9)])
-    ).toEqual({ ranked: 2, of: 3 });
+    ).toEqual({ ranked: 2, of: 3, fromAdp: 0, fromConsensus: 2 });
   });
 
   it('handles an empty pool and a pool nobody ranks', () => {

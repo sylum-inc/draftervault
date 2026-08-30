@@ -8,6 +8,7 @@ import {
   type RankingOverride,
 } from '@/lib/rankingsCsv';
 import type { Player } from '@/services/auctionDraftService';
+import { describeMarket, marketFreshness, type MarketSnapshot } from '@/lib/marketContract';
 
 interface RankingsImportProps {
   players: Player[];
@@ -23,7 +24,9 @@ interface RankingsImportProps {
    * numbers drive the board, and a built-in consensus is the same claim a
    * pasted CSV makes from a source that needs no pasting.
    */
-  onUseConsensus: () => { ranked: number; of: number };
+  onUseConsensus: () => { ranked: number; of: number; fromAdp: number; fromConsensus: number };
+  /** The bundled draft-market snapshot, so the panel can date what it offers. */
+  market: MarketSnapshot | null;
 }
 
 const asCandidates = (players: Player[]): Candidate[] =>
@@ -49,8 +52,15 @@ export const RankingsImport = ({
   onClear,
   onClose,
   onUseConsensus,
+  market,
 }: RankingsImportProps) => {
-  const [consensus, setConsensus] = useState<{ ranked: number; of: number } | null>(null);
+  const [consensus, setConsensus] = useState<{
+    ranked: number;
+    of: number;
+    fromAdp: number;
+    fromConsensus: number;
+  } | null>(null);
+  const freshness = marketFreshness(market);
   const closeRef = useRef<HTMLButtonElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState('');
@@ -135,10 +145,27 @@ export const RankingsImport = ({
         <section className="dr-modal-section">
           <h3 className="dr-eyebrow">Recommended · the market&rsquo;s order, our dollars</h3>
           <p className="dr-meter-note">
-            Measured over three held-out seasons, expert consensus sorted players better than our
+            Measured over three held-out seasons, the draft market sorted players better than our
             model in 11 of 12 position-seasons, and every blend of the two scored between them
-            rather than above. This re-prices the board at the consensus already bundled with it —
-            their ordering, our dollar curve, position by position. Nothing to paste.
+            rather than above. This re-prices the board at the market bundled with it — their
+            ordering, our dollar curve, position by position. Nothing to paste.
+          </p>
+          {/* Once a market signal drives the board, its age is a property of the
+              board rather than housekeeping. Pre-season ADP moves fastest in the
+              fortnight before week one, and those are exactly the moves the
+              ordering is now taken from — so the date sits beside the button
+              that uses it, and is banded rather than merely printed. */}
+          <p
+            className={freshness === 'stale' ? 'dr-league-warning' : 'dr-meter-note'}
+            data-freshness={freshness}
+          >
+            {describeMarket(market)}
+            {freshness === 'stale' &&
+              ' A board ordered by month-old drafts is ordered by a room that has since changed its mind. Run npm run fetch:adp and rebuild before drafting.'}
+            {freshness === 'ageing' &&
+              ' Worth running npm run fetch:adp if the draft is not today.'}
+            {market == null &&
+              ' Falling back to the expert consensus baked into the pool, which is an analyst panel rather than the real drafts the backtest measured.'}
           </p>
           <div className="dr-import-actions">
             <button
@@ -153,8 +180,9 @@ export const RankingsImport = ({
             </button>
             {consensus && (
               <span className="dr-meter-note" style={{ margin: 0, alignSelf: 'center' }}>
-                Repriced {consensus.ranked} of {consensus.of}. The rest keep our number — consensus
-                does not rank the dollar tail.
+                Repriced {consensus.ranked} of {consensus.of} — {consensus.fromAdp} from real
+                drafts, {consensus.fromConsensus} from expert consensus where drafts stop. The rest
+                keep our number; neither source ranks the dollar tail.
               </span>
             )}
           </div>

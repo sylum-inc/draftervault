@@ -715,15 +715,50 @@ const main = async () => {
       Math.round(MAX_ROSTERED[position] * headroom),
     ])
   );
-  const chosen = [];
+  /*
+   * A kicker's demand is one per club, and a global top-32 does not know that.
+   *
+   * Kickers were admitted by projected points alone against a cap of exactly
+   * 32, which produced 32 kickers spread across 30 clubs: Miami and
+   * Indianapolis each had two, and Buffalo and New Orleans had none — while
+   * every one of the 32 clubs carries a kicker on the roster file. Two backups
+   * were on the board and two starters were not, so the Bills' kicker could not
+   * be nominated at all. Every other position is a genuine talent pool where
+   * the best N is the right answer; a kicker is a job, exactly one per club,
+   * and the same is true of a defence.
+   *
+   * So one pass per club first, then the ordinary cap fills whatever is left.
+   * `candidates` is already sorted by projected points, so each club
+   * contributes its own best and the leftovers are still admitted worst-last —
+   * which keeps the property the caps rely on, that anything a bigger cap adds
+   * is worse than everything already in.
+   */
+  const ONE_PER_CLUB = new Set(['K', 'DST']);
+  const order = new Map(candidates.map((player, index) => [player, index]));
   const counts = new Map();
+  const claimed = new Set();
+  const picked = new Set();
+  const take = (player) => {
+    picked.add(player);
+    counts.set(player.position, (counts.get(player.position) ?? 0) + 1);
+  };
   for (const player of candidates) {
-    const cap = CAPS[player.position] ?? 0;
-    const count = counts.get(player.position) ?? 0;
-    if (count >= cap) continue;
-    chosen.push(player);
-    counts.set(player.position, count + 1);
+    if (!ONE_PER_CLUB.has(player.position)) continue;
+    const seat = `${player.position}:${player.team}`;
+    if (claimed.has(seat)) continue;
+    claimed.add(seat);
+    take(player);
   }
+  for (const player of candidates) {
+    if (picked.has(player)) continue;
+    const cap = CAPS[player.position] ?? 0;
+    if ((counts.get(player.position) ?? 0) >= cap) continue;
+    take(player);
+  }
+  // Order is load-bearing downstream — ranks, tiers and the market join all
+  // read this array — so it goes back into projected-points order rather than
+  // keeping the per-club pass at the front.
+  const chosen = [...picked].sort((a, b) => order.get(a) - order.get(b));
 
   // --- bye weeks, from the season's published schedule ----------------------
   const playedWeeks = new Map();

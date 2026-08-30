@@ -20,6 +20,7 @@ npm run build:single # one self-contained HTML file in dist-single/
 npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 628-player pool from nflverse production data
+npm run fetch:adp    # refresh the draft market alone, in seconds, before draft day
 npm run backtest     # score the projection model against 2023-25, and the baselines
 npm run build:icons  # redraw the app icons (CI checks they match)
 OPENROUTER_API_KEY=sk-or-... npm run research:players   # web-research the pool
@@ -70,6 +71,8 @@ src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/projection.ts                 the projection model itself (shared)
 src/lib/modelTrust.ts                 where the backtest says not to trust it
 src/lib/consensusBoard.ts             the market's order, our dollars
+src/lib/marketContract.ts             what a market snapshot is (shared)
+src/data/nfl/market-adp.json          live half-PPR ADP, keyed by gsis (generated)
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
 src/lib/serverContract.ts             the wire between app and server (shared)
 src/lib/rankingsCsv.ts                parsing and matching an imported ranking
@@ -91,6 +94,7 @@ src/data/nfl/team-context.json        per-offence pace, PROE, red-zone rate
 scripts/build-player-pool.mjs         builds the pool from nflverse
 scripts/backtest-projections.mjs      scores the model against seasons that happened
 scripts/nflverse.mjs                  reading those files, shared by both
+scripts/fetch-adp.mjs                 the draft market, refreshed on its own
 scripts/fetch-nfl-data.mjs            builds team identity from ESPN
 scripts/build-icons.mjs               draws public/icons/ with no image library
 server/index.mjs                      the optional server: config, HTTP, static
@@ -963,6 +967,18 @@ difficulty from the 2026 schedule, floor and ceiling from one standard deviation
 of the season total, consistency from weekly variance, injury risk from games
 actually missed, and percentiles from the position's own distribution.
 
+**A kicker is a job, not a talent pool.** Every position was admitted by
+projected points against a cap, which is right for a genuine pool and wrong for
+a position where demand is exactly one per club. It produced 32 kickers spread
+across 30 clubs — Miami and Indianapolis with two, Buffalo and New Orleans with
+none — while all 32 clubs carry a kicker on the roster file. Two backups were
+on the board and two starters were not, so the Bills' kicker could not be
+nominated at all. `K` and `DST` now claim one seat per club first and the
+ordinary cap fills what is left. It swapped exactly one player (Riley Patterson
+out, Tyler Bass in) and moved not one price. New Orleans still has none, and
+that is correct rather than a residue: their two kickers are a practice-squad
+player and an undrafted rookie with no tape, so the job is genuinely open.
+
 **The pool has to be deeper than the biggest league it serves.** A position
 shorter than the league rosters does not error — `replacementLevels` falls back
 to the worst player it has, which quietly understates that whole position. The
@@ -1181,6 +1197,47 @@ in all three seasons**. Averaging only helps when two estimators are comparably
 good; ours is not, so the blend dilutes the better signal. A negative result,
 and the one that decided what got built.
 
+### The signal that was measured, and the one that shipped
+
+Worth recording because it was a real hole rather than a refinement. The
+backtest measured **ADP** — thousands of real half-PPR drafts from Fantasy
+Football Calculator. The "Use consensus" button then shipped driven by
+**FantasyPros ECR**, an analyst panel, purely because that is what the pool
+happened to carry. Those are different signals, the substitution was never
+measured, and they disagree exactly where it costs most: on the 2026 board live
+ADP has Gibbs, Bijan, Nacua, Chase and consensus has Chase, Gibbs, Nacua,
+Bijan — the four most expensive players in the auction.
+
+So `market-adp.json` is now bundled beside the pool and ADP outranks consensus
+wherever it exists. It does not _replace_ it: real drafts stop caring after
+about 230 players where consensus ranks 383, so a player with a consensus rank
+and no ADP is by definition one the room was not drafting, and he sorts after
+every ADP'd player at his position. That is an ordering claim both sources
+agree on rather than a splice of two incompatible scales — an ADP of 41.2 and a
+consensus rank of 55 measure different things and their average is not a
+quantity. `marketOrder` is the one place that rule lives, and the coverage the
+panel reports is split by source so neither can claim the other's players.
+
+`scripts/fetch-adp.mjs` is a separate script writing a separate file, and that
+is the point. Once a market signal _drives_ the board its freshness stops being
+housekeeping — pre-season ADP moves fastest in the fortnight before week one,
+and those are precisely the moves the ordering is now taken from. The bundled
+consensus can only be refreshed by `build:pool`, which downloads nineteen
+megabytes of play-by-play; this is one small endpoint, so the number the board
+is about to be priced from can be refreshed on the morning of the draft.
+`marketAge` measures from the last day of drafts sampled rather than from when
+the file was written, because re-downloading an unchanged file does not make
+the market any newer, and a refresh reporting "fetched today" over week-old
+drafts is the one reassurance this must withhold.
+
+The join is on names, which is the single place in this codebase one has to be:
+the feed carries no ids. It follows the rule `rankingsCsv` and `auctionSheet`
+already live by — a name matching two players matches neither — and reuses the
+backtest's own normaliser rather than a second one, because the backtest's
+resolved rows are the only evidence this join works at all. On the shipped pool
+that is 217 of 232 matched with none ambiguous; the fifteen misses are 2026
+rookies and free agents nflverse's roster file does not carry.
+
 ### What this means on the night
 
 `src/lib/consensusBoard.ts` is that decision as a button. It takes the ordering
@@ -1354,7 +1411,10 @@ block, a flex that finally moves the prices it should, and the market's own
 ordering one button away because a measured blend of the two was worse than the
 market alone, a sheet paste that says how much of itself it lost and hands the
 failures back to be fixed, a bargain board sorted by money rather than by rank,
-and 73,407 lines of dead tree finally gone; 555 tests.
+73,407 lines of dead tree finally gone, and the board finally ordered by the
+signal that was actually measured — live half-PPR ADP, refreshable on its own in
+seconds, with expert consensus extending it past where real drafts stop;
+569 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

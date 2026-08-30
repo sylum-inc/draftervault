@@ -37,11 +37,12 @@
       "K": 12,
       "DST": 12
     },
-    "receptionPoints": 1
+    "receptionPoints": 1,
+    "auctionSheetSize": null
   },
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-29T03:19:01.655Z",
+  "generatedAt": "2026-08-30T14:49:42.571Z",
   "history": {
     "00-0034857": [
       {
@@ -11765,29 +11766,6 @@
         "yardsAfterCatch": 0
       }
     ],
-    "00-0036816": [
-      {
-        "season": 2025,
-        "team": "MIA",
-        "games": 17,
-        "pprPoints": 132,
-        "pointsPerGame": 7.8,
-        "targets": 0,
-        "receptions": 0,
-        "receivingYards": 0,
-        "receivingTds": 0,
-        "carries": 0,
-        "rushingYards": 0,
-        "rushingTds": 0,
-        "passingYards": 0,
-        "passingTds": 0,
-        "interceptions": 0,
-        "targetShare": null,
-        "weekly": [0, 11, 3, 10, 7, 10, 6, 10, 8, 7, 11, 14, 13, 5, 3, 8, 6],
-        "airYards": 0,
-        "yardsAfterCatch": 0
-      }
-    ],
     "00-0040126": [
       {
         "season": 2025,
@@ -22351,6 +22329,7 @@
     "00-0040653": [],
     "00-0040753": [],
     "00-0038097": [],
+    "00-0036162": [],
     "DST-DEN": [],
     "DST-SEA": [],
     "DST-HOU": [],
@@ -30358,16 +30337,6 @@
         "games": 9,
         "pprPoints": 81,
         "pointsPerGame": 9,
-        "age": 26
-      }
-    ],
-    "00-0036816": [
-      {
-        "season": 2025,
-        "team": "MIA",
-        "games": 17,
-        "pprPoints": 132,
-        "pointsPerGame": 7.8,
         "age": 26
       }
     ],

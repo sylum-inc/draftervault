@@ -37,11 +37,12 @@
       "K": 12,
       "DST": 12
     },
-    "receptionPoints": 1
+    "receptionPoints": 1,
+    "auctionSheetSize": null
   },
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-29T03:19:01.655Z",
+  "generatedAt": "2026-08-30T14:49:42.571Z",
   "players": [
     {
       "gsis": "00-0034857",
@@ -7356,7 +7357,7 @@
         "starterAhead": "Patrick Mahomes"
       },
       "market": {
-        "consensusRank": 354,
+        "consensusRank": 355,
         "positionRank": 36,
         "rawEcr": 341.64,
         "best": 293,
@@ -7367,7 +7368,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 179
+        "edge": 180
       }
     },
     {
@@ -8343,7 +8344,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 288,
+        "consensusRank": 289,
         "positionRank": 33,
         "rawEcr": 298.07,
         "best": 214,
@@ -8354,7 +8355,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 108
+        "edge": 109
       }
     },
     {
@@ -8703,7 +8704,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 278,
+        "consensusRank": 279,
         "positionRank": 32,
         "rawEcr": 289.61,
         "best": 179,
@@ -8714,7 +8715,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 95
+        "edge": 96
       }
     },
     {
@@ -9595,7 +9596,7 @@
         "starterAhead": "Jaxson Dart"
       },
       "market": {
-        "consensusRank": 364,
+        "consensusRank": 365,
         "positionRank": 39,
         "rawEcr": 349.65,
         "best": 321,
@@ -9606,7 +9607,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 174
+        "edge": 175
       }
     },
     {
@@ -9722,7 +9723,7 @@
         "starterAhead": "Sam Hartman"
       },
       "market": {
-        "consensusRank": 363,
+        "consensusRank": 364,
         "positionRank": 38,
         "rawEcr": 349.62,
         "best": 297,
@@ -9733,7 +9734,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 172
+        "edge": 173
       }
     },
     {
@@ -11202,7 +11203,7 @@
         "starterAhead": "Brock Purdy"
       },
       "market": {
-        "consensusRank": 345,
+        "consensusRank": 346,
         "positionRank": 35,
         "rawEcr": 333.97,
         "best": 287,
@@ -11213,7 +11214,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 149
+        "edge": 150
       }
     },
     {
@@ -11399,7 +11400,7 @@
         "starterAhead": "Malik Willis"
       },
       "market": {
-        "consensusRank": 365,
+        "consensusRank": 366,
         "positionRank": 40,
         "rawEcr": 351.75,
         "best": 343,
@@ -11410,7 +11411,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 167
+        "edge": 168
       }
     },
     {
@@ -11662,7 +11663,7 @@
         "starterAhead": "Sean Clifford"
       },
       "market": {
-        "consensusRank": 357,
+        "consensusRank": 358,
         "positionRank": 37,
         "rawEcr": 344.63,
         "best": 296,
@@ -11673,7 +11674,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 157
+        "edge": 158
       }
     },
     {
@@ -12232,7 +12233,7 @@
         "starterAhead": "Kedon Slovis"
       },
       "market": {
-        "consensusRank": 318,
+        "consensusRank": 319,
         "positionRank": 34,
         "rawEcr": 319.43,
         "best": 284,
@@ -12243,7 +12244,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 112
+        "edge": 113
       }
     },
     {
@@ -22577,7 +22578,7 @@
       "percentiles": {
         "points": 100,
         "pointsPerGame": 97,
-        "consistency": 74,
+        "consistency": 73,
         "ceiling": 90,
         "floor": 100,
         "carryShare": 0,
@@ -23264,7 +23265,7 @@
         "starterAhead": "Jacory Croskey-Merritt"
       },
       "market": {
-        "consensusRank": 285,
+        "consensusRank": 286,
         "positionRank": 89,
         "rawEcr": 295.27,
         "best": 219,
@@ -23275,7 +23276,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 158
+        "edge": 159
       }
     },
     {
@@ -23768,7 +23769,7 @@
       "percentiles": {
         "points": 97,
         "pointsPerGame": 94,
-        "consistency": 26,
+        "consistency": 27,
         "ceiling": 87,
         "floor": 84,
         "carryShare": 100,
@@ -24329,7 +24330,7 @@
         "starterAhead": "Romeo Doubs"
       },
       "market": {
-        "consensusRank": 286,
+        "consensusRank": 287,
         "positionRank": 92,
         "rawEcr": 295.65,
         "best": 176,
@@ -24340,7 +24341,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 131
+        "edge": 132
       }
     },
     {
@@ -25109,7 +25110,7 @@
       "percentiles": {
         "points": 94,
         "pointsPerGame": 90,
-        "consistency": 74,
+        "consistency": 73,
         "ceiling": 84,
         "floor": 90,
         "carryShare": 0,
@@ -25532,7 +25533,7 @@
         "starterAhead": "Tyler Allgeier"
       },
       "market": {
-        "consensusRank": 295,
+        "consensusRank": 296,
         "positionRank": 92,
         "rawEcr": 301.44,
         "best": 201,
@@ -25543,7 +25544,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 141
+        "edge": 142
       }
     },
     {
@@ -25913,7 +25914,7 @@
       "percentiles": {
         "points": 90,
         "pointsPerGame": 77,
-        "consistency": 26,
+        "consistency": 27,
         "ceiling": 65,
         "floor": 84,
         "carryShare": 0,
@@ -26034,7 +26035,7 @@
       "percentiles": {
         "points": 87,
         "pointsPerGame": 84,
-        "consistency": 26,
+        "consistency": 27,
         "ceiling": 77,
         "floor": 71,
         "carryShare": 0,
@@ -26184,7 +26185,7 @@
         "starterAhead": "Tyjae Spears"
       },
       "market": {
-        "consensusRank": 336,
+        "consensusRank": 337,
         "positionRank": 104,
         "rawEcr": 328.26,
         "best": 217,
@@ -26195,7 +26196,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 175
+        "edge": 176
       }
     },
     {
@@ -26282,9 +26283,9 @@
       "percentiles": {
         "points": 84,
         "pointsPerGame": 77,
-        "consistency": 7,
+        "consistency": 8,
         "ceiling": 81,
-        "floor": 58,
+        "floor": 61,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -26543,7 +26544,7 @@
       "percentiles": {
         "points": 81,
         "pointsPerGame": 58,
-        "consistency": 74,
+        "consistency": 73,
         "ceiling": 48,
         "floor": 90,
         "carryShare": 0,
@@ -26791,9 +26792,9 @@
       "percentiles": {
         "points": 77,
         "pointsPerGame": 58,
-        "consistency": 26,
+        "consistency": 27,
         "ceiling": 65,
-        "floor": 61,
+        "floor": 65,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -26912,7 +26913,7 @@
       "percentiles": {
         "points": 74,
         "pointsPerGame": 58,
-        "consistency": 74,
+        "consistency": 73,
         "ceiling": 48,
         "floor": 77,
         "carryShare": 0,
@@ -27044,15 +27045,15 @@
       "tier": 4,
       "competition": {
         "depth": 1,
-        "roomSize": 2,
-        "aheadBy": 0.2,
+        "roomSize": 1,
+        "aheadBy": null,
         "behindBy": null,
-        "nextUp": "Riley Patterson",
+        "nextUp": null,
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 287,
-        "positionRank": 19,
+        "consensusRank": 288,
+        "positionRank": 20,
         "rawEcr": 296.63,
         "best": 203,
         "worst": 407,
@@ -27062,7 +27063,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 127
+        "edge": 128
       }
     },
     {
@@ -27417,7 +27418,7 @@
       "percentiles": {
         "points": 65,
         "pointsPerGame": 52,
-        "consistency": 74,
+        "consistency": 73,
         "ceiling": 42,
         "floor": 77,
         "carryShare": 0,
@@ -27538,7 +27539,7 @@
       "percentiles": {
         "points": 65,
         "pointsPerGame": 58,
-        "consistency": 26,
+        "consistency": 27,
         "ceiling": 48,
         "floor": 71,
         "carryShare": 0,
@@ -27659,9 +27660,9 @@
       "percentiles": {
         "points": 61,
         "pointsPerGame": 100,
-        "consistency": 74,
+        "consistency": 73,
         "ceiling": 65,
-        "floor": 35,
+        "floor": 39,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -27814,7 +27815,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 332,
+        "consensusRank": 333,
         "positionRank": 39,
         "rawEcr": 325.17,
         "best": 274,
@@ -27825,7 +27826,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 108
+        "edge": 109
       }
     },
     {
@@ -28048,10 +28049,10 @@
       "auctionValue": 1,
       "percentiles": {
         "points": 58,
-        "pointsPerGame": 23,
+        "pointsPerGame": 26,
         "consistency": 0,
         "ceiling": 74,
-        "floor": 23,
+        "floor": 26,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -28305,10 +28306,10 @@
       "auctionValue": 1,
       "percentiles": {
         "points": 55,
-        "pointsPerGame": 23,
-        "consistency": 7,
+        "pointsPerGame": 26,
+        "consistency": 8,
         "ceiling": 58,
-        "floor": 35,
+        "floor": 39,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -28558,10 +28559,10 @@
       "auctionValue": 1,
       "percentiles": {
         "points": 48,
-        "pointsPerGame": 23,
-        "consistency": 26,
+        "pointsPerGame": 26,
+        "consistency": 27,
         "ceiling": 29,
-        "floor": 61,
+        "floor": 65,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -28657,9 +28658,9 @@
       "auctionValue": 1,
       "percentiles": {
         "points": 48,
-        "pointsPerGame": 23,
+        "pointsPerGame": 26,
         "ceiling": 100,
-        "floor": 10
+        "floor": 13
       },
       "rank": 231,
       "tier": 4,
@@ -28769,10 +28770,10 @@
       "auctionValue": 1,
       "percentiles": {
         "points": 45,
-        "pointsPerGame": 23,
-        "consistency": 26,
+        "pointsPerGame": 26,
+        "consistency": 27,
         "ceiling": 42,
-        "floor": 48,
+        "floor": 52,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -28895,10 +28896,10 @@
       "auctionValue": 1,
       "percentiles": {
         "points": 42,
-        "pointsPerGame": 23,
-        "consistency": 7,
+        "pointsPerGame": 26,
+        "consistency": 8,
         "ceiling": 61,
-        "floor": 32,
+        "floor": 35,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
@@ -28926,122 +28927,6 @@
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
         "edge": 36
-      }
-    },
-    {
-      "gsis": "00-0036816",
-      "espnId": "4243371",
-      "name": "Riley Patterson",
-      "position": "K",
-      "team": "MIA",
-      "jersey": "47",
-      "age": 27,
-      "college": "Memphis",
-      "experience": 5,
-      "draft": null,
-      "snapShare": null,
-      "gamesMissed2025": 0,
-      "trend": "STABLE",
-      "projection": {
-        "points": 108.6,
-        "pointsPerGame": 6.4,
-        "receptions": 0,
-        "expectedGames": 17,
-        "ageMultiplier": 1,
-        "basis": "production",
-        "gamesObserved": 17
-      },
-      "breakoutSeason": null,
-      "sleeperId": "7922",
-      "consistency": 8,
-      "floor": 94,
-      "ceiling": 124,
-      "byeWeek": 6,
-      "targetShare": null,
-      "lastSeasonGames": 17,
-      "injuryRisk": "LOW",
-      "ageRisk": "LOW",
-      "role": "COMMITTEE",
-      "usage": {
-        "season": 2025,
-        "games": 17,
-        "targetShare": null,
-        "airYardsShare": null,
-        "wopr": null,
-        "adot": null,
-        "yacPerReception": null,
-        "carryShare": 0,
-        "touchesPerGame": 0,
-        "targetsPerGame": 0,
-        "redZoneTouches": 0,
-        "redZoneShare": 0,
-        "goalLineTouches": 0,
-        "firstDownsPerGame": 0,
-        "epaPerTouch": null,
-        "passingEpa": null
-      },
-      "context": {
-        "playsPerGame": 55.4,
-        "secondsPerPlay": 32.1,
-        "neutralPassRate": 52.5,
-        "passRateOverExpected": -5.8,
-        "sackRateAllowed": 7.3,
-        "epaPerPlay": -0.017,
-        "redZoneTripsPerGame": 2.8
-      },
-      "durability": {
-        "seasons": [
-          {
-            "season": 2023,
-            "missed": 0
-          },
-          {
-            "season": 2024,
-            "missed": 0
-          },
-          {
-            "season": 2025,
-            "missed": 0
-          }
-        ],
-        "totalMissed": 0,
-        "reported": []
-      },
-      "vorp": 0,
-      "auctionValue": 1,
-      "percentiles": {
-        "points": 39,
-        "pointsPerGame": 23,
-        "consistency": 26,
-        "ceiling": 23,
-        "floor": 61,
-        "carryShare": 0,
-        "touchesPerGame": 0,
-        "firstDownsPerGame": 0
-      },
-      "rank": 234,
-      "tier": 4,
-      "competition": {
-        "depth": 2,
-        "roomSize": 2,
-        "aheadBy": null,
-        "behindBy": 0.2,
-        "nextUp": null,
-        "starterAhead": "Zane Gonzalez"
-      },
-      "market": {
-        "consensusRank": null,
-        "positionRank": null,
-        "rawEcr": null,
-        "best": null,
-        "worst": null,
-        "spread": null,
-        "ownership": null,
-        "searchRank": 241,
-        "depthChartOrder": 1,
-        "source": "FantasyPros expert consensus",
-        "asOf": null,
-        "edge": null
       }
     },
     {
@@ -29151,7 +29036,7 @@
         "firstDownsPerGame": 74,
         "epaPerTouch": 85
       },
-      "rank": 235,
+      "rank": 234,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -29173,7 +29058,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -199
+        "edge": -198
       }
     },
     {
@@ -29247,7 +29132,7 @@
         "ceiling": 81,
         "floor": 64
       },
-      "rank": 236,
+      "rank": 235,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -29258,7 +29143,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 349,
+        "consensusRank": 350,
         "positionRank": 120,
         "rawEcr": 338,
         "best": 255,
@@ -29269,7 +29154,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 113
+        "edge": 115
       }
     },
     {
@@ -29359,16 +29244,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 35,
-        "pointsPerGame": 23,
-        "consistency": 26,
+        "points": 39,
+        "pointsPerGame": 26,
+        "consistency": 27,
         "ceiling": 29,
-        "floor": 48,
+        "floor": 52,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 237,
+      "rank": 236,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -29379,8 +29264,8 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 299,
-        "positionRank": 20,
+        "consensusRank": 300,
+        "positionRank": 21,
         "rawEcr": 306,
         "best": 197,
         "worst": 393,
@@ -29390,7 +29275,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 62
+        "edge": 64
       }
     },
     {
@@ -29500,7 +29385,7 @@
         "firstDownsPerGame": 33,
         "epaPerTouch": 12
       },
-      "rank": 238,
+      "rank": 237,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -29522,7 +29407,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 19
+        "edge": 20
       }
     },
     {
@@ -29632,7 +29517,7 @@
         "firstDownsPerGame": 68,
         "epaPerTouch": 83
       },
-      "rank": 239,
+      "rank": 238,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -29654,7 +29539,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -75
+        "edge": -74
       }
     },
     {
@@ -29732,7 +29617,7 @@
         "ceiling": 79,
         "floor": 67
       },
-      "rank": 240,
+      "rank": 239,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -29743,7 +29628,7 @@
         "starterAhead": "Kyren Williams"
       },
       "market": {
-        "consensusRank": 302,
+        "consensusRank": 303,
         "positionRank": 95,
         "rawEcr": 308.24,
         "best": 263,
@@ -29754,7 +29639,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 62
+        "edge": 64
       }
     },
     {
@@ -29822,12 +29707,12 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 32,
-        "pointsPerGame": 13,
+        "points": 35,
+        "pointsPerGame": 16,
         "ceiling": 97,
-        "floor": 6
+        "floor": 10
       },
-      "rank": 241,
+      "rank": 240,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -29922,7 +29807,7 @@
         "ceiling": 78,
         "floor": 67
       },
-      "rank": 242,
+      "rank": 241,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -30054,7 +29939,7 @@
         "firstDownsPerGame": 59,
         "epaPerTouch": 76
       },
-      "rank": 243,
+      "rank": 242,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -30065,7 +29950,7 @@
         "starterAhead": "Marvin Harrison Jr."
       },
       "market": {
-        "consensusRank": 304,
+        "consensusRank": 305,
         "positionRank": 98,
         "rawEcr": 311.1,
         "best": 190,
@@ -30076,7 +29961,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 61
+        "edge": 63
       }
     },
     {
@@ -30186,7 +30071,7 @@
         "firstDownsPerGame": 52,
         "epaPerTouch": 44
       },
-      "rank": 244,
+      "rank": 243,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -30208,7 +30093,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 21
+        "edge": 22
       }
     },
     {
@@ -30298,16 +30183,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 29,
-        "pointsPerGame": 13,
-        "consistency": 26,
-        "ceiling": 13,
-        "floor": 35,
+        "points": 32,
+        "pointsPerGame": 16,
+        "consistency": 27,
+        "ceiling": 16,
+        "floor": 39,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 245,
+      "rank": 244,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -30318,8 +30203,8 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 280,
-        "positionRank": 18,
+        "consensusRank": 281,
+        "positionRank": 19,
         "rawEcr": 290.22,
         "best": 205,
         "worst": 382,
@@ -30329,7 +30214,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 35
+        "edge": 37
       }
     },
     {
@@ -30444,7 +30329,7 @@
         "firstDownsPerGame": 41,
         "epaPerTouch": 17
       },
-      "rank": 246,
+      "rank": 245,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -30466,7 +30351,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -3
+        "edge": -2
       }
     },
     {
@@ -30551,16 +30436,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 26,
+        "points": 29,
         "pointsPerGame": 58,
-        "consistency": 26,
-        "ceiling": 23,
-        "floor": 23,
+        "consistency": 27,
+        "ceiling": 26,
+        "floor": 26,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 247,
+      "rank": 246,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -30582,7 +30467,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -48
+        "edge": -47
       }
     },
     {
@@ -30692,7 +30577,7 @@
         "firstDownsPerGame": 69,
         "epaPerTouch": 74
       },
-      "rank": 248,
+      "rank": 247,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -30714,7 +30599,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -56
+        "edge": -55
       }
     },
     {
@@ -30818,7 +30703,7 @@
         "firstDownsPerGame": 41,
         "epaPerTouch": 95
       },
-      "rank": 249,
+      "rank": 248,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -30925,16 +30810,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 19,
+        "points": 23,
         "pointsPerGame": 52,
-        "consistency": 7,
+        "consistency": 8,
         "ceiling": 35,
-        "floor": 19,
+        "floor": 23,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 250,
+      "rank": 249,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -30945,8 +30830,8 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 314,
-        "positionRank": 21,
+        "consensusRank": 315,
+        "positionRank": 22,
         "rawEcr": 317.14,
         "best": 212,
         "worst": 403,
@@ -30956,7 +30841,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 64
+        "edge": 66
       }
     },
     {
@@ -31041,16 +30926,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 19,
-        "pointsPerGame": 3,
-        "consistency": 26,
-        "ceiling": 6,
-        "floor": 48,
+        "points": 23,
+        "pointsPerGame": 6,
+        "consistency": 27,
+        "ceiling": 10,
+        "floor": 52,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 251,
+      "rank": 250,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -31157,16 +31042,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 16,
-        "pointsPerGame": 3,
+        "points": 19,
+        "pointsPerGame": 6,
         "consistency": 0,
-        "ceiling": 19,
-        "floor": 23,
+        "ceiling": 23,
+        "floor": 26,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 252,
+      "rank": 251,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -31271,7 +31156,7 @@
         "ceiling": 80,
         "floor": 63
       },
-      "rank": 253,
+      "rank": 252,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -31372,7 +31257,7 @@
         "ceiling": 79,
         "floor": 62
       },
-      "rank": 254,
+      "rank": 253,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -31394,7 +31279,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -92
+        "edge": -91
       }
     },
     {
@@ -31509,7 +31394,7 @@
         "firstDownsPerGame": 41,
         "epaPerTouch": 13
       },
-      "rank": 255,
+      "rank": 254,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -31531,7 +31416,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -84
+        "edge": -83
       }
     },
     {
@@ -31610,7 +31495,7 @@
         "ceiling": 76,
         "floor": 65
       },
-      "rank": 256,
+      "rank": 255,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -31621,7 +31506,7 @@
         "starterAhead": "Javonte Williams"
       },
       "market": {
-        "consensusRank": 311,
+        "consensusRank": 312,
         "positionRank": 97,
         "rawEcr": 313.93,
         "best": 232,
@@ -31632,7 +31517,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 55
+        "edge": 57
       }
     },
     {
@@ -31751,7 +31636,7 @@
         "firstDownsPerGame": 50,
         "epaPerTouch": 44
       },
-      "rank": 257,
+      "rank": 256,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -31773,7 +31658,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -89
+        "edge": -88
       }
     },
     {
@@ -31841,12 +31726,12 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 13,
-        "pointsPerGame": 3,
+        "points": 16,
+        "pointsPerGame": 6,
         "ceiling": 94,
-        "floor": 3
+        "floor": 6
       },
-      "rank": 258,
+      "rank": 257,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -31973,7 +31858,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 20
       },
-      "rank": 259,
+      "rank": 258,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -31984,7 +31869,7 @@
         "starterAhead": "Drake London"
       },
       "market": {
-        "consensusRank": 305,
+        "consensusRank": 306,
         "positionRank": 99,
         "rawEcr": 311.38,
         "best": 247,
@@ -31995,7 +31880,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 46
+        "edge": 48
       }
     },
     {
@@ -32074,7 +31959,7 @@
         "ceiling": 76,
         "floor": 65
       },
-      "rank": 260,
+      "rank": 259,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -32085,7 +31970,7 @@
         "starterAhead": "Woody Marks"
       },
       "market": {
-        "consensusRank": 331,
+        "consensusRank": 332,
         "positionRank": 102,
         "rawEcr": 325,
         "best": 226,
@@ -32096,7 +31981,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 71
+        "edge": 73
       }
     },
     {
@@ -32186,16 +32071,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 10,
-        "pointsPerGame": 23,
-        "consistency": 74,
-        "ceiling": 3,
-        "floor": 35,
+        "points": 13,
+        "pointsPerGame": 26,
+        "consistency": 73,
+        "ceiling": 6,
+        "floor": 39,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 261,
+      "rank": 260,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -32217,7 +32102,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 5
+        "edge": 6
       }
     },
     {
@@ -32340,7 +32225,7 @@
         "firstDownsPerGame": 47,
         "epaPerTouch": 1
       },
-      "rank": 262,
+      "rank": 261,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -32362,7 +32247,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -121
+        "edge": -120
       }
     },
     {
@@ -32472,7 +32357,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 21
       },
-      "rank": 263,
+      "rank": 262,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -32483,7 +32368,7 @@
         "starterAhead": "Alvin Kamara"
       },
       "market": {
-        "consensusRank": 298,
+        "consensusRank": 299,
         "positionRank": 94,
         "rawEcr": 305.16,
         "best": 250,
@@ -32494,7 +32379,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 35
+        "edge": 37
       }
     },
     {
@@ -32603,7 +32488,7 @@
         "firstDownsPerGame": 59,
         "epaPerTouch": 31
       },
-      "rank": 264,
+      "rank": 263,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -32735,7 +32620,7 @@
         "firstDownsPerGame": 67,
         "epaPerTouch": 44
       },
-      "rank": 265,
+      "rank": 264,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -32757,7 +32642,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -96
+        "edge": -95
       }
     },
     {
@@ -32867,7 +32752,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 69
       },
-      "rank": 266,
+      "rank": 265,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -32878,7 +32763,7 @@
         "starterAhead": "Tyrone Tracy Jr."
       },
       "market": {
-        "consensusRank": 284,
+        "consensusRank": 285,
         "positionRank": 88,
         "rawEcr": 293.95,
         "best": 225,
@@ -32889,7 +32774,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 18
+        "edge": 20
       }
     },
     {
@@ -32974,16 +32859,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 6,
+        "points": 10,
         "pointsPerGame": 84,
-        "consistency": 26,
-        "ceiling": 16,
-        "floor": 13,
+        "consistency": 27,
+        "ceiling": 19,
+        "floor": 16,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 267,
+      "rank": 266,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -33005,7 +32890,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -72
+        "edge": -71
       }
     },
     {
@@ -33115,7 +33000,7 @@
         "firstDownsPerGame": 56,
         "epaPerTouch": 26
       },
-      "rank": 268,
+      "rank": 267,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -33137,7 +33022,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -1
+        "edge": 0
       }
     },
     {
@@ -33247,7 +33132,7 @@
         "firstDownsPerGame": 64,
         "epaPerTouch": 83
       },
-      "rank": 269,
+      "rank": 268,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -33269,7 +33154,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -222
+        "edge": -221
       }
     },
     {
@@ -33379,7 +33264,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 11
       },
-      "rank": 270,
+      "rank": 269,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -33390,7 +33275,7 @@
         "starterAhead": "Quez Watkins"
       },
       "market": {
-        "consensusRank": 347,
+        "consensusRank": 348,
         "positionRank": 118,
         "rawEcr": 336,
         "best": 300,
@@ -33401,7 +33286,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 77
+        "edge": 79
       }
     },
     {
@@ -33484,7 +33369,7 @@
         "ceiling": 77,
         "floor": 59
       },
-      "rank": 271,
+      "rank": 270,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -33621,7 +33506,7 @@
         "firstDownsPerGame": 6,
         "epaPerTouch": 43
       },
-      "rank": 272,
+      "rank": 271,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -33632,7 +33517,7 @@
         "starterAhead": "Malik Washington"
       },
       "market": {
-        "consensusRank": 329,
+        "consensusRank": 330,
         "positionRank": 112,
         "rawEcr": 324.5,
         "best": 227,
@@ -33643,7 +33528,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 57
+        "edge": 59
       }
     },
     {
@@ -33758,7 +33643,7 @@
         "firstDownsPerGame": 56,
         "epaPerTouch": 50
       },
-      "rank": 273,
+      "rank": 272,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -33769,7 +33654,7 @@
         "starterAhead": "Colby Parkinson"
       },
       "market": {
-        "consensusRank": 323,
+        "consensusRank": 324,
         "positionRank": 38,
         "rawEcr": 321.64,
         "best": 259,
@@ -33780,7 +33665,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 50
+        "edge": 52
       }
     },
     {
@@ -33870,16 +33755,16 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 3,
-        "pointsPerGame": 19,
-        "consistency": 7,
-        "ceiling": 10,
-        "floor": 13,
+        "points": 6,
+        "pointsPerGame": 23,
+        "consistency": 8,
+        "ceiling": 13,
+        "floor": 16,
         "carryShare": 0,
         "touchesPerGame": 0,
         "firstDownsPerGame": 0
       },
-      "rank": 274,
+      "rank": 273,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -34016,7 +33901,7 @@
         "firstDownsPerGame": 52,
         "epaPerTouch": 66
       },
-      "rank": 275,
+      "rank": 274,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -34038,7 +33923,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -24
+        "edge": -23
       }
     },
     {
@@ -34148,7 +34033,7 @@
         "firstDownsPerGame": 32,
         "epaPerTouch": 39
       },
-      "rank": 276,
+      "rank": 275,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -34170,7 +34055,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 1
+        "edge": 2
       }
     },
     {
@@ -34285,7 +34170,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 21
       },
-      "rank": 277,
+      "rank": 276,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -34307,7 +34192,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -73
+        "edge": -72
       }
     },
     {
@@ -34422,7 +34307,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 40
       },
-      "rank": 278,
+      "rank": 277,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -34433,7 +34318,7 @@
         "starterAhead": "Jerry Jeudy"
       },
       "market": {
-        "consensusRank": 307,
+        "consensusRank": 308,
         "positionRank": 100,
         "rawEcr": 311.95,
         "best": 254,
@@ -34444,7 +34329,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 29
+        "edge": 31
       }
     },
     {
@@ -34554,7 +34439,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 81
       },
-      "rank": 279,
+      "rank": 278,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -34576,7 +34461,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -47
+        "edge": -46
       }
     },
     {
@@ -34686,7 +34571,7 @@
         "firstDownsPerGame": 48,
         "epaPerTouch": 19
       },
-      "rank": 280,
+      "rank": 279,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -34697,7 +34582,7 @@
         "starterAhead": "Sam LaPorta"
       },
       "market": {
-        "consensusRank": 380,
+        "consensusRank": 381,
         "positionRank": 51,
         "rawEcr": 376.67,
         "best": 363,
@@ -34708,7 +34593,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 100
+        "edge": 102
       }
     },
     {
@@ -34818,7 +34703,7 @@
         "firstDownsPerGame": 59,
         "epaPerTouch": 13
       },
-      "rank": 281,
+      "rank": 280,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -34840,7 +34725,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -55
+        "edge": -54
       }
     },
     {
@@ -34950,7 +34835,7 @@
         "firstDownsPerGame": 52,
         "epaPerTouch": 24
       },
-      "rank": 282,
+      "rank": 281,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -34972,7 +34857,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -24
+        "edge": -23
       }
     },
     {
@@ -35082,7 +34967,7 @@
         "firstDownsPerGame": 51,
         "epaPerTouch": 92
       },
-      "rank": 283,
+      "rank": 282,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -35104,7 +34989,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -176
+        "edge": -175
       }
     },
     {
@@ -35214,7 +35099,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 68
       },
-      "rank": 284,
+      "rank": 283,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -35225,7 +35110,7 @@
         "starterAhead": "Chris Godwin Jr."
       },
       "market": {
-        "consensusRank": 303,
+        "consensusRank": 304,
         "positionRank": 97,
         "rawEcr": 310.61,
         "best": 225,
@@ -35236,7 +35121,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 19
+        "edge": 21
       }
     },
     {
@@ -35319,7 +35204,7 @@
         "ceiling": 75,
         "floor": 56
       },
-      "rank": 285,
+      "rank": 284,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -35415,7 +35300,7 @@
         "ceiling": 74,
         "floor": 60
       },
-      "rank": 286,
+      "rank": 285,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -35426,7 +35311,7 @@
         "starterAhead": "Quinshon Judkins"
       },
       "market": {
-        "consensusRank": 306,
+        "consensusRank": 307,
         "positionRank": 96,
         "rawEcr": 311.82,
         "best": 237,
@@ -35437,7 +35322,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 20
+        "edge": 22
       }
     },
     {
@@ -35510,7 +35395,7 @@
         "ceiling": 73,
         "floor": 60
       },
-      "rank": 287,
+      "rank": 286,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -35637,7 +35522,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 28
       },
-      "rank": 288,
+      "rank": 287,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -35648,7 +35533,7 @@
         "starterAhead": "Jameson Williams"
       },
       "market": {
-        "consensusRank": 355,
+        "consensusRank": 356,
         "positionRank": 123,
         "rawEcr": 344,
         "best": 265,
@@ -35659,7 +35544,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 67
+        "edge": 69
       }
     },
     {
@@ -35774,7 +35659,7 @@
         "firstDownsPerGame": 33,
         "epaPerTouch": 40
       },
-      "rank": 289,
+      "rank": 288,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -35796,7 +35681,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -222
+        "edge": -221
       }
     },
     {
@@ -35901,7 +35786,7 @@
         "firstDownsPerGame": 26,
         "epaPerTouch": 30
       },
-      "rank": 290,
+      "rank": 289,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -35923,7 +35808,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -108
+        "edge": -107
       }
     },
     {
@@ -36001,7 +35886,7 @@
         "ceiling": 73,
         "floor": 55
       },
-      "rank": 291,
+      "rank": 290,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -36128,7 +36013,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 63
       },
-      "rank": 292,
+      "rank": 291,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -36139,7 +36024,7 @@
         "starterAhead": "J.K. Dobbins"
       },
       "market": {
-        "consensusRank": 294,
+        "consensusRank": 295,
         "positionRank": 91,
         "rawEcr": 301.31,
         "best": 222,
@@ -36150,7 +36035,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 2
+        "edge": 4
       }
     },
     {
@@ -36260,7 +36145,7 @@
         "firstDownsPerGame": 42,
         "epaPerTouch": 41
       },
-      "rank": 293,
+      "rank": 292,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -36282,7 +36167,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -90
+        "edge": -89
       }
     },
     {
@@ -36397,7 +36282,7 @@
         "firstDownsPerGame": 37,
         "epaPerTouch": 65
       },
-      "rank": 294,
+      "rank": 293,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -36408,7 +36293,7 @@
         "starterAhead": "Dalton Kincaid"
       },
       "market": {
-        "consensusRank": 344,
+        "consensusRank": 345,
         "positionRank": 41,
         "rawEcr": 333.88,
         "best": 274,
@@ -36419,7 +36304,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 50
+        "edge": 52
       }
     },
     {
@@ -36534,7 +36419,7 @@
         "firstDownsPerGame": 52,
         "epaPerTouch": 78
       },
-      "rank": 295,
+      "rank": 294,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -36556,7 +36441,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -105
+        "edge": -104
       }
     },
     {
@@ -36630,7 +36515,7 @@
         "ceiling": 71,
         "floor": 57
       },
-      "rank": 296,
+      "rank": 295,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -36725,7 +36610,7 @@
         "ceiling": 71,
         "floor": 57
       },
-      "rank": 297,
+      "rank": 296,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -36862,7 +36747,7 @@
         "firstDownsPerGame": 87,
         "epaPerTouch": 81
       },
-      "rank": 298,
+      "rank": 297,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -36994,7 +36879,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 37
       },
-      "rank": 299,
+      "rank": 298,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -37016,7 +36901,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -52
+        "edge": -51
       }
     },
     {
@@ -37131,7 +37016,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 5
       },
-      "rank": 300,
+      "rank": 299,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -37153,7 +37038,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -64
+        "edge": -63
       }
     },
     {
@@ -37268,7 +37153,7 @@
         "firstDownsPerGame": 9,
         "epaPerTouch": 59
       },
-      "rank": 301,
+      "rank": 300,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -37290,7 +37175,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -84
+        "edge": -83
       }
     },
     {
@@ -37364,7 +37249,7 @@
         "ceiling": 71,
         "floor": 51
       },
-      "rank": 302,
+      "rank": 301,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -37460,7 +37345,7 @@
         "ceiling": 71,
         "floor": 51
       },
-      "rank": 303,
+      "rank": 302,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -37555,7 +37440,7 @@
         "ceiling": 69,
         "floor": 54
       },
-      "rank": 304,
+      "rank": 303,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -37687,7 +37572,7 @@
         "firstDownsPerGame": 26,
         "epaPerTouch": 48
       },
-      "rank": 305,
+      "rank": 304,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -37709,7 +37594,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -167
+        "edge": -166
       }
     },
     {
@@ -37783,7 +37668,7 @@
         "ceiling": 69,
         "floor": 54
       },
-      "rank": 306,
+      "rank": 305,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -37924,7 +37809,7 @@
         "firstDownsPerGame": 64,
         "epaPerTouch": 78
       },
-      "rank": 307,
+      "rank": 306,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -37946,7 +37831,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -45
+        "edge": -44
       }
     },
     {
@@ -38034,7 +37919,7 @@
         "ceiling": 67,
         "floor": 54
       },
-      "rank": 308,
+      "rank": 307,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -38045,7 +37930,7 @@
         "starterAhead": "Audric Estimé"
       },
       "market": {
-        "consensusRank": 279,
+        "consensusRank": 280,
         "positionRank": 85,
         "rawEcr": 290.13,
         "best": 177,
@@ -38056,7 +37941,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -29
+        "edge": -27
       }
     },
     {
@@ -38129,7 +38014,7 @@
         "ceiling": 69,
         "floor": 51
       },
-      "rank": 309,
+      "rank": 308,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -38225,7 +38110,7 @@
         "ceiling": 69,
         "floor": 51
       },
-      "rank": 310,
+      "rank": 309,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -38357,7 +38242,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 52
       },
-      "rank": 311,
+      "rank": 310,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -38368,7 +38253,7 @@
         "starterAhead": "Christian Kirk"
       },
       "market": {
-        "consensusRank": 341,
+        "consensusRank": 342,
         "positionRank": 115,
         "rawEcr": 333.3,
         "best": 267,
@@ -38379,7 +38264,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 30
+        "edge": 32
       }
     },
     {
@@ -38453,7 +38338,7 @@
         "ceiling": 66,
         "floor": 52
       },
-      "rank": 312,
+      "rank": 311,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -38580,7 +38465,7 @@
         "firstDownsPerGame": 9,
         "epaPerTouch": 26
       },
-      "rank": 313,
+      "rank": 312,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -38591,7 +38476,7 @@
         "starterAhead": "Alec Pierce"
       },
       "market": {
-        "consensusRank": 322,
+        "consensusRank": 323,
         "positionRank": 108,
         "rawEcr": 320.57,
         "best": 199,
@@ -38602,7 +38487,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 9
+        "edge": 11
       }
     },
     {
@@ -38712,7 +38597,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 17
       },
-      "rank": 314,
+      "rank": 313,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -38723,7 +38608,7 @@
         "starterAhead": "Darius Slayton"
       },
       "market": {
-        "consensusRank": 310,
+        "consensusRank": 311,
         "positionRank": 103,
         "rawEcr": 312.94,
         "best": 252,
@@ -38734,7 +38619,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -4
+        "edge": -2
       }
     },
     {
@@ -38849,7 +38734,7 @@
         "firstDownsPerGame": 15,
         "epaPerTouch": 28
       },
-      "rank": 315,
+      "rank": 314,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -38871,7 +38756,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -199
+        "edge": -198
       }
     },
     {
@@ -38949,7 +38834,7 @@
         "ceiling": 65,
         "floor": 52
       },
-      "rank": 316,
+      "rank": 315,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -39045,7 +38930,7 @@
         "ceiling": 68,
         "floor": 50
       },
-      "rank": 317,
+      "rank": 316,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -39141,7 +39026,7 @@
         "ceiling": 65,
         "floor": 52
       },
-      "rank": 318,
+      "rank": 317,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -39282,7 +39167,7 @@
         "firstDownsPerGame": 52,
         "epaPerTouch": 69
       },
-      "rank": 319,
+      "rank": 318,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -39304,7 +39189,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -141
+        "edge": -140
       }
     },
     {
@@ -39409,7 +39294,7 @@
         "firstDownsPerGame": 46,
         "epaPerTouch": 38
       },
-      "rank": 320,
+      "rank": 319,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -39554,7 +39439,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 0
       },
-      "rank": 321,
+      "rank": 320,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -39565,7 +39450,7 @@
         "starterAhead": "Juwan Johnson"
       },
       "market": {
-        "consensusRank": 356,
+        "consensusRank": 357,
         "positionRank": 42,
         "rawEcr": 344.05,
         "best": 290,
@@ -39576,7 +39461,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 35
+        "edge": 37
       }
     },
     {
@@ -39654,7 +39539,7 @@
         "ceiling": 67,
         "floor": 50
       },
-      "rank": 322,
+      "rank": 321,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -39750,7 +39635,7 @@
         "ceiling": 64,
         "floor": 52
       },
-      "rank": 323,
+      "rank": 322,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -39761,7 +39646,7 @@
         "starterAhead": "Amar Johnson"
       },
       "market": {
-        "consensusRank": 327,
+        "consensusRank": 328,
         "positionRank": 100,
         "rawEcr": 323.5,
         "best": 289,
@@ -39772,7 +39657,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 4
+        "edge": 6
       }
     },
     {
@@ -39882,7 +39767,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 94
       },
-      "rank": 324,
+      "rank": 323,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -39904,7 +39789,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -145
+        "edge": -144
       }
     },
     {
@@ -40014,7 +39899,7 @@
         "firstDownsPerGame": 32,
         "epaPerTouch": 93
       },
-      "rank": 325,
+      "rank": 324,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -40036,7 +39921,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -128
+        "edge": -127
       }
     },
     {
@@ -40114,7 +39999,7 @@
         "ceiling": 67,
         "floor": 48
       },
-      "rank": 326,
+      "rank": 325,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -40125,7 +40010,7 @@
         "starterAhead": "Demarcus Robinson"
       },
       "market": {
-        "consensusRank": 367,
+        "consensusRank": 368,
         "positionRank": 128,
         "rawEcr": 354,
         "best": 259,
@@ -40136,7 +40021,7 @@
         "depthChartOrder": 8,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 41
+        "edge": 43
       }
     },
     {
@@ -40251,7 +40136,7 @@
         "firstDownsPerGame": 41,
         "epaPerTouch": 42
       },
-      "rank": 327,
+      "rank": 326,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -40262,7 +40147,7 @@
         "starterAhead": "Keon Coleman"
       },
       "market": {
-        "consensusRank": 308,
+        "consensusRank": 309,
         "positionRank": 101,
         "rawEcr": 312.29,
         "best": 223,
@@ -40273,7 +40158,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -19
+        "edge": -17
       }
     },
     {
@@ -40346,7 +40231,7 @@
         "ceiling": 66,
         "floor": 48
       },
-      "rank": 328,
+      "rank": 327,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -40478,7 +40363,7 @@
         "firstDownsPerGame": 46,
         "epaPerTouch": 95
       },
-      "rank": 329,
+      "rank": 328,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -40500,7 +40385,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -80
+        "edge": -79
       }
     },
     {
@@ -40610,7 +40495,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 91
       },
-      "rank": 330,
+      "rank": 329,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -40747,7 +40632,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 95
       },
-      "rank": 331,
+      "rank": 330,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -40769,7 +40654,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -178
+        "edge": -177
       }
     },
     {
@@ -40879,7 +40764,7 @@
         "firstDownsPerGame": 46,
         "epaPerTouch": 60
       },
-      "rank": 332,
+      "rank": 331,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -40890,7 +40775,7 @@
         "starterAhead": "Tyler Johnson"
       },
       "market": {
-        "consensusRank": 316,
+        "consensusRank": 317,
         "positionRank": 105,
         "rawEcr": 318,
         "best": 218,
@@ -40901,7 +40786,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -16
+        "edge": -14
       }
     },
     {
@@ -40984,7 +40869,7 @@
         "ceiling": 62,
         "floor": 51
       },
-      "rank": 333,
+      "rank": 332,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -41006,7 +40891,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -243
+        "edge": -242
       }
     },
     {
@@ -41085,7 +40970,7 @@
         "ceiling": 61,
         "floor": 51
       },
-      "rank": 334,
+      "rank": 333,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -41107,7 +40992,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -132
+        "edge": -131
       }
     },
     {
@@ -41181,7 +41066,7 @@
         "ceiling": 65,
         "floor": 46
       },
-      "rank": 335,
+      "rank": 334,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -41313,7 +41198,7 @@
         "firstDownsPerGame": 41,
         "epaPerTouch": 14
       },
-      "rank": 336,
+      "rank": 335,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -41324,7 +41209,7 @@
         "starterAhead": "Ainias Smith"
       },
       "market": {
-        "consensusRank": 330,
+        "consensusRank": 331,
         "positionRank": 113,
         "rawEcr": 324.8,
         "best": 277,
@@ -41335,7 +41220,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -6
+        "edge": -4
       }
     },
     {
@@ -41408,7 +41293,7 @@
         "ceiling": 63,
         "floor": 44
       },
-      "rank": 337,
+      "rank": 336,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -41504,7 +41389,7 @@
         "ceiling": 63,
         "floor": 44
       },
-      "rank": 338,
+      "rank": 337,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -41636,7 +41521,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 22
       },
-      "rank": 339,
+      "rank": 338,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -41658,7 +41543,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -204
+        "edge": -203
       }
     },
     {
@@ -41731,7 +41616,7 @@
         "ceiling": 59,
         "floor": 49
       },
-      "rank": 340,
+      "rank": 339,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -41832,7 +41717,7 @@
         "ceiling": 59,
         "floor": 49
       },
-      "rank": 341,
+      "rank": 340,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -41933,7 +41818,7 @@
         "ceiling": 63,
         "floor": 44
       },
-      "rank": 342,
+      "rank": 341,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -42034,7 +41919,7 @@
         "ceiling": 50,
         "floor": 23
       },
-      "rank": 343,
+      "rank": 342,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -42130,7 +42015,7 @@
         "ceiling": 63,
         "floor": 44
       },
-      "rank": 344,
+      "rank": 343,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -42141,7 +42026,7 @@
         "starterAhead": "Elic Ayomanor"
       },
       "market": {
-        "consensusRank": 348,
+        "consensusRank": 349,
         "positionRank": 119,
         "rawEcr": 337.25,
         "best": 288,
@@ -42152,7 +42037,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 4
+        "edge": 6
       }
     },
     {
@@ -42271,7 +42156,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 46
       },
-      "rank": 345,
+      "rank": 344,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -42403,7 +42288,7 @@
         "firstDownsPerGame": 26,
         "epaPerTouch": 100
       },
-      "rank": 346,
+      "rank": 345,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -42425,7 +42310,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -108
+        "edge": -107
       }
     },
     {
@@ -42530,7 +42415,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 10
       },
-      "rank": 347,
+      "rank": 346,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -42541,7 +42426,7 @@
         "starterAhead": "Michael Bandy"
       },
       "market": {
-        "consensusRank": 383,
+        "consensusRank": 384,
         "positionRank": 133,
         "rawEcr": 390,
         "best": 373,
@@ -42552,7 +42437,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 36
+        "edge": 38
       }
     },
     {
@@ -42625,7 +42510,7 @@
         "ceiling": 58,
         "floor": 48
       },
-      "rank": 348,
+      "rank": 347,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -42757,7 +42642,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 58
       },
-      "rank": 349,
+      "rank": 348,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -42779,7 +42664,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -189
+        "edge": -188
       }
     },
     {
@@ -42889,7 +42774,7 @@
         "firstDownsPerGame": 9,
         "epaPerTouch": 99
       },
-      "rank": 350,
+      "rank": 349,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -42900,7 +42785,7 @@
         "starterAhead": "Rashod Bateman"
       },
       "market": {
-        "consensusRank": 325,
+        "consensusRank": 326,
         "positionRank": 110,
         "rawEcr": 322.8,
         "best": 267,
@@ -42911,7 +42796,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -25
+        "edge": -23
       }
     },
     {
@@ -43021,7 +42906,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 92
       },
-      "rank": 351,
+      "rank": 350,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -43032,7 +42917,7 @@
         "starterAhead": "Jacoby Jones"
       },
       "market": {
-        "consensusRank": 321,
+        "consensusRank": 322,
         "positionRank": 107,
         "rawEcr": 320.35,
         "best": 270,
@@ -43043,7 +42928,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -30
+        "edge": -28
       }
     },
     {
@@ -43153,7 +43038,7 @@
         "firstDownsPerGame": 56,
         "epaPerTouch": 67
       },
-      "rank": 352,
+      "rank": 351,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -43175,7 +43060,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -176
+        "edge": -175
       }
     },
     {
@@ -43280,7 +43165,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 35
       },
-      "rank": 353,
+      "rank": 352,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -43291,7 +43176,7 @@
         "starterAhead": "Kendric Pryor"
       },
       "market": {
-        "consensusRank": 301,
+        "consensusRank": 302,
         "positionRank": 96,
         "rawEcr": 307,
         "best": 286,
@@ -43302,7 +43187,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -52
+        "edge": -50
       }
     },
     {
@@ -43381,7 +43266,7 @@
         "ceiling": 61,
         "floor": 42
       },
-      "rank": 354,
+      "rank": 353,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -43513,7 +43398,7 @@
         "firstDownsPerGame": 31,
         "epaPerTouch": 56
       },
-      "rank": 355,
+      "rank": 354,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -43535,7 +43420,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -113
+        "edge": -112
       }
     },
     {
@@ -43640,7 +43525,7 @@
         "firstDownsPerGame": 32,
         "epaPerTouch": 88
       },
-      "rank": 356,
+      "rank": 355,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -43736,7 +43621,7 @@
         "ceiling": 57,
         "floor": 46
       },
-      "rank": 357,
+      "rank": 356,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -43836,7 +43721,7 @@
         "ceiling": 56,
         "floor": 46
       },
-      "rank": 358,
+      "rank": 357,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -43977,7 +43862,7 @@
         "firstDownsPerGame": 50,
         "epaPerTouch": 72
       },
-      "rank": 359,
+      "rank": 358,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -43999,7 +43884,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -236
+        "edge": -235
       }
     },
     {
@@ -44114,7 +43999,7 @@
         "firstDownsPerGame": 53,
         "epaPerTouch": 28
       },
-      "rank": 360,
+      "rank": 359,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -44219,7 +44104,7 @@
         "ceiling": 55,
         "floor": 44
       },
-      "rank": 361,
+      "rank": 360,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -44356,7 +44241,7 @@
         "firstDownsPerGame": 2,
         "epaPerTouch": 39
       },
-      "rank": 362,
+      "rank": 361,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -44367,7 +44252,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 362,
+        "consensusRank": 363,
         "positionRank": 43,
         "rawEcr": 348.07,
         "best": 298,
@@ -44378,7 +44263,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 0
+        "edge": 2
       }
     },
     {
@@ -44488,7 +44373,7 @@
         "firstDownsPerGame": 8,
         "epaPerTouch": 74
       },
-      "rank": 363,
+      "rank": 362,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -44510,7 +44395,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -129
+        "edge": -128
       }
     },
     {
@@ -44584,7 +44469,7 @@
         "ceiling": 59,
         "floor": 40
       },
-      "rank": 364,
+      "rank": 363,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -44725,7 +44610,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 26
       },
-      "rank": 365,
+      "rank": 364,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -44736,7 +44621,7 @@
         "starterAhead": "Calvin Austin III"
       },
       "market": {
-        "consensusRank": 381,
+        "consensusRank": 382,
         "positionRank": 131,
         "rawEcr": 383.5,
         "best": 373,
@@ -44747,7 +44632,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": 16
+        "edge": 18
       }
     },
     {
@@ -44862,7 +44747,7 @@
         "firstDownsPerGame": 37,
         "epaPerTouch": 76
       },
-      "rank": 366,
+      "rank": 365,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -44962,7 +44847,7 @@
         "ceiling": 54,
         "floor": 44
       },
-      "rank": 367,
+      "rank": 366,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -44984,7 +44869,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -184
+        "edge": -183
       }
     },
     {
@@ -45093,7 +44978,7 @@
         "firstDownsPerGame": 37,
         "epaPerTouch": 96
       },
-      "rank": 368,
+      "rank": 367,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -45229,7 +45114,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 62
       },
-      "rank": 369,
+      "rank": 368,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -45325,7 +45210,7 @@
         "ceiling": 45,
         "floor": 17
       },
-      "rank": 370,
+      "rank": 369,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -45430,7 +45315,7 @@
         "ceiling": 57,
         "floor": 38
       },
-      "rank": 371,
+      "rank": 370,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -45530,7 +45415,7 @@
         "ceiling": 57,
         "floor": 38
       },
-      "rank": 372,
+      "rank": 371,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -45662,7 +45547,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 36
       },
-      "rank": 373,
+      "rank": 372,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -45794,7 +45679,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 8
       },
-      "rank": 374,
+      "rank": 373,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -45816,7 +45701,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -219
+        "edge": -218
       }
     },
     {
@@ -45925,7 +45810,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 44
       },
-      "rank": 375,
+      "rank": 374,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -45936,7 +45821,7 @@
         "starterAhead": "Mike Gesicki"
       },
       "market": {
-        "consensusRank": 317,
+        "consensusRank": 318,
         "positionRank": 37,
         "rawEcr": 319.18,
         "best": 261,
@@ -45947,7 +45832,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -58
+        "edge": -56
       }
     },
     {
@@ -46052,7 +45937,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 28
       },
-      "rank": 376,
+      "rank": 375,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -46074,7 +45959,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -124
+        "edge": -123
       }
     },
     {
@@ -46178,7 +46063,7 @@
         "firstDownsPerGame": 12,
         "epaPerTouch": 7
       },
-      "rank": 377,
+      "rank": 376,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -46310,7 +46195,7 @@
         "firstDownsPerGame": 35,
         "epaPerTouch": 72
       },
-      "rank": 378,
+      "rank": 377,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -46332,7 +46217,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -215
+        "edge": -214
       }
     },
     {
@@ -46446,7 +46331,7 @@
         "firstDownsPerGame": 37,
         "epaPerTouch": 98
       },
-      "rank": 379,
+      "rank": 378,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -46457,7 +46342,7 @@
         "starterAhead": "Patrick Taylor"
       },
       "market": {
-        "consensusRank": 293,
+        "consensusRank": 294,
         "positionRank": 90,
         "rawEcr": 301.06,
         "best": 228,
@@ -46468,7 +46353,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -86
+        "edge": -84
       }
     },
     {
@@ -46542,7 +46427,7 @@
         "ceiling": 56,
         "floor": 36
       },
-      "rank": 380,
+      "rank": 379,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -46683,7 +46568,7 @@
         "firstDownsPerGame": 6,
         "epaPerTouch": 97
       },
-      "rank": 381,
+      "rank": 380,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -46694,7 +46579,7 @@
         "starterAhead": "Tank Bigsby"
       },
       "market": {
-        "consensusRank": 361,
+        "consensusRank": 362,
         "positionRank": 111,
         "rawEcr": 347.57,
         "best": 311,
@@ -46705,7 +46590,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -20
+        "edge": -18
       }
     },
     {
@@ -46783,7 +46668,7 @@
         "ceiling": 54,
         "floor": 36
       },
-      "rank": 382,
+      "rank": 381,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -46794,7 +46679,7 @@
         "starterAhead": "Pat Bryant"
       },
       "market": {
-        "consensusRank": 350,
+        "consensusRank": 351,
         "positionRank": 121,
         "rawEcr": 338,
         "best": 280,
@@ -46805,7 +46690,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -32
+        "edge": -30
       }
     },
     {
@@ -46879,7 +46764,7 @@
         "ceiling": 54,
         "floor": 36
       },
-      "rank": 383,
+      "rank": 382,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -46974,7 +46859,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 384,
+      "rank": 383,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -47070,7 +46955,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 385,
+      "rank": 384,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -47081,7 +46966,7 @@
         "starterAhead": "Ty Johnson"
       },
       "market": {
-        "consensusRank": 338,
+        "consensusRank": 339,
         "positionRank": 106,
         "rawEcr": 329.33,
         "best": 281,
@@ -47092,7 +46977,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -47
+        "edge": -45
       }
     },
     {
@@ -47165,7 +47050,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 386,
+      "rank": 385,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -47260,7 +47145,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 387,
+      "rank": 386,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -47355,7 +47240,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 388,
+      "rank": 387,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -47450,7 +47335,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 389,
+      "rank": 388,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -47545,7 +47430,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 390,
+      "rank": 389,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -47556,7 +47441,7 @@
         "starterAhead": "De'Von Achane"
       },
       "market": {
-        "consensusRank": 342,
+        "consensusRank": 343,
         "positionRank": 108,
         "rawEcr": 333.33,
         "best": 275,
@@ -47567,7 +47452,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -48
+        "edge": -46
       }
     },
     {
@@ -47640,7 +47525,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 391,
+      "rank": 390,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -47735,7 +47620,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 392,
+      "rank": 391,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -47830,7 +47715,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 393,
+      "rank": 392,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -47925,7 +47810,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 394,
+      "rank": 393,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -48020,7 +47905,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 395,
+      "rank": 394,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -48115,7 +48000,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 396,
+      "rank": 395,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -48210,7 +48095,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 397,
+      "rank": 396,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -48305,7 +48190,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 398,
+      "rank": 397,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -48400,7 +48285,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 399,
+      "rank": 398,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -48411,7 +48296,7 @@
         "starterAhead": "Kenneth Walker III"
       },
       "market": {
-        "consensusRank": 352,
+        "consensusRank": 353,
         "positionRank": 110,
         "rawEcr": 339,
         "best": 288,
@@ -48422,7 +48307,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -47
+        "edge": -45
       }
     },
     {
@@ -48495,7 +48380,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 400,
+      "rank": 399,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -48590,7 +48475,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 401,
+      "rank": 400,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -48685,7 +48570,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 402,
+      "rank": 401,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -48780,7 +48665,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 403,
+      "rank": 402,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -48802,7 +48687,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -131
+        "edge": -130
       }
     },
     {
@@ -48875,7 +48760,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 404,
+      "rank": 403,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -48897,7 +48782,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -223
+        "edge": -222
       }
     },
     {
@@ -48970,7 +48855,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 405,
+      "rank": 404,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -48992,7 +48877,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -175
+        "edge": -174
       }
     },
     {
@@ -49065,7 +48950,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 406,
+      "rank": 405,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -49160,7 +49045,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 407,
+      "rank": 406,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -49182,7 +49067,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -193
+        "edge": -192
       }
     },
     {
@@ -49255,7 +49140,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 408,
+      "rank": 407,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -49277,7 +49162,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -184
+        "edge": -183
       }
     },
     {
@@ -49350,7 +49235,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 409,
+      "rank": 408,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -49372,7 +49257,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -138
+        "edge": -137
       }
     },
     {
@@ -49445,7 +49330,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 410,
+      "rank": 409,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -49540,7 +49425,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 411,
+      "rank": 410,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -49635,7 +49520,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 412,
+      "rank": 411,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -49646,7 +49531,7 @@
         "starterAhead": "Kaytron Allen"
       },
       "market": {
-        "consensusRank": 339,
+        "consensusRank": 340,
         "positionRank": 107,
         "rawEcr": 330,
         "best": 253,
@@ -49657,7 +49542,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -73
+        "edge": -71
       }
     },
     {
@@ -49730,7 +49615,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 413,
+      "rank": 412,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -49741,7 +49626,7 @@
         "starterAhead": "Nate Carter"
       },
       "market": {
-        "consensusRank": 312,
+        "consensusRank": 313,
         "positionRank": 98,
         "rawEcr": 315.33,
         "best": 267,
@@ -49752,7 +49637,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -101
+        "edge": -99
       }
     },
     {
@@ -49825,7 +49710,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 414,
+      "rank": 413,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -49920,7 +49805,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 415,
+      "rank": 414,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -49931,7 +49816,7 @@
         "starterAhead": "Bhayshul Tuten"
       },
       "market": {
-        "consensusRank": 337,
+        "consensusRank": 338,
         "positionRank": 105,
         "rawEcr": 328.69,
         "best": 283,
@@ -49942,7 +49827,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -78
+        "edge": -76
       }
     },
     {
@@ -50015,7 +49900,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 416,
+      "rank": 415,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -50110,7 +49995,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 417,
+      "rank": 416,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -50205,7 +50090,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 418,
+      "rank": 417,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -50300,7 +50185,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 419,
+      "rank": 418,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -50395,7 +50280,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 420,
+      "rank": 419,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -50490,7 +50375,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 421,
+      "rank": 420,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -50585,7 +50470,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 422,
+      "rank": 421,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -50596,7 +50481,7 @@
         "starterAhead": "Joshua Pitsenberger"
       },
       "market": {
-        "consensusRank": 313,
+        "consensusRank": 314,
         "positionRank": 99,
         "rawEcr": 315.33,
         "best": 265,
@@ -50607,7 +50492,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -109
+        "edge": -107
       }
     },
     {
@@ -50680,7 +50565,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 423,
+      "rank": 422,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -50775,7 +50660,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 424,
+      "rank": 423,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -50870,7 +50755,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 425,
+      "rank": 424,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -50965,7 +50850,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 426,
+      "rank": 425,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -51060,7 +50945,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 427,
+      "rank": 426,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -51155,7 +51040,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 428,
+      "rank": 427,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -51250,7 +51135,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 429,
+      "rank": 428,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -51345,7 +51230,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 430,
+      "rank": 429,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -51356,7 +51241,7 @@
         "starterAhead": "Max Hurleman"
       },
       "market": {
-        "consensusRank": 297,
+        "consensusRank": 298,
         "positionRank": 93,
         "rawEcr": 304.42,
         "best": 257,
@@ -51367,7 +51252,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -133
+        "edge": -131
       }
     },
     {
@@ -51440,7 +51325,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 431,
+      "rank": 430,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -51462,7 +51347,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -286
+        "edge": -285
       }
     },
     {
@@ -51535,7 +51420,7 @@
         "ceiling": 26,
         "floor": 15
       },
-      "rank": 432,
+      "rank": 431,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -51557,7 +51442,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -363
+        "edge": -362
       }
     },
     {
@@ -51630,7 +51515,7 @@
         "ceiling": 54,
         "floor": 36
       },
-      "rank": 433,
+      "rank": 432,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -51726,7 +51611,7 @@
         "ceiling": 54,
         "floor": 36
       },
-      "rank": 434,
+      "rank": 433,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -51858,7 +51743,7 @@
         "firstDownsPerGame": 28,
         "epaPerTouch": 17
       },
-      "rank": 435,
+      "rank": 434,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -51880,7 +51765,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -234
+        "edge": -233
       }
     },
     {
@@ -51990,7 +51875,7 @@
         "firstDownsPerGame": 46,
         "epaPerTouch": 59
       },
-      "rank": 436,
+      "rank": 435,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -52001,7 +51886,7 @@
         "starterAhead": "Jha'Quan Jackson"
       },
       "market": {
-        "consensusRank": 292,
+        "consensusRank": 293,
         "positionRank": 94,
         "rawEcr": 300.33,
         "best": 178,
@@ -52012,7 +51897,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -144
+        "edge": -142
       }
     },
     {
@@ -52122,7 +52007,7 @@
         "firstDownsPerGame": 3,
         "epaPerTouch": 15
       },
-      "rank": 437,
+      "rank": 436,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -52144,7 +52029,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -177
+        "edge": -176
       }
     },
     {
@@ -52254,7 +52139,7 @@
         "firstDownsPerGame": 46,
         "epaPerTouch": 36
       },
-      "rank": 438,
+      "rank": 437,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -52391,7 +52276,7 @@
         "firstDownsPerGame": 50,
         "epaPerTouch": 19
       },
-      "rank": 439,
+      "rank": 438,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -52402,7 +52287,7 @@
         "starterAhead": "Luke McCaffrey"
       },
       "market": {
-        "consensusRank": 382,
+        "consensusRank": 383,
         "positionRank": 132,
         "rawEcr": 384,
         "best": 346,
@@ -52413,7 +52298,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -57
+        "edge": -55
       }
     },
     {
@@ -52492,7 +52377,7 @@
         "ceiling": 25,
         "floor": 13
       },
-      "rank": 440,
+      "rank": 439,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -52514,7 +52399,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -190
+        "edge": -189
       }
     },
     {
@@ -52624,7 +52509,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 4
       },
-      "rank": 441,
+      "rank": 440,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -52646,7 +52531,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -171
+        "edge": -170
       }
     },
     {
@@ -52761,7 +52646,7 @@
         "firstDownsPerGame": 12,
         "epaPerTouch": 10
       },
-      "rank": 442,
+      "rank": 441,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -52783,7 +52668,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -174
+        "edge": -173
       }
     },
     {
@@ -52898,7 +52783,7 @@
         "firstDownsPerGame": 28,
         "epaPerTouch": 100
       },
-      "rank": 443,
+      "rank": 442,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -52909,7 +52794,7 @@
         "starterAhead": "Gunnar Helm"
       },
       "market": {
-        "consensusRank": 369,
+        "consensusRank": 370,
         "positionRank": 45,
         "rawEcr": 355,
         "best": 309,
@@ -52920,7 +52805,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -74
+        "edge": -72
       }
     },
     {
@@ -53030,7 +52915,7 @@
         "firstDownsPerGame": 9,
         "epaPerTouch": 86
       },
-      "rank": 444,
+      "rank": 443,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -53162,7 +53047,7 @@
         "firstDownsPerGame": 4,
         "epaPerTouch": 9
       },
-      "rank": 445,
+      "rank": 444,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -53303,7 +53188,7 @@
         "firstDownsPerGame": 4,
         "epaPerTouch": 83
       },
-      "rank": 446,
+      "rank": 445,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -53314,7 +53199,7 @@
         "starterAhead": "T.J. Hockenson"
       },
       "market": {
-        "consensusRank": 374,
+        "consensusRank": 375,
         "positionRank": 47,
         "rawEcr": 361,
         "best": 359,
@@ -53325,7 +53210,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -72
+        "edge": -70
       }
     },
     {
@@ -53430,7 +53315,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 19
       },
-      "rank": 447,
+      "rank": 446,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -53441,7 +53326,7 @@
         "starterAhead": "Tez Johnson"
       },
       "market": {
-        "consensusRank": 358,
+        "consensusRank": 359,
         "positionRank": 124,
         "rawEcr": 345.5,
         "best": 329,
@@ -53452,7 +53337,7 @@
         "depthChartOrder": 8,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -89
+        "edge": -87
       }
     },
     {
@@ -53557,7 +53442,7 @@
         "firstDownsPerGame": 15,
         "epaPerTouch": 6
       },
-      "rank": 448,
+      "rank": 447,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -53568,7 +53453,7 @@
         "starterAhead": "Demond Claiborne"
       },
       "market": {
-        "consensusRank": 328,
+        "consensusRank": 329,
         "positionRank": 101,
         "rawEcr": 323.6,
         "best": 254,
@@ -53579,7 +53464,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -120
+        "edge": -118
       }
     },
     {
@@ -53689,7 +53574,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 63
       },
-      "rank": 449,
+      "rank": 448,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -53711,7 +53596,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -269
+        "edge": -268
       }
     },
     {
@@ -53816,7 +53701,7 @@
         "firstDownsPerGame": 12,
         "epaPerTouch": 30
       },
-      "rank": 450,
+      "rank": 449,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -53838,7 +53723,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -187
+        "edge": -186
       }
     },
     {
@@ -53912,7 +53797,7 @@
         "ceiling": 24,
         "floor": 12
       },
-      "rank": 451,
+      "rank": 450,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -54008,7 +53893,7 @@
         "ceiling": 51,
         "floor": 31
       },
-      "rank": 452,
+      "rank": 451,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -54104,7 +53989,7 @@
         "ceiling": 41,
         "floor": 14
       },
-      "rank": 453,
+      "rank": 452,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -54241,7 +54126,7 @@
         "firstDownsPerGame": 0,
         "epaPerTouch": 4
       },
-      "rank": 454,
+      "rank": 453,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -54252,7 +54137,7 @@
         "starterAhead": "Travis Kelce"
       },
       "market": {
-        "consensusRank": 335,
+        "consensusRank": 336,
         "positionRank": 40,
         "rawEcr": 328.09,
         "best": 281,
@@ -54263,7 +54148,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -119
+        "edge": -117
       }
     },
     {
@@ -54373,7 +54258,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 93
       },
-      "rank": 455,
+      "rank": 454,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -54384,7 +54269,7 @@
         "starterAhead": "Shane Zylstra"
       },
       "market": {
-        "consensusRank": 378,
+        "consensusRank": 379,
         "positionRank": 50,
         "rawEcr": 374,
         "best": 356,
@@ -54395,7 +54280,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -77
+        "edge": -75
       }
     },
     {
@@ -54469,7 +54354,7 @@
         "ceiling": 51,
         "floor": 31
       },
-      "rank": 456,
+      "rank": 455,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -54480,7 +54365,7 @@
         "starterAhead": "Luther Burden III"
       },
       "market": {
-        "consensusRank": 346,
+        "consensusRank": 347,
         "positionRank": 117,
         "rawEcr": 334,
         "best": 302,
@@ -54491,7 +54376,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -110
+        "edge": -108
       }
     },
     {
@@ -54565,7 +54450,7 @@
         "ceiling": 49,
         "floor": 31
       },
-      "rank": 457,
+      "rank": 456,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -54666,7 +54551,7 @@
         "ceiling": 49,
         "floor": 29
       },
-      "rank": 458,
+      "rank": 457,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -54766,7 +54651,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 459,
+      "rank": 458,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -54777,7 +54662,7 @@
         "starterAhead": "Jaden Nixon"
       },
       "market": {
-        "consensusRank": 375,
+        "consensusRank": 376,
         "positionRank": 113,
         "rawEcr": 365.5,
         "best": 335,
@@ -54788,7 +54673,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -84
+        "edge": -82
       }
     },
     {
@@ -54861,7 +54746,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 460,
+      "rank": 459,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -54883,7 +54768,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -264
+        "edge": -263
       }
     },
     {
@@ -54956,7 +54841,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 461,
+      "rank": 460,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -54978,7 +54863,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -187
+        "edge": -186
       }
     },
     {
@@ -55051,7 +54936,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 462,
+      "rank": 461,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -55062,7 +54947,7 @@
         "starterAhead": "Myles Montgomery"
       },
       "market": {
-        "consensusRank": 333,
+        "consensusRank": 334,
         "positionRank": 103,
         "rawEcr": 325.6,
         "best": 263,
@@ -55073,7 +54958,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -129
+        "edge": -127
       }
     },
     {
@@ -55146,7 +55031,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 463,
+      "rank": 462,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -55241,7 +55126,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 464,
+      "rank": 463,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -55336,7 +55221,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 465,
+      "rank": 464,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -55437,7 +55322,7 @@
         "ceiling": 17,
         "floor": 7
       },
-      "rank": 466,
+      "rank": 465,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -55459,7 +55344,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -221
+        "edge": -220
       }
     },
     {
@@ -55569,7 +55454,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 87
       },
-      "rank": 467,
+      "rank": 466,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -55580,7 +55465,7 @@
         "starterAhead": "Kyle Pitts"
       },
       "market": {
-        "consensusRank": 368,
+        "consensusRank": 369,
         "positionRank": 44,
         "rawEcr": 354,
         "best": 314,
@@ -55591,7 +55476,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -99
+        "edge": -97
       }
     },
     {
@@ -55701,7 +55586,7 @@
         "firstDownsPerGame": 33,
         "epaPerTouch": 57
       },
-      "rank": 468,
+      "rank": 467,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -55712,7 +55597,7 @@
         "starterAhead": "Pat Freiermuth"
       },
       "market": {
-        "consensusRank": 289,
+        "consensusRank": 290,
         "positionRank": 35,
         "rawEcr": 298.1,
         "best": 225,
@@ -55723,7 +55608,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -179
+        "edge": -177
       }
     },
     {
@@ -55838,7 +55723,7 @@
         "firstDownsPerGame": 30,
         "epaPerTouch": 2
       },
-      "rank": 469,
+      "rank": 468,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -55849,7 +55734,7 @@
         "starterAhead": "Dameon Pierce"
       },
       "market": {
-        "consensusRank": 373,
+        "consensusRank": 374,
         "positionRank": 112,
         "rawEcr": 360.67,
         "best": 287,
@@ -55860,7 +55745,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -96
+        "edge": -94
       }
     },
     {
@@ -55970,7 +55855,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 14
       },
-      "rank": 470,
+      "rank": 469,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -55981,7 +55866,7 @@
         "starterAhead": "KaVontae Turpin"
       },
       "market": {
-        "consensusRank": 379,
+        "consensusRank": 380,
         "positionRank": 130,
         "rawEcr": 375,
         "best": 318,
@@ -55992,7 +55877,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -91
+        "edge": -89
       }
     },
     {
@@ -56065,7 +55950,7 @@
         "ceiling": 16,
         "floor": 7
       },
-      "rank": 471,
+      "rank": 470,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -56197,7 +56082,7 @@
         "firstDownsPerGame": 41,
         "epaPerTouch": 24
       },
-      "rank": 472,
+      "rank": 471,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -56219,7 +56104,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -257
+        "edge": -256
       }
     },
     {
@@ -56329,7 +56214,7 @@
         "firstDownsPerGame": 41,
         "epaPerTouch": 41
       },
-      "rank": 473,
+      "rank": 472,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -56340,7 +56225,7 @@
         "starterAhead": "Dyami Brown"
       },
       "market": {
-        "consensusRank": 353,
+        "consensusRank": 354,
         "positionRank": 122,
         "rawEcr": 341.33,
         "best": 307,
@@ -56351,7 +56236,7 @@
         "depthChartOrder": 8,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -120
+        "edge": -118
       }
     },
     {
@@ -56470,7 +56355,7 @@
         "firstDownsPerGame": 4,
         "epaPerTouch": 56
       },
-      "rank": 474,
+      "rank": 473,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -56481,7 +56366,7 @@
         "starterAhead": "Tucker Kraft"
       },
       "market": {
-        "consensusRank": 370,
+        "consensusRank": 371,
         "positionRank": 46,
         "rawEcr": 355.64,
         "best": 293,
@@ -56492,7 +56377,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -104
+        "edge": -102
       }
     },
     {
@@ -56606,7 +56491,7 @@
         "firstDownsPerGame": 3,
         "epaPerTouch": 1
       },
-      "rank": 475,
+      "rank": 474,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -56617,7 +56502,7 @@
         "starterAhead": "Isaiah Hodgins"
       },
       "market": {
-        "consensusRank": 343,
+        "consensusRank": 344,
         "positionRank": 116,
         "rawEcr": 333.8,
         "best": 286,
@@ -56628,7 +56513,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -132
+        "edge": -130
       }
     },
     {
@@ -56701,7 +56586,7 @@
         "ceiling": 38,
         "floor": 9
       },
-      "rank": 476,
+      "rank": 475,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -56833,7 +56718,7 @@
         "firstDownsPerGame": 6,
         "epaPerTouch": 77
       },
-      "rank": 477,
+      "rank": 476,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -56855,7 +56740,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -216
+        "edge": -215
       }
     },
     {
@@ -56934,7 +56819,7 @@
         "ceiling": 47,
         "floor": 27
       },
-      "rank": 478,
+      "rank": 477,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -57030,7 +56915,7 @@
         "ceiling": 47,
         "floor": 27
       },
-      "rank": 479,
+      "rank": 478,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -57167,7 +57052,7 @@
         "firstDownsPerGame": 37,
         "epaPerTouch": 80
       },
-      "rank": 480,
+      "rank": 479,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -57178,7 +57063,7 @@
         "starterAhead": "Coleman Bennett"
       },
       "market": {
-        "consensusRank": 351,
+        "consensusRank": 352,
         "positionRank": 109,
         "rawEcr": 338.5,
         "best": 276,
@@ -57189,7 +57074,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -129
+        "edge": -127
       }
     },
     {
@@ -57263,7 +57148,7 @@
         "ceiling": 15,
         "floor": 4
       },
-      "rank": 481,
+      "rank": 480,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -57358,7 +57243,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 482,
+      "rank": 481,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -57380,7 +57265,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -442
+        "edge": -441
       }
     },
     {
@@ -57490,7 +57375,7 @@
         "firstDownsPerGame": 32,
         "epaPerTouch": 87
       },
-      "rank": 483,
+      "rank": 482,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -57501,7 +57386,7 @@
         "starterAhead": "Jahdae Walker"
       },
       "market": {
-        "consensusRank": 315,
+        "consensusRank": 316,
         "positionRank": 104,
         "rawEcr": 317.63,
         "best": 230,
@@ -57512,7 +57397,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -168
+        "edge": -166
       }
     },
     {
@@ -57617,7 +57502,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 57
       },
-      "rank": 484,
+      "rank": 483,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -57628,7 +57513,7 @@
         "starterAhead": "Isaiah Williams"
       },
       "market": {
-        "consensusRank": 371,
+        "consensusRank": 372,
         "positionRank": 129,
         "rawEcr": 356.25,
         "best": 318,
@@ -57639,7 +57524,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -113
+        "edge": -111
       }
     },
     {
@@ -57717,7 +57602,7 @@
         "ceiling": 34,
         "floor": 6
       },
-      "rank": 485,
+      "rank": 484,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -57818,7 +57703,7 @@
         "ceiling": 34,
         "floor": 6
       },
-      "rank": 486,
+      "rank": 485,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -57914,7 +57799,7 @@
         "ceiling": 46,
         "floor": 27
       },
-      "rank": 487,
+      "rank": 486,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -58045,7 +57930,7 @@
         "firstDownsPerGame": 1,
         "epaPerTouch": 99
       },
-      "rank": 488,
+      "rank": 487,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -58177,7 +58062,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 12
       },
-      "rank": 489,
+      "rank": 488,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -58188,7 +58073,7 @@
         "starterAhead": "Van Jefferson"
       },
       "market": {
-        "consensusRank": 359,
+        "consensusRank": 360,
         "positionRank": 125,
         "rawEcr": 346.78,
         "best": 298,
@@ -58199,7 +58084,7 @@
         "depthChartOrder": 7,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -130
+        "edge": -128
       }
     },
     {
@@ -58313,7 +58198,7 @@
         "firstDownsPerGame": 9,
         "epaPerTouch": 12
       },
-      "rank": 490,
+      "rank": 489,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -58324,7 +58209,7 @@
         "starterAhead": "Brashard Smith"
       },
       "market": {
-        "consensusRank": 282,
+        "consensusRank": 283,
         "positionRank": 86,
         "rawEcr": 291.91,
         "best": 182,
@@ -58335,7 +58220,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -208
+        "edge": -206
       }
     },
     {
@@ -58414,7 +58299,7 @@
         "ceiling": 13,
         "floor": 2
       },
-      "rank": 491,
+      "rank": 490,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -58515,7 +58400,7 @@
         "ceiling": 13,
         "floor": 2
       },
-      "rank": 492,
+      "rank": 491,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -58652,7 +58537,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 91
       },
-      "rank": 493,
+      "rank": 492,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -58789,7 +58674,7 @@
         "firstDownsPerGame": 6,
         "epaPerTouch": 34
       },
-      "rank": 494,
+      "rank": 493,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -58800,7 +58685,7 @@
         "starterAhead": "Davante Adams"
       },
       "market": {
-        "consensusRank": 366,
+        "consensusRank": 367,
         "positionRank": 127,
         "rawEcr": 353.5,
         "best": 298,
@@ -58811,7 +58696,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -128
+        "edge": -126
       }
     },
     {
@@ -58890,7 +58775,7 @@
         "ceiling": 30,
         "floor": 3
       },
-      "rank": 495,
+      "rank": 494,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -58996,7 +58881,7 @@
         "ceiling": 43,
         "floor": 27
       },
-      "rank": 496,
+      "rank": 495,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -59096,7 +58981,7 @@
         "ceiling": 12,
         "floor": 2
       },
-      "rank": 497,
+      "rank": 496,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -59192,7 +59077,7 @@
         "ceiling": 28,
         "floor": 3
       },
-      "rank": 498,
+      "rank": 497,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -59324,7 +59209,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 33
       },
-      "rank": 499,
+      "rank": 498,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -59335,7 +59220,7 @@
         "starterAhead": "Dominic Lovett"
       },
       "market": {
-        "consensusRank": 319,
+        "consensusRank": 320,
         "positionRank": 106,
         "rawEcr": 320,
         "best": 286,
@@ -59346,7 +59231,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -180
+        "edge": -178
       }
     },
     {
@@ -59456,7 +59341,7 @@
         "firstDownsPerGame": 37,
         "epaPerTouch": 2
       },
-      "rank": 500,
+      "rank": 499,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -59467,7 +59352,7 @@
         "starterAhead": "Albert Okwuegbunam"
       },
       "market": {
-        "consensusRank": 296,
+        "consensusRank": 297,
         "positionRank": 36,
         "rawEcr": 303.3,
         "best": 249,
@@ -59478,7 +59363,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -204
+        "edge": -202
       }
     },
     {
@@ -59587,7 +59472,7 @@
         "firstDownsPerGame": 32,
         "epaPerTouch": 9
       },
-      "rank": 501,
+      "rank": 500,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -59719,7 +59604,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 8
       },
-      "rank": 502,
+      "rank": 501,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -59741,7 +59626,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -281
+        "edge": -280
       }
     },
     {
@@ -59851,7 +59736,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 70
       },
-      "rank": 503,
+      "rank": 502,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -59862,7 +59747,7 @@
         "starterAhead": "David Moore"
       },
       "market": {
-        "consensusRank": 360,
+        "consensusRank": 361,
         "positionRank": 126,
         "rawEcr": 347,
         "best": 347,
@@ -59873,7 +59758,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -143
+        "edge": -141
       }
     },
     {
@@ -59983,7 +59868,7 @@
         "firstDownsPerGame": 4,
         "epaPerTouch": 31
       },
-      "rank": 504,
+      "rank": 503,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -60115,7 +60000,7 @@
         "firstDownsPerGame": 4,
         "epaPerTouch": 43
       },
-      "rank": 505,
+      "rank": 504,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -60137,7 +60022,7 @@
         "depthChartOrder": 1,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -296
+        "edge": -295
       }
     },
     {
@@ -60211,7 +60096,7 @@
         "ceiling": 25,
         "floor": 2
       },
-      "rank": 506,
+      "rank": 505,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -60338,7 +60223,7 @@
         "firstDownsPerGame": 3,
         "epaPerTouch": 100
       },
-      "rank": 507,
+      "rank": 506,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -60444,7 +60329,7 @@
         "ceiling": 11,
         "floor": 1
       },
-      "rank": 508,
+      "rank": 507,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -60581,7 +60466,7 @@
         "firstDownsPerGame": 47,
         "epaPerTouch": 56
       },
-      "rank": 509,
+      "rank": 508,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -60603,7 +60488,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -256
+        "edge": -255
       }
     },
     {
@@ -60713,7 +60598,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 18
       },
-      "rank": 510,
+      "rank": 509,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -60735,7 +60620,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -291
+        "edge": -290
       }
     },
     {
@@ -60854,7 +60739,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 5
       },
-      "rank": 511,
+      "rank": 510,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -60865,7 +60750,7 @@
         "starterAhead": "Jaylin Lane"
       },
       "market": {
-        "consensusRank": 326,
+        "consensusRank": 327,
         "positionRank": 111,
         "rawEcr": 322.91,
         "best": 225,
@@ -60876,7 +60761,7 @@
         "depthChartOrder": 6,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -185
+        "edge": -183
       }
     },
     {
@@ -60954,7 +60839,7 @@
         "ceiling": 40,
         "floor": 26
       },
-      "rank": 512,
+      "rank": 511,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -61060,7 +60945,7 @@
         "ceiling": 39,
         "floor": 26
       },
-      "rank": 513,
+      "rank": 512,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -61071,7 +60956,7 @@
         "starterAhead": "Tyquan Thornton"
       },
       "market": {
-        "consensusRank": 309,
+        "consensusRank": 310,
         "positionRank": 102,
         "rawEcr": 312.36,
         "best": 259,
@@ -61082,7 +60967,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -204
+        "edge": -202
       }
     },
     {
@@ -61192,7 +61077,7 @@
         "firstDownsPerGame": 4,
         "epaPerTouch": 80
       },
-      "rank": 514,
+      "rank": 513,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -61203,7 +61088,7 @@
         "starterAhead": "Evan Engram"
       },
       "market": {
-        "consensusRank": 376,
+        "consensusRank": 377,
         "positionRank": 48,
         "rawEcr": 373,
         "best": 353,
@@ -61214,7 +61099,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -138
+        "edge": -136
       }
     },
     {
@@ -61319,7 +61204,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 97
       },
-      "rank": 515,
+      "rank": 514,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -61341,7 +61226,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -280
+        "edge": -279
       }
     },
     {
@@ -61451,7 +61336,7 @@
         "firstDownsPerGame": 15,
         "epaPerTouch": 13
       },
-      "rank": 516,
+      "rank": 515,
       "tier": 4,
       "competition": {
         "depth": 2,
@@ -61462,7 +61347,7 @@
         "starterAhead": "Trey McBride"
       },
       "market": {
-        "consensusRank": 377,
+        "consensusRank": 378,
         "positionRank": 49,
         "rawEcr": 373.13,
         "best": 355,
@@ -61473,7 +61358,7 @@
         "depthChartOrder": 2,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -139
+        "edge": -137
       }
     },
     {
@@ -61547,7 +61432,7 @@
         "ceiling": 20,
         "floor": 0
       },
-      "rank": 517,
+      "rank": 516,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -61678,7 +61563,7 @@
         "firstDownsPerGame": 25,
         "epaPerTouch": 7
       },
-      "rank": 518,
+      "rank": 517,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -61810,7 +61695,7 @@
         "firstDownsPerGame": 6,
         "epaPerTouch": 9
       },
-      "rank": 519,
+      "rank": 518,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -61911,7 +61796,7 @@
         "ceiling": 7,
         "floor": 0
       },
-      "rank": 520,
+      "rank": 519,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -62043,7 +61928,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 6
       },
-      "rank": 521,
+      "rank": 520,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -62054,7 +61939,7 @@
         "starterAhead": "Tyler Scott"
       },
       "market": {
-        "consensusRank": 290,
+        "consensusRank": 291,
         "positionRank": 93,
         "rawEcr": 299.42,
         "best": 247,
@@ -62065,7 +61950,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -231
+        "edge": -229
       }
     },
     {
@@ -62139,7 +62024,7 @@
         "ceiling": 7,
         "floor": 0
       },
-      "rank": 522,
+      "rank": 521,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -62275,7 +62160,7 @@
         "firstDownsPerGame": 6,
         "epaPerTouch": 26
       },
-      "rank": 523,
+      "rank": 522,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -62371,7 +62256,7 @@
         "ceiling": 37,
         "floor": 25
       },
-      "rank": 524,
+      "rank": 523,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -62467,7 +62352,7 @@
         "ceiling": 37,
         "floor": 25
       },
-      "rank": 525,
+      "rank": 524,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -62598,7 +62483,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 3
       },
-      "rank": 526,
+      "rank": 525,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -62609,7 +62494,7 @@
         "starterAhead": "Terrace Marshall Jr."
       },
       "market": {
-        "consensusRank": 300,
+        "consensusRank": 301,
         "positionRank": 95,
         "rawEcr": 306,
         "best": 289,
@@ -62620,7 +62505,7 @@
         "depthChartOrder": 8,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -226
+        "edge": -224
       }
     },
     {
@@ -62724,7 +62609,7 @@
         "firstDownsPerGame": 15,
         "epaPerTouch": 5
       },
-      "rank": 527,
+      "rank": 526,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -62830,7 +62715,7 @@
         "ceiling": 36,
         "floor": 25
       },
-      "rank": 528,
+      "rank": 527,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -62841,7 +62726,7 @@
         "starterAhead": "Malik Turner"
       },
       "market": {
-        "consensusRank": 340,
+        "consensusRank": 341,
         "positionRank": 114,
         "rawEcr": 333,
         "best": 332,
@@ -62852,7 +62737,7 @@
         "depthChartOrder": 7,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -188
+        "edge": -186
       }
     },
     {
@@ -62957,7 +62842,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 3
       },
-      "rank": 529,
+      "rank": 528,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -63089,7 +62974,7 @@
         "firstDownsPerGame": 26,
         "epaPerTouch": 71
       },
-      "rank": 530,
+      "rank": 529,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -63100,7 +62985,7 @@
         "starterAhead": "Robert Henry Jr."
       },
       "market": {
-        "consensusRank": 283,
+        "consensusRank": 284,
         "positionRank": 87,
         "rawEcr": 293.25,
         "best": 237,
@@ -63111,7 +62996,7 @@
         "depthChartOrder": 3,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -247
+        "edge": -245
       }
     },
     {
@@ -63220,7 +63105,7 @@
         "firstDownsPerGame": 1,
         "epaPerTouch": 0
       },
-      "rank": 531,
+      "rank": 530,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -63356,7 +63241,7 @@
         "firstDownsPerGame": 1,
         "epaPerTouch": 16
       },
-      "rank": 532,
+      "rank": 531,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -63462,7 +63347,7 @@
         "ceiling": 36,
         "floor": 4
       },
-      "rank": 533,
+      "rank": 532,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -63589,7 +63474,7 @@
         "firstDownsPerGame": 19,
         "epaPerTouch": 24
       },
-      "rank": 534,
+      "rank": 533,
       "tier": 4,
       "competition": {
         "depth": 3,
@@ -63600,7 +63485,7 @@
         "starterAhead": "Cedric Tillman"
       },
       "market": {
-        "consensusRank": 281,
+        "consensusRank": 282,
         "positionRank": 91,
         "rawEcr": 290.99,
         "best": 220,
@@ -63611,7 +63496,7 @@
         "depthChartOrder": 5,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -253
+        "edge": -251
       }
     },
     {
@@ -63726,7 +63611,7 @@
         "firstDownsPerGame": 3,
         "epaPerTouch": 2
       },
-      "rank": 535,
+      "rank": 534,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -63822,7 +63707,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 536,
+      "rank": 535,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -63917,7 +63802,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 537,
+      "rank": 536,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -64012,7 +63897,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 538,
+      "rank": 537,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -64107,7 +63992,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 539,
+      "rank": 538,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -64203,7 +64088,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 540,
+      "rank": 539,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -64335,7 +64220,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 1
       },
-      "rank": 541,
+      "rank": 540,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -64462,7 +64347,7 @@
         "firstDownsPerGame": 0,
         "epaPerTouch": 11
       },
-      "rank": 542,
+      "rank": 541,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -64557,7 +64442,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 543,
+      "rank": 542,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -64657,7 +64542,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 544,
+      "rank": 543,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -64752,7 +64637,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 545,
+      "rank": 544,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -64847,7 +64732,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 546,
+      "rank": 545,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -64942,7 +64827,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 547,
+      "rank": 546,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -65037,7 +64922,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 548,
+      "rank": 547,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -65132,7 +65017,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 549,
+      "rank": 548,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -65227,7 +65112,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 550,
+      "rank": 549,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -65322,7 +65207,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 551,
+      "rank": 550,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -65417,7 +65302,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 552,
+      "rank": 551,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -65512,7 +65397,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 553,
+      "rank": 552,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -65608,7 +65493,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 554,
+      "rank": 553,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -65703,7 +65588,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 555,
+      "rank": 554,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -65798,7 +65683,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 556,
+      "rank": 555,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -65893,7 +65778,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 557,
+      "rank": 556,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -65988,7 +65873,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 558,
+      "rank": 557,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -66083,7 +65968,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 559,
+      "rank": 558,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -66178,7 +66063,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 560,
+      "rank": 559,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -66273,7 +66158,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 561,
+      "rank": 560,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -66368,7 +66253,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 562,
+      "rank": 561,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -66463,7 +66348,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 563,
+      "rank": 562,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -66558,7 +66443,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 564,
+      "rank": 563,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -66654,7 +66539,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 565,
+      "rank": 564,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -66749,7 +66634,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 566,
+      "rank": 565,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -66844,7 +66729,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 567,
+      "rank": 566,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -66939,7 +66824,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 568,
+      "rank": 567,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -67034,7 +66919,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 569,
+      "rank": 568,
       "tier": 4,
       "competition": {
         "depth": 4,
@@ -67129,7 +67014,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 570,
+      "rank": 569,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -67224,7 +67109,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 571,
+      "rank": 570,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -67319,7 +67204,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 572,
+      "rank": 571,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -67414,7 +67299,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 573,
+      "rank": 572,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -67509,7 +67394,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 574,
+      "rank": 573,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -67604,7 +67489,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 575,
+      "rank": 574,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -67699,7 +67584,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 576,
+      "rank": 575,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -67794,7 +67679,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 577,
+      "rank": 576,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -67889,7 +67774,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 578,
+      "rank": 577,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -67984,7 +67869,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 579,
+      "rank": 578,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -68079,7 +67964,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 580,
+      "rank": 579,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -68174,7 +68059,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 581,
+      "rank": 580,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -68269,7 +68154,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 582,
+      "rank": 581,
       "tier": 4,
       "competition": {
         "depth": 10,
@@ -68364,7 +68249,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 583,
+      "rank": 582,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -68459,7 +68344,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 584,
+      "rank": 583,
       "tier": 4,
       "competition": {
         "depth": 10,
@@ -68554,7 +68439,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 585,
+      "rank": 584,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -68649,7 +68534,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 586,
+      "rank": 585,
       "tier": 4,
       "competition": {
         "depth": 10,
@@ -68744,7 +68629,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 587,
+      "rank": 586,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -68839,7 +68724,7 @@
         "ceiling": 14,
         "floor": 4
       },
-      "rank": 588,
+      "rank": 587,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -68976,7 +68861,7 @@
         "firstDownsPerGame": 11,
         "epaPerTouch": 89
       },
-      "rank": 589,
+      "rank": 588,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -68987,7 +68872,7 @@
         "starterAhead": "Maurice Alexander"
       },
       "market": {
-        "consensusRank": 324,
+        "consensusRank": 325,
         "positionRank": 109,
         "rawEcr": 322.5,
         "best": 262,
@@ -68998,7 +68883,7 @@
         "depthChartOrder": 7,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -265
+        "edge": -263
       }
     },
     {
@@ -69113,7 +68998,7 @@
         "firstDownsPerGame": 0,
         "epaPerTouch": 34
       },
-      "rank": 590,
+      "rank": 589,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -69209,7 +69094,7 @@
         "ceiling": 13,
         "floor": 4
       },
-      "rank": 591,
+      "rank": 590,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -69336,7 +69221,7 @@
         "firstDownsPerGame": 0,
         "epaPerTouch": 0
       },
-      "rank": 592,
+      "rank": 591,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -69358,7 +69243,7 @@
         "depthChartOrder": 4,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -365
+        "edge": -364
       }
     },
     {
@@ -69432,7 +69317,7 @@
         "ceiling": 12,
         "floor": 0
       },
-      "rank": 593,
+      "rank": 592,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -69528,7 +69413,7 @@
         "ceiling": 12,
         "floor": 0
       },
-      "rank": 594,
+      "rank": 593,
       "tier": 4,
       "competition": {
         "depth": 10,
@@ -69650,7 +69535,7 @@
         "firstDownsPerGame": 0,
         "epaPerTouch": 99
       },
-      "rank": 595,
+      "rank": 594,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -69777,7 +69662,7 @@
         "firstDownsPerGame": 3,
         "epaPerTouch": 23
       },
-      "rank": 596,
+      "rank": 595,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -69909,7 +69794,7 @@
         "firstDownsPerGame": 1,
         "epaPerTouch": 44
       },
-      "rank": 597,
+      "rank": 596,
       "tier": 4,
       "competition": {
         "depth": 5,
@@ -70009,7 +69894,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 598,
+      "rank": 597,
       "tier": 4,
       "competition": {
         "depth": 6,
@@ -70109,7 +69994,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 599,
+      "rank": 598,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -70204,7 +70089,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 600,
+      "rank": 599,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -70299,7 +70184,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 601,
+      "rank": 600,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -70394,7 +70279,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 602,
+      "rank": 601,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -70489,7 +70374,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 603,
+      "rank": 602,
       "tier": 4,
       "competition": {
         "depth": 8,
@@ -70590,7 +70475,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 604,
+      "rank": 603,
       "tier": 4,
       "competition": {
         "depth": 9,
@@ -70685,7 +70570,7 @@
         "ceiling": 8,
         "floor": 0
       },
-      "rank": 605,
+      "rank": 604,
       "tier": 4,
       "competition": {
         "depth": 7,
@@ -70780,12 +70665,12 @@
       "vorp": 0,
       "auctionValue": 1,
       "percentiles": {
-        "points": 0,
+        "points": 3,
         "pointsPerGame": 0,
-        "ceiling": 0,
-        "floor": 0
+        "ceiling": 3,
+        "floor": 3
       },
-      "rank": 606,
+      "rank": 605,
       "tier": 4,
       "competition": {
         "depth": 1,
@@ -70808,6 +70693,106 @@
         "source": "FantasyPros expert consensus",
         "asOf": null,
         "edge": null
+      }
+    },
+    {
+      "gsis": "00-0036162",
+      "espnId": "3917232",
+      "name": "Tyler Bass",
+      "position": "K",
+      "team": "BUF",
+      "jersey": "16",
+      "age": 29,
+      "college": "Georgia Southern",
+      "experience": 6,
+      "draft": {
+        "year": 2020,
+        "round": 6,
+        "pick": 188,
+        "team": "BUF"
+      },
+      "snapShare": null,
+      "gamesMissed2025": 1,
+      "trend": "UNPROVEN",
+      "projection": {
+        "points": 43.2,
+        "pointsPerGame": 2.7,
+        "receptions": 0,
+        "expectedGames": 16,
+        "ageMultiplier": 1,
+        "basis": "draft round 6",
+        "gamesObserved": 0
+      },
+      "breakoutSeason": null,
+      "sleeperId": "7042",
+      "consistency": 5,
+      "floor": 28,
+      "ceiling": 63,
+      "byeWeek": 7,
+      "targetShare": null,
+      "lastSeasonGames": 0,
+      "injuryRisk": "LOW",
+      "ageRisk": "LOW",
+      "role": "COMMITTEE",
+      "usage": null,
+      "context": {
+        "playsPerGame": 63.3,
+        "secondsPerPlay": 32.7,
+        "neutralPassRate": 50.4,
+        "passRateOverExpected": -3,
+        "sackRateAllowed": 7.1,
+        "epaPerPlay": 0.138,
+        "redZoneTripsPerGame": 3.9
+      },
+      "durability": {
+        "seasons": [
+          {
+            "season": 2023,
+            "missed": 0
+          },
+          {
+            "season": 2024,
+            "missed": 0
+          },
+          {
+            "season": 2025,
+            "missed": 1
+          }
+        ],
+        "totalMissed": 1,
+        "reported": []
+      },
+      "vorp": 0,
+      "auctionValue": 1,
+      "percentiles": {
+        "points": 0,
+        "pointsPerGame": 0,
+        "ceiling": 0,
+        "floor": 0
+      },
+      "rank": 606,
+      "tier": 4,
+      "competition": {
+        "depth": 1,
+        "roomSize": 1,
+        "aheadBy": null,
+        "behindBy": null,
+        "nextUp": null,
+        "starterAhead": null
+      },
+      "market": {
+        "consensusRank": 278,
+        "positionRank": 18,
+        "rawEcr": 289.25,
+        "best": 193,
+        "worst": 409,
+        "spread": 53.3,
+        "ownership": 8.1,
+        "searchRank": 288,
+        "depthChartOrder": 1,
+        "source": "FantasyPros expert consensus",
+        "asOf": "2026-08-21",
+        "edge": -328
       }
     },
     {
@@ -72383,7 +72368,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 291,
+        "consensusRank": 292,
         "positionRank": 22,
         "rawEcr": 300.2,
         "best": 191,
@@ -72394,7 +72379,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -328
+        "edge": -327
       }
     },
     {
@@ -72452,7 +72437,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 334,
+        "consensusRank": 335,
         "positionRank": 24,
         "rawEcr": 326.22,
         "best": 187,
@@ -72463,7 +72448,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -286
+        "edge": -285
       }
     },
     {
@@ -72866,7 +72851,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 372,
+        "consensusRank": 373,
         "positionRank": 25,
         "rawEcr": 358,
         "best": 354,
@@ -72877,7 +72862,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -254
+        "edge": -253
       }
     },
     {
@@ -73004,7 +72989,7 @@
         "starterAhead": null
       },
       "market": {
-        "consensusRank": 320,
+        "consensusRank": 321,
         "positionRank": 23,
         "rawEcr": 320.2,
         "best": 191,
@@ -73015,7 +73000,7 @@
         "depthChartOrder": null,
         "source": "FantasyPros expert consensus",
         "asOf": "2026-08-21",
-        "edge": -308
+        "edge": -307
       }
     }
   ]

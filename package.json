@@ -11,6 +11,7 @@
     "build:single": "SINGLE_FILE=true VITE_ROUTER=hash vite build && node scripts/build-single.mjs",
     "fetch:nfl": "node scripts/fetch-nfl-data.mjs",
     "build:pool": "node scripts/build-player-pool.mjs",
+    "fetch:adp": "node scripts/fetch-adp.mjs",
     "backtest": "node scripts/backtest-projections.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
