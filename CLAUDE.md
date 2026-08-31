@@ -616,6 +616,89 @@ bound silently and wrongly. Imported values replace ours everywhere including
 in the advice, because an opinion nothing acts on is decoration; ours survives
 on `player.modelValue` and the board marks whose number it is showing.
 
+**The card was a photograph with six numbers under it.** Two fifths of every
+card was an 88x64 headshot in an 84px band, the price was one cell of a
+three-up grid below it at the same weight as "Rank", and the team colour was a
+42% gradient across the whole head — so twelve different backgrounds sat under
+one column of figures and a bright club fought the name for attention. What it
+actually carried was name, position, club, tier, price, projection, rank and
+three usage figures whose percentile bars were 2px hairlines under 8px labels.
+Everything else the pool knows — the floor-to-ceiling range, the disagreement
+with the room, weekly consistency, games missed, whether he is in a timeshare,
+what the research file found last Tuesday, and the gain over the man the snake
+hands you free — was two clicks away in a panel nobody opens with money on the
+table.
+
+It is a dossier now. The photo is a 36px mark beside the name, the team colour
+is a 3px spine so every card's ground is the same and the prices down a column
+can be compared, and the price is the second thing read after the name because
+that is the order an auction reads in. Under it: projection, VORP and points
+per dollar; a floor-to-ceiling track with the projection's position on it,
+which is the shape of the bet rather than its size — two backs projected at 240
+are not the same bid when one runs 210-260 and the other 150-380; our rank
+beside the room's, labelled, because `adp` is whatever is _driving_ the board
+and `modelRank` is always ours and the card used to print one of them under the
+heading "Rank"; three usage figures with their standing in the position as a
+real bar and the percentile printed at the end of it; the snake gain; the
+research headline; and chips for a timeshare, games missed and a trend. The
+card went from 260px to about 300 and from six facts to nineteen.
+
+**The gain is on every card, and it costs nothing, which took a design.**
+`gainOverSnake` builds a whole outlook per call — a market sort over six
+hundred players — so sixty cards would be sixty sorts on every render, which is
+exactly the cost the board was measured and fixed for once. `getBoardGains()`
+builds the outlook a single time and each player costs a lookup and a
+subtraction. It is handed to the card as three **primitives** rather than as
+the object the engine returns, because an object prop is a new reference on
+every render and would re-render all sixty cards on every pick — the same
+objection that keeps the adjusted price off the card. A card's numbers only
+change when its own position's free man does, so the memo holds. Measured the
+way the original was: 639ms to nominate under a 4x CPU throttle, against the
+663ms the board was left at.
+
+It carries the roster-aware bar rather than a cheaper position-level one,
+because quoting the gap to the best free back for a third running back when
+both your slots are full is the specific way this format is lost. And where the
+order has not been drawn it prints the range with no name attached — the two
+ends are two different free men, and putting the worst one's name beside both
+numbers would say the low end was measured against somebody it was not.
+
+**Fifteen identical pills in one wrapping row is a menu with the labels rubbed
+off.** The top bar carried a wordmark, three readouts, a progress bar taking
+`flex: 1` of the one row everything had to fit on, a clock, and eleven buttons
+of identical weight — with Reset, which deletes the afternoon, sitting inline
+between Server and the edge. It is three groups now: what the auction touches
+is solid, what is set up once is quiet until hovered, and Reset is alone at the
+end in the colour of the thing it does. The progress bar is the header's own
+bottom edge, two pixels, saying continuously what the "0/639" beside it says
+exactly.
+
+**The bid box was below the fold.** The stage lived in the 380px aside and its
+own content is about nine hundred pixels tall, so the winning-team select, the
+bid stepper and SOLD — the entire mechanism of the night — were reachable only
+by scrolling a sub-panel while somebody shouts a number across the room.
+Meanwhile the board beside it had 1100px to hold four cards, and when a search
+was filtered to one name, seventy per cent of the screen was empty.
+
+The block is a full-width band now, in three columns: who he is, what he is
+worth, and what you are doing about it. The reading column is the one that
+varies — a gain line, a research flag, a competition list — so it scrolls
+rather than growing the band, because a band that changes height moves the
+controls and the controls not moving is the whole point of a band. Header and
+band share one sticky context rather than the band guessing an offset under a
+header that wraps: at any width where the setup row wrapped, a fixed offset
+tucked the block underneath the header and hid the bid box behind the thing
+meant to be above it. With nobody on the block the band is a single line, not a
+two-hundred-pixel empty panel across the top of the board.
+
+**The tokens were three greys and a gap.** There was no type scale, so eight
+components invented their own and a stat label and a section heading came out
+the same size; no spacing scale beyond one gutter; no elevation and no motion
+token. There is one of each now, plus a verdict language — good, warn, bad,
+info, each with a paired background and border — because "this bid is a
+mistake" is rendered on the card, the stage, the market panel and the bargain
+board, and those four were each picking their own green.
+
 **The board renders a page at a time, and it is not a preference.** Measured
 before it was changed: under a 4x CPU throttle, nominating froze the interface
 for 4.3 seconds because React mounts a card per player and the board handed it

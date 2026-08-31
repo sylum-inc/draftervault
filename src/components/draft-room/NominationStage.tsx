@@ -209,10 +209,13 @@ export const NominationStage = ({
   const snake = mode === 'snake';
 
   if (!player) {
+    // One line, across the width. Nothing is being decided, so the band has
+    // nothing to hold — and a two-hundred-pixel empty panel across the top of
+    // the board is the board paying for a message.
     return (
-      <section className="dr-panel dr-stage is-empty" aria-label="Nomination">
+      <section className="dr-panel dr-stage dr-stage-empty is-empty" aria-label="Nomination">
         {snake && onTheClock && (
-          <p className="dr-eyebrow" style={{ marginBottom: 8 }}>
+          <p className="dr-eyebrow" style={{ margin: 0 }}>
             {/* Both numbers, because they diverge and each is the answer to a
                 different question. `pick` is the seat on the printed board;
                 `overall` is what somebody at the table actually calls out. A
@@ -223,21 +226,10 @@ export const NominationStage = ({
             {onTheClock.team.name} on the clock
           </p>
         )}
-        <p className="dr-empty">
-          {snake ? (
-            <>
-              The auction is over. Pick a player from the board to hand him to the team on the
-              clock.
-              <br />
-              Nothing costs anything from here.
-            </>
-          ) : (
-            <>
-              Pick a player from the board to put them up for auction.
-              <br />
-              Their valuation and bid controls appear here.
-            </>
-          )}
+        <p className="dr-empty" style={{ margin: 0, padding: 0 }}>
+          {snake
+            ? 'The auction is over — pick a player from the board to hand him to the team on the clock. Nothing costs anything from here.'
+            : 'Pick a player from the board to put him up for auction. His valuation and the bid controls appear here.'}
         </p>
       </section>
     );
@@ -259,6 +251,7 @@ export const NominationStage = ({
     <section
       className="dr-panel dr-stage"
       style={style}
+      data-mode={snake ? 'snake' : 'auction'}
       aria-label={snake ? `Snake pick: ${player.name}` : `Nomination: ${player.name}`}
     >
       {snake && onTheClock && (
@@ -271,261 +264,274 @@ export const NominationStage = ({
         </p>
       )}
 
-      <div className="dr-stage-hero">
-        {logo && <img className="dr-stage-logo" src={logo} alt="" aria-hidden="true" />}
-        <Headshot
-          identity={identity}
-          fallbackName={player.name}
-          width={208}
-          className="dr-stage-photo"
-        />
-        <div>
-          <h2 className="dr-stage-name">{identity?.name ?? player.name}</h2>
-          <p className="dr-stage-sub">
-            <span className="dr-pos">{player.position}</span>
-            {team}
-            {identity?.jersey && <span className="dr-num">#{identity.jersey}</span>}
-            {identity?.age && <span className="dr-num">{identity.age}y</span>}
-            {/* Where the backtest found this board least reliable, said at the
+      {/* Three columns, because a bid is three questions in a fixed order: who
+          is this, what is he worth, what am I doing about it. The stage used to
+          be a single vertical stack in a 380px rail, which put the winning-team
+          select and the SOLD button nine hundred pixels down — the two controls
+          the whole night runs through, reachable only by scrolling a sub-panel
+          while somebody is shouting a number across the room. Across the full
+          width they are always in the same place and always on screen. */}
+      <div className="dr-stage-who">
+        <div className="dr-stage-hero">
+          {logo && <img className="dr-stage-logo" src={logo} alt="" aria-hidden="true" />}
+          <Headshot
+            identity={identity}
+            fallbackName={player.name}
+            width={124}
+            className="dr-stage-photo"
+          />
+          <div>
+            <h2 className="dr-stage-name">{identity?.name ?? player.name}</h2>
+            <p className="dr-stage-sub">
+              <span className="dr-pos">{player.position}</span>
+              {team}
+              {identity?.jersey && <span className="dr-num">#{identity.jersey}</span>}
+              {identity?.age && <span className="dr-num">{identity.age}y</span>}
+              {/* Where the backtest found this board least reliable, said at the
                 moment money is on the table rather than only in the browsing
                 panel. `npm run backtest` scores the model against three
                 held-out seasons of real draft-market ADP and the market wins
                 on what a bid buys, so the price two tiles down is worth a
                 caveat exactly here — a finding kept in a document is a finding
                 nobody has while a name is being called. */}
-            {modelCaveats(player).map((caveat) => (
-              <span key={caveat.id} className="dr-bargain-caveat" title={caveat.detail}>
-                {caveat.label}
-              </span>
-            ))}
-          </p>
+              {modelCaveats(player).map((caveat) => (
+                <span key={caveat.id} className="dr-bargain-caveat" title={caveat.detail}>
+                  {caveat.label}
+                </span>
+              ))}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <dl className="dr-stage-tiles">
-        {/* Money in the auction, the board in the snake. A price and a ceiling
+        <dl className="dr-stage-tiles">
+          {/* Money in the auction, the board in the snake. A price and a ceiling
             are the two numbers that decide a bid; neither says anything about a
             pick that costs nothing, where the question is where he ranks and
             what he is projected to do. */}
-        {snake ? (
-          <>
-            <div className="dr-tile">
-              <dt>Our rank</dt>
-              <dd style={{ color: 'var(--dr-value)' }}>#{player.adp}</dd>
-            </div>
-            <div className="dr-tile">
-              <dt>Bye</dt>
-              <dd>{player.byeWeek || '—'}</dd>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="dr-tile">
-              <dt>Est. value</dt>
-              <dd style={{ color: 'var(--dr-value)' }}>
-                ${player.estimatedValue}
-                {/* The list price is what the board was priced at; the second
+          {snake ? (
+            <>
+              <div className="dr-tile">
+                <dt>Our rank</dt>
+                <dd style={{ color: 'var(--dr-value)' }}>#{player.adp}</dd>
+              </div>
+              <div className="dr-tile">
+                <dt>Bye</dt>
+                <dd>{player.byeWeek || '—'}</dd>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="dr-tile">
+                <dt>Est. value</dt>
+                <dd style={{ color: 'var(--dr-value)' }}>
+                  ${player.estimatedValue}
+                  {/* The list price is what the board was priced at; the second
                     number is what the money still in the room says it is worth
                     tonight. Printed together and both labelled, because a
                     single adjusted number with the multiplier hidden is a
                     number nobody can argue with — and arguing with it is the
                     job. Identical figures are not worth two lines. */}
-                {adjusted != null && adjusted !== player.estimatedValue && (
-                  <span
-                    className="dr-tile-note"
-                    title="List price restated at the room's inflation"
-                  >
-                    ${adjusted} at {inflation.toFixed(2)}×
-                  </span>
-                )}
-              </dd>
-            </div>
-            <div className="dr-tile">
-              <dt>Max bid</dt>
-              <dd>${analytics ? Math.round(analytics.maxBid) : '—'}</dd>
-            </div>
-          </>
-        )}
-        {/* A market-only player carries placeholder zeroes because `Player`
+                  {adjusted != null && adjusted !== player.estimatedValue && (
+                    <span
+                      className="dr-tile-note"
+                      title="List price restated at the room's inflation"
+                    >
+                      ${adjusted} at {inflation.toFixed(2)}×
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div className="dr-tile">
+                <dt>Max bid</dt>
+                <dd>${analytics ? Math.round(analytics.maxBid) : '—'}</dd>
+              </div>
+            </>
+          )}
+          {/* A market-only player carries placeholder zeroes because `Player`
             requires numbers here. This is the panel where money is decided, so
             it is the last place that may print one: "Projected 0" beside a bid
             box reads as a measurement, and the measurement does not exist. */}
-        <div className="dr-tile">
-          <dt>Projected</dt>
-          <dd>{player.marketOnly ? '—' : player.projectedPoints}</dd>
-        </div>
-        <div className="dr-tile">
-          <dt>VORP</dt>
-          <dd>{player.marketOnly ? '—' : player.valueOverReplacement}</dd>
-        </div>
-      </dl>
+          <div className="dr-tile">
+            <dt>Projected</dt>
+            <dd>{player.marketOnly ? '—' : player.projectedPoints}</dd>
+          </div>
+          <div className="dr-tile">
+            <dt>VORP</dt>
+            <dd>{player.marketOnly ? '—' : player.valueOverReplacement}</dd>
+          </div>
+        </dl>
+      </div>
 
-      {/* What he adds to *your* lineup, not to a lineup in the abstract.
+      <div className="dr-stage-read">
+        {/* What he adds to *your* lineup, not to a lineup in the abstract.
           Once your slots at his position are full he is competing for the flex,
           where the bar is the best free player from any flex position; once
           that is gone he is a bench body and adds nothing that scores, whatever
           his projection says. Quoting the position-level gain there is how a
           budget goes on a fourth running back. */}
-      {!snakeGain && snakeBounds && !player.marketOnly && (
-        <p className="dr-stage-snakegain" data-slot={snakeBounds.high.slot}>
-          {snakeBounds.high.slot === 'bench' ? (
-            <b style={{ color: 'var(--dr-danger)' }}>Bench only.</b>
-          ) : snakeBounds.low.gain === snakeBounds.high.gain ? (
-            <>
-              Buying him gains{' '}
-              <b
-                style={{
-                  color: snakeBounds.high.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)',
-                }}
-              >
-                {snakeBounds.high.gain > 0 ? '+' : ''}
-                {snakeBounds.high.gain} pts
-              </b>{' '}
-              over {snakeBounds.high.free} ({snakeBounds.high.freePoints}), free in the snake —{' '}
-              <b>at any draw</b>.
-            </>
-          ) : (
-            <>
-              Buying him gains{' '}
-              <b
-                style={{
-                  color: snakeBounds.high.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)',
-                }}
-              >
-                {snakeBounds.low.gain > 0 ? '+' : ''}
-                {snakeBounds.low.gain} to {snakeBounds.high.gain > 0 ? '+' : ''}
-                {snakeBounds.high.gain} pts
-              </b>{' '}
-              over the free man — {snakeBounds.low.free} picking first, {snakeBounds.high.free}{' '}
-              picking last.
-            </>
-          )}{' '}
-          <span className="dr-stage-slot">{snakeBounds.high.note}</span>
-          {/* The order has not been drawn, so this is a bound rather than a
+        {!snakeGain && snakeBounds && !player.marketOnly && (
+          <p className="dr-stage-snakegain" data-slot={snakeBounds.high.slot}>
+            {snakeBounds.high.slot === 'bench' ? (
+              <b style={{ color: 'var(--dr-danger)' }}>Bench only.</b>
+            ) : snakeBounds.low.gain === snakeBounds.high.gain ? (
+              <>
+                Buying him gains{' '}
+                <b
+                  style={{
+                    color: snakeBounds.high.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)',
+                  }}
+                >
+                  {snakeBounds.high.gain > 0 ? '+' : ''}
+                  {snakeBounds.high.gain} pts
+                </b>{' '}
+                over {snakeBounds.high.free} ({snakeBounds.high.freePoints}), free in the snake —{' '}
+                <b>at any draw</b>.
+              </>
+            ) : (
+              <>
+                Buying him gains{' '}
+                <b
+                  style={{
+                    color: snakeBounds.high.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)',
+                  }}
+                >
+                  {snakeBounds.low.gain > 0 ? '+' : ''}
+                  {snakeBounds.low.gain} to {snakeBounds.high.gain > 0 ? '+' : ''}
+                  {snakeBounds.high.gain} pts
+                </b>{' '}
+                over the free man — {snakeBounds.low.free} picking first, {snakeBounds.high.free}{' '}
+                picking last.
+              </>
+            )}{' '}
+            <span className="dr-stage-slot">{snakeBounds.high.note}</span>
+            {/* The order has not been drawn, so this is a bound rather than a
               number: the true figure is one of the twelve and every one of them
               is inside it. Saying so is what keeps it from reading as an
               estimate somebody made — but only where it is actually a range.
               On a settled row the line already says "at any draw", and adding
               "this is the range" after it reads as a contradiction of the one
               thing that row is claiming. */}
-          {snakeBounds.low.gain !== snakeBounds.high.gain && (
-            <span className="dr-stage-slot">
-              {' '}
-              Snake order not drawn — this is the range across it.
-            </span>
-          )}
-          {snakeBounds.high.free && freeManResearch && freeManResearch.direction !== 'NEUTRAL' && (
-            <span
-              className="dr-stage-freeflag"
-              data-direction={freeManResearch.direction}
-              title={freeManResearch.headline}
-            >
-              <b>{snakeBounds.high.free} is flagged:</b> {freeManResearch.headline} &mdash;{' '}
-              {freeManResearch.direction === 'FADE'
-                ? 'so the gain above may understate this bid.'
-                : 'so the gain above may overstate this bid.'}
-            </span>
-          )}
-        </p>
-      )}
+            {snakeBounds.low.gain !== snakeBounds.high.gain && (
+              <span className="dr-stage-slot">
+                {' '}
+                Snake order not drawn — this is the range across it.
+              </span>
+            )}
+            {snakeBounds.high.free &&
+              freeManResearch &&
+              freeManResearch.direction !== 'NEUTRAL' && (
+                <span
+                  className="dr-stage-freeflag"
+                  data-direction={freeManResearch.direction}
+                  title={freeManResearch.headline}
+                >
+                  <b>{snakeBounds.high.free} is flagged:</b> {freeManResearch.headline} &mdash;{' '}
+                  {freeManResearch.direction === 'FADE'
+                    ? 'so the gain above may understate this bid.'
+                    : 'so the gain above may overstate this bid.'}
+                </span>
+              )}
+          </p>
+        )}
 
-      {snakeGain && !player.marketOnly && (
-        <p className="dr-stage-snakegain" data-slot={snakeGain.slot}>
-          {snakeGain.slot === 'bench' ? (
-            <b style={{ color: 'var(--dr-danger)' }}>Bench only.</b>
-          ) : (
-            <>
-              Buying him gains{' '}
-              <b style={{ color: snakeGain.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)' }}>
-                {snakeGain.gain > 0 ? '+' : ''}
-                {snakeGain.gain} pts
-              </b>{' '}
-              over {snakeGain.free} ({snakeGain.freePoints}), free in the snake.
-            </>
-          )}{' '}
-          <span className="dr-stage-slot">{snakeGain.note}</span>
-          {snakeGain.free && freeManResearch && freeManResearch.direction !== 'NEUTRAL' && (
-            <span
-              className="dr-stage-freeflag"
-              data-direction={freeManResearch.direction}
-              title={freeManResearch.headline}
-            >
-              {/* Which way the gain is soft, and never by how much. A FADE on
+        {snakeGain && !player.marketOnly && (
+          <p className="dr-stage-snakegain" data-slot={snakeGain.slot}>
+            {snakeGain.slot === 'bench' ? (
+              <b style={{ color: 'var(--dr-danger)' }}>Bench only.</b>
+            ) : (
+              <>
+                Buying him gains{' '}
+                <b style={{ color: snakeGain.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)' }}>
+                  {snakeGain.gain > 0 ? '+' : ''}
+                  {snakeGain.gain} pts
+                </b>{' '}
+                over {snakeGain.free} ({snakeGain.freePoints}), free in the snake.
+              </>
+            )}{' '}
+            <span className="dr-stage-slot">{snakeGain.note}</span>
+            {snakeGain.free && freeManResearch && freeManResearch.direction !== 'NEUTRAL' && (
+              <span
+                className="dr-stage-freeflag"
+                data-direction={freeManResearch.direction}
+                title={freeManResearch.headline}
+              >
+                {/* Which way the gain is soft, and never by how much. A FADE on
                   the free man means he may do less than the projection this
                   difference was taken against, so the bid is worth more than
                   the number says — and the other way for a PAY_UP. */}
-              <b>{snakeGain.free} is flagged:</b> {freeManResearch.headline} &mdash;{' '}
-              <em>
-                {freeManResearch.direction === 'FADE'
-                  ? 'so the gain above may understate this bid.'
-                  : 'so the gain above may overstate it.'}
-              </em>
-            </span>
-          )}
-        </p>
-      )}
-
-      {player.marketOnly && (
-        <p className="dr-stage-marketonly">
-          <strong>No projection.</strong> The pool has never heard of him — nflverse&rsquo;s roster
-          file does not carry him yet. He is on the board because real drafts are taking him
-          {player.customRanking?.rank
-            ? ` around ${player.position}${player.customRanking.rank}`
-            : ''}
-          , and his price is whatever that rank buys on our curve. Every other number here would be
-          invented, so none is shown.
-        </p>
-      )}
-
-      <div className="dr-stage-range">
-        {!player.marketOnly && (
-          <RangeBar
-            floor={player.floor}
-            projection={player.projectedPoints}
-            ceiling={player.upside}
-            replacement={player.projectedPoints - player.valueOverReplacement || undefined}
-          />
+                <b>{snakeGain.free} is flagged:</b> {freeManResearch.headline} &mdash;{' '}
+                <em>
+                  {freeManResearch.direction === 'FADE'
+                    ? 'so the gain above may understate this bid.'
+                    : 'so the gain above may overstate it.'}
+                </em>
+              </span>
+            )}
+          </p>
         )}
-        <div className="dr-stage-signals" hidden={player.marketOnly}>
-          {player.percentiles?.points != null && (
-            <span title={`${player.percentiles.points}th percentile among ${player.position}s`}>
-              <em>vs {player.position}</em>
-              <strong className="dr-num">{player.percentiles.points}th</strong>
-            </span>
-          )}
-          <span>
-            <em>Consistency</em>
-            <strong className="dr-num">{player.consistency ?? '—'}/10</strong>
-          </span>
-          <span>
-            <em>Snap</em>
-            <strong className="dr-num">
-              {player.snapPercentage != null ? `${Math.round(player.snapPercentage)}%` : '—'}
-            </strong>
-          </span>
-          <span>
-            <em>Trend</em>
-            <strong
-              style={{
-                color:
-                  player.recentTrends === 'RISING'
-                    ? 'var(--dr-value)'
-                    : player.recentTrends === 'DECLINING'
-                      ? 'var(--dr-danger)'
-                      : 'var(--dr-ink-muted)',
-              }}
-            >
-              {player.recentTrends === 'RISING'
-                ? '▲'
-                : player.recentTrends === 'DECLINING'
-                  ? '▼'
-                  : '–'}
-            </strong>
-          </span>
-        </div>
-      </div>
 
-      {/*
+        {player.marketOnly && (
+          <p className="dr-stage-marketonly">
+            <strong>No projection.</strong> The pool has never heard of him — nflverse&rsquo;s
+            roster file does not carry him yet. He is on the board because real drafts are taking
+            him
+            {player.customRanking?.rank
+              ? ` around ${player.position}${player.customRanking.rank}`
+              : ''}
+            , and his price is whatever that rank buys on our curve. Every other number here would
+            be invented, so none is shown.
+          </p>
+        )}
+
+        <div className="dr-stage-range">
+          {!player.marketOnly && (
+            <RangeBar
+              floor={player.floor}
+              projection={player.projectedPoints}
+              ceiling={player.upside}
+              replacement={player.projectedPoints - player.valueOverReplacement || undefined}
+            />
+          )}
+          <div className="dr-stage-signals" hidden={player.marketOnly}>
+            {player.percentiles?.points != null && (
+              <span title={`${player.percentiles.points}th percentile among ${player.position}s`}>
+                <em>vs {player.position}</em>
+                <strong className="dr-num">{player.percentiles.points}th</strong>
+              </span>
+            )}
+            <span>
+              <em>Consistency</em>
+              <strong className="dr-num">{player.consistency ?? '—'}/10</strong>
+            </span>
+            <span>
+              <em>Snap</em>
+              <strong className="dr-num">
+                {player.snapPercentage != null ? `${Math.round(player.snapPercentage)}%` : '—'}
+              </strong>
+            </span>
+            <span>
+              <em>Trend</em>
+              <strong
+                style={{
+                  color:
+                    player.recentTrends === 'RISING'
+                      ? 'var(--dr-value)'
+                      : player.recentTrends === 'DECLINING'
+                        ? 'var(--dr-danger)'
+                        : 'var(--dr-ink-muted)',
+                }}
+              >
+                {player.recentTrends === 'RISING'
+                  ? '▲'
+                  : player.recentTrends === 'DECLINING'
+                    ? '▼'
+                    : '–'}
+              </strong>
+            </span>
+          </div>
+        </div>
+
+        {/*
         Who can still take him off you.
 
         Every figure here is a rule rather than a reading: `ceiling` is the
@@ -542,51 +548,53 @@ export const NominationStage = ({
         What none of it says is whether they *would*. That is an estimate and
         it is in the advisor's dashed box, deliberately not here.
       */}
-      {!snake && competition && (
-        <div className="dr-outbid">
-          <div className="dr-outbid-head">
-            <span className="dr-eyebrow">
-              {competition.currentBid > 0
-                ? `Can beat $${competition.currentBid}`
-                : 'Can bid on him'}
-            </span>
-            <span className="dr-outbid-caveat">what the rules allow</span>
-          </div>
+        {!snake && competition && (
+          <div className="dr-outbid">
+            <div className="dr-outbid-head">
+              <span className="dr-eyebrow">
+                {competition.currentBid > 0
+                  ? `Can beat $${competition.currentBid}`
+                  : 'Can bid on him'}
+              </span>
+              <span className="dr-outbid-caveat">what the rules allow</span>
+            </div>
 
-          {competition.rivals.length === 0 ? (
-            <p className="dr-outbid-empty">
-              Nobody else can.{' '}
-              {competition.blocked > 0 && `${competition.blocked} have no room for him`}
-              {competition.blocked > 0 && competition.outspent > 0 && '; '}
-              {competition.outspent > 0 && `${competition.outspent} cannot reach the bid`}
-              {(competition.blocked > 0 || competition.outspent > 0) && '.'}
+            {competition.rivals.length === 0 ? (
+              <p className="dr-outbid-empty">
+                Nobody else can.{' '}
+                {competition.blocked > 0 && `${competition.blocked} have no room for him`}
+                {competition.blocked > 0 && competition.outspent > 0 && '; '}
+                {competition.outspent > 0 && `${competition.outspent} cannot reach the bid`}
+                {(competition.blocked > 0 || competition.outspent > 0) && '.'}
+              </p>
+            ) : (
+              <ul className="dr-outbid-list">
+                {competition.rivals.slice(0, 3).map((rival) => (
+                  <li key={rival.team.id}>
+                    <span className="dr-outbid-team">{rival.team.name}</span>
+                    <span className="dr-num dr-outbid-ceiling">${rival.ceiling}</span>
+                    <span className="dr-outbid-note">
+                      {rival.need > 0
+                        ? `${rival.need} ${player.position} slot${rival.need === 1 ? '' : 's'} open`
+                        : `${rival.have} at ${player.position} already`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <p className="dr-footnote">
+              {competition.rivals.length > 3 &&
+                `${competition.rivals.length - 3} more can beat it. `}
+              {!competition.mine
+                ? 'Mark a team as yours in league settings to see your own ceiling here.'
+                : !competition.mine.canRoster
+                  ? `You have no room for another ${player.position}.`
+                  : `You can go to $${competition.mine.ceiling}.`}
             </p>
-          ) : (
-            <ul className="dr-outbid-list">
-              {competition.rivals.slice(0, 5).map((rival) => (
-                <li key={rival.team.id}>
-                  <span className="dr-outbid-team">{rival.team.name}</span>
-                  <span className="dr-num dr-outbid-ceiling">${rival.ceiling}</span>
-                  <span className="dr-outbid-note">
-                    {rival.need > 0
-                      ? `${rival.need} ${player.position} slot${rival.need === 1 ? '' : 's'} open`
-                      : `${rival.have} at ${player.position} already`}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <p className="dr-footnote">
-            {competition.rivals.length > 5 && `${competition.rivals.length - 5} more can beat it. `}
-            {!competition.mine
-              ? 'Mark a team as yours in league settings to see your own ceiling here.'
-              : !competition.mine.canRoster
-                ? `You have no room for another ${player.position}.`
-                : `You can go to $${competition.mine.ceiling}.`}
-          </p>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       <form
         className="dr-stage-form"
@@ -730,9 +738,9 @@ export const NominationStage = ({
                   }
                 }}
                 style={{ justifyContent: 'center' }}
-                title="Mark him passed over — he goes to the snake instead"
+                title={`Mark him passed over — he goes to the snake instead. ${sheetRemaining} left on the sheet.`}
               >
-                Nobody bid · {sheetRemaining} left on the sheet
+                Nobody bid
               </button>
             )}
             {player.onSheet && passedOver && (

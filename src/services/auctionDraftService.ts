@@ -3189,6 +3189,56 @@ export class AuctionDraftService {
   }
 
   /**
+   * Every player's gain over the free man, in one pass.
+   *
+   * `gainOverSnake` builds a whole outlook per call — a market sort over six
+   * hundred players — which is fine for the one man on the block and ruinous
+   * for a board of sixty cards. The outlook is the same for all of them, so it
+   * is computed once here and each player costs a lookup and a subtraction.
+   *
+   * The roster-aware bar comes with it. Quoting the position-level gain for a
+   * third running back when your two slots are full is the specific way this
+   * format is lost, so the card gets the same starter/flex/bench answer the
+   * stage does rather than a cheaper approximation of it.
+   *
+   * Both ends are reported. With an order drawn they are equal and the card
+   * prints one number; before one is drawn they bound it, which is the honest
+   * thing to put on a browsing surface a month before the draw.
+   */
+  getBoardGains(): Map<string, { low: number; high: number; free: string | null; slot: string }> {
+    const out = new Map<string, { low: number; high: number; free: string | null; slot: string }>();
+    const mine = this.teams.find((team) => team.id === this.myTeamId);
+    if (!mine) return out;
+
+    const exact = this.getSpendOutlook();
+    const spread = exact.positions ? null : this.getSpendSpread(['QB', 'RB', 'WR', 'TE']);
+    if (!exact.positions && !spread?.positions) return out;
+
+    const lowAt = (position: string) =>
+      exact.positions
+        ? (exact.positions.find((row) => row.position === position)?.free ?? null)
+        : (spread!.positions!.find((row) => row.position === position)?.bestFree ?? null);
+    const highAt = (position: string) =>
+      exact.positions
+        ? (exact.positions.find((row) => row.position === position)?.free ?? null)
+        : (spread!.positions!.find((row) => row.position === position)?.worstFree ?? null);
+
+    for (const player of this.players) {
+      if (player.isDrafted || player.marketOnly) continue;
+      const low = this.gainAgainst(player, mine, lowAt);
+      const high = this.gainAgainst(player, mine, highAt);
+      if (!low || !high) continue;
+      out.set(player.id, {
+        low: low.gain,
+        high: high.gain,
+        free: high.free,
+        slot: high.slot,
+      });
+    }
+    return out;
+  }
+
+  /**
    * The same number bounded across every draw, for before the order exists.
    *
    * The stage is where a bid is decided, so a gain that only the plan panel can

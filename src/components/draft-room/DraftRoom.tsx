@@ -560,6 +560,22 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * exists, because then there is one true number and a range beside it would
    * be noise.
    */
+  /**
+   * What every player on the board buys over the snake, computed once.
+   *
+   * Per card this would be a market sort apiece — sixty of them on every
+   * render, which is the cost the board was measured and fixed for once. The
+   * outlook is the same for all of them, so the engine builds it a single time
+   * and each card is handed three primitives off the result. Primitives are
+   * what keeps the card memo intact: an object would be a new reference every
+   * render and would re-render the whole board on every pick.
+   */
+  const boardGains = useMemo(
+    () => draftService.getBoardGains(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, players]
+  );
+
   const snakeBounds = useMemo(
     () =>
       selected && !draftService.hasSnakeOrder()
@@ -1019,209 +1035,295 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
   return (
     <div className="draft-room">
-      <header className="dr-topbar">
-        <h1 className="dr-wordmark">
-          Draft<span>Vault</span>
-        </h1>
+      {/* Header and block stick together.
+          The band was sticky at a fixed offset under a header that wraps —
+          so at any width where the setup row wrapped, the block tucked itself
+          underneath the header and the bid box was hidden by the thing meant
+          to be above it. One sticky context has no offset to get wrong. */}
+      <div className="dr-chrome">
+        <header className="dr-topbar">
+          {/* The progress bar is the bar's own bottom edge now.
+            As a flex item it took `flex: 1` — three hundred-odd pixels of the
+            one row every control has to fit on, to say something the "0/639"
+            beside it already says exactly. As a hairline under the header it
+            says the same thing, continuously, for two pixels. */}
+          <div
+            className="dr-progress"
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div className="dr-progress-fill" style={{ width: `${progress}%` }} />
+          </div>
 
-        <div className="dr-stat">
-          <span className="dr-eyebrow">Picks</span>
-          <span className="dr-stat-value">
-            {drafted.length}
-            <span style={{ color: 'var(--dr-ink-faint)' }}>/{players.length}</span>
-          </span>
-        </div>
+          <h1 className="dr-wordmark">
+            Draft<span>Vault</span>
+          </h1>
 
-        <div
-          className="dr-progress"
-          role="progressbar"
-          aria-valuenow={Math.round(progress)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="dr-progress-fill" style={{ width: `${progress}%` }} />
-        </div>
+          <div className="dr-stat">
+            <span className="dr-eyebrow">Picks</span>
+            <span className="dr-stat-value">
+              {drafted.length}
+              <span style={{ color: 'var(--dr-ink-faint)' }}>/{players.length}</span>
+            </span>
+          </div>
 
-        <div className="dr-stat">
-          <span className="dr-eyebrow">Committed</span>
-          <span className="dr-stat-value" style={{ color: 'var(--dr-value)' }}>
-            ${spent}
-          </span>
-        </div>
+          <div className="dr-stat">
+            <span className="dr-eyebrow">Committed</span>
+            <span className="dr-stat-value" style={{ color: 'var(--dr-value)' }}>
+              ${spent}
+            </span>
+          </div>
 
-        {/* Which half of the draft is running, and how far the auction has left
+          {/* Which half of the draft is running, and how far the auction has left
             to go. The count is the reason the unsold control exists: without a
             visible number, one player nobody called leaves the room wondering
             why the bid box will not go away. */}
-        {sheetRemaining != null && (
-          <div className="dr-stat">
-            <span className="dr-eyebrow">{snake ? 'Snake' : 'Sheet left'}</span>
-            <span className="dr-stat-value">
-              {snake && onTheClock ? `#${onTheClock.overall}` : sheetRemaining}
+          {sheetRemaining != null && (
+            <div className="dr-stat">
+              <span className="dr-eyebrow">{snake ? 'Snake' : 'Sheet left'}</span>
+              <span className="dr-stat-value">
+                {snake && onTheClock ? `#${onTheClock.overall}` : sheetRemaining}
+              </span>
+            </div>
+          )}
+
+          {followedAt > 0 && (
+            <span
+              className="dr-synced"
+              key={followedAt}
+              title="Another window of this draft made that change"
+            >
+              synced
             </span>
-          </div>
-        )}
+          )}
 
-        {followedAt > 0 && (
-          <span
-            className="dr-synced"
-            key={followedAt}
-            title="Another window of this draft made that change"
-          >
-            synced
-          </span>
-        )}
-
-        {/* Nobody nominates in the snake — the order does it — so the clock
+          {/* Nobody nominates in the snake — the order does it — so the clock
             would be naming a team for a turn that does not exist. The stage
             carries whose pick it is instead. */}
-        {!snake && (
-          <NominationClock
-            nominator={nominator}
-            player={selected}
-            seconds={preferences.clockSeconds}
-          />
-        )}
+          {!snake && (
+            <NominationClock
+              nominator={nominator}
+              player={selected}
+              seconds={preferences.clockSeconds}
+            />
+          )}
 
-        <button
-          className="dr-button"
-          onClick={undo}
-          disabled={!draftService.canUndo()}
-          title="Undo the last pick — or press u"
-        >
-          Undo pick
-        </button>
-        {/* Only while there is something to put back. An always-present Redo is
+          {/* Three groups, because fifteen identical pills in one wrapping row is
+            a menu with the labels rubbed off. What the auction touches is
+            solid; what is set up once is quiet; what destroys work sits alone
+            at the end in the colour of the thing it does. */}
+          <div className="dr-topbar-group dr-topbar-live">
+            <button
+              className="dr-button"
+              onClick={undo}
+              disabled={!draftService.canUndo()}
+              title="Undo the last pick — or press u"
+            >
+              Undo pick
+            </button>
+            {/* Only while there is something to put back. An always-present Redo is
             a button that does nothing most of the night, and one that appears
             the moment a pick is taken back says what it is for. */}
-        {draftService.canRedo() && (
-          <button
-            className="dr-button"
-            onClick={redo}
-            title="Put back the pick that was just undone — or press r"
-          >
-            Redo ({draftService.undoneCount()})
-          </button>
-        )}
+            {draftService.canRedo() && (
+              <button
+                className="dr-button"
+                onClick={redo}
+                title="Put back the pick that was just undone — or press r"
+              >
+                Redo ({draftService.undoneCount()})
+              </button>
+            )}
 
-        {/* How exposed the record is, where the picks are counted rather than
+            {/* How exposed the record is, where the picks are counted rather than
             inside a panel nobody opens mid-auction. It opens the file panel,
             because the fix for the thing it is warning about is in there. */}
-        {drafted.length > 0 && (
+            {drafted.length > 0 && (
+              <button
+                className="dr-exposure"
+                data-level={exposureLevel(unsaved)}
+                onClick={() => setFileOpen(true)}
+                title={
+                  unsaved === 0
+                    ? `The whole draft has been ${exportMark?.kind === 'clipboard' ? 'copied' : 'saved'} since the last pick. Press s to save a file, c to copy it.`
+                    : `${unsaved} pick${unsaved === 1 ? '' : 's'} since the draft last left this browser${exportMark ? '' : ' — no copy has ever been made'}. Press s to save a file, c to copy it.`
+                }
+              >
+                {unsaved === 0 ? 'Copy kept' : `${unsaved} unsaved`}
+              </button>
+            )}
+            <button
+              className="dr-button"
+              onClick={() => setBoardOpen(true)}
+              disabled={!drafted.length}
+            >
+              The room
+            </button>
+            <button
+              className="dr-button"
+              aria-pressed={preferences.advisor}
+              onClick={() => setAdvisor(!preferences.advisor)}
+              title="An opinion layer, kept separate from the numbers"
+            >
+              Advisor {preferences.advisor ? 'on' : 'off'}
+            </button>
+            <button
+              className="dr-button"
+              onClick={() => setResultsOpen(true)}
+              disabled={!drafted.length}
+            >
+              Results
+            </button>
+          </div>
+
+          <div className="dr-topbar-group dr-topbar-setup">
+            <button
+              className="dr-button dr-button-ghost"
+              aria-pressed={customCount > 0}
+              onClick={() => setImportOpen(true)}
+              title="Use your own rankings instead of ours"
+            >
+              {customCount > 0 ? `Your ranks (${customCount})` : 'Import ranks'}
+            </button>
+            <button
+              className="dr-button dr-button-ghost"
+              aria-pressed={sheet.ids.length > 0}
+              onClick={() => setSheetOpen(true)}
+              title="The commissioner's sheet — the players money actually buys"
+            >
+              {sheet.ids.length > 0 ? `Sheet (${sheet.ids.length})` : 'Auction sheet'}
+            </button>
+            <button
+              className="dr-button dr-button-ghost"
+              onClick={() => setLeagueOpen(true)}
+              title="Teams, budget and roster shape — every price is computed from them"
+            >
+              {league.teams} × ${league.budget}
+            </button>
+            <button
+              className="dr-button dr-button-ghost"
+              onClick={() => setOrderOpen(true)}
+              title="The order the snake is called in — the commissioner sets it"
+            >
+              Snake order
+            </button>
+            <button
+              className="dr-button dr-button-ghost"
+              onClick={() => setFileOpen(true)}
+              title="Save the draft to a file, or load one"
+            >
+              File
+            </button>
+            <button
+              className="dr-button dr-button-ghost"
+              aria-pressed={server.discovery.state === 'ready'}
+              onClick={() => setServerOpen(true)}
+              title="Saved drafts and rebuilds, when a server is running. The app does not need one."
+            >
+              {serverLabel}
+            </button>
+          </div>
+
           <button
-            className="dr-exposure"
-            data-level={exposureLevel(unsaved)}
-            onClick={() => setFileOpen(true)}
-            title={
-              unsaved === 0
-                ? `The whole draft has been ${exportMark?.kind === 'clipboard' ? 'copied' : 'saved'} since the last pick. Press s to save a file, c to copy it.`
-                : `${unsaved} pick${unsaved === 1 ? '' : 's'} since the draft last left this browser${exportMark ? '' : ' — no copy has ever been made'}. Press s to save a file, c to copy it.`
-            }
+            className="dr-button dr-button-danger"
+            onClick={() => setConfirmReset(true)}
+            disabled={!drafted.length}
           >
-            {unsaved === 0 ? 'Copy kept' : `${unsaved} unsaved`}
+            Reset
           </button>
+        </header>
+
+        {resumed > 0 && (
+          <p
+            className="dr-ticker"
+            role="status"
+            style={{ color: 'var(--dr-ink-muted)', fontSize: 12 }}
+          >
+            Resumed your saved draft — {resumed} pick{resumed === 1 ? '' : 's'} restored.
+          </p>
         )}
-        <button className="dr-button" onClick={() => setBoardOpen(true)} disabled={!drafted.length}>
-          The room
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={preferences.advisor}
-          onClick={() => setAdvisor(!preferences.advisor)}
-          title="An opinion layer, kept separate from the numbers"
-        >
-          Advisor {preferences.advisor ? 'on' : 'off'}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setResultsOpen(true)}
-          disabled={!drafted.length}
-        >
-          Results
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={customCount > 0}
-          onClick={() => setImportOpen(true)}
-          title="Use your own rankings instead of ours"
-        >
-          {customCount > 0 ? `Your ranks (${customCount})` : 'Import ranks'}
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={sheet.ids.length > 0}
-          onClick={() => setSheetOpen(true)}
-          title="The commissioner's sheet — the players money actually buys"
-        >
-          {sheet.ids.length > 0 ? `Sheet (${sheet.ids.length})` : 'Auction sheet'}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setLeagueOpen(true)}
-          title="Teams, budget and roster shape — every price is computed from them"
-        >
-          {league.teams} × ${league.budget}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setOrderOpen(true)}
-          title="The order the snake is called in — the commissioner sets it"
-        >
-          Snake order
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setFileOpen(true)}
-          title="Save the draft to a file, or load one"
-        >
-          File
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={server.discovery.state === 'ready'}
-          onClick={() => setServerOpen(true)}
-          title="Saved drafts and rebuilds, when a server is running. The app does not need one."
-        >
-          {serverLabel}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setConfirmReset(true)}
-          disabled={!drafted.length}
-        >
-          Reset
-        </button>
-      </header>
 
-      {resumed > 0 && (
-        <p
-          className="dr-ticker"
-          role="status"
-          style={{ color: 'var(--dr-ink-muted)', fontSize: 12 }}
-        >
-          Resumed your saved draft — {resumed} pick{resumed === 1 ? '' : 's'} restored.
-        </p>
-      )}
+        {handoff && (
+          <p
+            className={handoff.tone === 'bad' ? 'dr-ticker dr-ticker-warn' : 'dr-ticker'}
+            role="status"
+            style={handoff.tone === 'bad' ? undefined : { color: 'var(--dr-value)', fontSize: 12 }}
+          >
+            {handoff.text}
+          </p>
+        )}
 
-      {handoff && (
-        <p
-          className={handoff.tone === 'bad' ? 'dr-ticker dr-ticker-warn' : 'dr-ticker'}
-          role="status"
-          style={handoff.tone === 'bad' ? undefined : { color: 'var(--dr-value)', fontSize: 12 }}
-        >
-          {handoff.text}
-        </p>
-      )}
+        {cleared > 0 && (
+          <p className="dr-ticker dr-ticker-warn" role="status">
+            Cleared {cleared} pick{cleared === 1 ? '' : 's'}.{' '}
+            <button type="button" className="dr-linkish" onClick={undoReset}>
+              Put them back
+            </button>{' '}
+            — available until somebody drafts again.
+          </p>
+        )}
 
-      {cleared > 0 && (
-        <p className="dr-ticker dr-ticker-warn" role="status">
-          Cleared {cleared} pick{cleared === 1 ? '' : 's'}.{' '}
-          <button type="button" className="dr-linkish" onClick={undoReset}>
-            Put them back
-          </button>{' '}
-          — available until somebody drafts again.
-        </p>
-      )}
+        {/* The block, across the whole width.
+          It lived in the 380px aside, where its own content is about nine
+          hundred pixels tall — so the winning-team select, the bid box and
+          SOLD, which are the entire mechanism of the night, sat below the fold
+          of a sub-panel. Nothing else on this screen is a control somebody
+          uses under time pressure, and the board underneath had 1100px to hold
+          four cards. Sticky, so it stays put while the board scrolls. */}
+        <div className="dr-band">
+          {complete ? (
+            <section className="dr-stage dr-stage-done" aria-label="Draft complete">
+              <h2 className="dr-stage-name" style={{ fontSize: 24 }}>
+                That is the draft
+              </h2>
+              <p className="dr-meter-note">
+                Every roster is full — {drafted.length} pick
+                {drafted.length === 1 ? '' : 's'}, ${spent} spent. Nobody has room for another
+                player, so there is nothing left to nominate.
+              </p>
+              <div className="dr-results-actions">
+                <button
+                  type="button"
+                  className="dr-button dr-button-primary"
+                  onClick={() => setResultsOpen(true)}
+                >
+                  See the results
+                </button>
+                <button type="button" className="dr-button" onClick={() => setBoardOpen(true)}>
+                  The room
+                </button>
+              </div>
+            </section>
+          ) : (
+            <NominationStage
+              mode={phase}
+              player={selected}
+              teams={teams}
+              teamId={teamId}
+              bid={bid}
+              analytics={analytics}
+              check={check}
+              onTeamChange={setTeamId}
+              onBidChange={setBid}
+              onConfirm={confirm}
+              onOpenProfile={() => setProfileOpen(true)}
+              canDraft={(team) => draftService.canDraft(team)}
+              onTheClock={onTheClock}
+              snakeGain={snakeGain}
+              snakeBounds={snakeBounds}
+              freeManResearch={freeManResearch}
+              sheetRemaining={sheetRemaining}
+              onUnsold={markUnsold}
+              onReturnToSheet={returnToSheet}
+              passedOver={!!selected && sheet.unsold.includes(selected.id)}
+              adjusted={selected && !snake ? adjust.price(selected) : null}
+              inflation={adjust.inflation}
+              competition={competition}
+            />
+          )}
+        </div>
+      </div>
 
       <div className="dr-body">
         <main aria-label="Available players">
@@ -1356,6 +1458,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                       onTogglePin={togglePin}
                       pinned={preferences.pinned.includes(player.id)}
                       researchReady={researchReady}
+                      gainLow={boardGains.get(player.id)?.low}
+                      gainHigh={boardGains.get(player.id)?.high}
+                      gainFree={boardGains.get(player.id)?.free}
+                      gainSlot={boardGains.get(player.id)?.slot}
                     />
                   ))}
                 </div>
@@ -1370,56 +1476,6 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         </main>
 
         <aside className="dr-aside">
-          {complete ? (
-            <section className="dr-stage dr-stage-done" aria-label="Draft complete">
-              <h2 className="dr-stage-name" style={{ fontSize: 24 }}>
-                That is the draft
-              </h2>
-              <p className="dr-meter-note">
-                Every roster is full — {drafted.length} pick
-                {drafted.length === 1 ? '' : 's'}, ${spent} spent. Nobody has room for another
-                player, so there is nothing left to nominate.
-              </p>
-              <div className="dr-results-actions">
-                <button
-                  type="button"
-                  className="dr-button dr-button-primary"
-                  onClick={() => setResultsOpen(true)}
-                >
-                  See the results
-                </button>
-                <button type="button" className="dr-button" onClick={() => setBoardOpen(true)}>
-                  The room
-                </button>
-              </div>
-            </section>
-          ) : (
-            <NominationStage
-              mode={phase}
-              player={selected}
-              teams={teams}
-              teamId={teamId}
-              bid={bid}
-              analytics={analytics}
-              check={check}
-              onTeamChange={setTeamId}
-              onBidChange={setBid}
-              onConfirm={confirm}
-              onOpenProfile={() => setProfileOpen(true)}
-              canDraft={(team) => draftService.canDraft(team)}
-              onTheClock={onTheClock}
-              snakeGain={snakeGain}
-              snakeBounds={snakeBounds}
-              freeManResearch={freeManResearch}
-              sheetRemaining={sheetRemaining}
-              onUnsold={markUnsold}
-              onReturnToSheet={returnToSheet}
-              passedOver={!!selected && sheet.unsold.includes(selected.id)}
-              adjusted={selected && !snake ? adjust.price(selected) : null}
-              inflation={adjust.inflation}
-              competition={competition}
-            />
-          )}
           {preferences.advisor && (
             <AdvisorPanel
               advice={advice}

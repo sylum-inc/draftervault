@@ -26,9 +26,62 @@
   --dr-accent: #4d7cff;
   --dr-accent-ink: #ffffff;
 
+  /* Surfaces, as a real stack rather than three ad-hoc greys. Panels sit on
+     the ground, controls sit on panels, and a hovered control lifts once more —
+     so depth carries meaning instead of being decoration. */
+  --dr-surface-2: #161d2b;
+  --dr-hover: #232c3e;
+
+  /* One type scale, because eight components inventing their own is what made
+     a stat label and a section heading the same size. Steps are ~1.2x and
+     named for the job, not the pixels. */
+  --dr-t-micro: 10px;
+  --dr-t-tiny: 11px;
+  --dr-t-small: 12px;
+  --dr-t-body: 13px;
+  --dr-t-lead: 15px;
+  --dr-t-title: 19px;
+  --dr-t-hero: 26px;
+  --dr-t-mega: 34px;
+
+  /* One spacing scale. `--dr-gap` stays as the layout gutter it already was. */
+  --dr-s1: 4px;
+  --dr-s2: 8px;
+  --dr-s3: 12px;
+  --dr-s4: 16px;
+  --dr-s5: 24px;
+  --dr-s6: 32px;
+
   --dr-radius: 10px;
   --dr-radius-sm: 6px;
+  --dr-radius-lg: 14px;
+  --dr-radius-pill: 999px;
   --dr-gap: 16px;
+
+  /* Elevation and motion, so a lift and a transition mean the same thing
+     everywhere they appear. */
+  --dr-e1: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --dr-e2: 0 8px 22px -10px rgba(0, 0, 0, 0.72);
+  --dr-e3: 0 20px 48px -18px rgba(0, 0, 0, 0.85);
+  --dr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dr-fast: 120ms var(--dr-ease);
+  --dr-med: 220ms var(--dr-ease);
+
+  /* The verdict language. A bid is good, fair, or a mistake, and that judgement
+     appears on the card, the stage, the market panel and the bargain board —
+     four places that were each picking their own green. Backgrounds are paired
+     with the ink so a token can be filled rather than only coloured. */
+  --dr-good: #3dd68c;
+  --dr-good-bg: rgba(61, 214, 140, 0.12);
+  --dr-good-line: rgba(61, 214, 140, 0.36);
+  --dr-warn: #f0a93b;
+  --dr-warn-bg: rgba(240, 169, 59, 0.12);
+  --dr-warn-line: rgba(240, 169, 59, 0.36);
+  --dr-bad: #f0616d;
+  --dr-bad-bg: rgba(240, 97, 109, 0.12);
+  --dr-bad-line: rgba(240, 97, 109, 0.38);
+  --dr-info: #6ea8ff;
+  --dr-info-bg: rgba(110, 168, 255, 0.12);
 
   --dr-display: 'Barlow Condensed', 'Oswald', 'Arial Narrow', sans-serif;
   --dr-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
@@ -91,20 +144,55 @@
    top bar
    -------------------------------------------------------------------------- */
 
-.dr-topbar {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  /* Wraps at any width: the bar carries a wordmark, three readouts, a clock and
-     three buttons, which stop fitting long before a phone. */
-  flex-wrap: wrap;
-  row-gap: 10px;
-  padding: 10px 18px;
-  background: linear-gradient(180deg, #0d121b 0%, var(--dr-ground) 100%);
-  border-bottom: 1px solid var(--dr-line);
+.dr-chrome {
   position: sticky;
   top: 0;
   z-index: 30;
+  background: var(--dr-ground);
+}
+
+.dr-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s4);
+  /* Still wraps — a phone is a phone — but at a desk it now fits on one row,
+     because the progress bar left the flex flow and the setup controls stopped
+     asking for the same weight as the live ones. */
+  flex-wrap: wrap;
+  row-gap: var(--dr-s2);
+  padding: 9px 16px;
+  background: linear-gradient(180deg, #0d121b 0%, var(--dr-ground) 100%);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* The three groups. `dr-topbar-live` is pushed to the far side of the readouts
+   so the clock and the state sit together on the left and everything that is
+   pressed sits together on the right. */
+.dr-topbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dr-topbar-live {
+  margin-left: auto;
+}
+
+.dr-topbar-setup {
+  gap: 4px;
+  padding-left: var(--dr-s3);
+  border-left: 1px solid var(--dr-line);
+}
+
+.dr-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: transparent;
+  overflow: hidden;
 }
 
 .dr-wordmark {
@@ -119,15 +207,6 @@
 
 .dr-wordmark span {
   color: var(--dr-value);
-}
-
-.dr-progress {
-  flex: 1;
-  min-width: 120px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--dr-raised);
-  overflow: hidden;
 }
 
 .dr-progress-fill {
@@ -169,8 +248,44 @@
 }
 
 .dr-button:hover:not(:disabled) {
-  background: #232c3e;
+  background: var(--dr-hover);
   border-color: var(--dr-line-strong);
+}
+
+/* Set up once, then never touched again while the auction runs. Quiet by
+   default and full strength on hover, so the row reads as "these four things
+   are live, those six are settings" without anything being hidden. */
+.dr-button-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--dr-ink-muted);
+  font-weight: 500;
+}
+
+.dr-button-ghost:hover:not(:disabled) {
+  background: var(--dr-raised);
+  border-color: var(--dr-line);
+  color: var(--dr-ink);
+}
+
+.dr-button-ghost[aria-pressed='true'] {
+  color: var(--dr-ink);
+  background: var(--dr-raised);
+  border-color: var(--dr-line);
+}
+
+/* Reset deletes the afternoon. It is not a navigation button and it should not
+   look like one, and it should not sit in the same group as one either. */
+.dr-button-danger {
+  background: transparent;
+  border-color: transparent;
+  color: var(--dr-bad);
+  font-weight: 500;
+}
+
+.dr-button-danger:hover:not(:disabled) {
+  background: var(--dr-bad-bg);
+  border-color: var(--dr-bad-line);
 }
 
 .dr-button:active:not(:disabled) {
@@ -277,8 +392,8 @@
 
 .dr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: 10px;
 }
 
 /* --------------------------------------------------------------------------
@@ -302,84 +417,136 @@
 }
 
 .dr-card:hover {
-  border-color: var(--dr-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 26px -14px var(--dr-accent);
+  border-color: color-mix(in srgb, var(--dr-accent) 60%, var(--dr-line-strong));
+  background: var(--dr-surface-2);
+  transform: translateY(-1px);
+  box-shadow: var(--dr-e2);
 }
 
 .dr-card[aria-selected='true'] {
   border-color: var(--dr-accent);
-  box-shadow: inset 0 0 0 1px var(--dr-accent);
+  background: var(--dr-surface-2);
+  box-shadow:
+    inset 0 0 0 1px var(--dr-accent),
+    var(--dr-e2);
+}
+
+/* The team colour as a spine rather than a wash.
+   It used to be a 42% gradient across an 84px band, which meant a bright club
+   fought the name for attention and a dark one read as a rendering fault —
+   twelve different backgrounds under one column of numbers. As a 3px edge it
+   still tells you whose player this is at a glance, and every card's ground
+   stays the same so the prices down the column can be compared. */
+.dr-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--dr-accent);
+  opacity: 0.85;
 }
 
 .dr-card-head {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  padding: 8px 12px 0;
-  min-height: 84px;
-  /* The team color is the card's ground, faded so names stay legible. */
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--dr-accent) 42%, transparent) 0%,
-      transparent 100%
-    ),
-    var(--dr-surface);
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--dr-s2);
+  padding: 10px 11px 8px 13px;
 }
 
 .dr-card-photo {
-  width: 88px;
-  height: 64px;
+  width: 36px;
+  height: 36px;
   flex: none;
-  /* Pushed to the trailing edge so the team mark and tier badge get the left
-     half — the same anchoring a broadcast lower-third uses. */
-  margin-left: auto;
   object-fit: cover;
   object-position: top center;
-  border-radius: var(--dr-radius-sm);
+  border-radius: 50%;
   background: var(--dr-raised);
+  box-shadow: 0 0 0 1px var(--dr-line);
 }
 
 .dr-card-monogram {
   display: flex;
-  margin-left: auto;
   align-items: center;
   justify-content: center;
   font-family: var(--dr-display);
-  font-size: 18px;
+  font-size: var(--dr-t-small);
   font-weight: 700;
   color: var(--dr-ink-muted);
 }
 
 .dr-card-logo {
   position: absolute;
-  top: 58%;
-  left: 14px;
+  top: 50%;
+  right: 12px;
   transform: translateY(-50%);
-  width: 46px;
-  height: 46px;
-  opacity: 0.32;
+  width: 54px;
+  height: 54px;
+  opacity: 0.07;
   pointer-events: none;
 }
 
+.dr-card-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Two lines rather than an ellipsis.
+   At one line the price squeezed the column and the board read "Jaxon
+   Smith-…", "Christian Mc…", "Saquon Bark…" — four of the sixteen most
+   expensive players on the board unreadable, which is the one thing a name on
+   a card has to do. Condensed display type at 18px fits most full names on one
+   line and wraps the rest. */
 .dr-card-name {
   font-family: var(--dr-display);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 600;
-  line-height: 1.05;
-  margin: 8px 12px 0;
+  line-height: 1.06;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .dr-card-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 3px 12px 0;
-  font-size: 11px;
+  gap: 5px;
+  font-size: var(--dr-t-tiny);
   color: var(--dr-ink-muted);
   letter-spacing: 0.03em;
+  min-width: 0;
+}
+
+/* The number the auction is about, sized like it.
+   It was a cell in a three-up grid, the same weight as "Rank", below the
+   photo. A price is what a card is *for* in an auction: one glance has to
+   answer "who" and "how much", and nothing else on the card competes now. */
+.dr-card-price {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--dr-good);
+  align-self: center;
+  flex: none;
+}
+
+/* Deliberately not marked.
+   The dashed underline said "this number is somebody else's ranking, not
+   ours", which was information while an import was the exception. The market
+   board is the default now, so it was on every card on the board — a mark
+   every player carries marks nothing, and sixty dashed underlines under sixty
+   prices is just noise. Whose number it is still lives on the hover title and,
+   in full, on the nomination stage. */
+.dr-card-price.is-custom {
+  color: var(--dr-good);
 }
 
 .dr-pos {
@@ -393,73 +560,206 @@
   letter-spacing: 0.06em;
 }
 
+/* Supporting numbers, deliberately quiet.
+   These are three cells on one line rather than a bordered grid: the borders
+   were drawing six boxes per card and sixty cards on screen turned the board
+   into graph paper. Labels sit inline with their values so the row is one
+   band of text the eye can skip when it is only looking for a price. */
 .dr-card-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  margin-top: 10px;
-  background: var(--dr-line);
+  gap: var(--dr-s2);
+  margin: 0 11px 0 13px;
+  padding: 7px 0;
   border-top: 1px solid var(--dr-line);
 }
 
 .dr-card-stat {
-  background: var(--dr-surface);
-  padding: 7px 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
 }
 
 .dr-card-stat dt {
-  font-size: 9px;
-  letter-spacing: 0.1em;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
 }
 
 .dr-card-stat dd {
-  margin: 2px 0 0;
+  margin: 0;
   font-family: var(--dr-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: var(--dr-t-small);
   font-weight: 600;
+  color: var(--dr-ink-muted);
 }
 
+/* The tier rides in the meta line with the position and club, because that is
+   what it is: another fact about who this player is. As an absolutely
+   positioned corner badge it had to be given a corner, and both corners are
+   spoken for — the price on one side, the controls on the other. */
 .dr-tier {
-  position: absolute;
-  z-index: 2;
-  top: 6px;
-  left: 10px;
   font-family: var(--dr-mono);
-  font-size: 10px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--dr-ink);
-  background: rgb(8 10 15 / 0.65);
+  letter-spacing: 0.06em;
+  color: var(--dr-ink-faint);
+  background: var(--dr-raised);
+  border: 1px solid var(--dr-line);
   border-radius: 3px;
-  padding: 1px 5px;
+  padding: 0 4px;
+  flex: none;
 }
 
 .dr-flag {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  align-self: flex-start;
+  margin-top: 2px;
 }
 
 /* --------------------------------------------------------------------------
    nomination stage
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   the block, as a full-width band
+   -------------------------------------------------------------------------- */
+
+.dr-band {
+  padding: var(--dr-gap) var(--dr-gap) 0;
+  background: var(--dr-ground);
+}
+
+/* With nobody on the block there is nothing to decide, so the band is a line
+   saying so rather than a two-hundred-pixel slab of empty panel across the top
+   of the board. */
+.dr-stage.dr-stage-empty {
+  display: flex;
+  grid-template-columns: none;
+  box-shadow: none;
+}
+
+.dr-stage-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dr-s2);
+  padding: 10px var(--dr-s4);
+  color: var(--dr-ink-faint);
+  font-size: var(--dr-t-small);
+  text-align: center;
+}
+
 .dr-stage {
   overflow: hidden;
+  display: grid;
+  /* Who / why / what am I doing about it. The last column is fixed because the
+     controls must not move when a longer name or an extra research flag lands
+     in the middle one — muscle memory is the whole point of a band. */
+  grid-template-columns: minmax(0, 252px) minmax(0, 1fr) minmax(0, 326px);
+  align-items: stretch;
+  box-shadow: var(--dr-e2);
+}
+
+/* The identity panel reads as its own surface rather than as a hole beside the
+   reading column, because its content is short and the band's height is set by
+   the controls opposite. Slightly lifted, so the emptiness is panel rather than
+   gap. */
+.dr-stage-who {
+  border-right: 1px solid var(--dr-line);
+  min-width: 0;
+  background: var(--dr-surface-2);
+}
+
+.dr-stage-read {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  align-content: start;
+  gap: var(--dr-s2) var(--dr-s4);
+  padding: var(--dr-s3) var(--dr-s4);
+  min-width: 0;
+  /* The reading column is the one that varies — a gain line, a research flag,
+     a market-only note, the competition list — so it scrolls rather than
+     growing the band. A band that changes height moves the controls, and the
+     controls not moving is the whole point of a band. */
+  max-height: 172px;
+  overflow-y: auto;
+  /* A row cut in half by the scroll edge reads as a rendering fault rather than
+     as more content. The mask fades the last few pixels so it reads as more. */
+  mask-image: linear-gradient(180deg, #000 calc(100% - 18px), transparent 100%);
+}
+
+/* The prose runs down the left of this column; the measured strip (range,
+   percentiles) sits beside it rather than under it, which is what was leaving
+   half the band empty at the top and clipping the competition at the bottom. */
+.dr-stage-read > .dr-stage-snakegain,
+.dr-stage-read > .dr-stage-marketonly {
+  grid-column: 1;
+}
+
+.dr-stage-read > .dr-stage-range {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+
+.dr-stage-read > .dr-outbid {
+  grid-column: 1;
+}
+
+/* The left column ends with its numbers against the bottom edge rather than
+   floating a third of the way down a column whose height is set by the
+   controls beside it. */
+.dr-stage-who {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tiles sit directly under the identity rather than being pushed to the foot
+   of a column whose height belongs to the controls opposite. Slack at the
+   bottom of a panel reads as padding; slack in the middle of one reads as a
+   missing element. */
+.dr-stage-who > .dr-stage-tiles {
+  margin-top: 0;
+}
+
+/* The snake has no bid box, so the third column would be an empty panel with a
+   border down its side. Two columns there instead. */
+.dr-stage[data-mode='snake'] {
+  grid-template-columns: minmax(0, 252px) minmax(0, 1fr);
+}
+
+@media (max-width: 1180px) {
+  .dr-stage,
+  .dr-stage[data-mode='snake'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dr-stage-who,
+  .dr-stage-form {
+    border: 0;
+    border-top: 1px solid var(--dr-line);
+  }
+
+  .dr-stage-who {
+    border-top: 0;
+  }
+
+  .dr-stage-read {
+    max-height: none;
+  }
 }
 
 .dr-stage-hero {
   position: relative;
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  padding: 16px 16px 14px;
+  align-items: center;
+  gap: var(--dr-s3);
+  padding: var(--dr-s3) var(--dr-s4) var(--dr-s3);
   background:
     radial-gradient(
       120% 140% at 100% 0%,
@@ -470,23 +770,30 @@
   border-bottom: 1px solid var(--dr-line);
 }
 
+/* A 126x92 portrait beside a 30px name filled the left column and still left
+   a hundred and fifty pixels of nothing under it. A face is worth having —
+   recognising who was just called is faster than reading — but it is worth a
+   circle, not a quarter of the band. */
 .dr-stage-photo {
-  width: 126px;
-  height: 92px;
+  width: 62px;
+  height: 62px;
   flex: none;
   object-fit: cover;
   object-position: top center;
-  border-radius: var(--dr-radius-sm);
+  border-radius: 50%;
   background: var(--dr-raised);
-  box-shadow: 0 8px 22px -12px #000;
+  box-shadow:
+    0 0 0 1px var(--dr-line),
+    0 6px 16px -10px #000;
 }
 
 .dr-stage-name {
   font-family: var(--dr-display);
-  font-size: 30px;
+  font-size: 25px;
   font-weight: 700;
-  line-height: 0.98;
+  line-height: 1;
   letter-spacing: 0.005em;
+  overflow-wrap: anywhere;
 }
 
 .dr-stage-sub {
@@ -509,19 +816,20 @@
 
 .dr-stage-tiles {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1px;
   background: var(--dr-line);
+  border-top: 1px solid var(--dr-line);
 }
 
 .dr-tile {
   background: var(--dr-surface);
-  padding: 9px 10px;
+  padding: 8px var(--dr-s4);
 }
 
 .dr-tile dt {
-  font-size: 9px;
-  letter-spacing: 0.1em;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
 }
@@ -536,9 +844,28 @@
 
 .dr-stage-form {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 7px;
+  padding: var(--dr-s3) var(--dr-s4);
+  border-left: 1px solid var(--dr-line);
+  min-width: 0;
+}
+
+/* Everything that decides a bid takes the whole column. */
+.dr-stage-form > * {
+  flex: 1 1 100%;
+}
+
+/* The two secondary actions share a row instead.
+   Full width each, stacked under a full-width SOLD, they added a hundred
+   pixels to the tallest column — and the tallest column sets the height of the
+   whole band, which the board underneath pays for. Neither is pressed under
+   time pressure; both are one click either way. */
+.dr-stage-form > .dr-button:not(.dr-button-primary) {
+  flex: 1 1 132px;
+  min-width: 0;
+  justify-content: center;
 }
 
 .dr-field {
@@ -1082,14 +1409,44 @@
   color: var(--dr-ground);
 }
 
-.dr-card-star {
+/* Watch and pin live in the bottom-right and only appear on hover, focus or
+   when they are already on.
+   They used to sit in the top-right corner, which is where the price is now —
+   two 20px glyphs overlapping a 26px number on every one of sixty cards. They
+   are also not auction controls: nobody stars a player while money is on the
+   table, so they have no claim on the corner the eye goes to first. */
+.dr-card-star,
+.dr-card-pin {
   position: absolute;
   z-index: 2;
-  top: 5px;
-  right: 8px;
+  bottom: 6px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink-faint);
+  opacity: 0;
+  transition: opacity var(--dr-fast);
+}
+
+.dr-card-star {
+  right: 8px;
+}
+
+.dr-card:hover .dr-card-star,
+.dr-card:hover .dr-card-pin,
+.dr-card-star:focus-visible,
+.dr-card-pin:focus-visible,
+.dr-card-star[aria-pressed='true'],
+.dr-card-pin.is-pinned {
+  opacity: 1;
+}
+
+.dr-card-star[aria-pressed='true'] {
+  color: var(--dr-warn);
 }
 
 /* --------------------------------------------------------------------------
@@ -2862,18 +3219,7 @@
    -------------------------------------------------------------------------- */
 
 .dr-card-pin {
-  position: absolute;
-  top: 6px;
-  right: 28px;
-  width: 20px;
-  height: 20px;
-  display: grid;
-  place-items: center;
-  border-radius: 4px;
-  font-size: 12px;
-  color: var(--dr-ink-faint);
-  cursor: pointer;
-  z-index: 2;
+  right: 30px;
 }
 
 .dr-card-pin:hover,
@@ -2882,53 +3228,249 @@
   background: color-mix(in srgb, var(--dr-value) 14%, transparent);
 }
 
-.dr-card-signals {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 5px;
-  margin-top: 6px;
+/* --------------------------------------------------------------------------
+   card: the dossier rows
+   The card had a name, a price and six numbers, and everything that decides a
+   bid — the range, the disagreement with the room, the gain over the free man,
+   what happened last week — was two clicks away in a panel nobody opens with
+   money on the table. These rows put it on the face of the card.
+   -------------------------------------------------------------------------- */
+
+/* Floor to ceiling, with the projection's position showing the skew. */
+.dr-card-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 11px 0 13px;
+  padding-bottom: 7px;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
 }
 
-.dr-card-signal {
+.dr-card-range-end {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-card-range-track {
   position: relative;
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--dr-bad-bg),
+    var(--dr-line-strong) 50%,
+    var(--dr-good-bg)
+  );
+}
+
+.dr-card-range-mark {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 9px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--dr-ink);
+}
+
+/* Ours, theirs, and the two risk readings, on one line. */
+.dr-card-ranks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin: 0 11px 0 13px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-card-ranks span {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 3px 5px 5px;
-  border-radius: var(--dr-radius-sm);
-  background: var(--dr-raised);
-  overflow: hidden;
+  min-width: 0;
+  padding-left: 6px;
+  border-left: 1px solid var(--dr-line);
 }
 
-.dr-card-signal em {
+.dr-card-ranks span:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.dr-card-ranks em {
   font-style: normal;
-  font-size: 8px;
-  letter-spacing: 0.09em;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
 }
 
-.dr-card-signal span {
-  font-size: 12px;
+.dr-card-ranks b {
+  font-size: var(--dr-t-small);
   font-weight: 600;
 }
 
-/* The bar is the percentile within the position; the number above is the raw
-   figure, so neither is ever the only evidence. */
+/* The format edge, given the weight it earns: it is the only number here the
+   other eleven managers are not also looking at. */
+.dr-card-gain {
+  display: block;
+  margin: 7px 11px 0 13px;
+  padding: 4px 7px;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-good-bg);
+  border-left: 2px solid var(--dr-good);
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  line-height: 1.25;
+}
+
+.dr-card-gain b {
+  color: var(--dr-good);
+  font-size: var(--dr-t-body);
+}
+
+.dr-card-gain[data-negative],
+.dr-card-gain[data-slot='bench'] {
+  background: var(--dr-warn-bg);
+  border-left-color: var(--dr-warn);
+  color: var(--dr-warn);
+}
+
+.dr-card-gain[data-negative] b {
+  color: var(--dr-warn);
+}
+
+/* What happened last Tuesday, which no projection knows. Two lines at most —
+   the rest is on the research tab, and the direction arrow beside the name
+   already says which way it cuts. */
+.dr-card-news {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 6px 11px 0 13px;
+  padding-left: 7px;
+  border-left: 2px solid var(--dr-line-strong);
+  font-size: var(--dr-t-micro);
+  line-height: 1.35;
+  color: var(--dr-ink-muted);
+}
+
+.dr-card-news[data-direction='FADE'] {
+  border-left-color: var(--dr-bad);
+}
+
+.dr-card-news[data-direction='PAY_UP'] {
+  border-left-color: var(--dr-good);
+}
+
+.dr-card-risks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 11px 0 13px;
+}
+
+.dr-card-risks span {
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.02em;
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  border: 1px solid var(--dr-line);
+}
+
+.dr-card-risks span[data-tone='warn'] {
+  color: var(--dr-warn);
+  border-color: var(--dr-warn-line);
+  background: var(--dr-warn-bg);
+}
+
+.dr-card-risks span[data-tone='bad'] {
+  color: var(--dr-bad);
+  border-color: var(--dr-bad-line);
+  background: var(--dr-bad-bg);
+}
+
+.dr-card-risks span[data-tone='good'] {
+  color: var(--dr-good);
+  border-color: var(--dr-good-line);
+  background: var(--dr-good-bg);
+}
+
+/* Percentile bars, labelled and readable.
+   They were 8px labels over a 2px hairline at the foot of a tile — present,
+   and unreadable, which is the same as absent. The bar is the standing within
+   the position and the number beside it is the raw figure, so neither is ever
+   the only evidence. */
+.dr-card-signals {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 7px 11px 0 13px;
+}
+
+.dr-card-signal {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px 36px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--dr-t-micro);
+}
+
+.dr-card-signal em {
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-card-signal span:not(.dr-card-signal-bar) {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-tiny);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* The track is the full position, the fill is where he stands in it. */
+.dr-card-signal::after {
+  content: '';
+  grid-column: 3;
+  grid-row: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--dr-raised);
+}
+
+/* The standing itself, at the end of its own bar. A bar with no number is a
+   shape; a number with no bar is hard to place. */
+.dr-card-signal-pct {
+  grid-column: 4;
+  grid-row: 1;
+  color: var(--dr-ink-faint);
+}
+
 .dr-card-signal-bar {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 2px;
-  background: var(--dr-value);
-  opacity: 0.75;
+  grid-column: 3;
+  grid-row: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--dr-good);
+  opacity: 0.8;
+  z-index: 1;
+  justify-self: start;
+  min-width: 2px;
 }
 
 .dr-card-edge {
   display: block;
-  margin-top: 5px;
-  font-size: 10px;
+  margin: 0 11px 9px 13px;
+  font-size: var(--dr-t-micro);
   line-height: 1.3;
 }
 
@@ -3518,9 +4060,17 @@
 /* The board's one-glyph version of the same thing: enough to say "there is
    something to read here", never enough to act on without opening it. */
 .dr-research-mark {
-  font-size: 11px;
+  font-size: var(--dr-t-tiny);
   font-weight: 700;
   line-height: 1;
+}
+
+/* On a card it is one more fact about the player, so it rides in the meta line
+   with the club and the tier. Loose in the card it had no rule at all and
+   landed above the head as a stray arrow in the top-left corner. */
+.dr-card-research {
+  flex: none;
+  margin-left: 1px;
 }
 
 /* ---------------------------------------------------------------------------
