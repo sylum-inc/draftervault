@@ -17,6 +17,7 @@ import {
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { consensusCoverage, consensusOverrides, marketOrder } from '@/lib/consensusBoard';
 import { snakeOutlook, type SnakeOutlook } from '@/lib/snakeOutlook';
+import { endgame, type Endgame } from '@/lib/endgame';
 import { validateMarket, type MarketAbsentee, type MarketSnapshot } from '@/lib/marketContract';
 
 interface PoolEntry {
@@ -2832,6 +2833,40 @@ export class AuctionDraftService {
   private refreshMarketBoard(): void {
     if (!this.marketBoardInForce()) return;
     this.applyConsensusBoard();
+  }
+
+  /**
+   * When to buy, which is the half `getSpendOutlook` does not answer.
+   *
+   * Rests on a constraint rather than a forecast: the money still in the room
+   * divided by the sheet players still for sale is what the rest must average,
+   * whatever anybody at the table believes. Every auction ends in a fire sale
+   * because the money runs out before the players do, and the only question is
+   * whether you are holding money when it starts.
+   *
+   * `moneyLeft` comes from `getInflationBasis` rather than being summed again
+   * here — it is the same quantity, already net of the dollar-a-slot reserve,
+   * and a second summation is a second answer to how rich the room is.
+   */
+  getEndgame(): Endgame {
+    const basis = this.getInflationBasis();
+    // Newest first, and auction sales only: a snake pick costs nothing and
+    // averaging zeroes into a price would report a room that had stopped paying.
+    const recentPrices = [...this.history]
+      .reverse()
+      .filter((pick) => (pick.phase ?? 'auction') === 'auction' && pick.cost != null)
+      .map((pick) => pick.cost as number);
+    return endgame({
+      moneyLeft: basis.moneyLeft,
+      playersLeft: basis.forSaleLeft,
+      recentPrices,
+      teams: this.teams.map((team) => ({
+        id: team.id,
+        name: team.name,
+        remaining: team.remaining,
+      })),
+      myTeamId: this.myTeamId,
+    });
   }
 
   /**

@@ -73,6 +73,7 @@ src/lib/projection.ts                 the projection model itself (shared)
 src/lib/modelTrust.ts                 where the backtest says not to trust it
 src/lib/consensusBoard.ts             the market's order, our dollars
 src/lib/snakeOutlook.ts               what the snake gives free, so a bid has a bar
+src/lib/endgame.ts                    par against pace: when to buy, not what
 src/lib/marketContract.ts             what a market snapshot is (shared)
 src/data/nfl/market-adp.json          live half-PPR ADP, keyed by gsis (generated)
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
@@ -1453,7 +1454,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-599 tests.
+609 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1473,6 +1474,27 @@ Open, roughly in order of value:
    things the pick-log-is-the-only-shared-fact rule exists to prevent — so it is
    a real design change rather than a route to add. The published artifact
    cannot have it either way: its CSP blocks every external host.
+
+**Money left over players left is a constraint, not a forecast, and it decides
+when to buy.** `snakeOutlook` says _what_ a dollar buys; `endgame.ts` says
+_when_ it goes furthest. Twelve teams at $200 chasing sixty players means the
+sheet averages $40 whatever anybody believes, so if the first twenty go at $60
+the remaining forty must average $30 — the money is gone and the players are
+not. Every auction ends in a fire sale for that reason and the only question is
+who is holding money when it starts. The panel prints **par** (what the
+remainder must average) beside **pace** (what the room has lately paid, over the
+last eight sales only, because an average across the whole auction is dominated
+by the opening stars and stops moving). Driven on the owner's real sheet: par
+opens at $44, and after eight sales at $75-95 it reads "the room is paying $84
+against a par of $37 — the last 47 have to come down", with his share of the
+remaining money up from 8% to 12% for doing nothing.
+
+The count of teams that can still cover par short-circuits that comparison, and
+deliberately: a team with $8 left is not a quiet bidder but a spectator, and
+once most of the room is spectating what a player is worth stops mattering. It
+lives in `MarketPanel` beside inflation rather than in a panel of its own,
+because both are readings of the same thing — how much money is chasing how few
+players — and two panels would let the room find two answers to one question.
 
 **What the snake gives you free is what a bid is competing with, and `vorp` is
 the wrong bar for it.** This is the one piece of arithmetic here that is

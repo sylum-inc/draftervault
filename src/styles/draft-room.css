@@ -3967,3 +3967,14 @@
   font-size: 11px;
   line-height: 1.45;
 }
+
+/* When to buy. Leans amber to hold, green to buy; the border carries it so the
+   text stays readable rather than being tinted. */
+.dr-endgame-verdict {
+  margin: 6px 0 10px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--dr-line-strong);
+  color: var(--dr-ink-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}

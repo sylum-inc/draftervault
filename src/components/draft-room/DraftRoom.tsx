@@ -553,6 +553,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     [draftService, selected, players]
   );
 
+  /** When to buy. Recomputed on every pick, since both terms move with one. */
+  const endgameState = useMemo(
+    () => draftService.getEndgame(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, players, teams]
+  );
+
   const unsaved = useMemo(
     () => draftService.picksSinceExport(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1406,6 +1413,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               phase={phase}
               basis={basis}
               tierBreaks={tierBreaks}
+              endgame={endgameState}
             />
           )}
           {asidePanel === 'bargains' && (
