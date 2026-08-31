@@ -199,6 +199,18 @@ const PlayerCardView = ({
             snake
           </span>
         )}
+        {/* Was a four-line paragraph on every card, which turned the fourteen
+            players we know least about into the loudest thing on the board.
+            The fact is worth one word; the explanation belongs on hover, and
+            in full on the nomination stage where a bid is actually decided. */}
+        {player.marketOnly && (
+          <span
+            className="dr-nodata"
+            title="No projection — the pool has never heard of him. He is on the board because real drafts are taking him, and his price is whatever the market's rank buys on our curve."
+          >
+            no data
+          </span>
+        )}
       </span>
 
       <dl className="dr-card-stats">
@@ -227,13 +239,6 @@ const PlayerCardView = ({
           <dd>{player.marketOnly ? '—' : player.adp}</dd>
         </div>
       </dl>
-
-      {player.marketOnly && (
-        <p className="dr-card-marketonly">
-          No projection — the pool has never heard of him. He is here because real drafts are taking
-          him, and his price is whatever the market&rsquo;s rank buys on our curve.
-        </p>
-      )}
 
       {/* The three numbers that explain the projection, each with its standing
           in the position — a share means nothing without one. */}

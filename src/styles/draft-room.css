@@ -3847,17 +3847,20 @@
   color: var(--dr-ink-muted);
 }
 
-/* A player the market drafts and the pool has never heard of. Marked rather
-   than quietly shown, because every headline number on his card is a
-   placeholder the type demanded and not a measurement anybody made. */
-.dr-card-marketonly {
-  margin: 4px 0 0;
-  padding: 4px 6px;
-  border-left: 2px solid var(--dr-caution);
-  background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
-  color: var(--dr-dim);
+/* A player the market drafts and the pool has never heard of. One word beside
+   the position, matching the "snake" marker it sits next to — the explanation
+   is on hover and in full on the nomination stage. It was a paragraph on every
+   card, which made the players we know least about the loudest on the board. */
+.dr-nodata {
+  margin-left: 5px;
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--dr-caution) 40%, transparent);
+  border-radius: 2px;
+  color: var(--dr-caution);
   font-size: 9px;
-  line-height: 1.4;
+  font-style: normal;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 /* Said on the stage, where money is decided, and not only on the card. */

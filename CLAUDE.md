@@ -1557,6 +1557,18 @@ is why he prices at a dollar anyway. The gain here is nominability, not price:
 these are all late-round names, and the point is that a commissioner's sheet
 naming one does not hit a board that has never heard of him.
 
+**Where an unrankable player sorts is a design decision, and getting it wrong
+cost the whole first impression.** The fourteen market-only players were given
+`adp: 0`, and the board's default sort reads `adp` directly — so the app opened
+on a wall of twelve cards with no projection, no rank and no price, made of
+exactly the players we know least about. Worse, each carried a four-line
+paragraph explaining itself, which made them the loudest thing on screen. They
+now sort behind everybody we can price (`MARKET_ONLY_RANK`), and the paragraph
+is a one-word `no data` chip beside the `snake` marker it sits next to, with
+the explanation on hover and in full on the nomination stage where a bid is
+actually decided. Nothing about the arithmetic changed; the board went from
+unusable to correct on one number and one element.
+
 `Player` requires numbers on a dozen headline fields, so widening them to null
 for fourteen players would be a large change to the type every panel reads.
 Instead `marketOnly` carries "we know nothing", and the rule it buys is that no

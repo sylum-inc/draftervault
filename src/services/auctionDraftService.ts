@@ -731,6 +731,14 @@ const LEAGUE_CONFIRMED_KEY = 'draft-vault:league-confirmed:v1';
  */
 const MARKET_BOARD_KEY = 'draft-vault:market-board:v1';
 
+/**
+ * Where a player we cannot rank sits in our own ordering: after everyone.
+ *
+ * Past any real pool size, so it stays behind the whole board however deep the
+ * pool grows. Never printed — `marketOnly` makes every panel show a dash.
+ */
+const MARKET_ONLY_RANK = 9999;
+
 const readStoredLeague = (): LeagueShape => {
   try {
     const raw = localStorage.getItem(LEAGUE_STORAGE_KEY);
@@ -1238,7 +1246,17 @@ export class AuctionDraftService {
       onSheet,
       sheetIsStated: this.sheet.ids.length > 0,
       projectedPoints: 0,
-      adp: 0,
+      /*
+       * Sorts last, and that is the whole point of the number.
+       *
+       * `adp` is our own rank and the board's default sort reads it directly.
+       * At 0 these fourteen sorted *first*, so the app opened on a wall of
+       * cards with no projection, no rank and no price — the worst possible
+       * first impression, and made of exactly the players we know least about.
+       * A sentinel past the end of the pool puts them where our knowledge of
+       * them belongs: behind everybody we can actually price.
+       */
+      adp: MARKET_ONLY_RANK,
       injuryRisk: 'MEDIUM',
       valueOverReplacement: 0,
       upside: 0,
