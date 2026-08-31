@@ -778,6 +778,36 @@ claim was found to say the opposite. The findings that survived are still shown;
 the one line that summarised all of them, including the wrong part, is not — it
 is the line most likely to be read and least likely to be checked.
 
+**A page that cannot hold still cannot carry a dated claim.** Found by
+re-fetching citations rather than by reasoning about them. Seven of the
+strongest findings on the owner's own sheet were checked against the pages they
+cite and six held exactly — Nacua's psoas down to the dates of the two joint
+practices he missed, Rapoport on Jeanty's Week 1 chance, the Montgomery trade
+and Gibbs' bell-cow line, the DJ Moore trade three separate findings lean on.
+The seventh held in part: the source confirms Kamara's MCL sprain and a month
+out, and says nothing about the mid-August joint practice the finding places it
+at.
+
+The one that mattered was structural rather than false. Two of the two hundred
+and thirty cited a _player hub_ — CBS Sports' Javonte Williams page, and a
+rolling news index — and the CBS one carried a finding stamped 11 August about
+content the page itself dates to 27 April, inside a block that will be
+rewritten next week. Both claims were true. The defect is that nothing in the
+pipeline could have told: the page has no publication date, so the date on the
+finding could only have come from the model. That is the same objection as "the
+model's URL is never trusted" one level in — there the URL was checked against
+what the search returned, here the URL is real and it is the _date_ that has
+nothing behind it. `isDatelessPage` refuses a hub, an injury history, a depth
+chart or a stats page on the shape of its path, and counts it as undated,
+because that is what it is.
+
+`ingest-research.mjs --revalidate` is what let that reach the file already
+shipped. The contract gets tightened whenever re-fetching turns up a new way a
+citation can fail, and without this a tightening would only ever apply to the
+next run — which through the other door costs money and twenty minutes. The
+findings on disk are their own allowlist, since a search really did return
+them. It dropped 2 of 230 and left the other 228 untouched.
+
 **A wrong id does not fail loudly, so the name is checked too.** Every id in the
 pool belongs to somebody, so a transposed one silently writes one player's
 findings onto another. On the first agent run four ids in ten were wrong and
@@ -1520,7 +1550,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-647 tests.
+650 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
