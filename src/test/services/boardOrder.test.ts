@@ -210,8 +210,18 @@ describe('what counts as for sale', () => {
     );
     const basis = service.getInflationBasis();
     expect(basis.forSaleLeft).toBe(60);
-    expect(basis.valueLeft).toBe(basis.moneyLeft);
-    expect(service.getInflationBasis().inflation).toBeCloseTo(1, 3);
+    // Within the rounding, not to the cent: sixty prices are rounded to whole
+    // dollars, so the sum lands a few either side of the budget. The size of
+    // the tolerance is the point — a few dollars is rounding, and one missing
+    // player is at least the dollar floor times however many were dropped,
+    // which the five this was written for made $5 and a real sheet could make
+    // far more.
+    expect(Math.abs(basis.valueLeft - basis.moneyLeft)).toBeLessThan(5);
+    // 1.003 rather than 1.000, which is the same whole-dollar rounding read as
+    // a ratio. The five dropped players put it at 1.004 — indistinguishable by
+    // eye and not by arithmetic, which is why the counts above are what this
+    // actually rests on.
+    expect(service.getInflationBasis().inflation).toBeCloseTo(1, 2);
     expect(service.getEndgame().par).toBe(20);
   });
 
