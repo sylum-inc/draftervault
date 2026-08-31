@@ -46,7 +46,10 @@ describe('the room, driven', () => {
 
   it('says plainly that no team has been marked as yours', () => {
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: /Advisor off/ }));
+    // The advisor is on by default now — the panel that answers "what do I do
+    // now" was behind a button nobody had pressed. What keeps it an opinion is
+    // the box, the badge and the caveat, not the default.
+    expect(screen.getByRole('button', { name: /Advisor on/ })).toBeInTheDocument();
 
     expect(screen.getByText(/No team is marked as yours/)).toBeInTheDocument();
   });
@@ -56,7 +59,6 @@ describe('the room, driven', () => {
     service.renameTeam('team-1', 'The Owner');
     service.renameTeam('team-5', 'Somebody Else');
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: /Advisor off/ }));
     nominate();
 
     // Selecting a winning team is a recording control: it records who bought a
@@ -72,7 +74,6 @@ describe('the room, driven', () => {
   it('keeps the estimate out of the measurement panel and the rule out of the advice', () => {
     service.setMyTeam('team-1');
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: /Advisor off/ }));
     const player = nominate();
 
     const stage = screen.getByLabelText(`Nomination: ${player.name}`);

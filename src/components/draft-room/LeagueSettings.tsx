@@ -13,6 +13,7 @@ import {
   type LineupSlot,
   type Position,
 } from '@/lib/valuation';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface LeagueSettingsProps {
   /** Every team, so they can be named and one marked as yours. */
@@ -107,13 +108,12 @@ export const LeagueSettings = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      // Escape is a way out, and on a first run there is nowhere out to go.
-      if (event.key === 'Escape' && !firstRun) onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose, firstRun]);
+  }, []);
+
+  // Escape is a way out, and on a first run there is nowhere out to go: the
+  // gate exists because a board priced under somebody else's rules is worse
+  // than no board.
+  useDismissOnEscape(onClose, !firstRun);
 
   const draft = useMemo<LeagueShape>(() => {
     const teamCount = asNumber(teams, league.teams);

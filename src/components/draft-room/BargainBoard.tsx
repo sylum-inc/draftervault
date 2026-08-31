@@ -87,8 +87,13 @@ export const BargainBoard = ({ service, players, onSelect }: BargainBoardProps) 
                 </span>
 
                 <span className="dr-bargain-numbers">
+                  {/* `modelRank` and not `adp`, for the reason `gap` reads
+                      `modelValue`: `adp` is whatever is driving the board, so
+                      after "Use consensus" this printed the market's rank
+                      under the label "our rank" and had the panel disagreeing
+                      with itself about who disagreed with whom. */}
                   <span className="dr-num" title="Our rank">
-                    #{row.player.adp}
+                    #{row.player.modelRank}
                   </span>
                   <em>vs</em>
                   <span className="dr-num" title="Consensus rank">

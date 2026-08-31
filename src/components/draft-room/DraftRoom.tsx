@@ -1394,7 +1394,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
           {asidePanel === 'spend' && <SpendOutlook service={draftService} players={players} />}
           {asidePanel === 'budgets' && (
-            <BudgetRail teams={teams} players={players} activeTeamId={teamId} />
+            <BudgetRail teams={teams} players={players} activeTeamId={teamId} myTeamId={myTeamId} />
           )}
           {asidePanel === 'rosters' && (
             <TeamsPanel

@@ -729,11 +729,23 @@ export const buildAlerts = (
         message: `${team.name} has $${team.remaining} left and ${startersLeft} starting slot${startersLeft === 1 ? '' : 's'} still open.`,
       });
     }
+    /*
+     * A seat this roster still needs, at a position running out of anybody
+     * worth putting in it.
+     *
+     * Counted above replacement rather than by tier, which is the definition
+     * the run alert twenty lines up already uses — two answers to "how many
+     * startable ones are left" in one function, and the tier one was wrong.
+     * Kickers and defences are regressed so hard that the pool holds none
+     * above tier 2 at all, so this fired "0 startable Ks left and Team 1 needs
+     * 1" from the fourth pick of every draft and never stopped. It is not even
+     * true in the sense that matters: no kicker is on the sheet, so the snake
+     * hands you one for nothing.
+     */
+    const startableLeft = new Map(service.getPositionRuns().map((row) => [row.position, row.left]));
     for (const position of POSITIONS) {
       const short = unfilledSlotsFor(position, team.roster, league);
-      const left = players.filter(
-        (p) => p.position === position && !p.isDrafted && p.tier <= 2
-      ).length;
+      const left = startableLeft.get(position) ?? 0;
       if (short > 0 && left <= 4 && filled > 3) {
         alerts.push({
           id: `roster-need:${position}`,

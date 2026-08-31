@@ -107,6 +107,22 @@ export interface Player {
    * the board can show whose number it is showing.
    */
   modelValue: number;
+  /**
+   * Where *we* rank him, kept whatever is driving the board.
+   *
+   * The exact counterpart of `modelValue`, and it was missing. `adp` is the
+   * rank in force, which after "Use consensus" — the recommended way to run
+   * the night — is the market's. Two panels printed it labelled as ours: the
+   * bargain board's `title="Our rank"` and the profile's "our board #21"
+   * beside "consensus #14". Both were then comparing the market with the
+   * market and reporting a disagreement nobody held.
+   *
+   * The same trap `getBargains` was already pulled out of: it reads
+   * `modelValue` rather than the live price so that pressing the button cannot
+   * re-derive the disagreement against itself. The ranks beside those dollars
+   * needed the same treatment and did not get it.
+   */
+  modelRank: number;
   /** Present only when an imported ranking is overriding this player. */
   customRanking?: RankingOverride;
   /**
@@ -1259,6 +1275,8 @@ export class AuctionDraftService {
       baseValue: value,
       estimatedValue: value,
       modelValue: 1,
+      // Nothing to rank him by; he sorts behind everybody we can price.
+      modelRank: MARKET_ONLY_RANK,
       customRanking: override,
       onSheet,
       sheetIsStated: this.sheet.ids.length > 0,
@@ -1389,6 +1407,7 @@ export class AuctionDraftService {
       baseValue: value,
       estimatedValue: value,
       modelValue: priced.auctionValue,
+      modelRank: entry.rank,
       customRanking: override,
       // What this league awards, not the full-PPR total the pool ships.
       projectedPoints: Math.round(

@@ -115,3 +115,29 @@ describe('the inflation headline', () => {
     expect(readInflation(1.4, null).label).toContain('overpays');
   });
 });
+
+/**
+ * The advisor is on, and can still be turned off.
+ *
+ * It was off by default, which protected nothing: what keeps an opinion from
+ * reading as a measurement is `draftAdvisor.ts` being its own module, the
+ * dashed box, the "Advisor" badge, the "opinion, for <team>" caveat and the
+ * aria-label. A default of `false` only meant the panel that answers "what do
+ * I do now" — which name to put up, which to keep off the block, who can still
+ * afford the man you want — was behind a button nobody had pressed.
+ */
+describe('the advisor', () => {
+  it('opens with the room, saying whose opinion it is, and closes on request', () => {
+    localStorage.clear();
+    const service = new AuctionDraftService(leagueShape({ teams: 12, budget: 100 }));
+    service.setMyTeam('team-1');
+    service.renameTeam('team-1', 'The Owner');
+    render(<DraftRoom draftService={service} />);
+
+    expect(screen.getByLabelText(/opinions, not measurements/i)).toBeInTheDocument();
+    expect(screen.getByText(/opinion, for The Owner/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /turn off/i }));
+    expect(screen.queryByLabelText(/opinions, not measurements/i)).not.toBeInTheDocument();
+  });
+});

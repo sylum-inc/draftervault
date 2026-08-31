@@ -9,6 +9,7 @@ import {
 import { copyTextToClipboard } from '@/lib/saveFile';
 import type { Candidate } from '@/lib/rankingsCsv';
 import type { Player } from '@/services/auctionDraftService';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface AuctionSheetImportProps {
   players: Player[];
@@ -80,12 +81,9 @@ export const AuctionSheetImport = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   const candidates = useMemo(() => asCandidates(players), [players]);
   const parsed: ParsedSheet | null = useMemo(

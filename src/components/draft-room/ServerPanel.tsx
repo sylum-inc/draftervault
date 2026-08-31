@@ -24,6 +24,7 @@ import {
   type DraftSummary,
   type JobRecord,
 } from '@/lib/serverContract';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface ServerPanelProps {
   service: AuctionDraftService;
@@ -100,12 +101,9 @@ export const ServerPanel = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   /** Report a failure once, in the panel, and never in the console. */
   const report = useCallback(<T,>(result: ServerResult<T>): T | null => {

@@ -1,6 +1,17 @@
 import type { Player, Team } from '@/services/auctionDraftService';
 
 interface BudgetRailProps {
+  /**
+   * Which team is the owner's, so the row he is looking for is findable.
+   *
+   * Not `activeTeamId`. That is the winning-team select — a *recording*
+   * control that names whoever just bought a player, so through a normal
+   * auction it sits on an opponent — and this panel is where somebody scans
+   * for "how much have I got left against them". It highlighted the wrong row
+   * all night, which is the same mistake the advisor and the budget planner
+   * were both found making.
+   */
+  myTeamId: string | null;
   teams: Team[];
   /** Every player, so a roster count can say how many of them were bought. */
   players: Player[];
@@ -22,7 +33,7 @@ const rosterSize = (team: Team): number =>
  * on climbing, because it is a count of players and not of dollars — the two
  * come apart the moment the snake starts, which is what the tooltip says.
  */
-export const BudgetRail = ({ teams, players, activeTeamId }: BudgetRailProps) => (
+export const BudgetRail = ({ teams, players, activeTeamId, myTeamId }: BudgetRailProps) => (
   <section className="dr-panel dr-rail" aria-label="Team budgets">
     <header className="dr-rail-head">
       <h2 className="dr-eyebrow">Budgets</h2>
@@ -39,14 +50,24 @@ export const BudgetRail = ({ teams, players, activeTeamId }: BudgetRailProps) =>
 
       return (
         <div
-          className="dr-team-row"
+          className={`dr-team-row${team.id === myTeamId ? ' is-mine' : ''}`}
           key={team.id}
           style={team.id === activeTeamId ? { color: 'var(--dr-ink)' } : undefined}
         >
           <span
-            style={{ color: team.id === activeTeamId ? 'var(--dr-ink)' : 'var(--dr-ink-muted)' }}
+            style={{
+              color:
+                team.id === myTeamId || team.id === activeTeamId
+                  ? 'var(--dr-ink)'
+                  : 'var(--dr-ink-muted)',
+            }}
           >
             {team.name}
+            {team.id === myTeamId && (
+              <span className="dr-mine-tag" title="Your team">
+                you
+              </span>
+            )}
             {filled > 0 && (
               <span
                 className="dr-num"

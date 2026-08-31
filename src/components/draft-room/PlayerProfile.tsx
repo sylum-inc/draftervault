@@ -27,6 +27,7 @@ import { ConsensusRange } from './charts/ConsensusRange';
 import { QuadrantScatter, type ScatterPoint } from './charts/QuadrantScatter';
 import { CareerArc } from './charts/CareerArc';
 import { ResearchPanel } from './ResearchPanel';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface PlayerProfileProps {
   player: Player;
@@ -157,12 +158,9 @@ export const PlayerProfile = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   // Each of these lives in its own lazily loaded file, fetched the first time a
   // tab needs it so opening a profile never waits on data nobody looks at.
@@ -1017,11 +1015,16 @@ export const PlayerProfile = ({
               player.market.worst != null && (
                 <section className="dr-modal-section">
                   <h3 className="dr-eyebrow">What the room thinks</h3>
+                  {/* `ourRank` is `modelRank` and not `adp`. `adp` is the
+                      rank in force, so after "Use consensus" this read "our
+                      board #21" beside "consensus #14" — a gap between two
+                      market signals, printed as our disagreement with the
+                      room. */}
                   <ConsensusRange
                     consensus={player.market.consensusRank}
                     best={player.market.best}
                     worst={player.market.worst}
-                    ourRank={player.adp}
+                    ourRank={player.modelRank}
                     spread={player.market.spread}
                     asOf={player.market.asOf}
                     source={player.market.source}

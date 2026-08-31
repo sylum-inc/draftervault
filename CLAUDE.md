@@ -1454,7 +1454,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-630 tests.
+635 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1576,6 +1576,68 @@ flex against every position that can fill it, and the fourth is a bench body.
 alongside the number. Bench is `gain: 0` with no free man named, because there
 is nobody to name: the snake hands you eleven bench bodies for nothing, so the
 alternative to buying him is any of them.
+
+**Escape closed eleven dialogs and not the other two.** `DraftBoard` — the
+room, the 12x16 grid somebody opens mid-auction — and `CompareTray` are both
+`aria-modal` overlays that cover the screen and swallow every click, and the
+only way out of either was to find the Close button. Eleven components had
+written the same effect out by hand, which is how the twelfth gets missed, and
+the copies had already diverged: only `PickEditor` stopped the event, because
+it opens _inside_ `DraftBoard`. That fix would not have survived a `DraftBoard`
+that also listened — `stopPropagation` does not stop a second listener on the
+same node and both are on `document` — so one keystroke would have closed the
+editor and the board behind it, losing the place somebody was correcting.
+
+`useDismissOnEscape` is therefore a stack rather than eleven listeners: every
+open dialog registers, and a keystroke is answered only by whichever registered
+last. Nesting works by construction instead of by each dialog knowing what
+might be above it, and the callback is read through a ref so the effect depends
+on nothing that changes per render — a dependency on the handler would pop and
+re-push on every parent render, floating an _outer_ dialog to the top of the
+stack every time the room behind it re-drew, which it does on every pick.
+`LeagueSettings` passes the enabled flag, because on a first run there is
+nowhere out to go.
+
+**Our own rank did not survive the market board.** `modelValue` exists so the
+board can say whose number it is showing; there was no `modelRank`, and `adp`
+is whatever is _driving_ the board — the market's, after "Use consensus". Two
+panels printed it as ours: the bargain board's `title="Our rank"`, and the
+profile's "our board #21" beside "consensus #14". Both were comparing ADP with
+expert consensus and reporting it as our disagreement with the room. It is the
+trap `getBargains` had already been pulled out of once — it reads `modelValue`
+rather than the live price so that pressing the button cannot re-derive the
+disagreement against itself — and the ranks printed beside those dollars never
+got the same treatment. On the shipped board Kyren Williams went from "#28 vs
+#42" to "#9 vs #42", which is the disagreement we actually hold.
+
+**A permanent false alarm in the one panel that has to stay terse.** The
+advisor's roster-need alert counted "startable" as `tier <= 2`, while the run
+alert twenty lines above it counted players above replacement — two answers to
+one question in a single function, and the tier one was wrong. Kickers and
+defences are regressed so hard that the pool holds none above tier 2 at all, so
+it fired "0 startable Ks left and Team 1 needs 1" from the fourth pick of every
+draft and never stopped. It is not even true in the sense that matters: no
+kicker is on the sheet, so the snake hands you one for nothing.
+
+**The advisor is on by default, which is a reversal.** Facts and opinions being
+different files is the rule, and nothing about that rule lived in the default.
+What carries it is the separate module, the dashed box, the "Advisor" badge,
+the "opinion, for Team 1" caveat and an aria-label reading "opinions, not
+measurements" — all of which stay. Off bought none of that; it only meant the
+one panel answering _what do I do now_ — which name to put on the block, which
+to keep off it, who can still afford the man you want — sat behind a button
+nobody had pressed. Flipping the default alone would have reached nobody,
+because preferences merge over the defaults and are written back on mount, so
+everybody who has ever opened the app carries an explicit `advisor: false` that
+is the old default echoed back rather than a choice. `draft-vault:advisor-default:v2`
+is a one-time migration key in the idiom `LEAGUE_CONFIRMED_KEY` already uses,
+and turning it off after that sticks.
+
+**The budget rail highlighted the wrong row.** It coloured `activeTeamId` — the
+winning-team select, which names whoever just bought a player — on the panel
+somebody scans for _how much have I got left against them_. It marks yours now,
+the same way `TeamsPanel` already did. That is the third panel found making
+this mistake, after the advisor and the budget planner.
 
 **Two of the six side panels could not be opened, at any window width.** The
 tab row was a `.dr-segmented` — an `inline-flex` with `overflow: hidden` — and
