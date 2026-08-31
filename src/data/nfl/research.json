@@ -1254,7 +1254,7 @@
       ],
       "dropped": {
         "unsourced": 0,
-        "undated": 1,
+        "undated": 0,
         "malformed": 0
       }
     },
@@ -1337,7 +1337,7 @@
       ],
       "dropped": {
         "unsourced": 0,
-        "undated": 1,
+        "undated": 0,
         "malformed": 0
       }
     },

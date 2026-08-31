@@ -12,6 +12,7 @@
     "fetch:nfl": "node scripts/fetch-nfl-data.mjs",
     "build:pool": "node scripts/build-player-pool.mjs",
     "fetch:adp": "node scripts/fetch-adp.mjs",
+    "refresh": "node scripts/refresh.mjs",
     "backtest": "node scripts/backtest-projections.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

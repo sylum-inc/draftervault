@@ -21,6 +21,8 @@ npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 628-player pool from nflverse production data
 npm run fetch:adp    # refresh the draft market alone, in seconds, before draft day
+npm run refresh      # the day-of ritual: market + research, and what moved
+npm run refresh -- --check   # the same report, changing nothing
 npm run backtest     # score the projection model against 2023-25, and the baselines
 npm run build:icons  # redraw the app icons (CI checks they match)
 OPENROUTER_API_KEY=sk-or-... npm run research:players   # web-research the pool
@@ -1736,6 +1738,37 @@ rather than the live price so that pressing the button cannot re-derive the
 disagreement against itself — and the ranks printed beside those dollars never
 got the same treatment. On the shipped board Kyren Williams went from "#28 vs
 #42" to "#9 vs #42", which is the disagreement we actually hold.
+
+**The day-of refresh is one command, and it says what moved.** The board
+fetches nothing on the night, so everything it knows is frozen at whenever
+somebody last ran a script. That is deliberate and it is what makes the
+artifact work — but it leaves a ritual on draft morning, and a four-step ritual
+with no output is one somebody half-performs at nine with a draft at noon.
+`npm run refresh` runs the two cheap ones (the market, and the research
+contract over the file already on disk) and prints what changed.
+
+What it deliberately does **not** do is rebuild the board to report new prices.
+A second place deciding what a player is worth is exactly the drift
+`valuation.ts` exists to prevent, and a report disagreeing with the room would
+be worse than no report. So it diffs the _inputs_ — which is both exact and
+more useful, since "Gibbs moved from ADP 1 to 4" is the thing to know and the
+price follows from it in the room. The pool is left alone for the same reason
+it always is: a nineteen-megabyte download and a rebuild that moves every price
+is the last thing anybody wants before a draft, and projections do not age.
+
+Two sections earn the command on their own. The commissioner's list is
+re-resolved every time, so a pool rebuild that quietly stopped matching a name
+is caught on the morning rather than at the table. And the standing research
+flags are grouped by position **for the men the snake hands you free**, because
+the gain on every bid is a difference against one of them — on the shipped file
+that reads RB 8 fading against 3 being paid up for, which says the free back is
+the shakiest baseline on the board and a bid at running back therefore buys
+more than the number says.
+
+`auctionSheet.ts` gained an explicit `.ts` on its one relative import so the
+script can read the sheet with the same parser the room uses rather than a
+second one. That is the property every other script-reachable module here
+already had by having no relative imports at all.
 
 **The board fetches nothing on the night, and never said when it stopped
 knowing things.** That is the trade that makes it work in the published
