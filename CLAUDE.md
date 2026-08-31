@@ -1770,6 +1770,31 @@ script can read the sheet with the same parser the room uses rather than a
 second one. That is the property every other script-reachable module here
 already had by having no relative imports at all.
 
+**And re-resolving the list is worthless if the count is wrong, which it was.**
+Driven against the owner's real sixty-name paste the report said "resolved 60 of
+60 rows" while eight names had failed — Puka Nakua, Saquan Barkley, Garret
+Wilson, Sam La Porta and four more, every one of them a spelling the room writes
+and the pool does not. The numerator was `resolutions.length`, and an _unmatched
+row is still a resolution_; the per-kind breakdown underneath it never printed
+either, because it read `row.kind` on a union discriminated by `row.status`, so
+every row counted as matched. Both halves of the one section that exists to
+catch a broken paste were reporting a broken paste as perfect — on the morning
+of a draft, about the eight players the room would then snake rather than buy,
+with `auctionSheetSize` dropping to fifty-two and re-pricing the whole board for
+an auction nobody is holding.
+
+The fix is not a corrected count, it is `sheetLoss` — the function the import
+panel already answers this question with, which bands the share at one row in
+eight and hands back the text of every lost line to be fixed. A script and a
+panel reporting a paste two different ways is the same defect `valuation.ts` and
+`serverContract.ts` are each shaped to prevent, one register further out. The
+`onSheet` set is built from `status === 'matched'` for the same reason: reaching
+for `row.player?.id ?? row.id` across the whole union happened to be right and
+would stop being right the moment the union gained a member carrying an `id`.
+It was not harmless in the meantime either — the eight unmatched sheet players
+were counted as free men, so Puka Nacua and Saquon Barkley were being reported
+as baselines the snake would hand you for nothing.
+
 **The board fetches nothing on the night, and never said when it stopped
 knowing things.** That is the trade that makes it work in the published
 artifact and in a basement with no wifi, and the honest mitigation is not to

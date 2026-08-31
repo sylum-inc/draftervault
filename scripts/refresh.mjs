@@ -33,7 +33,7 @@ import { spawnSync } from 'node:child_process';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateMarket, marketAge, describeMarket } from '../src/lib/marketContract.ts';
-import { readAuctionSheet } from '../src/lib/auctionSheet.ts';
+import { readAuctionSheet, sheetLoss } from '../src/lib/auctionSheet.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DATA = join(ROOT, 'src/data/nfl');
@@ -133,8 +133,15 @@ const candidates = pool.players.map((player) => ({
 }));
 const sheetText = existsSync(SHEET) ? readFileSync(SHEET, 'utf8') : null;
 const parsed = sheetText ? readAuctionSheet(sheetText, candidates) : null;
+// Only a *matched* row puts somebody on the sheet. A `Resolution` is a
+// discriminated union on `status`, and reaching for an id that only the matched
+// member carries reads as undefined on the others — which is right by accident
+// here and would not be if the union ever gained a member with an `id`. Say
+// which member is meant.
 const onSheet = new Set(
-  (parsed?.resolutions ?? []).map((row) => row.player?.id ?? row.id).filter(Boolean)
+  (parsed?.resolutions ?? [])
+    .filter((row) => row.status === 'matched')
+    .map((row) => row.player.id)
 );
 
 // ---------------------------------------------------------------------------
@@ -169,13 +176,28 @@ console.log('\nTHE COMMISSIONER’S LIST');
 if (!parsed) {
   line('sheet', `not found at ${SHEET}`);
 } else {
-  const kinds = {};
-  for (const row of parsed.resolutions) kinds[row.kind ?? 'matched'] = (kinds[row.kind ?? 'matched'] ?? 0) + 1;
-  line('resolved', `${parsed.resolutions.length} of ${parsed.resolutions.length + (parsed.skipped?.length ?? 0)} rows`);
-  for (const [kind, count] of Object.entries(kinds)) if (kind !== 'matched') line(`  ${kind}`, String(count));
-  if (parsed.skipped?.length) {
-    line('lost rows', String(parsed.skipped.length));
-    for (const row of parsed.skipped.slice(0, 6)) console.log(`     ${row.text ?? row}`);
+  /*
+   * The number that matters is how many rows named somebody, and it is not the
+   * number of resolutions: an unmatched row is still a resolution. Reported the
+   * other way this said "60 of 60" over the owner's real sheet while eight
+   * names had failed — which is the one claim a report about a paste may not
+   * get wrong, because those eight are players the room will now snake rather
+   * than buy and `auctionSheetSize` drops with them, re-pricing the board for
+   * an auction nobody is holding.
+   *
+   * `sheetLoss` is the app's own answer to that question, so the script and the
+   * import panel cannot come to disagree about a paste — the same reason
+   * `valuation.ts` is shared with the pool builder.
+   */
+  const loss = sheetLoss(parsed);
+  line('resolved', `${onSheet.size} of ${loss.of} rows`);
+  if (loss.lost) {
+    line(
+      'lost',
+      `${loss.lost} rows (${Math.round(loss.share * 100)}%)` +
+        (loss.severity === 'much' ? ' — worse than one in eight; fix these before draft day' : '')
+    );
+    for (const text of loss.lines) console.log(`     ${text}`);
   }
 }
 
