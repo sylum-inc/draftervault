@@ -6,7 +6,7 @@ import {
   type Team,
   type TierBreak,
 } from '@/services/auctionDraftService';
-import type { Endgame } from '@/lib/endgame';
+import { readInflation, type Endgame } from '@/lib/endgame';
 
 interface MarketPanelProps {
   market: MarketState;
@@ -52,16 +52,6 @@ interface MarketPanelProps {
   tierBreaks: TierBreak[];
 }
 
-/** Plain words for what the inflation number means for the next bid. */
-const readInflation = (inflation: number): { label: string; tone: string } => {
-  if (inflation >= 1.15)
-    return { label: 'Money is chasing scraps — expect overpays', tone: 'var(--dr-danger)' };
-  if (inflation >= 1.04) return { label: 'Prices running hot', tone: 'var(--dr-caution)' };
-  if (inflation <= 0.85) return { label: 'Value on the board — bid', tone: 'var(--dr-value)' };
-  if (inflation <= 0.96) return { label: 'Slightly in your favour', tone: 'var(--dr-value)' };
-  return { label: 'Priced about right', tone: 'var(--dr-ink-muted)' };
-};
-
 /**
  * What the room is doing.
  *
@@ -81,7 +71,7 @@ export const MarketPanel = ({
   const snake = phase === 'snake';
   const reading = snake
     ? { label: 'The money is finished — the snake fills the rest', tone: 'var(--dr-ink-muted)' }
-    : readInflation(market.inflation);
+    : readInflation(market.inflation, market.premium ?? null);
   const premiumPct = market.premium != null ? Math.round((market.premium - 1) * 100) : null;
 
   // Where the room is paying under our numbers — the only bargain signal that
@@ -350,18 +340,30 @@ export const MarketPanel = ({
             </div>
             <div>
               <dt>Room is paying</dt>
+              {/* Coloured by what it paid against those players' *list* prices
+                  rather than against par. Par is the average of the players
+                  left and the pace is the average of the players sold — the
+                  dear ones go first, so pace beat par from the opening sale
+                  whatever the room did, and this tile ran amber all night. */}
               <dd
                 className="dr-num"
                 style={{
                   color:
-                    endgame.pace == null
+                    endgame.paceOfList == null
                       ? undefined
-                      : endgame.pace > endgame.par
+                      : endgame.paceOfList > 1
                         ? 'var(--dr-caution)'
                         : 'var(--dr-value)',
                 }}
               >
                 {endgame.pace == null ? '—' : `$${endgame.pace}`}
+                {endgame.paceOfList != null && (
+                  <span className="dr-pace-share">
+                    {' '}
+                    {endgame.paceOfList >= 1 ? '+' : '−'}
+                    {Math.abs(Math.round((endgame.paceOfList - 1) * 100))}% vs list
+                  </span>
+                )}
               </dd>
             </div>
             <div>

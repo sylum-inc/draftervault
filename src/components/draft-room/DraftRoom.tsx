@@ -1422,7 +1422,17 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           {asidePanel === 'plan' && (
             <BudgetPlanner
               service={draftService}
-              team={activeTeam}
+              /* Yours, not whoever the winning-team select happens to sit on.
+                 That select is a *recording* control — it names who just bought
+                 a player, so through a normal auction it sits on an opponent
+                 most of the night — and this panel answers "what does this bid
+                 leave me". It was handed `activeTeam`, which is the same
+                 mistake the advisor was found making, and it read "Team 9's
+                 budget" on a screen whose owner is Team 1. `activeTeam` is
+                 still the fallback, because with nobody marked as yours there
+                 is no better answer than the team being recorded, and the
+                 header names whichever it is. */
+              team={myTeam ?? activeTeam}
               player={selected}
               bid={bid}
               players={players}

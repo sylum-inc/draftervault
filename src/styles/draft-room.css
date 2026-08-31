@@ -608,6 +608,15 @@
 
 /* Says which question the comparison is answering, when the answer is not
    about your lineup. Deliberately quieter than the label it qualifies. */
+/* The share the "room is paying" figure is actually judged on, beside the
+   dollars somebody at the table is holding in their head. */
+.dr-pace-share {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.04em;
+}
+
 .dr-verdict-note {
   flex: 1 0 100%;
   font-family: var(--dr-sans);
@@ -1347,13 +1356,44 @@
   color: var(--dr-value);
 }
 
+/*
+ * Six panels in a 380px column, so this is a grid rather than a pill.
+ *
+ * It was `.dr-segmented`, which is an `inline-flex` with `overflow: hidden` —
+ * and `flex: 1` cannot shrink a button below its own text, so 443px of tabs
+ * were clipped to 378 and the last two ran off the end. `plan`, the whole
+ * nomination-plan panel, was never reachable at any window width, because the
+ * aside is a fixed column and the clipping had nothing to do with the viewport.
+ *
+ * A grid is the fix rather than a wrap because it cannot come back: three
+ * columns hold any number of tabs by adding rows, so nothing is ever off the
+ * end. A seventh panel makes this three rows and stays clickable, which is
+ * what a control row you use at speed has to do.
+ */
 .dr-aside-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   width: 100%;
+  overflow: visible;
+  border-radius: 10px;
 }
 
 .dr-aside-tabs button {
-  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
   text-transform: capitalize;
+  border-right: 1px solid var(--dr-line);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* The right-hand column and the last row close the box off. */
+.dr-aside-tabs button:nth-child(3n),
+.dr-aside-tabs button:last-child {
+  border-right: none;
+}
+
+.dr-aside-tabs button:nth-last-child(-n + 3) {
+  border-bottom: none;
 }
 
 .dr-premiums {

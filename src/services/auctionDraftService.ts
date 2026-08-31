@@ -2896,14 +2896,24 @@ export class AuctionDraftService {
     const basis = this.getInflationBasis();
     // Newest first, and auction sales only: a snake pick costs nothing and
     // averaging zeroes into a price would report a room that had stopped paying.
-    const recentPrices = [...this.history]
+    const recentSales = [...this.history]
       .reverse()
-      .filter((pick) => (pick.phase ?? 'auction') === 'auction' && pick.cost != null)
-      .map((pick) => pick.cost as number);
+      .filter((pick) => (pick.phase ?? 'auction') === 'auction' && pick.cost != null);
+    // What each of those went for, and what the board said he was worth. The
+    // second is what stops the pace being a reading of the auction's shape
+    // rather than of the room: the players sold first are the dear ones, so a
+    // raw pace beats par from the opening sale whatever anybody paid.
+    //
+    // The list price rather than tonight's adjusted one, deliberately: the
+    // adjusted price already carries the multiplier this comparison is meant
+    // to be independent of, so dividing by it would compare the room with
+    // itself and report agreement always.
+    const priced = new Map(this.players.map((player) => [player.id, player.modelValue]));
     return endgame({
       moneyLeft: basis.moneyLeft,
       playersLeft: basis.forSaleLeft,
-      recentPrices,
+      recentPrices: recentSales.map((pick) => pick.cost as number),
+      recentList: recentSales.map((pick) => priced.get(pick.playerId) ?? 0),
       teams: this.teams.map((team) => ({
         id: team.id,
         name: team.name,

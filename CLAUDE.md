@@ -1454,7 +1454,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-618 tests.
+626 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1495,6 +1495,35 @@ once most of the room is spectating what a player is worth stops mattering. It
 lives in `MarketPanel` beside inflation rather than in a panel of its own,
 because both are readings of the same thing — how much money is chasing how few
 players — and two panels would let the room find two answers to one question.
+
+**They were in one panel and still gave two answers, and the fix is the one
+piece of arithmetic here that was simply wrong.** Driven mid-auction the panel
+read, top to bottom: "Money is chasing scraps — expect overpays" in red; "$1009
+left chasing $875 of value · room paying −40% vs our numbers"; "RB −44% going
+cheap · 4 sold"; and "the room is paying about par — $24 against $21. No timing
+edge right now." Four readings of one thing pointing three ways.
+
+Par is the average of the players **left**. A raw pace is the average of the
+players **sold**. The dear ones go first, so pace beats par from the opening
+sale whatever the room does — the comparison reads the shape of an auction, not
+the behaviour of a room, and it fired "spending ahead of its budget, hold" while
+every other line on the panel said bargain. `endgame` now takes `recentList`
+beside `recentPrices` — what those same players were listed at — and takes its
+verdict from the share, which is composition-free and is the same normalisation
+inflation already does. The list price and not tonight's adjusted one: the
+adjusted price carries the multiplier this is meant to be independent of, so
+dividing by it would compare the room with itself and report agreement always.
+Par stays printed, because "the rest have to average $21" is a real budget
+constraint; it is simply not evidence about anybody's discipline.
+
+The direction was worth getting right twice, because the intuitive word is
+wrong both times. A room paying **under** list leaves more money behind less
+value, so nothing from here is a bargain and the discount only shrinks — the
+call is buy now, not hold, and "money is piling up, hold your nerve" is how a
+budget ends up buying the last forty players at a premium. `readInflation`
+moved into `endgame.ts` for the same reason and now takes the room's premium,
+so the loud band says which of the two cases it is instead of shouting overpay
+above a column of bargains.
 
 **What the snake gives you free is what a bid is competing with, and `vorp` is
 the wrong bar for it.** This is the one piece of arithmetic here that is
@@ -1547,6 +1576,24 @@ flex against every position that can fill it, and the fourth is a bench body.
 alongside the number. Bench is `gain: 0` with no free man named, because there
 is nobody to name: the snake hands you eleven bench bodies for nothing, so the
 alternative to buying him is any of them.
+
+**Two of the six side panels could not be opened, at any window width.** The
+tab row was a `.dr-segmented` — an `inline-flex` with `overflow: hidden` — and
+`flex: 1` cannot shrink a button below its own text, so 443px of tabs were
+clipped to 378 and `bargains` and `plan` ran off the end. The aside is a fixed
+column, so this had nothing to do with the viewport and was the same at 1280 as
+at 1920. `plan` had therefore never been reachable. It is a three-column grid
+now rather than a wrap, because a grid cannot bring it back: a seventh panel
+adds a row instead of running off the end. jsdom measures nothing, so no
+assertion could have caught it — the guard is the layout, not a test.
+
+**And the panel behind it was planning the wrong team's money.** `BudgetPlanner`
+was handed `activeTeam`, the winning-team select — a _recording_ control that
+names who just bought a player and therefore sits on an opponent most of the
+night. It read "Team 9's budget" on a screen whose owner is Team 1: exactly the
+mistake the advisor was found making, in the panel whose whole subject is what a
+bid leaves _you_. It takes `myTeam` now, falling back to the select only when
+nobody is marked, and the header names whichever it got.
 
 **Two claims on one screen may not point opposite ways, and this one was found
 by looking.** The stage said "Bench only — he is a bench player and adds nothing
