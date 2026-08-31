@@ -1550,7 +1550,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-650 tests.
+651 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1570,6 +1570,17 @@ Open, roughly in order of value:
    things the pick-log-is-the-only-shared-fact rule exists to prevent — so it is
    a real design change rather than a route to add. The published artifact
    cannot have it either way: its CSP blocks every external host.
+
+   What _is_ covered, and had never been proved end to end, is the case that
+   actually costs an afternoon: the machine dies. Driven in two browser
+   profiles — `c` on the laptop, paste into a phone with empty storage — twenty
+   of twenty picks came back with a byte-identical log and the league with
+   them. Two things looked broken on the way and were not: the copy shortcut
+   works (the driver's clipboard permission was not origin-scoped), and the
+   paste box exists (behind "Paste a draft…", which the driver never pressed).
+   `wholeNight.test.ts` now carries the same journey at the engine, over a real
+   sheet with thirty sold, because a browser drive happens once and a test
+   happens every time.
 
 **Money left over players left is a constraint, not a forecast, and it decides
 when to buy.** `snakeOutlook` says _what_ a dollar buys; `endgame.ts` says

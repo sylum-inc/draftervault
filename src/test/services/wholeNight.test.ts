@@ -98,3 +98,75 @@ describe('the whole night', () => {
     expect(hist.filter((h) => h.phase === 'snake' && h.cost != null)).toHaveLength(0);
   });
 });
+
+/**
+ * The night survives the laptop.
+ *
+ * There is no server on draft night: the draft is a pick log in one browser
+ * profile, and a cleared cache or a dead machine takes the afternoon with it.
+ * Every defence rests on one claim — that a copy of the record can be carried
+ * to a machine that has never seen it and land as the same draft — and that
+ * claim had a lot of tests of its parts and none of the whole.
+ *
+ * Driven in two browser profiles as well: `c` on the laptop, paste on a phone
+ * with empty storage, twenty of twenty picks back and a byte-identical log.
+ * This is the same journey at the engine, where it can be run every time.
+ */
+describe('a draft carried to a machine that has never seen it', () => {
+  it('arrives as the same draft, league and all', () => {
+    localStorage.clear();
+    const laptop = new AuctionDraftService(
+      leagueShape({
+        teams: 12,
+        budget: 100,
+        rosterSize: 16,
+        receptionPoints: 0.5,
+        startingLineup: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 1, K: 1, DST: 1 },
+      })
+    );
+    const candidates = laptop
+      .getPlayers()
+      .map((p) => ({ id: p.id, name: p.name, position: p.position, team: p.team }));
+    laptop.setAuctionSheet(sheetPlayerIds(readAuctionSheet(SHEET, candidates).resolutions, {}));
+    laptop.applyConsensusBoard();
+
+    // A real afternoon: half the sheet sold, across the room, at real money.
+    let i = 0;
+    for (const target of laptop.getSheetRemaining().slice(0, 30)) {
+      const price = Math.max(1, 18 - Math.floor(i / 4));
+      for (let t = 1; t <= 12; t++) {
+        if (laptop.validateBid(target.id, `team-${t}`, price).ok) {
+          laptop.draftPlayer(target.id, `team-${t}`, price);
+          break;
+        }
+      }
+      i += 1;
+    }
+    const sold = laptop.getHistory().length;
+    expect(sold).toBeGreaterThan(20);
+
+    const carried = laptop.exportDraft();
+
+    // The other machine. Nothing of this draft has ever been on it — not the
+    // league, not the sheet, not a pick.
+    localStorage.clear();
+    const phone = new AuctionDraftService(leagueShape());
+    expect(phone.getHistory()).toHaveLength(0);
+
+    const result = phone.importDraft(carried);
+    expect(result).toMatchObject({ ok: true, restored: sold, skipped: 0 });
+
+    // The same draft, not merely the same number of picks: who bought whom for
+    // how much, in order.
+    const shape = (service: AuctionDraftService) =>
+      service.getHistory().map((pick) => `${pick.playerId}:${pick.teamId}:${pick.cost ?? '-'}`);
+    expect(shape(phone)).toEqual(shape(laptop));
+
+    // And the league came with it, because a price is meaningless without the
+    // rules it was bid under.
+    expect(phone.getLeagueShape()).toMatchObject({ teams: 12, budget: 100, receptionPoints: 0.5 });
+    const mine = phone.getTeams();
+    const laptopTeams = laptop.getTeams();
+    expect(mine.map((t) => t.remaining)).toEqual(laptopTeams.map((t) => t.remaining));
+  });
+});
