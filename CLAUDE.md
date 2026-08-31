@@ -1454,7 +1454,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-609 tests.
+618 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1534,6 +1534,38 @@ where you pick is an outlook for somebody else's draft and looks exactly as
 authoritative as a real one. The same number is pointed at the man on the block
 from the nomination stage, since that is where it is needed while money is on
 the table.
+
+**A seat you have already filled is not a seat.** The gain was computed against
+the best free man at the player's _position_, which is the right bar exactly
+until your own slots at it fill — and then it is a number about a seat that is
+taken. Two running backs in and the board went on quoting the gap to the best
+free back for every back after that, which is the specific way this format is
+lost: the third back is not competing with a back, he is competing for your
+flex against every position that can fill it, and the fourth is a bench body.
+`gainOverSnake` therefore reads your own roster through the same
+`unfilledSlotsFor` the reserve uses, and returns which of the three it is
+alongside the number. Bench is `gain: 0` with no free man named, because there
+is nobody to name: the snake hands you eleven bench bodies for nothing, so the
+alternative to buying him is any of them.
+
+**Two claims on one screen may not point opposite ways, and this one was found
+by looking.** The stage said "Bench only — he is a bench player and adds nothing
+to the lineup that scores", and an inch above the sold button, "Below value" in
+green. Both sentences were true. The price comparison is against the _league's_
+bar — points over the last man the league rosters — and a bench body really can
+sit under it. What is not true is that beating it is a reason to bid, and green
+beside a bid box is nothing but a reason to bid. The same thing happens without
+a full roster whenever the gain is negative: "Buying him gains −35 pts over
+Jonathan Taylor, free in the snake" under a green "Below value" is the sharper
+version, because there the seat is open and paying is still a measured loss.
+
+So `verdictFor` takes the snake gain and withholds the _tone_ rather than
+changing the words — the comparison still says Below value, in the colour of
+something that is not an argument, with one quiet line saying which lineup it
+is talking about. An overpay is deliberately left alone: it is already the
+loudest warning on the panel and muting it would be the same mistake pointed
+the other way. Four tests pin the relationship rather than the wording, because
+what must never come back is the green, not the phrasing.
 
 **A player the room drafts and the pool has never heard of is still draftable.**
 nflverse's roster file lags signings, so Keenan Allen, Stefon Diggs and Deebo

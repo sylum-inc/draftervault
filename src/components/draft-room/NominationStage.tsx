@@ -5,6 +5,7 @@ import type {
   DraftAnalytics,
   DraftPhase,
   Player,
+  SnakeGain,
   SnakeSlot,
   Team,
 } from '@/services/auctionDraftService';
@@ -23,7 +24,7 @@ interface NominationStageProps {
    * when the auction buys the whole roster — here the alternative is whoever
    * survives to your own snake slot, and the two can differ by a hundred points.
    */
-  snakeGain?: { gain: number; free: string; freePoints: number } | null;
+  snakeGain?: SnakeGain | null;
 
   /**
    * Which half of the draft this stage is running, and the structural branch
@@ -98,18 +99,61 @@ const inkFor = (hex: string): string => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6 ? '#0b0f17' : '#ffffff';
 };
 
-/** How this bid compares to the model's number, in plain words. */
+/**
+ * How this bid compares to the model's number, in plain words.
+ *
+ * `snakeGain` is not a second opinion about the price, it is which question the
+ * price is answering. The value is the *league's* bar — points over the last
+ * man the league rosters — and it stays true of a player whose seat on your own
+ * roster is already covered. What stops being true is that beating it is a
+ * reason to bid.
+ *
+ * Two ways a seat is covered, and this format produces both constantly. He is
+ * bench only, because your slots and flex are full and the snake hands you
+ * eleven bench bodies for nothing. Or the gain is not positive, because the
+ * best man left free at that seat outscores him — the stage was found saying
+ * “Buying him gains −35 pts over Jonathan Taylor, free in the snake” with a
+ * green “Below value” an inch above the sold button. Both sentences were true;
+ * the screen was wrong, because green next to a bid box is an argument to buy
+ * and there was none.
+ *
+ * So the tone is withheld rather than the words changed: the comparison still
+ * says what it says, in the colour of something that is not an argument.
+ */
 const verdictFor = (
   bid: number,
-  analytics: DraftAnalytics | null
-): { label: string; tone: string } => {
+  analytics: DraftAnalytics | null,
+  snakeGain: SnakeGain | null | undefined
+): { label: string; tone: string; note: string | null } => {
   if (!analytics || !Number.isFinite(bid) || bid < 1)
-    return { label: '—', tone: 'var(--dr-ink-muted)' };
+    return { label: '\u2014', tone: 'var(--dr-ink-muted)', note: null };
   const value = analytics.adjustedValue;
-  if (bid <= value * 0.85) return { label: 'Below value', tone: 'var(--dr-value)' };
-  if (bid <= value * 1.05) return { label: 'At value', tone: 'var(--dr-ink)' };
-  if (bid <= analytics.maxBid) return { label: 'Premium', tone: 'var(--dr-caution)' };
-  return { label: 'Overpay', tone: 'var(--dr-danger)' };
+  const base =
+    bid <= value * 0.85
+      ? { label: 'Below value', tone: 'var(--dr-value)' }
+      : bid <= value * 1.05
+        ? { label: 'At value', tone: 'var(--dr-ink)' }
+        : bid <= analytics.maxBid
+          ? { label: 'Premium', tone: 'var(--dr-caution)' }
+          : { label: 'Overpay', tone: 'var(--dr-danger)' };
+
+  // An overpay is already saying don't; leave the loudest warning alone. And
+  // with no gain computable there is nothing to qualify it with.
+  if (!snakeGain || base.label === 'Overpay') return { ...base, note: null };
+
+  if (snakeGain.slot === 'bench')
+    return {
+      label: base.label,
+      tone: 'var(--dr-ink-muted)',
+      note: 'to the league \u2014 not to your lineup',
+    };
+  if (snakeGain.gain <= 0)
+    return {
+      label: base.label,
+      tone: 'var(--dr-ink-muted)',
+      note: 'to the league \u2014 the snake hands you better, free',
+    };
+  return { ...base, note: null };
 };
 
 export const NominationStage = ({
@@ -177,7 +221,7 @@ export const NominationStage = ({
   const { primary } = teamColors(team);
   const logo = teamLogo(team);
   const amount = Number.parseInt(bid, 10);
-  const verdict = verdictFor(amount, analytics);
+  const verdict = verdictFor(amount, analytics, snakeGain);
   const rejection = check && !check.ok ? check : null;
 
   const style = { '--dr-accent': primary, '--dr-accent-ink': inkFor(primary) } as CSSProperties;
@@ -289,15 +333,27 @@ export const NominationStage = ({
         </div>
       </dl>
 
+      {/* What he adds to *your* lineup, not to a lineup in the abstract.
+          Once your slots at his position are full he is competing for the flex,
+          where the bar is the best free player from any flex position; once
+          that is gone he is a bench body and adds nothing that scores, whatever
+          his projection says. Quoting the position-level gain there is how a
+          budget goes on a fourth running back. */}
       {snakeGain && !player.marketOnly && (
-        <p className="dr-stage-snakegain">
-          Buying him gains{' '}
-          <b style={{ color: snakeGain.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)' }}>
-            {snakeGain.gain > 0 ? '+' : ''}
-            {snakeGain.gain} pts
-          </b>{' '}
-          over {snakeGain.free} ({snakeGain.freePoints}), who the snake should hand you free at{' '}
-          {player.position}.
+        <p className="dr-stage-snakegain" data-slot={snakeGain.slot}>
+          {snakeGain.slot === 'bench' ? (
+            <b style={{ color: 'var(--dr-danger)' }}>Bench only.</b>
+          ) : (
+            <>
+              Buying him gains{' '}
+              <b style={{ color: snakeGain.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)' }}>
+                {snakeGain.gain > 0 ? '+' : ''}
+                {snakeGain.gain} pts
+              </b>{' '}
+              over {snakeGain.free} ({snakeGain.freePoints}), free in the snake.
+            </>
+          )}{' '}
+          <span className="dr-stage-slot">{snakeGain.note}</span>
         </p>
       )}
 
@@ -505,6 +561,7 @@ export const NominationStage = ({
           <p className="dr-verdict">
             <span>Against our number</span>
             <strong style={{ color: verdict.tone }}>{verdict.label}</strong>
+            {verdict.note && <em className="dr-verdict-note">{verdict.note}</em>}
           </p>
         )}
 

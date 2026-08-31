@@ -12,12 +12,29 @@ import {
   sameLeague,
   startingSlots,
   unfilledSlotsFor,
+  FLEX_ELIGIBLE,
   type LeagueShape,
+  type Position,
 } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { consensusCoverage, consensusOverrides, marketOrder } from '@/lib/consensusBoard';
 import { snakeOutlook, type SnakeOutlook } from '@/lib/snakeOutlook';
 import { endgame, type Endgame } from '@/lib/endgame';
+
+/**
+ * What buying this player would actually add to *your* lineup.
+ *
+ * `free` is null on a bench verdict because there is no man he replaces: every
+ * seat he could take is already filled, so quoting an alternative would invent
+ * a comparison nobody is making.
+ */
+export interface SnakeGain {
+  gain: number;
+  free: string | null;
+  freePoints: number | null;
+  slot: 'starter' | 'flex' | 'bench';
+  note: string;
+}
 import { validateMarket, type MarketAbsentee, type MarketSnapshot } from '@/lib/marketContract';
 
 interface PoolEntry {
@@ -2972,17 +2989,75 @@ export class AuctionDraftService {
    * the man on the block, which is the number somebody needs while money is on
    * the table. Null when the outlook cannot honestly be computed at all.
    */
-  gainOverSnake(playerId: string): { gain: number; free: string; freePoints: number } | null {
+  gainOverSnake(playerId: string): SnakeGain | null {
     const outlook = this.getSpendOutlook();
     if (!outlook.positions) return null;
     const player = this.players.find((entry) => entry.id === playerId);
     if (!player || player.marketOnly) return null;
-    const row = outlook.positions.find((entry) => entry.position === player.position);
-    if (!row?.free) return null;
+    const mine = this.teams.find((team) => team.id === this.myTeamId);
+    if (!mine) return null;
+
+    const position = player.position as Position;
+    const openHere = Math.max(
+      0,
+      (this.league.startingLineup[position] ?? 0) - mine.roster[position]
+    );
+    const startable = unfilledSlotsFor(position, mine.roster, this.league) > 0;
+
+    /*
+     * Which man he actually replaces, which is not always the best free player
+     * at his own position.
+     *
+     * This is the mistake that loses a hybrid draft. Once your two running back
+     * slots are full, a third back does not buy you the gap to the best free
+     * back — that seat is taken. He is competing for your flex, where the
+     * alternative is the best free player from *any* flex-eligible position,
+     * which is a higher bar. And once the flex is gone too he is a bench body:
+     * he adds nothing to the lineup that scores, whatever his projection says.
+     *
+     * The board will still happily quote a big number for him, because the
+     * number is about the player. This is about the player *and your roster*.
+     */
+    const at = (pos: string) =>
+      outlook.positions?.find((row) => row.position === pos)?.free ?? null;
+
+    if (!startable) {
+      return {
+        gain: 0,
+        free: null,
+        freePoints: null,
+        slot: 'bench',
+        note: `Your ${position} slots and flex are full — he is a bench player and adds nothing to the lineup that scores.`,
+      };
+    }
+
+    if (openHere > 0) {
+      const free = at(position);
+      if (!free) return null;
+      return {
+        gain: Math.round(player.projectedPoints - free.points),
+        free: free.name,
+        freePoints: free.points,
+        slot: 'starter',
+        note: `Fills your ${position}${(mine.roster[position] ?? 0) + 1}.`,
+      };
+    }
+
+    // The flex, where he competes with every position that can fill it.
+    const rivals = FLEX_ELIGIBLE.map((pos) => at(pos)).filter(
+      (entry): entry is NonNullable<typeof entry> => entry != null
+    );
+    const best = rivals.reduce<(typeof rivals)[number] | null>(
+      (top, entry) => (top == null || entry.points > top.points ? entry : top),
+      null
+    );
+    if (!best) return null;
     return {
-      gain: Math.round(player.projectedPoints - row.free.points),
-      free: row.free.name,
-      freePoints: row.free.points,
+      gain: Math.round(player.projectedPoints - best.points),
+      free: best.name,
+      freePoints: best.points,
+      slot: 'flex',
+      note: `Your ${position} slots are full — he is competing for your flex, against every position that can fill it.`,
     };
   }
 

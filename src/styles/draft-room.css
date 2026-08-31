@@ -594,6 +594,7 @@
 
 .dr-verdict {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   font-size: 12px;
@@ -603,6 +604,17 @@
 .dr-verdict strong {
   font-family: var(--dr-mono);
   font-size: 13px;
+}
+
+/* Says which question the comparison is answering, when the answer is not
+   about your lineup. Deliberately quieter than the label it qualifies. */
+.dr-verdict-note {
+  flex: 1 0 100%;
+  font-family: var(--dr-sans);
+  font-style: normal;
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+  text-align: right;
 }
 
 .dr-empty {
@@ -3980,4 +3992,19 @@
   color: var(--dr-ink-muted);
   font-size: 10px;
   line-height: 1.45;
+}
+
+/* The slot verdict beside the gain. A bench verdict is the one that stops a
+   budget going on a fourth running back, so it gets the danger border. */
+.dr-stage-slot {
+  color: var(--dr-ink-faint);
+}
+
+.dr-stage-snakegain[data-slot='bench'] {
+  border-left-color: var(--dr-danger);
+  background: color-mix(in srgb, var(--dr-danger) 7%, transparent);
+}
+
+.dr-stage-snakegain[data-slot='flex'] {
+  border-left-color: var(--dr-caution);
 }
