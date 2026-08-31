@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AuctionDraftService } from '@/services/auctionDraftService';
 import { adviseOnBid, adviseOnNomination, buildAlerts } from '@/services/draftAdvisor';
-import { inflatedPrice } from '@/lib/valuation';
+// Driven at DEFAULT_LEAGUE, stated rather than defaulted: these assert the
+// engine's arithmetic, not what league this build happens to open on.
+import { inflatedPrice, leagueShape } from '@/lib/valuation';
 
 const firstAvailable = (service: AuctionDraftService, position?: string) =>
   service.getAvailablePlayers().find((p) => !position || p.position === position)!;
@@ -11,7 +13,8 @@ describe('pool data', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    service = new AuctionDraftService();
+    service = new AuctionDraftService(leagueShape());
+    service.confirmLeague();
   });
 
   it('carries advanced usage for the players who have it', () => {
@@ -74,7 +77,8 @@ describe('spend simulation', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    service = new AuctionDraftService();
+    service = new AuctionDraftService(leagueShape());
+    service.confirmLeague();
   });
 
   it('holds back a dollar per open starting slot, exactly as validateBid does', () => {
@@ -110,7 +114,8 @@ describe('bargain board', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    service = new AuctionDraftService();
+    service = new AuctionDraftService(leagueShape());
+    service.confirmLeague();
   });
 
   it('sorts by what the disagreement is worth in dollars, not by rank gap', () => {
@@ -181,7 +186,8 @@ describe('the advisor', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    service = new AuctionDraftService();
+    service = new AuctionDraftService(leagueShape());
+    service.confirmLeague();
   });
 
   it('walks away above the maximum bid', () => {
@@ -240,7 +246,8 @@ describe('the league board', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    service = new AuctionDraftService();
+    service = new AuctionDraftService(leagueShape());
+    service.confirmLeague();
   });
 
   it('groups every pick under the team that made it', () => {

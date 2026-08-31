@@ -74,7 +74,9 @@ src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/projection.ts                 the projection model itself (shared)
 src/lib/modelTrust.ts                 where the backtest says not to trust it
 src/lib/consensusBoard.ts             the market's order, our dollars
-src/lib/snakeOutlook.ts               what the snake gives free, so a bid has a bar
+src/lib/snakeOutlook.ts               what the snake gives free, so a bid has a bar,
+                                      and the bound across every draw before one is made
+src/data/league/auction-sheet.txt     the commissioner's sixty, bundled and seeded
 src/lib/endgame.ts                    par against pace: when to buy, not what
 src/lib/marketContract.ts             what a market snapshot is (shared)
 src/data/nfl/market-adp.json          live half-PPR ADP, keyed by gsis (generated)
@@ -450,6 +452,83 @@ backs go up $3 (Aaron Jones $1 to $4), which is what a flex does in a real room.
 At zero flex it returns zeroes and is a no-op to the last cent — which is what
 keeps the shipped pool's 628 values reproducible, and three tests fail if the
 condition is removed.
+
+**The default is the league being played, and that was three constants
+pretending to be one.** `DEFAULT_LEAGUE` answered three different questions at
+once: what the pool builder prices its stored dollars at, what an empty browser
+falls back to, and what is being drafted. The first has to stay where nflverse
+put it — full PPR is what the source data scores, and a zero flex is what the
+engine assumed before the lineup was configurable. Welding the other two to it
+is what made the first-run gate necessary, and the gate was telling the truth:
+the board really did open under somebody else's rules, on every fresh browser,
+every second laptop and the published artifact on a phone.
+
+`HOME_LEAGUE` is the second and third of those, separated out — twelve teams,
+$100, sixteen spots, half PPR, one flex. `readStoredLeague` falls back to it and
+`writeStoredLeague` compares against it, so "a league is stored" keeps meaning
+"somebody changed it". The pool file still records the shape it was priced at
+and `valuation.test.ts` re-prices at _that_ rather than at a constant, which is
+what stops the guard silently checking the wrong league the moment the two moved
+apart.
+
+`auctionSheetSize` is deliberately **not** 60 in it, because a size is a guess
+at the sheet and the sheet is a list. The list is bundled instead
+(`src/data/league/auction-sheet.txt`, out of `src/test/fixtures/` where it was
+never really a fixture) and seeded through the same `setAuctionSheet` a paste
+comes through, which pins the size to what actually resolved. Two statements of
+one fact would disagree the first time a name stopped matching.
+
+**A default that reapplies itself is not a default, it is an action that
+overrules its owner.** `seedHomeDefaults` is called once, after `restore()`, and
+writes a marker in the idiom `LEAGUE_CONFIRMED_KEY` already uses. It refuses on
+a stored sheet, stored overrides, a draft in progress, or a marker already
+there — so a sheet the owner cleared stays cleared and a market board he turned
+off stays off. The order inside it is the one this file has already been caught
+by: sheet first, then the market board, because "Use consensus" reads dollars
+off the surplus curve for the board in force and a sheet re-prices that curve
+for one where the same money buys sixty. Seeded the other way the whole sheet
+reads about a third cheap.
+
+It also marks one of the twelve teams as yours, and that looks like the guess
+three panels were caught making until you see which way it points. Those bugs
+read `activeTeam` — the winning-team select, which names whoever just _bought_ a
+player — and presented an opponent's roster as the owner's. Nothing is inferred
+here: the twelve slots are arbitrary labels assigned as the auction runs, so
+"you are the first one" is a naming convention, and the gate it has to be
+dismissed through carries the picker. What it costs to leave null is four panels
+inert, one of them `gainOverSnake` — the number this whole format turns on.
+
+**A guard that can never fire is worse than no guard, and this one was on the
+number the format turns on.** `getSpendOutlook` refused with
+`!getSnakeOrder().length`. `getSnakeOrder` repairs itself against the current
+teams and backfills everybody missing — which is right for putting somebody on
+the clock, and means it is never empty. So the refusal was dead code and the
+outlook was computed at the _team_ order: the owner is team one, so the panel
+printed "at your pick 1" and "free at your pick: Jalen Hurts · 312 pts" for a
+draw nobody had made. The earliest seat is the one where the free man is best
+and a bid buys least, so the most favourable possible draw was being reported as
+a fact. `hasSnakeOrder()` is now its own question and the guard is live.
+
+What replaces the refusal is better than either: **the answer is a bound, not a
+guess.** `snakeOutlookSpread` runs the same arithmetic at all twelve seats and
+reports the range, so nothing is assumed that `snakeOutlook` does not already
+assume and the true figure is one of the twelve. On the shipped board that lands
+somewhere the room would not have guessed. Quarterback and tight end have width
+zero — Jalen Hurts and George Kittle survive every draw, because nobody reaches
+for a one-starter position in the first round of a snake — so those two can be
+decided a month early. Running back is what the draw decides: the free back
+falls from Josh Jacobs at 196 to RJ Harvey at 154, and a bid there moves from
+buying 82 points to buying 124. Receiver moves 89 to 96. `settled` is therefore
+the load-bearing field rather than the numbers.
+
+It renders in both places a gain belongs, for the reason `modelTrust` is in two:
+the plan panel, and the nomination stage, because a finding that lives only in a
+panel is a finding nobody has at the moment a name is called. `gainAgainst` is
+one copy of the roster-aware "which free man does he actually replace", called
+with the outlook's free men when the order is known and with each end of the
+spread when it is not — a second copy would be a second answer to whether a bid
+buys a starter, a flex or a bench body, and the two would part company exactly
+when a roster filled up.
 
 **Nobody has confirmed the league until somebody says so.** With nothing in
 storage the board prices at the league the _pool_ was built for — full PPR, no

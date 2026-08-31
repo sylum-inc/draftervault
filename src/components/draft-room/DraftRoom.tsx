@@ -172,6 +172,11 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
       setResumed(restored);
       if (restored) sync();
     }
+    // Strictly after the resume: an empty browser gets the sheet and the market
+    // board this build is for, and a browser holding an afternoon's work gets
+    // nothing done to it. `seedHomeDefaults` refuses on its own if anything is
+    // stored, but the order is what makes that refusal reachable.
+    if (draftService.seedHomeDefaults()) sync();
     void refreshIdentity().then((count) => {
       if (count) sync();
     });
@@ -547,6 +552,23 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * Recomputed on every pick because both halves of it move: the auction takes
    * players off the sheet and the snake pool shrinks behind them.
    */
+  /**
+   * Bounded across every draw when the order has not been drawn yet.
+   *
+   * The stage is where a bid is decided, so a gain only the plan panel can show
+   * is a gain nobody has at the moment a name is called. Null once an order
+   * exists, because then there is one true number and a range beside it would
+   * be noise.
+   */
+  const snakeBounds = useMemo(
+    () =>
+      selected && !draftService.hasSnakeOrder()
+        ? draftService.gainOverSnakeBounds(selected.id)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, selected, players]
+  );
+
   const snakeGain = useMemo(
     () => (selected ? draftService.gainOverSnake(selected.id) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
@@ -562,9 +584,12 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * end tore an Achilles in January, and neither reached the number they move.
    */
   const freeManResearch = useMemo(
-    () => (snakeGain?.freeId ? researchMark(snakeGain.freeId) : null),
+    () => {
+      const id = snakeGain?.freeId ?? snakeBounds?.high.freeId ?? null;
+      return id ? researchMark(id) : null;
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- researchReady is when the file lands
-    [snakeGain, researchReady]
+    [snakeGain, snakeBounds, researchReady]
   );
 
   /** When to buy. Recomputed on every pick, since both terms move with one. */
@@ -1384,6 +1409,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               canDraft={(team) => draftService.canDraft(team)}
               onTheClock={onTheClock}
               snakeGain={snakeGain}
+              snakeBounds={snakeBounds}
               freeManResearch={freeManResearch}
               sheetRemaining={sheetRemaining}
               onUnsold={markUnsold}

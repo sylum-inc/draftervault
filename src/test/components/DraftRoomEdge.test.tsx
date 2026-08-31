@@ -45,6 +45,12 @@ describe('the room, driven', () => {
   });
 
   it('says plainly that no team has been marked as yours', () => {
+    // A fresh browser now marks one — four panels were inert without it, one of
+    // them the snake gain this whole format turns on. The refusal still has to
+    // work, because unmarking is a thing somebody can do and advising for a
+    // team nobody chose is the bug this message exists to prevent.
+    service.seedHomeDefaults();
+    service.setMyTeam(null);
     render(<DraftRoom draftService={service} />);
     // The advisor is on by default now — the panel that answers "what do I do
     // now" was behind a button nobody had pressed. What keeps it an opinion is

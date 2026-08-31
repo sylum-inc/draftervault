@@ -44,7 +44,7 @@ const flag = (name, fallback = null) => {
 };
 const checkOnly = args.includes('--check');
 const skipResearch = args.includes('--no-research');
-const SHEET = resolve(ROOT, flag('sheet', 'src/test/fixtures/auction-sheet.txt'));
+const SHEET = resolve(ROOT, flag('sheet', 'src/data/league/auction-sheet.txt'));
 
 /** How far a player has to move before it is worth a line. */
 const ADP_MOVE = 8;

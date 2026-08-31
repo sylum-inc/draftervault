@@ -26,6 +26,14 @@ interface NominationStageProps {
    */
   snakeGain?: SnakeGain | null;
   /**
+   * The same gain bounded across every draw, when the order is not yet drawn.
+   *
+   * Only one of the two is ever set: an exact number and a range beside it
+   * would be two answers to one question. The range is not an estimate — both
+   * ends are numbers `snakeGain` itself would print at some seat.
+   */
+  snakeBounds?: { low: SnakeGain; high: SnakeGain } | null;
+  /**
    * What the web said about the man the snake would hand you instead.
    *
    * The gain above is a *difference* against one named player, and the model
@@ -188,6 +196,7 @@ export const NominationStage = ({
   canDraft,
   onTheClock,
   snakeGain,
+  snakeBounds,
   freeManResearch,
   sheetRemaining,
   onUnsold,
@@ -357,6 +366,69 @@ export const NominationStage = ({
           that is gone he is a bench body and adds nothing that scores, whatever
           his projection says. Quoting the position-level gain there is how a
           budget goes on a fourth running back. */}
+      {!snakeGain && snakeBounds && !player.marketOnly && (
+        <p className="dr-stage-snakegain" data-slot={snakeBounds.high.slot}>
+          {snakeBounds.high.slot === 'bench' ? (
+            <b style={{ color: 'var(--dr-danger)' }}>Bench only.</b>
+          ) : snakeBounds.low.gain === snakeBounds.high.gain ? (
+            <>
+              Buying him gains{' '}
+              <b
+                style={{
+                  color: snakeBounds.high.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)',
+                }}
+              >
+                {snakeBounds.high.gain > 0 ? '+' : ''}
+                {snakeBounds.high.gain} pts
+              </b>{' '}
+              over {snakeBounds.high.free} ({snakeBounds.high.freePoints}), free in the snake —{' '}
+              <b>at any draw</b>.
+            </>
+          ) : (
+            <>
+              Buying him gains{' '}
+              <b
+                style={{
+                  color: snakeBounds.high.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)',
+                }}
+              >
+                {snakeBounds.low.gain > 0 ? '+' : ''}
+                {snakeBounds.low.gain} to {snakeBounds.high.gain > 0 ? '+' : ''}
+                {snakeBounds.high.gain} pts
+              </b>{' '}
+              over the free man — {snakeBounds.low.free} picking first, {snakeBounds.high.free}{' '}
+              picking last.
+            </>
+          )}{' '}
+          <span className="dr-stage-slot">{snakeBounds.high.note}</span>
+          {/* The order has not been drawn, so this is a bound rather than a
+              number: the true figure is one of the twelve and every one of them
+              is inside it. Saying so is what keeps it from reading as an
+              estimate somebody made — but only where it is actually a range.
+              On a settled row the line already says "at any draw", and adding
+              "this is the range" after it reads as a contradiction of the one
+              thing that row is claiming. */}
+          {snakeBounds.low.gain !== snakeBounds.high.gain && (
+            <span className="dr-stage-slot">
+              {' '}
+              Snake order not drawn — this is the range across it.
+            </span>
+          )}
+          {snakeBounds.high.free && freeManResearch && freeManResearch.direction !== 'NEUTRAL' && (
+            <span
+              className="dr-stage-freeflag"
+              data-direction={freeManResearch.direction}
+              title={freeManResearch.headline}
+            >
+              <b>{snakeBounds.high.free} is flagged:</b> {freeManResearch.headline} &mdash;{' '}
+              {freeManResearch.direction === 'FADE'
+                ? 'so the gain above may understate this bid.'
+                : 'so the gain above may overstate this bid.'}
+            </span>
+          )}
+        </p>
+      )}
+
       {snakeGain && !player.marketOnly && (
         <p className="dr-stage-snakegain" data-slot={snakeGain.slot}>
           {snakeGain.slot === 'bench' ? (

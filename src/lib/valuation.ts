@@ -81,11 +81,20 @@ export interface LeagueShape {
 }
 
 /**
- * The shape every dollar value in the shipped pool assumes.
+ * The shape the shipped pool's stored dollars are computed at.
+ *
+ * This is a *reference point, not a recommendation*, and the two used to be the
+ * same object — which is the confusion `HOME_LEAGUE` below exists to end.
+ * nflverse scores full PPR, so that is what the builder can price without
+ * inventing a league; the flex is zero because that is what the engine assumed
+ * before the lineup was configurable, so turning it on moved nobody's numbers.
+ * Neither is a claim about anybody's league.
  *
  * Change this and `npm run build:pool` produces different values — which is
  * fine, because the client recomputes from the same numbers rather than
- * trusting the ones in the file.
+ * trusting the ones in the file. The pool records the shape it was priced at,
+ * and `src/test/lib/valuation.test.ts` re-prices at *that* rather than at this
+ * constant, so the guard survives either of them moving.
  */
 export const DEFAULT_LEAGUE: LeagueShape = {
   teams: 12,
@@ -100,6 +109,45 @@ export const DEFAULT_LEAGUE: LeagueShape = {
   // re-prices the board; it does not require rebuilding the pool.
   receptionPoints: 1,
   // The whole board is auctioned unless somebody says otherwise.
+  auctionSheetSize: null,
+};
+
+/**
+ * The league this copy of the app is actually for.
+ *
+ * Three different leagues were one constant, and collapsing them cost the owner
+ * a board priced under somebody else's rules on every fresh browser: what the
+ * pool's stored dollars were computed at (`DEFAULT_LEAGUE`, above), what an
+ * empty browser falls back to, and what is being played on the night. The first
+ * is a property of a generated file and has to stay where nflverse put it. The
+ * second and third are the same question, and answering it with the first is
+ * what made the first-run gate necessary — the defaults really were "almost
+ * certainly not the league being played", and the app said so.
+ *
+ * They are the same object now. A fresh browser, a second laptop, and the
+ * published artifact on a phone at eleven at night all open on the league that
+ * is being drafted, priced accordingly, with nobody having typed anything.
+ *
+ * `auctionSheetSize` stays null here on purpose even though this format
+ * auctions sixty: **a size is a guess at the sheet and the sheet is a list.**
+ * The list is bundled beside this (`src/data/league/auction-sheet.txt`) and
+ * seeded through the same `setAuctionSheet` a paste comes through, which pins
+ * the size to the length of the list it actually resolved. Writing 60 here as
+ * well would be a second statement of one fact, and the two would disagree the
+ * first time a name stopped resolving.
+ *
+ * The gate still opens on a fresh browser. It catches a different thing now —
+ * not "these defaults are wrong" but "the commissioner may have changed
+ * something since this was built" — and it costs one press.
+ */
+export const HOME_LEAGUE: LeagueShape = {
+  teams: 12,
+  budget: 100,
+  rosterSize: 16,
+  startingLineup: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 1, K: 1, DST: 1 },
+  positionLimits: { QB: 3, RB: 6, WR: 7, TE: 3, K: 2, DST: 2 },
+  rostered: { QB: 20, RB: 48, WR: 60, TE: 18, K: 12, DST: 12 },
+  receptionPoints: 0.5,
   auctionSheetSize: null,
 };
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { outlookHeadline, snakeOutlook, type OutlookSubject } from '@/lib/snakeOutlook';
+import {
+  outlookHeadline,
+  snakeOutlook,
+  type OutlookSubject,
+  snakeOutlookSpread,
+} from '@/lib/snakeOutlook';
 
 const p = (
   id: string,
@@ -151,5 +156,77 @@ describe('snakeOutlook', () => {
     const line = outlookHeadline(out);
     expect(line).toContain('RB');
     expect(line).toMatch(/\+\d+/);
+  });
+});
+
+describe('before the order is drawn', () => {
+  const at = (id: string, position: string, points: number, order: number, price = 0) => ({
+    id,
+    name: id,
+    position,
+    points,
+    price,
+    order,
+  });
+
+  it('bounds the gain instead of refusing, and every end is a real outlook', () => {
+    const snakePool = [
+      at('free-a', 'RB', 200, 1),
+      at('free-b', 'RB', 150, 2),
+      at('free-c', 'RB', 100, 3),
+    ];
+    const forSale = [at('star', 'RB', 260, 0, 40)];
+    const draws = [1, 2, 3];
+
+    const spread = snakeOutlookSpread({ snakePool, forSale, positions: ['RB'] }, draws);
+    const row = spread.positions![0];
+
+    // Picking first you keep the 200-point man, so the bid buys 60. Picking
+    // third he is gone twice over and it buys 160.
+    expect(row.low).toBe(60);
+    expect(row.high).toBe(160);
+    expect(row.settled).toBe(false);
+    expect(row.bestFree?.id).toBe('free-a');
+    expect(row.worstFree?.id).toBe('free-c');
+
+    // Both ends have to be numbers the single-slot outlook actually prints,
+    // or the range would be a claim of its own rather than a bound on that one.
+    const ends = draws.map(
+      (draw) =>
+        snakeOutlook({ snakePool, forSale, yourNextSnakePick: draw, positions: ['RB'] })
+          .positions![0].gain
+    );
+    expect(Math.min(...ends)).toBe(row.low);
+    expect(Math.max(...ends)).toBe(row.high);
+  });
+
+  it('marks a position the draw cannot move, which is the field worth having', () => {
+    // The picks before yours come off the top of the whole snake pool in the
+    // room's order, so a tight end the room ranks below everything they will
+    // take in the first round survives every draw: this row is decidable a
+    // month early. The filler is what makes that true rather than an artefact
+    // of a pool too small to slice.
+    const snakePool = [
+      ...Array.from({ length: 20 }, (_, i) => at(`filler-${i}`, 'WR', 100 - i, i + 1)),
+      at('survivor', 'TE', 120, 99),
+    ];
+    const forSale = [at('bought', 'TE', 170, 0, 20)];
+
+    const row = snakeOutlookSpread({ snakePool, forSale, positions: ['TE'] }, [1, 2, 3])
+      .positions![0];
+
+    expect(row.settled).toBe(true);
+    expect(row.low).toBe(50);
+    expect(row.high).toBe(50);
+    expect(row.bestFree?.id).toBe('survivor');
+  });
+
+  it('refuses when there is nothing to bound', () => {
+    expect(
+      snakeOutlookSpread({ snakePool: [], forSale: [], positions: ['RB'] }, []).positions
+    ).toBeNull();
+    expect(
+      snakeOutlookSpread({ snakePool: [], forSale: [], positions: ['RB'] }, [1]).positions
+    ).toBeNull();
   });
 });

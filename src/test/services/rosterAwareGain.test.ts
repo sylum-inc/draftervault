@@ -3,7 +3,7 @@ import { readAuctionSheet, sheetPlayerIds } from '@/lib/auctionSheet';
 import { AuctionDraftService } from '@/services/auctionDraftService';
 import { leagueShape } from '@/lib/valuation';
 /** The commissioner's real sixty. See `src/test/fixtures/README.md`. */
-import SHEET from '../fixtures/auction-sheet.txt?raw';
+import SHEET from '../../data/league/auction-sheet.txt?raw';
 
 /**
  * What a player adds to *your* lineup, which is not what he adds to a lineup in

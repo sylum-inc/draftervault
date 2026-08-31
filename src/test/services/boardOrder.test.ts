@@ -3,7 +3,7 @@ import { AuctionDraftService } from '@/services/auctionDraftService';
 import { leagueShape } from '@/lib/valuation';
 import { readAuctionSheet, sheetPlayerIds } from '@/lib/auctionSheet';
 /** The commissioner's real sixty. See `src/test/fixtures/README.md`. */
-import REAL_SHEET from '../fixtures/auction-sheet.txt?raw';
+import REAL_SHEET from '../../data/league/auction-sheet.txt?raw';
 
 /**
  * The order somebody presses two buttons in must not change the board.

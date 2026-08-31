@@ -3,7 +3,7 @@ import { AuctionDraftService } from '@/services/auctionDraftService';
 import { leagueShape } from '@/lib/valuation';
 import { readAuctionSheet, sheetPlayerIds } from '@/lib/auctionSheet';
 /** The commissioner's real sixty. See `src/test/fixtures/README.md`. */
-import SHEET from '../fixtures/auction-sheet.txt?raw';
+import SHEET from '../../data/league/auction-sheet.txt?raw';
 
 /**
  * The night, end to end, at the league actually being played.

@@ -1,16 +1,41 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AuctionDraftService } from '@/services/auctionDraftService';
-import { leagueShape } from '@/lib/valuation';
+import {
+  DEFAULT_LEAGUE,
+  HOME_LEAGUE,
+  leagueShape,
+  normaliseLeague,
+  sameLeague,
+} from '@/lib/valuation';
 
 const firstAvailable = (service: AuctionDraftService, position?: string) =>
   service.getAvailablePlayers().find((p) => !position || p.position === position)!;
+
+/**
+ * The league these tests drive the engine at, stated rather than defaulted.
+ *
+ * `leagueShape()` with no overrides is `DEFAULT_LEAGUE` — twelve teams, $200,
+ * full PPR, no flex, the whole board auctioned — which is what every number in
+ * this file was written against. It used to arrive by way of the bare
+ * constructor, and then moving the app's own default to the league being played
+ * broke nineteen tests that were not about a default at all. A test that fails
+ * when a deployment constant moves is testing the wrong thing; the ones that
+ * genuinely are about the default say so and live under 'league configuration'.
+ */
+const engineLeague = () => leagueShape();
 
 describe('AuctionDraftService', () => {
   let service: AuctionDraftService;
 
   beforeEach(() => {
     localStorage.clear();
-    service = new AuctionDraftService();
+    service = new AuctionDraftService(engineLeague());
+    // Store it, exactly as confirming it at the gate does. A second window and
+    // a reload both read the league back out of storage, so a league only ever
+    // held in one object is a league the next service will not agree about —
+    // which used to be invisible here only because the app's default happened
+    // to be the same shape these tests drive.
+    service.confirmLeague();
   });
 
   describe('the seams the rest of the features hang off', () => {
@@ -264,7 +289,7 @@ describe('AuctionDraftService', () => {
       const player = firstAvailable(service);
       service.draftPlayer(player.id, 'team-3', 25);
 
-      const resumed = new AuctionDraftService();
+      const resumed = new AuctionDraftService(engineLeague());
       expect(AuctionDraftService.hasSavedDraft()).toBe(true);
       expect(resumed.restore()).toBe(1);
 
@@ -276,7 +301,7 @@ describe('AuctionDraftService', () => {
     });
 
     it('reports nothing to restore on a clean slate', () => {
-      expect(new AuctionDraftService().restore()).toBe(0);
+      expect(new AuctionDraftService(engineLeague()).restore()).toBe(0);
     });
   });
 
@@ -373,7 +398,7 @@ describe('AuctionDraftService', () => {
       const player = firstAvailable(service);
       service.setCustomRankings({ [player.id]: { value: 88 } });
 
-      const reloaded = new AuctionDraftService();
+      const reloaded = new AuctionDraftService(engineLeague());
       expect(reloaded.getPlayers().find((p) => p.id === player.id)!.estimatedValue).toBe(88);
     });
   });
@@ -508,7 +533,7 @@ describe('AuctionDraftService', () => {
       service.renameTeam('team-2', 'Priya');
       service.setMyTeam('team-2');
 
-      const reloaded = new AuctionDraftService();
+      const reloaded = new AuctionDraftService(engineLeague());
       expect(reloaded.getTeams()[1].name).toBe('Priya');
       expect(reloaded.getMyTeamId()).toBe('team-2');
     });
@@ -542,7 +567,7 @@ describe('AuctionDraftService', () => {
       service.renameTeam('team-4', 'Nina');
       service.setMyTeam('team-4');
 
-      const board = new AuctionDraftService();
+      const board = new AuctionDraftService(engineLeague());
       board.reloadFromStorage();
       expect(board.getTeams()[3].name).toBe('Nina');
       expect(board.getMyTeamId()).toBe('team-4');
@@ -556,7 +581,7 @@ describe('AuctionDraftService', () => {
       const file = service.exportDraft();
 
       localStorage.clear();
-      const elsewhere = new AuctionDraftService();
+      const elsewhere = new AuctionDraftService(engineLeague());
       expect(elsewhere.getTeams()[0].name).toBe('Team 1');
 
       elsewhere.importDraft(file);
@@ -574,7 +599,7 @@ describe('AuctionDraftService', () => {
 
       // A different machine: a fresh service that has never seen this draft.
       localStorage.clear();
-      const elsewhere = new AuctionDraftService();
+      const elsewhere = new AuctionDraftService(engineLeague());
       expect(elsewhere.getDraftedPlayers()).toHaveLength(0);
 
       const result = elsewhere.importDraft(file);
@@ -592,7 +617,7 @@ describe('AuctionDraftService', () => {
       const file = service.exportDraft();
 
       localStorage.clear();
-      const elsewhere = new AuctionDraftService();
+      const elsewhere = new AuctionDraftService(engineLeague());
       expect(elsewhere.getTeams()).toHaveLength(12);
 
       expect(elsewhere.importDraft(file)).toMatchObject({ ok: true, restored: 1 });
@@ -650,7 +675,7 @@ describe('AuctionDraftService', () => {
      * A second window is a second service over the same localStorage. These
      * exercise exactly that: one drafts, the other is told to reload.
      */
-    const secondWindow = () => new AuctionDraftService();
+    const secondWindow = () => new AuctionDraftService(engineLeague());
 
     it('announces a pick to whoever is listening', () => {
       let announced = 0;
@@ -789,10 +814,23 @@ describe('AuctionDraftService', () => {
   });
 
   describe('league configuration', () => {
-    it('defaults to the league the shipped pool was priced for', () => {
-      expect(service.getLeagueShape()).toEqual(service.getPoolLeagueShape());
-      expect(service.getTeams()).toHaveLength(12);
-      expect(service.getTeams()[0].budget).toBe(200);
+    it('opens on the league this build is for, not the one the pool was priced at', () => {
+      // These were the same object once, and the cost was a board that opened
+      // at full PPR with no flex — a valid league and not the one being played
+      // — on every fresh browser, artifact and second laptop.
+      localStorage.clear();
+      const fresh = new AuctionDraftService();
+
+      expect(fresh.getLeagueShape()).toEqual(normaliseLeague(HOME_LEAGUE));
+      expect(fresh.getTeams()).toHaveLength(HOME_LEAGUE.teams);
+      expect(fresh.getTeams()[0].budget).toBe(HOME_LEAGUE.budget);
+      expect(fresh.getLeagueShape().receptionPoints).toBe(0.5);
+      expect(fresh.getLeagueShape().startingLineup.FLEX).toBe(1);
+    });
+
+    it('still records what the pool was priced at, which is a different fact', () => {
+      expect(sameLeague(service.getPoolLeagueShape(), DEFAULT_LEAGUE)).toBe(true);
+      expect(sameLeague(service.getPoolLeagueShape(), HOME_LEAGUE)).toBe(false);
     });
 
     it('rebuilds the room when the league changes', () => {
@@ -853,6 +891,8 @@ describe('AuctionDraftService', () => {
     it('remembers the league across a reload', () => {
       service.setLeagueShape(leagueShape({ teams: 14, budget: 260 }));
 
+      // Bare on purpose: reading the stored league back is the whole subject,
+      // so handing one in would answer the question the test is asking.
       const reloaded = new AuctionDraftService();
       expect(reloaded.getLeagueShape().teams).toBe(14);
       expect(reloaded.getTeams()).toHaveLength(14);
@@ -1108,7 +1148,8 @@ describe('AuctionDraftService', () => {
       service.setAuctionSheet(sheetOf(service, 60));
 
       // The stamp on the saved draft has to move with the league the sheet
-      // pinned, or the next reload silently refuses to replay it.
+      // pinned, or the next reload silently refuses to replay it. Bare on
+      // purpose: reading that re-stamped league back is the subject.
       const reloaded = new AuctionDraftService();
       expect(reloaded.restore()).toBe(1);
       expect(reloaded.getSheetCount()).toBe(60);
@@ -1133,13 +1174,13 @@ describe('AuctionDraftService', () => {
       const ids = sheetOf(service, 60);
       service.setAuctionSheet(ids);
 
-      const reloaded = new AuctionDraftService();
+      const reloaded = new AuctionDraftService(engineLeague());
       expect(reloaded.getAuctionSheet().ids).toEqual(ids);
       expect(reloaded.getSheetCount()).toBe(60);
     });
 
     it('follows a sheet another window imported', () => {
-      const elsewhere = new AuctionDraftService();
+      const elsewhere = new AuctionDraftService(engineLeague());
       elsewhere.setAuctionSheet(sheetOf(elsewhere, 60));
 
       service.reloadFromStorage();
@@ -1155,7 +1196,7 @@ describe('AuctionDraftService', () => {
       const file = service.exportDraft();
 
       localStorage.clear();
-      const elsewhere = new AuctionDraftService();
+      const elsewhere = new AuctionDraftService(engineLeague());
       expect(elsewhere.importDraft(file)).toMatchObject({ ok: true, restored: 1 });
 
       expect(elsewhere.getAuctionSheet().ids).toEqual(ids);
@@ -1167,7 +1208,7 @@ describe('AuctionDraftService', () => {
     });
 
     it('drops a stale sheet when a file carries none', () => {
-      const elsewhere = new AuctionDraftService();
+      const elsewhere = new AuctionDraftService(engineLeague());
       const file = elsewhere.exportDraft();
 
       service.setAuctionSheet(sheetOf(service, 60));

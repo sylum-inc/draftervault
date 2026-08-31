@@ -21,6 +21,18 @@ import {
 const projected = (): Projected[] =>
   poolData.players.map((p) => ({ position: p.position, points: p.projection.points }));
 
+/**
+ * The shape the shipped pool's stored dollars were priced at, read off the file
+ * rather than restated.
+ *
+ * This used to be `DEFAULT_LEAGUE`, and the two were the same object, which
+ * quietly welded a property of a generated file to the league the client opens
+ * on. They are separate now — the client opens on `HOME_LEAGUE` — so the guard
+ * has to read the file's own record or it would be checking the wrong league
+ * and reporting drift that is not there.
+ */
+const POOL_BUILD_LEAGUE: LeagueShape = leagueShape(poolData.league as Partial<LeagueShape>);
+
 describe('pricePool against the shipped pool', () => {
   /**
    * The guard this module exists for.
@@ -32,7 +44,7 @@ describe('pricePool against the shipped pool', () => {
    * the shape it was built for must reproduce it exactly — not approximately.
    */
   it('reproduces every stored auction value and VORP exactly', () => {
-    const { priced } = pricePool(projected(), DEFAULT_LEAGUE);
+    const { priced } = pricePool(projected(), POOL_BUILD_LEAGUE);
 
     expect(priced).toHaveLength(poolData.players.length);
     const mismatches = poolData.players.filter(
@@ -43,7 +55,7 @@ describe('pricePool against the shipped pool', () => {
   });
 
   it('reproduces the stored replacement levels', () => {
-    const { replacement } = pricePool(projected(), DEFAULT_LEAGUE);
+    const { replacement } = pricePool(projected(), POOL_BUILD_LEAGUE);
     const rounded = Object.fromEntries(
       Object.entries(replacement).map(([position, points]) => [position, Math.round(points)])
     );
@@ -51,11 +63,11 @@ describe('pricePool against the shipped pool', () => {
   });
 
   it('spends the whole budget the league brings to the table', () => {
-    const { priced } = pricePool(projected(), DEFAULT_LEAGUE);
-    const rosterSlots = DEFAULT_LEAGUE.teams * DEFAULT_LEAGUE.rosterSize;
+    const { priced } = pricePool(projected(), POOL_BUILD_LEAGUE);
+    const rosterSlots = POOL_BUILD_LEAGUE.teams * POOL_BUILD_LEAGUE.rosterSize;
     const top = [...priced].sort((a, b) => b.auctionValue - a.auctionValue).slice(0, rosterSlots);
     const spend = top.reduce((total, entry) => total + entry.auctionValue, 0);
-    const budget = DEFAULT_LEAGUE.teams * DEFAULT_LEAGUE.budget;
+    const budget = POOL_BUILD_LEAGUE.teams * POOL_BUILD_LEAGUE.budget;
 
     // Rounding to whole dollars 192 times cannot land on the budget precisely,
     // but it must not leave real money unspent either.
@@ -65,14 +77,26 @@ describe('pricePool against the shipped pool', () => {
 });
 
 describe('the shipped pool and the client agree', () => {
-  it('was generated for the league the client defaults to', () => {
-    // If these drift, the board opens showing prices for a league nobody set.
+  it('records the shape its own stored dollars were priced at', () => {
+    // The guard above re-prices at this and demands an exact match, so if the
+    // file ever stopped recording its shape there would be nothing to check
+    // against and the drift would go unseen. It is not asserted to equal the
+    // league the client opens on: those are different questions, and running
+    // them together is what kept the board opening at full PPR with no flex.
     expect(poolData.league).toMatchObject({
-      teams: DEFAULT_LEAGUE.teams,
-      budget: DEFAULT_LEAGUE.budget,
-      rosterSize: DEFAULT_LEAGUE.rosterSize,
+      teams: expect.any(Number),
+      budget: expect.any(Number),
+      rosterSize: expect.any(Number),
+      receptionPoints: expect.any(Number),
     });
     expect(poolData.league.rostered).toEqual(DEFAULT_LEAGUE.rostered);
+  });
+
+  it('is priced at the builder\u2019s own default, which is what wrote it', () => {
+    // `build-player-pool.mjs` imports DEFAULT_LEAGUE and prices with it, so a
+    // change to that constant without a rebuild would ship a file whose stored
+    // dollars nothing in the tree can reproduce.
+    expect(sameLeague(POOL_BUILD_LEAGUE, DEFAULT_LEAGUE)).toBe(true);
   });
 
   it('is deep enough for every league the settings allow', () => {
