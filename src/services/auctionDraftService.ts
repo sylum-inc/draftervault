@@ -1325,7 +1325,21 @@ export class AuctionDraftService {
    * The mask `pricePool` returned is the one answer. Nothing derives it again.
    */
   private forSale(player: Player): boolean {
-    return player.onSheet && player.estimatedValue > 1;
+    if (!player.onSheet) return false;
+    // With a sheet in force the mask *is* the answer, and the price clause has
+    // to go: a commissioner's list legitimately holds players we price at a
+    // dollar — that is the whole reason a list is not a size — and ANDing the
+    // proxy back on dropped five of the owner's real sixty out of everything
+    // that counts what is for sale. The panel read "still for sale 47/55" over
+    // a sixty-name sheet, par was computed over 55 and so came out high, and
+    // `adviseOnNomination` could never put any of those five on the block.
+    //
+    // Without one, `onSheet` is everybody — `pricePool` has no list to mask
+    // with — so whether the money is chasing him has to be inferred, and the
+    // dollar floor is the only signal there is. That is the case the proxy was
+    // written for and the only one it is right for.
+    if (this.league.auctionSheetSize != null) return true;
+    return player.estimatedValue > 1;
   }
 
   private sheetMask(entries: PoolEntry[]): boolean[] | undefined {

@@ -1454,7 +1454,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-626 tests.
+629 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1613,6 +1613,25 @@ is talking about. An overpay is deliberately left alone: it is already the
 loudest warning on the panel and muting it would be the same mistake pointed
 the other way. Four tests pin the relationship rather than the wording, because
 what must never come back is the green, not the phrasing.
+
+**What is for sale is what the sheet says, not what our prices imply.**
+`forSale` was `onSheet && estimatedValue > 1`, and the doc block above it
+already explained why the price half is wrong — then kept it anded on. A
+commissioner's list legitimately holds players we price at a dollar; that is
+the whole difference between a list and a size. Five of the owner's real sixty
+were therefore dropped out of everything that counts what is for sale: the
+market panel read "still for sale 47/55" over a sixty-name sheet, par was
+computed over 55 and so came out high, and `adviseOnNomination` — which reads
+`getForSale` precisely to avoid this proxy — could never put any of the five on
+the block.
+
+The tell is an invariant that should hold exactly and did not. `pricePool`
+spreads the room's whole budget across the sheet, so before anybody has bid,
+money left equals value left and inflation is 1. It opened at 1.004, and a
+multiplier wrong at the start is wrong all night. The proxy survives in the one
+case it is right for: with no sheet at all `onSheet` is everybody, because
+there is no list to mask with, so whether the money is chasing a player has to
+be inferred and the dollar floor is the only signal there is.
 
 **A player the room drafts and the pool has never heard of is still draftable.**
 nflverse's roster file lags signings, so Keenan Allen, Stefon Diggs and Deebo
