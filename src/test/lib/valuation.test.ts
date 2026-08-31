@@ -162,10 +162,20 @@ describe('scoring', () => {
     expect(half.replacement.K).toBe(full.replacement.K);
     expect(half.replacement.DST).toBe(full.replacement.DST);
 
-    // Quarterbacks do, occasionally, on trick plays — nflverse records it and
-    // fourteen of them carry a fraction of a catch. So this is nearly but not
-    // exactly zero, and asserting zero would be asserting the data is wrong.
-    expect(drop('QB')).toBeGreaterThan(0);
+    // Quarterbacks do catch the ball, occasionally, on trick plays, and
+    // nflverse records it — so the pool genuinely carries a fraction of a catch
+    // for a handful of them, and asserting the position has none would be
+    // asserting the data is wrong.
+    expect(
+      poolData.players.filter((p) => p.position === 'QB' && p.projection.receptions > 0).length
+    ).toBeGreaterThan(0);
+
+    // The *bar* is a different claim and a fragile one: it is one specific
+    // quarterback, and whether he happens to be one of the handful who caught
+    // anything moves with every rebuild. Asserting it was strictly positive
+    // held until a rebuild put a quarterback with no catches on the bar. What
+    // is true either way is that a catch is worth nothing much at the position.
+    expect(drop('QB')).toBeGreaterThanOrEqual(0);
     expect(drop('QB')).toBeLessThan(1);
   });
 

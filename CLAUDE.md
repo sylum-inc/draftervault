@@ -1237,6 +1237,72 @@ in all three seasons**. Averaging only helps when two estimators are comparably
 good; ours is not, so the blend dilutes the better signal. A negative result,
 and the one that decided what got built.
 
+### The one thing the backtest found that was worth fixing
+
+**A model that projects a full season for a man who has never played one.**
+`expectedGames` discounted for _injury_ alone — `17 - gamesMissed`, floored at
+ten — so a healthy player who was active for six games got seventeen. That is a
+backup, a rotational body, or a rookie who did not win the job, and the backtest
+named it in the plainest terms it had: at one to sixteen games of tape the model
+scored 0.21, 0.13 and 0.04 while last season's points scored 0.52 to 0.58 on the
+same players, and it over-projected them by 62, 58 and 72 points against a field
+it over-projected by 43 to 48. The mechanism was visible in the arithmetic
+rather than inferred — six games at a good rate shrink to a respectable rate
+against an eight-game prior, and are then multiplied by seventeen.
+
+`expectedGamesFrom` estimates availability the way the rate is already
+estimated: the player's own recency-weighted games played, shrunk toward the
+assumption in proportion to how little of it there is. A three-season starter
+lands on seventeen either way; a man with one six-game season does not. Games
+are capped at a full season before averaging, because seventeen plus a playoff
+week is not eighteen games of availability next year, and a player with no tape
+at all keeps the assumption, because there is no record to read.
+
+What it bought, measured on the same three held-out seasons:
+
+|                           | 2023              | 2024              | 2025              |
+| ------------------------- | ----------------- | ----------------- | ----------------- |
+| whole-field rho           | 0.556 → **0.616** | 0.526 → **0.553** | 0.514 → **0.564** |
+| mean absolute error       | 60.7 → **49.0**   | 60.9 → **51.2**   | 60.8 → **49.3**   |
+| over-projection           | +46.4 → **+30.1** | +43.0 → **+28.5** | +47.5 → **+32.2** |
+| 1-16 games of tape, rho   | 0.21 → **0.30**   | 0.13 → **0.27**   | 0.04 → **0.16**   |
+| surplus (what a bid buys) | 0.368 → **0.430** | 0.378 → 0.378     | 0.428 → 0.427     |
+
+Every accuracy measure improves in all three seasons, the diagnosed bucket
+roughly doubles, tight end and quarterback improve in all three, and running
+back gets slightly worse in all three (−0.005, −0.026, −0.031) — availability
+says less at a position where the argument is role rather than games.
+
+**What it does not buy is the headline.** On surplus the market still wins
+comfortably — 0.533, 0.472, 0.486 against 0.430, 0.378, 0.427 — so "press Use
+consensus and let the market drive" is unchanged, and so is every line in the
+section above. What improved is the _points_, and that is worth having for a
+reason specific to this format: `snakeOutlook` compares an auction player's
+points with a free player's points, so a uniform over-projection cancels and a
+_differential_ one does not. The free men in the snake are disproportionately
+the low-games players this was over-projecting, which made the one number the
+whole plan turns on wrong in a direction nobody could see.
+
+`AVAILABILITY_PRIOR_SEASONS` is 0.5 and was chosen before anything was measured
+— half a season's worth of belief in a full season. A sweep was run afterwards
+and is recorded here as a robustness check rather than as a choice, because
+picking the best of three values on the three seasons being scored is the
+in-sample mistake the blend section above already documents. Nothing dominates:
+at 0.25 the 2023 surplus is better and 2025 worse, at 1.0 the reverse, and every
+setting beats the old model on every accuracy measure. It is a plateau, not a
+peak.
+
+The pool was rebuilt on it, which is not optional: `pool.json` stores
+`projection.points` and the client re-prices from it, so leaving the file alone
+would have shipped the old model behind the new code. 328 of 628 projections
+moved and the mean fell 10 points. The corrections are the ones the diagnosis
+predicts — Kyler Murray 283 → 196 at 11.8 expected games, Rashee Rice 229 → 154,
+Malik Nabers 208 → 141, James Conner 161 → 110, Christian McCaffrey $44 → $34 —
+and Nabers is worth naming twice, because he is one of the players the section
+above lists as the _market's_ confident departure from us. This moves us further
+from the room on him. The backtest says the trade is worth it; the room may
+still be right about that one man.
+
 ### The signal that was measured, and the one that shipped
 
 Worth recording because it was a real hole rather than a refinement. The
@@ -1454,7 +1520,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-635 tests.
+641 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
