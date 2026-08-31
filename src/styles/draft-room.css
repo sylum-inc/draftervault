@@ -608,6 +608,36 @@
 
 /* Says which question the comparison is answering, when the answer is not
    about your lineup. Deliberately quieter than the label it qualifies. */
+/* What the web said about the man the snake would hand you instead. Quiet,
+   because it qualifies the number above rather than competing with it. */
+.dr-stage-freeflag {
+  display: block;
+  margin-top: 6px;
+  padding-left: 8px;
+  border-left: 2px solid var(--dr-line);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--dr-ink-faint);
+}
+
+.dr-stage-freeflag[data-direction='FADE'] {
+  border-left-color: var(--dr-caution);
+}
+
+.dr-stage-freeflag[data-direction='PAY_UP'] {
+  border-left-color: var(--dr-value);
+}
+
+.dr-stage-freeflag b {
+  color: var(--dr-ink-muted);
+  font-weight: 600;
+}
+
+.dr-stage-freeflag em {
+  font-style: normal;
+  opacity: 0.85;
+}
+
 /* The share the "room is paying" figure is actually judged on, beside the
    dollars somebody at the table is holding in their head. */
 .dr-pace-share {

@@ -31,6 +31,18 @@ import { endgame, type Endgame } from '@/lib/endgame';
 export interface SnakeGain {
   gain: number;
   free: string | null;
+  /**
+   * The free man's id, so the room can ask the other registers about him.
+   *
+   * The whole gain is a *difference* against this one player, and the model
+   * knows only what he has done. It does not know that Josh Jacobs is under an
+   * NFL review that could suspend him, or that George Kittle tore an Achilles
+   * in January and was still individual-drills-only a fortnight before Week 1
+   * — both of which are in `research.json`, sourced and dated, and neither of
+   * which reached the one number they move. A name is not enough to look him
+   * up with; an id is.
+   */
+  freeId: string | null;
   freePoints: number | null;
   slot: 'starter' | 'flex' | 'bench';
   note: string;
@@ -3077,6 +3089,7 @@ export class AuctionDraftService {
       return {
         gain: 0,
         free: null,
+        freeId: null,
         freePoints: null,
         slot: 'bench',
         note: `Your ${position} slots and flex are full — he is a bench player and adds nothing to the lineup that scores.`,
@@ -3089,6 +3102,7 @@ export class AuctionDraftService {
       return {
         gain: Math.round(player.projectedPoints - free.points),
         free: free.name,
+        freeId: free.id,
         freePoints: free.points,
         slot: 'starter',
         note: `Fills your ${position}${(mine.roster[position] ?? 0) + 1}.`,
@@ -3107,6 +3121,7 @@ export class AuctionDraftService {
     return {
       gain: Math.round(player.projectedPoints - best.points),
       free: best.name,
+      freeId: best.id,
       freePoints: best.points,
       slot: 'flex',
       note: `Your ${position} slots are full — he is competing for your flex, against every position that can fill it.`,

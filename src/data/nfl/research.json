@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T03:39:33.148Z",
+  "generatedAt": "2026-08-31T21:04:57.464Z",
   "model": "claude-code-agents",
   "engine": "websearch",
   "league": {
@@ -161,11 +161,19 @@
       "name": "Amon-Ra St. Brown",
       "position": "WR",
       "team": "DET",
-      "researchedAt": "2026-08-30T03:39:33.033Z",
+      "researchedAt": "2026-08-31T21:04:57.464Z",
       "direction": "NEUTRAL",
-      "confidence": "LOW",
-      "headline": "",
-      "findings": [],
+      "confidence": "MEDIUM",
+      "headline": "Detroit changes offensive coordinator again, and nothing about his target share moves",
+      "findings": [
+        {
+          "claim": "Detroit is transitioning to a new offensive coordinator for 2026, and St. Brown's elite target share and reliable weekly production still give him one of the safest floor and ceiling combinations at the position.",
+          "url": "https://www.fantasypros.com/nfl/notes/419029/amonra-stbrown-2026-outlook.php",
+          "source": "fantasypros.com",
+          "published": "2026-08-31",
+          "impact": "CONTEXT"
+        }
+      ],
       "dropped": {
         "unsourced": 0,
         "undated": 0,

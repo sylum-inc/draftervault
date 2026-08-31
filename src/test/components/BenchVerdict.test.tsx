@@ -63,8 +63,15 @@ describe('the value verdict, against a roster that is full', () => {
 
   const gain = (slot: SnakeGain['slot'], points = 40): SnakeGain =>
     slot === 'bench'
-      ? { gain: 0, free: null, freePoints: null, slot, note: 'Your slots are full.' }
-      : { gain: points, free: 'Somebody', freePoints: 100, slot, note: 'Fills a slot.' };
+      ? { gain: 0, free: null, freeId: null, freePoints: null, slot, note: 'Your slots are full.' }
+      : {
+          gain: points,
+          free: 'Somebody',
+          freeId: 'free-1',
+          freePoints: 100,
+          slot,
+          note: 'Fills a slot.',
+        };
 
   it('says buy when the slot is open', () => {
     const { verdict } = stage(gain('starter'));
@@ -126,5 +133,107 @@ describe('the value verdict, against a roster that is full', () => {
     expect(verdict.textContent).toContain('Overpay');
     expect(verdict.getAttribute('style')).toContain('--dr-danger');
     expect(line.textContent).not.toContain('not to your lineup');
+  });
+});
+
+/**
+ * The man you are measured against, and what the web said about him.
+ *
+ * The gain on the stage is a *difference* against one named player, and the
+ * projection knows only what he has done. On the shipped research file the free
+ * back is under an NFL review that could suspend him and the free tight end
+ * tore an Achilles in January — both sourced, both dated, and neither reached
+ * the one number they move, because nothing joined the two registers at the
+ * point a bid is decided.
+ *
+ * It carries no figure, exactly as the research contract has no price field. It
+ * says which way the difference is soft.
+ */
+describe('the free man in the snake, and what was found about him', () => {
+  let service: AuctionDraftService;
+  let player: Player;
+
+  beforeEach(() => {
+    localStorage.clear();
+    service = new AuctionDraftService(leagueShape({ teams: 12, budget: 100 }));
+    player = service.getAvailablePlayers()[0];
+  });
+
+  const stage = (
+    slot: SnakeGain['slot'],
+    research: { direction: 'PAY_UP' | 'FADE' | 'NEUTRAL'; headline: string } | null
+  ) => {
+    render(
+      <NominationStage
+        mode="auction"
+        player={player}
+        teams={service.getTeams()}
+        teamId="team-1"
+        bid="10"
+        analytics={service.getPlayerAnalytics(player.id, 'team-1')}
+        check={null}
+        onTeamChange={() => {}}
+        onBidChange={() => {}}
+        onConfirm={() => {}}
+        onOpenProfile={() => {}}
+        canDraft={() => true}
+        sheetRemaining={null}
+        onUnsold={() => {}}
+        onReturnToSheet={() => {}}
+        passedOver={false}
+        adjusted={null}
+        inflation={1}
+        competition={null}
+        snakeGain={
+          // Bench returns no free man at all from the engine: the snake hands
+          // you any of eleven bodies, so there is no one player the difference
+          // is against. The fixture matches that rather than inventing one.
+          slot === 'bench'
+            ? { gain: 0, free: null, freeId: null, freePoints: null, slot, note: 'Slots full.' }
+            : {
+                gain: 55,
+                free: 'George Kittle',
+                freeId: 'free-kittle',
+                freePoints: 137,
+                slot,
+                note: 'Fills your TE1.',
+              }
+        }
+        freeManResearch={research}
+      />
+    );
+    return screen.getByLabelText(`Nomination: ${player.name}`);
+  };
+
+  it('says the gain is understated when the free man is fading', () => {
+    const box = stage('starter', {
+      direction: 'FADE',
+      headline: 'Torn Achilles in January; still individual drills only',
+    });
+    expect(within(box).getByText(/George Kittle is flagged/)).toBeInTheDocument();
+    expect(within(box).getByText(/understate this bid/)).toBeInTheDocument();
+  });
+
+  it('says the other thing when the free man is the one being paid up for', () => {
+    const box = stage('starter', { direction: 'PAY_UP', headline: 'Handed the job outright' });
+    expect(within(box).getByText(/overstate it/)).toBeInTheDocument();
+  });
+
+  it('stays quiet when nothing was found', () => {
+    expect(within(stage('starter', null)).queryByText(/is flagged/)).not.toBeInTheDocument();
+  });
+
+  it('stays quiet when what was found was not material', () => {
+    // NEUTRAL is "we looked and there is nothing to say", which is not the same
+    // as a finding — putting it on the stage would be noise wearing a source.
+    const box = stage('starter', { direction: 'NEUTRAL', headline: 'nothing much' });
+    expect(within(box).queryByText(/is flagged/)).not.toBeInTheDocument();
+  });
+
+  it('names nobody when there is no free man to name', () => {
+    // Bench only: the snake hands you any of eleven bodies, so there is no one
+    // player the difference is against.
+    const box = stage('bench', { direction: 'FADE', headline: 'Torn Achilles' });
+    expect(within(box).queryByText(/is flagged/)).not.toBeInTheDocument();
   });
 });

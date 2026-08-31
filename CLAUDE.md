@@ -1550,7 +1550,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-651 tests.
+656 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1670,6 +1670,26 @@ where you pick is an outlook for somebody else's draft and looks exactly as
 authoritative as a real one. The same number is pointed at the man on the block
 from the nomination stage, since that is where it is needed while money is on
 the table.
+
+**The man the gain is measured against is a player too, and nobody was asking
+about him.** `gainOverSnake` is a _difference_ against one named free player,
+and the projection knows only what he has done. On the shipped research file
+the free running back is under an NFL review that could suspend him, and the
+free tight end tore an Achilles in January and was still individual-drills-only
+a fortnight before Week 1. Both sourced, both dated, both sitting in
+`research.json` — and neither reached the one number they move, because nothing
+joined the two registers at the point a bid is decided. The board would happily
+quote "+55 pts over George Kittle, free in the snake" with no hint that Kittle
+might not play.
+
+`SnakeGain` carries `freeId` for that, since a name is not enough to look
+somebody up with, and the stage prints the finding under the gain with which
+way it cuts: a FADE on the free man means he may do less than the projection
+the difference was taken against, so the bid is worth _more_ than the number
+says, and the reverse for a PAY_UP. It carries no figure, exactly as
+`researchContract` has no price field — it says the difference is soft, never
+by how much. `NEUTRAL` prints nothing: "we looked and there is nothing to say"
+is not a finding, and rendering it would be noise wearing a source.
 
 **A seat you have already filled is not a seat.** The gain was computed against
 the best free man at the player's _position_, which is the right bar exactly

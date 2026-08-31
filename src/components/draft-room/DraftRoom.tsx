@@ -42,7 +42,7 @@ import type { LeagueShape } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { matchesSearch, searchable } from '@/lib/playerSearch';
 import { copyTextToClipboard, saveTextFile } from '@/lib/saveFile';
-import { primeResearch, researchGeneratedAt } from '@/services/playerResearch';
+import { primeResearch, researchGeneratedAt, researchMark } from '@/services/playerResearch';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -551,6 +551,20 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     () => (selected ? draftService.gainOverSnake(selected.id) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
     [draftService, selected, players]
+  );
+
+  /**
+   * What the web said about the man the snake would hand you instead.
+   *
+   * The join the room was missing. `snakeGain` is a difference against one
+   * named player and the model knows only what he has done; the research file
+   * knew that the free back was under an NFL review and that the free tight
+   * end tore an Achilles in January, and neither reached the number they move.
+   */
+  const freeManResearch = useMemo(
+    () => (snakeGain?.freeId ? researchMark(snakeGain.freeId) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- researchReady is when the file lands
+    [snakeGain, researchReady]
   );
 
   /** When to buy. Recomputed on every pick, since both terms move with one. */
@@ -1370,6 +1384,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               canDraft={(team) => draftService.canDraft(team)}
               onTheClock={onTheClock}
               snakeGain={snakeGain}
+              freeManResearch={freeManResearch}
               sheetRemaining={sheetRemaining}
               onUnsold={markUnsold}
               onReturnToSheet={returnToSheet}

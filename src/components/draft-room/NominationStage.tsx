@@ -25,6 +25,23 @@ interface NominationStageProps {
    * survives to your own snake slot, and the two can differ by a hundred points.
    */
   snakeGain?: SnakeGain | null;
+  /**
+   * What the web said about the man the snake would hand you instead.
+   *
+   * The gain above is a *difference* against one named player, and the model
+   * knows only what he has done. Josh Jacobs is the free back this whole
+   * format's arithmetic rests on and he is under an NFL review that could
+   * suspend him; George Kittle is the free tight end and he tore an Achilles
+   * in January. Both are in `research.json`, sourced and dated, and neither
+   * reached the one number they move — because nothing joined the two
+   * registers at the point a bid is decided.
+   *
+   * A fact with a source, so it belongs here beside the other facts rather
+   * than in the advisor's box. It carries no number, exactly as the research
+   * contract has no price field: it says which way the gain is soft, not what
+   * to bid.
+   */
+  freeManResearch?: { direction: 'PAY_UP' | 'FADE' | 'NEUTRAL'; headline: string } | null;
 
   /**
    * Which half of the draft this stage is running, and the structural branch
@@ -171,6 +188,7 @@ export const NominationStage = ({
   canDraft,
   onTheClock,
   snakeGain,
+  freeManResearch,
   sheetRemaining,
   onUnsold,
   onReturnToSheet,
@@ -354,6 +372,24 @@ export const NominationStage = ({
             </>
           )}{' '}
           <span className="dr-stage-slot">{snakeGain.note}</span>
+          {snakeGain.free && freeManResearch && freeManResearch.direction !== 'NEUTRAL' && (
+            <span
+              className="dr-stage-freeflag"
+              data-direction={freeManResearch.direction}
+              title={freeManResearch.headline}
+            >
+              {/* Which way the gain is soft, and never by how much. A FADE on
+                  the free man means he may do less than the projection this
+                  difference was taken against, so the bid is worth more than
+                  the number says — and the other way for a PAY_UP. */}
+              <b>{snakeGain.free} is flagged:</b> {freeManResearch.headline} &mdash;{' '}
+              <em>
+                {freeManResearch.direction === 'FADE'
+                  ? 'so the gain above may understate this bid.'
+                  : 'so the gain above may overstate it.'}
+              </em>
+            </span>
+          )}
         </p>
       )}
 
