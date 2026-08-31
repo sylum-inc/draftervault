@@ -1454,7 +1454,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-629 tests.
+630 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1685,6 +1685,13 @@ nothing ambiguous, unmatched or duplicated; all fifty sold through the keyboard
 path; the phase moving to the snake by itself when the sheet emptied; nineteen
 snake picks, **none of them carrying a cost**; and no console error anywhere
 across sixty-nine picks.
+
+That drive is now also a test. `src/test/services/wholeNight.test.ts` runs the
+same night at the engine — the sheet sold to exhaustion, the phase turning by
+itself when it empties, the snake filling all 132 remaining seats, the draft
+ending at 192, and not one free pick carrying a price. A browser drive is slow
+enough that it happens once and then stops happening, and the pieces were unit
+tested separately while the join between them was not.
 
 The run ends where it should. The driver takes whatever is top of the board
 regardless of who is on the clock, so it eventually offered a fourth tight end
