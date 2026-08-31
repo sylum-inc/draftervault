@@ -92,3 +92,58 @@ describe('sheet and market board, in either order', () => {
     expect(priced(service)).toEqual(before);
   });
 });
+
+/**
+ * A rank is an overall rank, and the board's default order is built on it.
+ *
+ * Found by looking at the room rather than at a number. `RankingOverride.rank`
+ * is read out of a CSV column headed `rank`, `overall` or `ovr`; the profile
+ * prints it as "#n overall"; the card board and the table both sort 628
+ * players by it. `consensusOverrides` was writing a *within-position* index
+ * into it, so every position had a rank 1 and the sort round-robined them —
+ * the first six cards on the default board were the TE4 at $3 and the QB5 at
+ * $1, sitting above Ja'Marr Chase and Bijan Robinson.
+ *
+ * It only appeared after pressing "Use consensus", which is the recommended
+ * way to run the night, and every number on those cards was individually
+ * correct. Nothing but the order was wrong, which is why no assertion had it.
+ */
+describe('the rank the market board writes', () => {
+  const league = () =>
+    leagueShape({
+      teams: 12,
+      budget: 100,
+      rosterSize: 16,
+      receptionPoints: 0.5,
+      startingLineup: { QB: 1, RB: 2, WR: 3, TE: 1, FLEX: 1, K: 1, DST: 1 },
+    });
+
+  it('is overall, so no two players share it', () => {
+    localStorage.clear();
+    const service = new AuctionDraftService(league());
+    service.applyConsensusBoard();
+    // Everybody the market has an opinion about. The rest keep our rank, which
+    // is already overall, and the market-only names all sit at one sentinel.
+    const ranked = service
+      .getPlayers()
+      .filter((player) => player.adp > 0 && player.adp < 600)
+      .map((player) => player.adp);
+    expect(ranked.length).toBeGreaterThan(300);
+    expect(new Set(ranked).size).toBe(ranked.length);
+  });
+
+  it('puts the dearest players at the top of the default board, not one per position', () => {
+    localStorage.clear();
+    const service = new AuctionDraftService(league());
+    service.applyConsensusBoard();
+    const top = [...service.getAvailablePlayers()].sort((a, b) => a.adp - b.adp).slice(0, 12);
+
+    // The specific shape of the bug: one of each position, over and over.
+    const positions = new Set(top.map((player) => player.position));
+    expect(positions.size).toBeLessThanOrEqual(3);
+
+    // And the consequence that costs money — a $1 player above a $40 one.
+    const dearest = Math.max(...service.getAvailablePlayers().map((p) => p.estimatedValue));
+    expect(Math.min(...top.map((player) => player.estimatedValue))).toBeGreaterThan(dearest * 0.4);
+  });
+});

@@ -2776,9 +2776,18 @@ export class AuctionDraftService {
     return { ...this.overrides };
   }
 
-  /** How many players an import is currently speaking for. */
+  /**
+   * How many players an import is currently speaking for.
+   *
+   * Counted by the prices stated rather than by the entries, because the two
+   * stopped being the same number. The market board writes a rank for every
+   * player so the board has one order in one space, but a price only for the
+   * ones the money is buying — and a chip reading "Your ranks (642)" over a
+   * board where 238 of those still carry our own number is a claim about whose
+   * opinion is on screen, told wrong.
+   */
   getCustomRankingCount(): number {
-    return Object.keys(this.overrides).length;
+    return Object.values(this.overrides).filter((override) => override.value != null).length;
   }
 
   /**

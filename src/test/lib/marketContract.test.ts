@@ -108,6 +108,11 @@ describe('consensus coverage', () => {
     const out = consensusOverrides(players);
     expect(out.a.notes).toBe('adp');
     expect(out.b.notes).toBe('consensus');
-    expect(out.c).toBeUndefined();
+    // Neither source spoke for `c`, so nothing is claimed on his behalf: no
+    // price and no source. He still takes a place in the board's one order,
+    // after both of them.
+    expect(out.c.notes).toBeUndefined();
+    expect(out.c.value).toBeUndefined();
+    expect(out.c.rank).toBeGreaterThan(out.b.rank!);
   });
 });

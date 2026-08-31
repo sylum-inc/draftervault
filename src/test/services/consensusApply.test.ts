@@ -97,11 +97,22 @@ describe('applyConsensusBoard', () => {
 
   it('keeps our own number visible beside theirs', () => {
     service.applyConsensusBoard();
-    const players = service.getPlayers().filter((p) => p.customRanking);
-    expect(players.length).toBeGreaterThan(300);
-    for (const player of players.slice(0, 40)) {
+    // Every player carries an override now, because the board is drawn in one
+    // order and everybody has to have a place in it. Only the ones the market
+    // priced carry a `value`, and those are the ones this is about.
+    const repriced = service.getPlayers().filter((p) => p.customRanking?.value != null);
+    expect(repriced.length).toBeGreaterThan(300);
+    expect(service.getCustomRankingCount()).toBe(repriced.length);
+    for (const player of repriced.slice(0, 40)) {
       expect(player.modelValue).toBeGreaterThan(0);
       expect(['adp', 'consensus']).toContain(player.customRanking?.notes);
+    }
+    // And a player the market never spoke for keeps our number, with no source
+    // claimed for it.
+    const untouched = service.getPlayers().filter((p) => p.customRanking?.value == null);
+    for (const player of untouched.slice(0, 20)) {
+      expect(player.estimatedValue).toBe(player.modelValue);
+      expect(player.customRanking?.notes).toBeUndefined();
     }
   });
 
