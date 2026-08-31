@@ -48,6 +48,7 @@ src/pages/Index.tsx
         ├── DraftBoard.tsx        the room: 12x16 grid, money flow, tier depletion
         ├── PickEditor.tsx        correcting one pick, from the cell showing it
         ├── BudgetPlanner.tsx     what a bid leaves behind, live
+        ├── SpendOutlook.tsx      where money beats the snake, and where it does not
         ├── BargainBoard.tsx      our board against expert consensus
         ├── AdvisorPanel.tsx      the opinion layer, off by default
         ├── DraftFile.tsx         save the draft to a file, or load one
@@ -71,6 +72,8 @@ src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/projection.ts                 the projection model itself (shared)
 src/lib/modelTrust.ts                 where the backtest says not to trust it
 src/lib/consensusBoard.ts             the market's order, our dollars
+src/lib/snakeOutlook.ts               what the snake gives free, so a bid has a bar
+src/lib/endgame.ts                    par against pace: when to buy, not what
 src/lib/marketContract.ts             what a market snapshot is (shared)
 src/data/nfl/market-adp.json          live half-PPR ADP, keyed by gsis (generated)
 src/lib/researchContract.ts           what counts as a sourced finding (shared)
@@ -181,6 +184,43 @@ which is why the check prices the actual list rather than measuring its length.
 Reaching it is not a setting anybody types: it happens through the paste box,
 when a surname-first export or a defence block written in nicknames resolves a
 fraction of its names and sixty quietly becomes eighteen.
+
+**Two buttons, and the order they are pressed in changed the board.** Found
+driving the owner's real sixty-name sheet, and the more dangerous of the two
+because the wrong order is the natural one — press the recommended button, then
+paste the sheet when the commissioner sends it.
+
+"Use consensus" reads dollar values off our surplus curve for a board where the
+money buys 192 players. Importing a sheet re-prices that curve for a board where
+the same money buys sixty. The overrides then held the old numbers and won,
+because `buildPlayer` prefers an override to the price it has just computed — so
+the whole sheet read about 35% cheap. Gibbs showed $55 against the $94 the room
+would actually pay: a board that loses every player while its owner believes he
+is being disciplined. `setAuctionSheet` and `clearAuctionSheet` now re-derive a
+market board after re-pricing, and `MARKET_BOARD_KEY` is what distinguishes
+values we derived from values somebody stated. It is its own storage key rather
+than a read of the overrides' `notes`, because a CSV with a notes column saying
+"consensus" would otherwise have the owner's own numbers silently replaced.
+
+The second bug was underneath it and only appears once a real sheet is in force.
+The reorder is a **permutation of a value curve, and a permutation only conserves
+money if it stays inside the set the money is spread across.** Reordering across
+the sheet boundary handed a highly-ranked off-sheet player a real dollar value
+and pushed a sheet player to the floor: $436 of the room's $2,400 leaked onto
+fourteen players nobody was going to bid on, and the sheet itself came out $422
+light. `ConsensusSubject.forSale` is what keeps the permutation inside the
+auction; with no sheet it is everybody, which is why nothing showed until a
+sheet existed. Four tests hold both orders to the same prices and the sheet to
+the room's whole budget.
+
+**A club abbreviation that is also a first name may not be admitted.** The same
+real sheet wrote Arizona as "AZ", which was not in the alias map — and because
+an unrecognised trailing token blocks the position token before it, "Trey
+McBride TE AZ" failed to resolve a correctly spelled name. `AZ` and `PHL` are in
+now. `PHIL`, `JACK`, `WASH` and `PITT` deliberately are not: a club token is
+stripped out of the name, so admitting them would turn "Phil Dorsett" into
+"Dorsett of Philadelphia" — a worse failure than the one it fixes, because it
+resolves to somebody rather than to nobody.
 
 **A paste can fail in the middle, and that is the one nobody catches.** The
 import already names every ambiguous, unmatched, duplicated and skipped row,
@@ -1414,7 +1454,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-569 tests.
+609 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1434,6 +1474,95 @@ Open, roughly in order of value:
    things the pick-log-is-the-only-shared-fact rule exists to prevent — so it is
    a real design change rather than a route to add. The published artifact
    cannot have it either way: its CSP blocks every external host.
+
+**Money left over players left is a constraint, not a forecast, and it decides
+when to buy.** `snakeOutlook` says _what_ a dollar buys; `endgame.ts` says
+_when_ it goes furthest. Twelve teams at $200 chasing sixty players means the
+sheet averages $40 whatever anybody believes, so if the first twenty go at $60
+the remaining forty must average $30 — the money is gone and the players are
+not. Every auction ends in a fire sale for that reason and the only question is
+who is holding money when it starts. The panel prints **par** (what the
+remainder must average) beside **pace** (what the room has lately paid, over the
+last eight sales only, because an average across the whole auction is dominated
+by the opening stars and stops moving). Driven on the owner's real sheet: par
+opens at $44, and after eight sales at $75-95 it reads "the room is paying $84
+against a par of $37 — the last 47 have to come down", with his share of the
+remaining money up from 8% to 12% for doing nothing.
+
+The count of teams that can still cover par short-circuits that comparison, and
+deliberately: a team with $8 left is not a quiet bidder but a spectator, and
+once most of the room is spectating what a player is worth stops mattering. It
+lives in `MarketPanel` beside inflation rather than in a panel of its own,
+because both are readings of the same thing — how much money is chasing how few
+players — and two panels would let the room find two answers to one question.
+
+**What the snake gives you free is what a bid is competing with, and `vorp` is
+the wrong bar for it.** This is the one piece of arithmetic here that is
+specific to the format, and it is the piece nobody else at the table is doing.
+In an ordinary auction every roster spot has to be bought, so the only question
+is how to divide the money. Here fifty-odd are bought and eleven or twelve seats
+a team are snaked for nothing, with no minimum anybody must spend — so the
+question is not what a player is worth, it is how much better he is than the man
+you get for free at the same position.
+
+VORP cannot answer that, and the reason is worth stating rather than treating
+this as a refinement of it. VORP measures against the last man the _league_
+rosters — about the sixtieth receiver — which is right when the auction buys the
+whole roster, because then he really is the alternative. Here he is not: the
+alternative is whoever survives to _your_ snake slot. Paying for the gap to the
+sixtieth receiver when you are only buying the gap to the twenty-fifth is how a
+budget disappears into players nobody needed to buy.
+
+`snakeOutlook` takes two orders and **using one for both is the mistake the
+whole module exists to prevent**. Who is _gone_ is the room's call, so it comes
+off the room's order — the market's, through the same `marketOrder` the
+consensus board uses, because every off-sheet player is priced at the dollar
+floor by construction and price cannot order the snake pool at all. Who _you
+take_ from what is left is your call, and you take the best of them by projected
+points. Ordering both by the room inflates the gain, sometimes wildly: on the
+shipped board it made the best free back a rookie the market likes and this
+model does not, at 61 points, when a back worth two and a half times that was
+sitting untaken beside him — and the auction then looked like the only way to
+get a running back, which is exactly the conclusion a budget should not be spent
+on. The corrected numbers at half PPR with one flex, picking third: RB and WR
+buy 1.4 points a dollar, quarterback and tight end 1.1, and Josh Allen at $63
+buys seventy-one points over a Dak Prescott the snake hands you.
+
+It refuses rather than guesses on every input it lacks — no sheet, no team
+marked as yours, no snake order — because an outlook computed without knowing
+where you pick is an outlook for somebody else's draft and looks exactly as
+authoritative as a real one. The same number is pointed at the man on the block
+from the nomination stage, since that is where it is needed while money is on
+the table.
+
+**A player the room drafts and the pool has never heard of is still draftable.**
+nflverse's roster file lags signings, so Keenan Allen, Stefon Diggs and Deebo
+Samuel were inside the top 230 of real drafts and absent from a pool built the
+same week — and a player the room is taking that this board cannot even put on
+the block is the worst shape a gap can take on the night. `fetch-adp` keeps them
+in the snapshot's `absent` list rather than dropping them, and the engine builds
+them into the board.
+
+The load-bearing part is _where_: they are appended **after** `pricePool` has
+run, so they are never in the array `replacementLevels` sees. A player with no
+projected points inside that arithmetic would drag his position's replacement
+level down and move every price on the board on the strength of a number nobody
+has. They cost the board nothing and are simply also on it.
+
+That leaves them at the dollar floor until the market board is applied, which is
+honest rather than convenient: $1 is not a claim about Keenan Allen, it is where
+every player we cannot price sits. `consensusOverrides` then slots him onto his
+position's curve at the rank real drafts give him — WR60, as it happens, which
+is why he prices at a dollar anyway. The gain here is nominability, not price:
+these are all late-round names, and the point is that a commissioner's sheet
+naming one does not hit a board that has never heard of him.
+
+`Player` requires numbers on a dozen headline fields, so widening them to null
+for fourteen players would be a large change to the type every panel reads.
+Instead `marketOnly` carries "we know nothing", and the rule it buys is that no
+panel may print one of those placeholder zeroes. The card and the nomination
+stage both show `—` and say why; the stage matters most, because "Projected 0"
+beside a bid box reads as a measurement and the measurement does not exist.
 
 ## The night, driven end to end
 

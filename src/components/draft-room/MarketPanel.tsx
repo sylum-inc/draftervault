@@ -6,10 +6,20 @@ import {
   type Team,
   type TierBreak,
 } from '@/services/auctionDraftService';
+import type { Endgame } from '@/lib/endgame';
 
 interface MarketPanelProps {
   market: MarketState;
   teams: Team[];
+  /**
+   * When to buy, as opposed to what to buy.
+   *
+   * Here rather than in its own panel because it belongs beside inflation: both
+   * are readings of the same thing — how much money is chasing how few players
+   * — and splitting them would let the room read two answers to one question.
+   * Inflation says what that does to a price; this says what it does to timing.
+   */
+  endgame: Endgame;
   /**
    * Which half of the draft is running.
    *
@@ -60,7 +70,14 @@ const readInflation = (inflation: number): { label: string; tone: string } => {
  * players were worth, how much of each position is gone, and what it costs to
  * keep waiting at one.
  */
-export const MarketPanel = ({ market, teams, phase, basis, tierBreaks }: MarketPanelProps) => {
+export const MarketPanel = ({
+  market,
+  teams,
+  phase,
+  basis,
+  tierBreaks,
+  endgame,
+}: MarketPanelProps) => {
   const snake = phase === 'snake';
   const reading = snake
     ? { label: 'The money is finished — the snake fills the rest', tone: 'var(--dr-ink-muted)' }
@@ -301,6 +318,69 @@ export const MarketPanel = ({ market, teams, phase, basis, tierBreaks }: MarketP
           </li>
         ))}
       </ul>
+
+      {/* When to buy. Sits with inflation because both read the same thing —
+          how much money is chasing how few players — and the room should not be
+          able to find two answers to one question in two places. Hidden in the
+          snake, where no money moves and a par price would be arithmetic about
+          nothing. */}
+      {!snake && (
+        <>
+          <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
+            When to buy
+          </h3>
+          <p
+            className="dr-endgame-verdict"
+            data-lean={endgame.lean}
+            style={{
+              borderLeftColor:
+                endgame.lean === 'buy'
+                  ? 'var(--dr-value)'
+                  : endgame.lean === 'wait'
+                    ? 'var(--dr-caution)'
+                    : 'var(--dr-line-strong)',
+            }}
+          >
+            {endgame.verdict}
+          </p>
+          <dl className="dr-league-summary">
+            <div>
+              <dt>Par from here</dt>
+              <dd className="dr-num">${endgame.par}</dd>
+            </div>
+            <div>
+              <dt>Room is paying</dt>
+              <dd
+                className="dr-num"
+                style={{
+                  color:
+                    endgame.pace == null
+                      ? undefined
+                      : endgame.pace > endgame.par
+                        ? 'var(--dr-caution)'
+                        : 'var(--dr-value)',
+                }}
+              >
+                {endgame.pace == null ? '—' : `$${endgame.pace}`}
+              </dd>
+            </div>
+            <div>
+              <dt>Can still pay par</dt>
+              <dd className="dr-num">
+                {endgame.liveBidders}/{endgame.teamCount}
+              </dd>
+            </div>
+            {endgame.yourShare != null && (
+              <div>
+                <dt>Your share of the money</dt>
+                <dd className="dr-num" style={{ color: 'var(--dr-value)' }}>
+                  {Math.round(endgame.yourShare * 100)}%
+                </dd>
+              </div>
+            )}
+          </dl>
+        </>
+      )}
 
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
         Cost of waiting

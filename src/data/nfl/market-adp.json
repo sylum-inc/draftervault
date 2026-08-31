@@ -6,7 +6,7 @@
   "drafts": 3257,
   "from": "2026-08-25",
   "to": "2026-08-30",
-  "fetchedAt": "2026-08-30T14:51:15.252Z",
+  "fetchedAt": "2026-08-30T15:26:06.533Z",
   "entries": [
     {
       "gsis": "00-0039139",
@@ -1751,6 +1751,92 @@
       "high": 158,
       "low": 208,
       "stdev": 19.7
+    }
+  ],
+  "absent": [
+    {
+      "name": "Carnell Tate",
+      "position": "WR",
+      "team": "TEN",
+      "adp": 76
+    },
+    {
+      "name": "Stefon Diggs",
+      "position": "WR",
+      "team": "WAS",
+      "adp": 94.4
+    },
+    {
+      "name": "Deebo Samuel Sr.",
+      "position": "WR",
+      "team": "SF",
+      "adp": 102.3
+    },
+    {
+      "name": "KC Concepcion",
+      "position": "WR",
+      "team": "CLE",
+      "adp": 117.3
+    },
+    {
+      "name": "Makai Lemon",
+      "position": "WR",
+      "team": "PHI",
+      "adp": 119.2
+    },
+    {
+      "name": "De'Zhaun Stribling",
+      "position": "WR",
+      "team": "SF",
+      "adp": 127.6
+    },
+    {
+      "name": "Keenan Allen",
+      "position": "WR",
+      "team": "IND",
+      "adp": 135.6
+    },
+    {
+      "name": "Denzel Boston",
+      "position": "WR",
+      "team": "CLE",
+      "adp": 139
+    },
+    {
+      "name": "Cyrus Allen",
+      "position": "WR",
+      "team": "KC",
+      "adp": 143.3
+    },
+    {
+      "name": "Malachi Fields",
+      "position": "WR",
+      "team": "NYG",
+      "adp": 150.8
+    },
+    {
+      "name": "Jordyn Tyson",
+      "position": "WR",
+      "team": "NO",
+      "adp": 156.3
+    },
+    {
+      "name": "Trey Smack",
+      "position": "K",
+      "team": "GB",
+      "adp": 162.5
+    },
+    {
+      "name": "Ja'Kobi Lane",
+      "position": "WR",
+      "team": "BAL",
+      "adp": 162.9
+    },
+    {
+      "name": "Caleb Douglas",
+      "position": "WR",
+      "team": "MIA",
+      "adp": 167.3
     }
   ]
 }

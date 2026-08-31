@@ -15,8 +15,10 @@ import {
   type LeagueShape,
 } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
-import { consensusCoverage, consensusOverrides } from '@/lib/consensusBoard';
-import { validateMarket, type MarketSnapshot } from '@/lib/marketContract';
+import { consensusCoverage, consensusOverrides, marketOrder } from '@/lib/consensusBoard';
+import { snakeOutlook, type SnakeOutlook } from '@/lib/snakeOutlook';
+import { endgame, type Endgame } from '@/lib/endgame';
+import { validateMarket, type MarketAbsentee, type MarketSnapshot } from '@/lib/marketContract';
 
 interface PoolEntry {
   gsis: string;
@@ -155,6 +157,14 @@ export interface Player {
   expectedGames?: number;
   /** Games of tape behind the projection. See `modelTrust.ts`. */
   gamesObserved?: number;
+  /**
+   * The market drafts him and the pool has never heard of him.
+   *
+   * He carries no projection, so every number on his card is absent rather
+   * than zero, and he is outside the arithmetic that sets replacement level.
+   * True only for entries built from the market snapshot's `absent` list.
+   */
+  marketOnly?: boolean;
   usage?: PlayerUsage | null;
   teamContext?: TeamContext | null;
   durability?: Durability;
@@ -705,6 +715,21 @@ const LEAGUE_STORAGE_KEY = 'draft-vault:league:v1';
  * plays that.
  */
 const LEAGUE_CONFIRMED_KEY = 'draft-vault:league-confirmed:v1';
+/**
+ * Whether the overrides in force were *derived* rather than stated.
+ *
+ * Its own key for the same reason `LEAGUE_CONFIRMED_KEY` is: it answers a
+ * different question from the overrides themselves. An imported CSV carries
+ * dollar values somebody chose, and nothing may recompute them. The market
+ * board carries dollar values read off our own surplus curve, so the moment
+ * that curve moves — which is exactly what importing a sheet does — they are
+ * stale and have to be derived again.
+ *
+ * Reading it off the overrides' `notes` instead would work until somebody's
+ * CSV had a notes column saying "consensus", and the cost of that collision is
+ * silently replacing their stated values with ours.
+ */
+const MARKET_BOARD_KEY = 'draft-vault:market-board:v1';
 
 const readStoredLeague = (): LeagueShape => {
   try {
@@ -1075,6 +1100,14 @@ export class AuctionDraftService {
     (AuctionDraftService.market?.entries ?? []).map((entry) => [entry.gsis, entry.adp])
   );
 
+  /** Keyed by the synthetic id `buildAbsentee` mints, since they have no gsis. */
+  private static readonly adpByAbsentee: Map<string, number> = new Map(
+    (AuctionDraftService.market?.absent ?? []).map((row) => [
+      `market:${row.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      row.adp,
+    ])
+  );
+
   private overrides: Record<string, RankingOverride> = readStoredOverrides();
   /** The commissioner's sheet, if one has been imported. Empty ids means none. */
   private sheet: StoredSheet = readStoredSheet();
@@ -1144,6 +1177,95 @@ export class AuctionDraftService {
     this.players = entries.map((entry, index) =>
       this.buildPlayer(entry, priced[index], wholeBoard || bought[index], mask !== undefined)
     );
+
+    /*
+     * The players the room drafts that the pool has never heard of.
+     *
+     * Appended *after* pricing, and that ordering is the whole design. They
+     * have no projection — no tape, no usage, no schedule join — so they are
+     * never in the array `pricePool` and `replacementLevels` see. Letting a
+     * player with no projected points into that arithmetic would drag his
+     * position's replacement level down and change every price on the board on
+     * the strength of a number nobody has. So they cost the board nothing and
+     * are simply also on it.
+     *
+     * That leaves them at the dollar floor until the market board is applied,
+     * which is honest rather than convenient: $1 is not a claim that Keenan
+     * Allen is worth a dollar, it is where every player we cannot price sits.
+     * `consensusOverrides` then slots him onto his position's curve at the rank
+     * real drafts give him, which is the only opinion about him anybody has.
+     */
+    for (const absentee of AuctionDraftService.market?.absent ?? []) {
+      this.players.push(this.buildAbsentee(absentee, wholeBoard));
+    }
+  }
+
+  /**
+   * A player the market drafts and the pool lacks, made nominable.
+   *
+   * The zeroes here are not measurements and must never be read as any. `Player`
+   * requires numbers on every headline field, so widening a dozen of them to
+   * null for fifteen players would be a large change to the type every panel
+   * reads. Instead `marketOnly` is the flag that carries "we know nothing", and
+   * the rule it buys is that no panel may print one of these numbers — the same
+   * discipline `draftCost` follows by staying undefined on a snake pick, since
+   * a zero in a sum is indistinguishable from a measurement.
+   *
+   * He is also outside every average the board computes, because he is outside
+   * `pricePool` entirely: these values are only ever read back, never summed.
+   */
+  private buildAbsentee(absentee: MarketAbsentee, wholeBoard: boolean): Player {
+    const id = `market:${absentee.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    // The same override the pool's own players go through. Without it the
+    // market board would price him and the board would keep showing the dollar
+    // floor, which is the one number we know to be meaningless for him.
+    const override = this.overrides[id];
+    const value = override?.value ?? 1;
+    // A commissioner's sheet can name him — he is a candidate the paste matches
+    // against like any other — and `sheetMask` cannot see him because it runs
+    // over pool entries, so his membership is read straight off the sheet.
+    const onSheet = this.sheet.ids.length ? this.sheet.ids.includes(id) : wholeBoard;
+    return {
+      id,
+      name: absentee.name,
+      position: absentee.position as PlayerPosition,
+      team: absentee.team,
+      tier: 4,
+      baseValue: value,
+      estimatedValue: value,
+      modelValue: 1,
+      customRanking: override,
+      onSheet,
+      sheetIsStated: this.sheet.ids.length > 0,
+      projectedPoints: 0,
+      adp: 0,
+      injuryRisk: 'MEDIUM',
+      valueOverReplacement: 0,
+      upside: 0,
+      floor: 0,
+      consistency: 0,
+      byeWeek: 0,
+      ageRisk: 'MEDIUM',
+      competitionLevel: 'MINOR_COMPETITION',
+      recentTrends: 'STABLE',
+      isDrafted: false,
+      /** The one thing known about him, and the reason he is here at all. */
+      marketOnly: true,
+      market: {
+        consensusRank: null,
+        positionRank: null,
+        rawEcr: null,
+        best: null,
+        worst: null,
+        spread: null,
+        ownership: null,
+        searchRank: null,
+        depthChartOrder: null,
+        source: AuctionDraftService.market?.source ?? 'draft market',
+        asOf: AuctionDraftService.market?.to ?? null,
+        edge: null,
+      },
+    } as Player;
   }
 
   /**
@@ -2632,6 +2754,9 @@ export class AuctionDraftService {
    * Only what the remaining players are said to be worth moves.
    */
   setCustomRankings(overrides: Record<string, RankingOverride>): void {
+    // Stated until proven derived: `applyConsensusBoard` sets the marker back
+    // immediately after calling this, and an imported CSV never does.
+    this.forgetMarketBoard();
     this.overrides = { ...overrides };
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
@@ -2663,7 +2788,184 @@ export class AuctionDraftService {
   applyConsensusBoard(): { ranked: number; of: number; fromAdp: number; fromConsensus: number } {
     const subjects = this.marketSubjects();
     this.setCustomRankings(consensusOverrides(subjects));
+    // After setCustomRankings, which clears it: these values are derived, so
+    // they have to be re-derived whenever the curve underneath them moves.
+    try {
+      localStorage.setItem(MARKET_BOARD_KEY, '1');
+    } catch {
+      // A browser refusing storage costs the re-derive, not the board.
+    }
     return consensusCoverage(subjects);
+  }
+
+  private forgetMarketBoard(): void {
+    try {
+      localStorage.removeItem(MARKET_BOARD_KEY);
+    } catch {
+      // Nothing to do; the marker is an optimisation, not a source of truth.
+    }
+  }
+
+  /** Whether the prices on the board were derived by us rather than stated. */
+  private marketBoardInForce(): boolean {
+    if (!Object.keys(this.overrides).length) return false;
+    try {
+      return !!localStorage.getItem(MARKET_BOARD_KEY);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Re-derive the market board after anything that moves the curve under it.
+   *
+   * The bug this exists for was found driving a real commissioner's sheet.
+   * "Use consensus" reads dollar values off our surplus curve for a board where
+   * the money buys 192 players; importing a sheet re-prices that curve for a
+   * board where the same money buys sixty. The overrides then held the old
+   * numbers and won, because `buildPlayer` prefers an override to the price it
+   * just computed — so the whole sheet read about 35% cheap. Gibbs showed $55
+   * against the $94 the room would actually pay, which is a board that loses
+   * every player while its owner believes he is being disciplined. And it
+   * happened in the order somebody would naturally use: press the recommended
+   * button, then paste the sheet when the commissioner sends it.
+   */
+  private refreshMarketBoard(): void {
+    if (!this.marketBoardInForce()) return;
+    this.applyConsensusBoard();
+  }
+
+  /**
+   * When to buy, which is the half `getSpendOutlook` does not answer.
+   *
+   * Rests on a constraint rather than a forecast: the money still in the room
+   * divided by the sheet players still for sale is what the rest must average,
+   * whatever anybody at the table believes. Every auction ends in a fire sale
+   * because the money runs out before the players do, and the only question is
+   * whether you are holding money when it starts.
+   *
+   * `moneyLeft` comes from `getInflationBasis` rather than being summed again
+   * here — it is the same quantity, already net of the dollar-a-slot reserve,
+   * and a second summation is a second answer to how rich the room is.
+   */
+  getEndgame(): Endgame {
+    const basis = this.getInflationBasis();
+    // Newest first, and auction sales only: a snake pick costs nothing and
+    // averaging zeroes into a price would report a room that had stopped paying.
+    const recentPrices = [...this.history]
+      .reverse()
+      .filter((pick) => (pick.phase ?? 'auction') === 'auction' && pick.cost != null)
+      .map((pick) => pick.cost as number);
+    return endgame({
+      moneyLeft: basis.moneyLeft,
+      playersLeft: basis.forSaleLeft,
+      recentPrices,
+      teams: this.teams.map((team) => ({
+        id: team.id,
+        name: team.name,
+        remaining: team.remaining,
+      })),
+      myTeamId: this.myTeamId,
+    });
+  }
+
+  /**
+   * What the snake will hand you free, and therefore what a bid is buying.
+   *
+   * The arithmetic specific to this format, and the piece nobody else at the
+   * table is doing. `vorp` measures a player against the last man the *league*
+   * rosters — the sixtieth receiver — which is the right bar only when the
+   * auction buys the whole roster. Here it does not: the alternative is
+   * whoever survives to your own snake slot, and paying for the gap to the
+   * sixtieth receiver when you are only buying the gap to the twenty-fifth is
+   * how a budget disappears into players you did not need to buy.
+   *
+   * The ordering the room is assumed to snake in comes through `marketOrder`,
+   * the same rule the consensus board uses, rather than off the live price:
+   * every off-sheet player is priced at the dollar floor by construction, so
+   * price cannot order the snake pool at all.
+   */
+  getSpendOutlook(): SnakeOutlook {
+    const positions: string[] = ['RB', 'WR', 'TE', 'QB', 'K', 'DST'];
+    if (this.league.auctionSheetSize === null) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason:
+          'This league auctions the whole board, so there is no snake half to measure against.',
+      };
+    }
+    const mine = this.myTeamId;
+    if (!mine) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason:
+          'Mark which team is yours in league settings — an outlook without it is somebody else’s draft.',
+      };
+    }
+    if (!this.getSnakeOrder().length) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason: 'Set the snake order first; where you pick is what decides what survives to you.',
+      };
+    }
+
+    // Where you pick next, counted among snake picks. During the auction this
+    // walks the order from the start, which is exactly the projected snake.
+    const upcoming = this.getSnakeUpcoming(this.teams.length * 3);
+    const yours = upcoming.find((slot) => slot.team.id === mine);
+    if (!yours) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason: 'Your roster is full — the snake has nothing left to hand you.',
+      };
+    }
+
+    // One ordering for the whole board, so a snake pick and an auction buy are
+    // ranked by the same rule. Anybody neither source ranks sorts after
+    // everybody either source does, keeping our own model as the tail-breaker.
+    const ranked = marketOrder(this.marketSubjects());
+    const order = new Map(ranked.map((entry, index) => [entry.gsis, index]));
+    const subject = (player: Player) => ({
+      id: player.id,
+      name: player.name,
+      position: player.position,
+      points: player.projectedPoints,
+      price: player.estimatedValue,
+      order: order.get(player.id) ?? ranked.length + player.adp,
+    });
+
+    const live = this.players.filter((player) => !player.isDrafted);
+    return snakeOutlook({
+      snakePool: live.filter((player) => !player.onSheet).map(subject),
+      forSale: live.filter((player) => player.onSheet).map(subject),
+      yourNextSnakePick: yours.overall,
+      positions,
+    });
+  }
+
+  /**
+   * What buying *this* player gains over the free alternative at his position.
+   *
+   * The panel version ranks positions; this is the same arithmetic pointed at
+   * the man on the block, which is the number somebody needs while money is on
+   * the table. Null when the outlook cannot honestly be computed at all.
+   */
+  gainOverSnake(playerId: string): { gain: number; free: string; freePoints: number } | null {
+    const outlook = this.getSpendOutlook();
+    if (!outlook.positions) return null;
+    const player = this.players.find((entry) => entry.id === playerId);
+    if (!player || player.marketOnly) return null;
+    const row = outlook.positions.find((entry) => entry.position === player.position);
+    if (!row?.free) return null;
+    return {
+      gain: Math.round(player.projectedPoints - row.free.points),
+      free: row.free.name,
+      freePoints: row.free.points,
+    };
   }
 
   /** What the market says, or null when no snapshot is bundled. */
@@ -2685,18 +2987,26 @@ export class AuctionDraftService {
    */
   private marketSubjects() {
     const adp = AuctionDraftService.adpByGsis;
+    const absent = AuctionDraftService.adpByAbsentee;
     return this.players.map((player) => ({
       gsis: player.id,
       position: player.position,
       auctionValue: player.modelValue,
       consensusRank: player.market?.consensusRank ?? null,
-      adp: adp.get(player.id) ?? null,
+      // A market-only player has no gsis and no projection; his ADP is the only
+      // thing anybody knows about him, and it is exactly what this needs.
+      adp: adp.get(player.id) ?? absent.get(player.id) ?? null,
+      // The reorder is a permutation of a value curve, so it has to stay inside
+      // the set the money is spread across; a sheet player swapped for an
+      // off-sheet one moves budget out of the auction entirely.
+      forSale: player.onSheet,
     }));
   }
 
   /** Drop the import and go back to what the model says. */
   clearCustomRankings(): void {
     if (!Object.keys(this.overrides).length) return;
+    this.forgetMarketBoard();
     this.overrides = {};
     writeStoredOverrides(this.overrides);
     this.repriceInPlace();
@@ -2763,6 +3073,7 @@ export class AuctionDraftService {
     // persist() deletes the saved draft when there are no picks, so an empty
     // board announces without writing: the re-stamp above is what a saved
     // draft nobody has resumed yet needs.
+    this.refreshMarketBoard();
     if (this.history.length) this.persist();
     else this.announce();
     return wanted.length;
@@ -2842,6 +3153,9 @@ export class AuctionDraftService {
     }
 
     this.repriceInPlace();
+    // Removing a sheet moves the curve exactly as adding one does, so a derived
+    // board has to be derived again here too.
+    this.refreshMarketBoard();
     if (this.history.length) this.persist();
     else this.announce();
   }

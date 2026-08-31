@@ -21,6 +21,7 @@ import { PlayerProfile } from './PlayerProfile';
 import { CompareTray, CompareView } from './CompareTray';
 import { DraftBoard } from './DraftBoard';
 import { BudgetPlanner } from './BudgetPlanner';
+import { SpendOutlook } from './SpendOutlook';
 import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
 import { LeagueSettings } from './LeagueSettings';
@@ -90,7 +91,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [tableDescending, setTableDescending] = useState(false);
   const [watchedOnly, setWatchedOnly] = useState(false);
   const [asidePanel, setAsidePanel] = useState<
-    'budgets' | 'rosters' | 'market' | 'bargains' | 'plan'
+    'budgets' | 'rosters' | 'market' | 'bargains' | 'plan' | 'spend'
   >('budgets');
   const [resultsOpen, setResultsOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
@@ -540,6 +541,25 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * `players` is the change signal for a pick and `savedTick` for a save; the
    * engine holds both facts and is re-read rather than mirrored.
    */
+  /**
+   * What the man on the block gains over the free alternative at his position.
+   *
+   * Recomputed on every pick because both halves of it move: the auction takes
+   * players off the sheet and the snake pool shrinks behind them.
+   */
+  const snakeGain = useMemo(
+    () => (selected ? draftService.gainOverSnake(selected.id) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, selected, players]
+  );
+
+  /** When to buy. Recomputed on every pick, since both terms move with one. */
+  const endgameState = useMemo(
+    () => draftService.getEndgame(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, players, teams]
+  );
+
   const unsaved = useMemo(
     () => draftService.picksSinceExport(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1329,6 +1349,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               onOpenProfile={() => setProfileOpen(true)}
               canDraft={(team) => draftService.canDraft(team)}
               onTheClock={onTheClock}
+              snakeGain={snakeGain}
               sheetRemaining={sheetRemaining}
               onUnsold={markUnsold}
               onReturnToSheet={returnToSheet}
@@ -1357,18 +1378,21 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           )}
 
           <div className="dr-segmented dr-aside-tabs" role="group" aria-label="Side panel">
-            {(['budgets', 'rosters', 'market', 'bargains', 'plan'] as const).map((panel) => (
-              <button
-                key={panel}
-                type="button"
-                aria-pressed={asidePanel === panel}
-                onClick={() => setAsidePanel(panel)}
-              >
-                {panel}
-              </button>
-            ))}
+            {(['spend', 'budgets', 'rosters', 'market', 'bargains', 'plan'] as const).map(
+              (panel) => (
+                <button
+                  key={panel}
+                  type="button"
+                  aria-pressed={asidePanel === panel}
+                  onClick={() => setAsidePanel(panel)}
+                >
+                  {panel}
+                </button>
+              )
+            )}
           </div>
 
+          {asidePanel === 'spend' && <SpendOutlook service={draftService} players={players} />}
           {asidePanel === 'budgets' && (
             <BudgetRail teams={teams} players={players} activeTeamId={teamId} />
           )}
@@ -1389,6 +1413,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               phase={phase}
               basis={basis}
               tierBreaks={tierBreaks}
+              endgame={endgameState}
             />
           )}
           {asidePanel === 'bargains' && (

@@ -102,6 +102,17 @@ const TEAM_ALIASES: Record<string, string> = {
   OAK: 'LV',
   LVR: 'LV',
   ARZ: 'ARI',
+  // How people actually type Arizona and Philadelphia. Worth adding because an
+  // unrecognised trailing token blocks the position token before it: "Trey
+  // McBride TE AZ" failed to resolve a correctly-spelled name, since "AZ" was
+  // not a club and so "TE" stopped being a trailing label.
+  //
+  // Deliberately not here: PHIL, JACK, WASH, PITT and the rest of the
+  // human-typed forms that are also somebody's name. A club token is stripped
+  // out of the name, so admitting PHIL would turn "Phil Dorsett" into
+  // "Dorsett" of Philadelphia. AZ and PHL are nobody's name.
+  AZ: 'ARI',
+  PHL: 'PHI',
   BLT: 'BAL',
   CLV: 'CLE',
   HST: 'HOU',

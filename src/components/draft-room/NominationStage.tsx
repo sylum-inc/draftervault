@@ -15,6 +15,17 @@ import { RangeBar } from './charts/RangeBar';
 
 interface NominationStageProps {
   /**
+   * What buying him gains over the man the snake hands you free at his
+   * position, and who that man is. Null when it cannot honestly be computed.
+   *
+   * The number this format actually turns on. `vorp` two tiles over measures
+   * him against the last man the *league* rosters, which is the right bar only
+   * when the auction buys the whole roster — here the alternative is whoever
+   * survives to your own snake slot, and the two can differ by a hundred points.
+   */
+  snakeGain?: { gain: number; free: string; freePoints: number } | null;
+
+  /**
    * Which half of the draft this stage is running, and the structural branch
    * of the whole component.
    *
@@ -115,6 +126,7 @@ export const NominationStage = ({
   onOpenProfile,
   canDraft,
   onTheClock,
+  snakeGain,
   sheetRemaining,
   onUnsold,
   onReturnToSheet,
@@ -263,24 +275,54 @@ export const NominationStage = ({
             </div>
           </>
         )}
+        {/* A market-only player carries placeholder zeroes because `Player`
+            requires numbers here. This is the panel where money is decided, so
+            it is the last place that may print one: "Projected 0" beside a bid
+            box reads as a measurement, and the measurement does not exist. */}
         <div className="dr-tile">
           <dt>Projected</dt>
-          <dd>{player.projectedPoints}</dd>
+          <dd>{player.marketOnly ? '—' : player.projectedPoints}</dd>
         </div>
         <div className="dr-tile">
           <dt>VORP</dt>
-          <dd>{player.valueOverReplacement}</dd>
+          <dd>{player.marketOnly ? '—' : player.valueOverReplacement}</dd>
         </div>
       </dl>
 
+      {snakeGain && !player.marketOnly && (
+        <p className="dr-stage-snakegain">
+          Buying him gains{' '}
+          <b style={{ color: snakeGain.gain > 0 ? 'var(--dr-value)' : 'var(--dr-caution)' }}>
+            {snakeGain.gain > 0 ? '+' : ''}
+            {snakeGain.gain} pts
+          </b>{' '}
+          over {snakeGain.free} ({snakeGain.freePoints}), who the snake should hand you free at{' '}
+          {player.position}.
+        </p>
+      )}
+
+      {player.marketOnly && (
+        <p className="dr-stage-marketonly">
+          <strong>No projection.</strong> The pool has never heard of him — nflverse&rsquo;s roster
+          file does not carry him yet. He is on the board because real drafts are taking him
+          {player.customRanking?.rank
+            ? ` around ${player.position}${player.customRanking.rank}`
+            : ''}
+          , and his price is whatever that rank buys on our curve. Every other number here would be
+          invented, so none is shown.
+        </p>
+      )}
+
       <div className="dr-stage-range">
-        <RangeBar
-          floor={player.floor}
-          projection={player.projectedPoints}
-          ceiling={player.upside}
-          replacement={player.projectedPoints - player.valueOverReplacement || undefined}
-        />
-        <div className="dr-stage-signals">
+        {!player.marketOnly && (
+          <RangeBar
+            floor={player.floor}
+            projection={player.projectedPoints}
+            ceiling={player.upside}
+            replacement={player.projectedPoints - player.valueOverReplacement || undefined}
+          />
+        )}
+        <div className="dr-stage-signals" hidden={player.marketOnly}>
           {player.percentiles?.points != null && (
             <span title={`${player.percentiles.points}th percentile among ${player.position}s`}>
               <em>vs {player.position}</em>
