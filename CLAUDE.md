@@ -1520,7 +1520,7 @@ failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
 seconds, with expert consensus extending it past where real drafts stop;
-641 tests.
+647 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1675,6 +1675,34 @@ rather than the live price so that pressing the button cannot re-derive the
 disagreement against itself — and the ranks printed beside those dollars never
 got the same treatment. On the shipped board Kyren Williams went from "#28 vs
 #42" to "#9 vs #42", which is the disagreement we actually hold.
+
+**The board fetches nothing on the night, and never said when it stopped
+knowing things.** That is the trade that makes it work in the published
+artifact and in a basement with no wifi, and the honest mitigation is not to
+pretend otherwise — it is to say what it knows and when it learned it, so a
+"questionable" tag from three weeks ago reads as three weeks old rather than as
+news. The market's age was already computed and already banded and was visible
+in exactly one place: inside the rankings modal, a setup screen nobody opens
+twice. Everything else had a `generatedAt` in its file and nowhere on screen.
+
+`dataAge.ts` says it once, in the market panel, because that panel is already
+the one answering _what is the room doing_ and how old the market is **is** a
+market reading. What ages and what does not is the part worth stating: a
+projection is built from seasons that have finished and does not decay, so a
+pool built a month ago projects exactly what it projected — what decays inside
+that same file is the roster and injury snapshot around it. And only the market
+carries a colour, because it is the only one anybody has measured a decay rate
+for; inventing thresholds for the other three would spend its credibility on a
+guess, which is the argument `modelTrust` already makes for carrying three
+blind spots and not a dozen. The one loud line names the script to run, because
+a warning that does not say what to do about it costs attention and buys
+nothing — and `fetch:adp` takes seconds, unlike the rebuild behind everything
+else on the panel.
+
+The research row needed a dependency nobody would have guessed at. That file is
+a lazy import and nothing else in the room changes when it lands, so the memo
+reading its stamp sat on `[draftService, players]` and reported "—" until the
+first pick — and "—" is a claim, "there is no research", rather than a gap.
 
 **A permanent false alarm in the one panel that has to stay terse.** The
 advisor's roster-need alert counted "startable" as `tier <= 2`, while the run

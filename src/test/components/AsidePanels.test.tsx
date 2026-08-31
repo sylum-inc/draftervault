@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import { AuctionDraftService } from '@/services/auctionDraftService';
 import { DraftRoom } from '@/components/draft-room/DraftRoom';
 import { leagueShape } from '@/lib/valuation';
@@ -139,5 +139,33 @@ describe('the advisor', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /turn off/i }));
     expect(screen.queryByLabelText(/opinions, not measurements/i)).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * How old what the board knows is, on the panel that says what the room is
+ * doing.
+ *
+ * The research row is the one worth a test. That file is a lazy import and
+ * nothing else in the room changes when it lands, so the memo that reads its
+ * stamp has to depend on the flag that flips when it does — without it the row
+ * read "—" until somebody made a pick, and "—" is a claim ("there is no
+ * research") rather than a gap.
+ */
+describe('what this board knows', () => {
+  it('reports an age for every source, research included', async () => {
+    localStorage.clear();
+    const service = new AuctionDraftService(leagueShape({ teams: 12, budget: 100 }));
+    render(<DraftRoom draftService={service} />);
+    fireEvent.click(
+      within(screen.getByLabelText('Side panel')).getByRole('button', { name: 'market' })
+    );
+
+    const row = (label: string) =>
+      screen.getByText(label).parentElement!.querySelector('.dr-num')!.textContent;
+
+    expect(row('Draft market')).not.toBe('—');
+    expect(row('Rosters and injuries')).not.toBe('—');
+    await waitFor(() => expect(row('Research')).not.toBe('—'));
   });
 });

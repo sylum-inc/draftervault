@@ -42,7 +42,7 @@ import type { LeagueShape } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { matchesSearch, searchable } from '@/lib/playerSearch';
 import { copyTextToClipboard, saveTextFile } from '@/lib/saveFile';
-import { primeResearch } from '@/services/playerResearch';
+import { primeResearch, researchGeneratedAt } from '@/services/playerResearch';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -954,6 +954,26 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- a tier empties on a pick
   const tierBreaks = useMemo(() => draftService.getTierBreaks(), [draftService, players]);
 
+  /**
+   * When each thing the board knows was last learned.
+   *
+   * None of these move during a draft, so this exists mainly to be computed
+   * once. `researchReady` is in the dependencies and has to be: the research
+   * file is a lazy import, nothing else here changes when it lands, and
+   * without it this panel read "—" for the research row until the first pick
+   * was made — which is a claim ("we have no research") rather than a gap.
+   */
+  const stamps = useMemo(
+    () => ({
+      market: draftService.getMarketSnapshot(),
+      research: researchGeneratedAt(),
+      pool: draftService.getPoolGeneratedAt(),
+      identity: snapshotMeta().generatedAt || null,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, players, researchReady]
+  );
+
   const spent = teams.reduce((total, team) => total + team.spent, 0);
   const progress = players.length ? (drafted.length / players.length) * 100 : 0;
   const { season } = snapshotMeta();
@@ -1414,6 +1434,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               basis={basis}
               tierBreaks={tierBreaks}
               endgame={endgameState}
+              stamps={stamps}
             />
           )}
           {asidePanel === 'bargains' && (

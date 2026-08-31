@@ -7,6 +7,7 @@ import {
   type TierBreak,
 } from '@/services/auctionDraftService';
 import { readInflation, type Endgame } from '@/lib/endgame';
+import { dataAges, stalest, PROJECTIONS_DO_NOT_AGE, type DataStamps } from '@/lib/dataAge';
 
 interface MarketPanelProps {
   market: MarketState;
@@ -50,6 +51,15 @@ interface MarketPanelProps {
    * auctioned, because a $1 floor price is not a price anybody would pay.
    */
   tierBreaks: TierBreak[];
+  /**
+   * When each thing the board knows was last learned.
+   *
+   * Here rather than in a panel of its own because this panel is already the
+   * one answering "what is the room doing", and how old the market is *is* a
+   * market reading — it was computed and banded already and shown in exactly
+   * one place, a setup modal nobody opens twice.
+   */
+  stamps: DataStamps;
 }
 
 /**
@@ -67,12 +77,15 @@ export const MarketPanel = ({
   basis,
   tierBreaks,
   endgame,
+  stamps,
 }: MarketPanelProps) => {
   const snake = phase === 'snake';
   const reading = snake
     ? { label: 'The money is finished — the snake fills the rest', tone: 'var(--dr-ink-muted)' }
     : readInflation(market.inflation, market.premium ?? null);
   const premiumPct = market.premium != null ? Math.round((market.premium - 1) * 100) : null;
+  const ages = dataAges(stamps);
+  const ageWarning = stalest(ages);
 
   // Where the room is paying under our numbers — the only bargain signal that
   // is not circular, because it comes from what people actually bid rather than
@@ -398,6 +411,41 @@ export const MarketPanel = ({
           </li>
         ))}
       </ul>
+
+      {/* What the board knows, and when it learned it. The app fetches nothing
+          on the night — that is what makes it work in the artifact and in a
+          basement with no wifi — so the honest mitigation is to say where its
+          knowledge stopped rather than to imply it has not. */}
+      <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
+        What this board knows
+      </h3>
+      {ageWarning && (
+        <p className="dr-notice" role="status">
+          {ageWarning.text} <code>{ageWarning.refresh}</code>
+        </p>
+      )}
+      <ul className="dr-premiums dr-ages">
+        {ages.map((source) => (
+          <li key={source.key} title={source.what}>
+            <span className="dr-supply-pos">{source.label}</span>
+            <span
+              className="dr-num"
+              style={{
+                color:
+                  source.freshness === 'stale'
+                    ? 'var(--dr-danger)'
+                    : source.freshness === 'ageing'
+                      ? 'var(--dr-caution)'
+                      : 'var(--dr-ink-muted)',
+              }}
+            >
+              {source.days == null ? '—' : source.days === 0 ? 'today' : `${source.days}d`}
+            </span>
+            <span className="dr-premium-note">{source.what}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="dr-footnote">{PROJECTIONS_DO_NOT_AGE}</p>
     </section>
   );
 };

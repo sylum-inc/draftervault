@@ -3114,6 +3114,11 @@ export class AuctionDraftService {
   }
 
   /** What the market says, or null when no snapshot is bundled. */
+  /** When the pool was built. What ages in it is the roster and injury snapshot. */
+  getPoolGeneratedAt(): string | null {
+    return (poolData as { generatedAt?: string }).generatedAt ?? null;
+  }
+
   getMarketSnapshot(): MarketSnapshot | null {
     return AuctionDraftService.market;
   }
