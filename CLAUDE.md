@@ -800,6 +800,141 @@ order has not been drawn it prints the range with no name attached — the two
 ends are two different free men, and putting the worst one's name beside both
 numbers would say the low end was measured against somebody it was not.
 
+**A card has a back, and the order of the three states is the design.** The
+front carries nineteen readings and is at the limit of what can be scanned
+while a name is being called, so the twentieth would cost the nineteen — and
+everything the pool knows that is not on it is not less important, it is
+answered second. What offence feeds him. Who else is in his room, and by how
+much. Where his career sits on its own curve. How far apart the experts are
+from each other, before we disagree with them. How far downfield the ball
+actually reaches him. What the eighteen weeks in front of him look like.
+
+Expanding straight off the front was built first and is wrong twice: it is a
+screen-filling panel on one click, on the one surface somebody scans with money
+on the table, and the click that does it sits a few pixels from the click that
+nominates. So the sequence is front → `↻` → back → `⤢`, each step undone by the
+control that made it. Turning a card over is the softer act — it costs the
+front face and nothing else, and it happens between nominations rather than
+during one; only from there, having already decided to study somebody, does
+growing to every tab make sense.
+
+**Both halves of the hinge stay inside the card's own cell.** The front is in
+the document flow and sets the cell's height; the back is absolutely positioned
+over it. That is not a detail — a back face that reflowed would make studying
+one player rearrange the board you were studying him against, and the
+fifty-nine cards around it would move under the cursor. The second page is
+taller than a card, so it scrolls, and the sticky bar at the foot of the _view_
+is what says so — an edge that fades is read as continuing, an edge that stops
+is read as the end — while also carrying the way out of the scroll rather than
+only a notice that there is one.
+
+The `transform` on the hover lift is the trap the hinge sets. `.dr-card:hover`
+sets `translateY(-1px)`, and a transform on the back face **replaces** the
+half-turn that put it there — so the card shows its own back, the right way
+round, on the front of the board. It is restated rather than inherited, for
+both states that set it.
+
+None of the back is built for the fifty-nine cards that are not turned over.
+Sixty would be sixty career arcs, sixty schedule strips and sixty reads of two
+lazy caches, on a board whose entire performance story is that it mounts sixty
+cards without stalling — so `flipped` is a boolean, false on all of them, and
+the second page is `null`. Measured after: nominate is 465ms on the first and
+about 200ms after under a 4x CPU throttle, against the 663ms the board was left
+at; building a whole back face costs 287ms, once, for the one card asked for.
+
+**Raised, it leaves the board exactly where it was.** Spanning the grid was
+tried and is wrong twice over: the cells beside it in its own row are left
+empty, which reads as a rendering fault, and everything below jumps down the
+page — the board being read is rearranged as the price of reading one card of
+it. It rises to the middle of its own fixed layer instead and the rest recedes
+behind a scrim, so nothing moves and closing puts everything back. The lift
+animates _from_ the cell it came from, measured at the click and handed to the
+card as three CSS custom properties, because a panel that fades in at the
+centre is a modal and a modal is the thing this is deliberately not.
+
+The raised card is the _back_ grown, never the front, which is what makes it a
+drilldown rather than a second object: the second page down the left at the
+width it had, every tab of the dossier in the room it just gained. `.dr-profile`
+carries `width: min(1140px, 96vw)` for the modal it was written for, and inline
+that made the dossier 1140 wide in an 878-pixel column while the card's
+`overflow: hidden` quietly cut the right-hand quarter off every tab — the value
+swarm, the fourth headline tile, the right column of every two-column panel. A
+panel that is silently clipped is worse than one that scrolls, because nothing
+on screen says there is more.
+
+**Seven more instruments, and one of them had to be un-drawn to work.** They
+follow the rule the front's four already do — a bar and a dial are containers,
+so an instrument earns its space by being the shape of its own data — and each
+carries its own reference mark.
+
+`PlayMix` is how much this offence runs and what it does with it, as one shape:
+the bar's **length** is plays a game against the league's fastest, the **split**
+inside it is pass against run, and the dashed notch is the rate the _situations_
+called for. A proportion with no reference is a fact about a scheme; a
+proportion beside its counterfactual is a claim about a coach, and it is the
+second one that moves a bid.
+
+`GoalLine` is scoring chances and how many of them are his — the offence's
+red-zone trips as pips on one pitch, his touches on the row beneath at the same
+scale, goal-line work marked on his own row rather than as a third number.
+Touchdowns are most of the gap between two players with the same yards and they
+are handed out rather than earned at random; both halves were in the pool and
+neither was anywhere on the board. An empty chance is an outline and not a
+darker fill, because on a near-black ground a dark fill is not a socket, it is
+nothing, and a row of nothing cannot be counted against the row above it.
+
+`DepthLadder` puts the margin in the geometry. "Depth 1 of 4" is three facts as
+a fraction and hides the one that decides the bet: a starter nine points a game
+clear of his backup and one half a point clear are the same fraction and the
+second loses the job in September. **It was drawn with a stile first** — a rail
+down the left so the rungs would read as one ladder — and with the air marker
+down the right the pair closed into a rectangle with a bar across the top. The
+instrument stopped being a ladder and became a box, which is the exact failure
+this whole file exists to avoid: a container, with the reading inside it as a
+magnitude. Left-aligned rungs of two widths are already unmistakably a ladder,
+and the empty space between them is the reading rather than a gap in a frame.
+
+`CareerArc` plots every season against **age**, not against the calendar, and
+that axis is the whole instrument. Against years it says "he was better in
+2024", which anybody can read off a table; against age it says where he is on
+the curve the backtest named as one of the three places this board is worst,
+over-projecting the thirty-and-overs by 52 to 66 points a man in every season
+measured. So past thirty is shaded and the projection is an open ring at _next_
+year's age: a hollow mark floating above a descending run of solid ones is the
+model paying for old tape, drawn as what it is.
+
+`Consensus` is how much the experts disagree with each other, against how much
+we disagree with them. Ten places clear of a panel that agrees within two is a
+different claim from ten places clear of a panel spread over sixty, and a single
+edge number cannot tell them apart. Inside the whisker, somebody at FantasyPros
+already holds our view; outside it, nobody does — and three seasons say that is
+where this board has been wrong.
+
+`CatchDepth` is the one instrument here whose axis is literally the thing it
+measures. Eleven yards of target depth with three after the catch is a downfield
+receiver whose production is the quarterback's; three with eight after it is a
+screen game that survives a change at quarterback. Both average fourteen, and
+the pool printed both as numerals in a table. Drawn on a field — line of
+scrimmage, catch point, the run beyond it — it reads with no legend.
+
+`SeasonAhead` is the eighteen weeks with the three that decide the season marked
+as the three that decide the season. A strength-of-schedule number out of ten is
+an average, and an average is exactly the wrong summary here: soft defences in
+weeks fifteen to seventeen and a brutal September beat the reverse at the
+identical mean. The bye is a full-height dashed socket rather than a stub,
+because an absence the same size as a week is counted as a week and a
+three-pixel mark among eighteen columns reads as a rendering fault.
+
+**The offence needed a scale too, and its cohort is not the players.**
+`offenceNorm` lives beside `positionNorm` because it answers the same question —
+_compared to what?_ — and is primed off the same array at the same moment. What
+differs is who is counted: an offence is a club, and every player on a roster
+carries the identical reading, so bucketing per player would weight Kansas City
+by however many Chiefs the pool happens to hold. That is a distribution of
+roster depth wearing the label of a distribution of offences. One reading per
+club, then the distribution over clubs, and a test drives thirty men from one
+fast club against six slow ones to prove which it is.
+
 **Fifteen identical pills in one wrapping row is a menu with the labels rubbed
 off.** The top bar carried a wordmark, three readouts, a progress bar taking
 `flex: 1` of the one row everything had to fit on, a clock, and eleven buttons
@@ -1850,8 +1985,11 @@ market alone, a sheet paste that says how much of itself it lost and hands the
 failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
-seconds, with expert consensus extending it past where real drafts stop;
-656 tests.
+seconds, with expert consensus extending it past where real drafts stop; and the
+card given a back and a raised state — front to scan, `↻` to turn it over onto a
+second page of seven more instruments, `⤢` to raise that page into the full
+dossier with the board receding behind it and nothing on it moving;
+694 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

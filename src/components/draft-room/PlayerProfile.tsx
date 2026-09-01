@@ -15,6 +15,7 @@ import {
 } from '@/services/playerHistory';
 import { loadSchedule } from '@/services/nflSchedule';
 import { Headshot } from './Headshot';
+import { accentFor } from '@/lib/accent';
 import { PercentileBars } from './charts/PercentileBars';
 import { GameLog } from './charts/micro';
 import { positionNorm } from '@/lib/positionNorms';
@@ -42,6 +43,16 @@ interface PlayerProfileProps {
   pinned?: boolean;
   onTogglePin?: () => void;
   onClose: () => void;
+  /**
+   * Rendered inside the board rather than over it.
+   *
+   * The same dossier either way — one set of tabs, one set of panels, one place
+   * a number is decided — with only the chrome around it differing. A second
+   * component for the expanded card would be a second answer to what a player's
+   * detail *is*, and the two would drift the first time a tab was added to one
+   * of them.
+   */
+  inline?: boolean;
 }
 
 type Tab =
@@ -123,6 +134,7 @@ export const PlayerProfile = ({
   pinned = false,
   onTogglePin,
   onClose,
+  inline = false,
 }: PlayerProfileProps) => {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [tab, setTab] = useState<Tab>('overview');
@@ -330,19 +342,13 @@ export const PlayerProfile = ({
     [cohort]
   );
 
-  return (
-    <div className="dr-modal" role="dialog" aria-modal="true" aria-label={`${player.name} profile`}>
-      <button
-        type="button"
-        className="dr-modal-scrim"
-        aria-label="Close profile"
-        onClick={onClose}
-      />
-
-      <article
-        className="dr-modal-panel dr-profile"
-        style={{ '--dr-accent': primary } as CSSProperties}
-      >
+  const body = (
+    <>
+      {/* The hero belongs to the modal. Inline, the card's own face is right
+          there down the left with the name, the club and the price on it, so a
+          second and larger copy of all three would be the panel introducing a
+          player the reader is already looking at. */}
+      {!inline && (
         <header className="dr-stage-hero">
           {logo && <img className="dr-stage-logo" src={logo} alt="" aria-hidden="true" />}
           {isDefense && logo ? (
@@ -385,797 +391,816 @@ export const PlayerProfile = ({
             ✕
           </button>
         </header>
+      )}
 
-        <div className="dr-tabs" role="tablist" aria-label="Player detail">
-          {tabs.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              role="tab"
-              aria-selected={tab === key}
-              className="dr-tab"
-              onClick={() => setTab(key)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="dr-tabs" role="tablist" aria-label="Player detail">
+        {tabs.map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            className="dr-tab"
+            onClick={() => setTab(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-        {identity?.injury?.status && (
-          <p className="dr-notice" style={{ margin: '12px 16px 0' }}>
-            Injury report: {identity.injury.status}
-            {identity.injury.detail ? ` — ${identity.injury.detail}` : ''}
-          </p>
-        )}
+      {identity?.injury?.status && (
+        <p className="dr-notice" style={{ margin: '12px 16px 0' }}>
+          Injury report: {identity.injury.status}
+          {identity.injury.detail ? ` — ${identity.injury.detail}` : ''}
+        </p>
+      )}
 
-        {tab === 'overview' && (
-          <div className="dr-tabpanel" role="tabpanel">
-            <dl className="dr-stage-tiles dr-profile-tiles">
-              <div className="dr-tile">
-                <dt>Value</dt>
-                <dd style={{ color: 'var(--dr-value)' }}>${player.estimatedValue}</dd>
-              </div>
-              <div className="dr-tile">
-                <dt>Projected</dt>
-                <dd>{player.projectedPoints}</dd>
-              </div>
-              <div className="dr-tile">
-                <dt>VORP</dt>
-                <dd>{player.valueOverReplacement}</dd>
-              </div>
-              <div className="dr-tile">
-                <dt>Bye</dt>
-                <dd>{player.byeWeek || '—'}</dd>
-              </div>
-            </dl>
+      {tab === 'overview' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          <dl className="dr-stage-tiles dr-profile-tiles">
+            <div className="dr-tile">
+              <dt>Value</dt>
+              <dd style={{ color: 'var(--dr-value)' }}>${player.estimatedValue}</dd>
+            </div>
+            <div className="dr-tile">
+              <dt>Projected</dt>
+              <dd>{player.projectedPoints}</dd>
+            </div>
+            <div className="dr-tile">
+              <dt>VORP</dt>
+              <dd>{player.valueOverReplacement}</dd>
+            </div>
+            <div className="dr-tile">
+              <dt>Bye</dt>
+              <dd>{player.byeWeek || '—'}</dd>
+            </div>
+          </dl>
 
-            <p className="dr-verdict-line">{verdict(player)}</p>
+          <p className="dr-verdict-line">{verdict(player)}</p>
 
-            <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">Likely season</h3>
-              {/* The range bar that used to sit here printed floor, projection
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">Likely season</h3>
+            {/* The range bar that used to sit here printed floor, projection
                   and ceiling; the curve directly below it printed floor,
                   projection, ceiling and the share above replacement. Two
                   instruments, one of them a strict superset, stacked — and the
                   bar was the weaker claim besides, saying "somewhere in here"
                   with every point equally likely when the numbers are one
                   standard deviation either side of a mean. */}
-              <OutcomeCurve
-                projection={player.projectedPoints}
-                floor={player.floor}
-                ceiling={player.upside}
-                replacement={replacement ?? replacementPoints ?? null}
+            <OutcomeCurve
+              projection={player.projectedPoints}
+              floor={player.floor}
+              ceiling={player.upside}
+              replacement={replacement ?? replacementPoints ?? null}
+            />
+          </section>
+
+          {cohort.length > 4 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Where he sits at {player.position}</h3>
+              <PositionSwarm
+                points={swarmOf((p) => p.projectedPoints)}
+                highlightId={player.id}
+                label="Projected points"
+                position={player.position}
+                reference={
+                  replacement != null ? { value: replacement, label: 'replacement level' } : null
+                }
+              />
+              <PositionSwarm
+                points={swarmOf((p) => p.estimatedValue)}
+                highlightId={player.id}
+                label="Auction value"
+                position={player.position}
+                format={(value) => `$${Math.round(value)}`}
               />
             </section>
+          )}
 
-            {cohort.length > 4 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Where he sits at {player.position}</h3>
-                <PositionSwarm
-                  points={swarmOf((p) => p.projectedPoints)}
-                  highlightId={player.id}
-                  label="Projected points"
-                  position={player.position}
-                  reference={
-                    replacement != null ? { value: replacement, label: 'replacement level' } : null
-                  }
-                />
-                <PositionSwarm
-                  points={swarmOf((p) => p.estimatedValue)}
-                  highlightId={player.id}
-                  label="Auction value"
-                  position={player.position}
-                  format={(value) => `$${Math.round(value)}`}
-                />
-              </section>
-            )}
-
-            {percentileRows.length > 0 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Against the position</h3>
-                <PercentileBars rows={percentileRows} position={player.position} />
-              </section>
-            )}
-
+          {percentileRows.length > 0 && (
             <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">Risk</h3>
-              <dl className="dr-facts">
-                <div>
-                  <dt>Injury risk</dt>
-                  <dd>{player.injuryRisk}</dd>
-                </div>
-                <div>
-                  <dt>Age risk</dt>
-                  <dd>{player.ageRisk}</dd>
-                </div>
-                <div>
-                  <dt>Role</dt>
-                  <dd>{player.competitionLevel.replace(/_/g, ' ').toLowerCase()}</dd>
-                </div>
-                <div>
-                  <dt>Trend</dt>
-                  <dd>{player.recentTrends.toLowerCase()}</dd>
-                </div>
-              </dl>
+              <h3 className="dr-eyebrow">Against the position</h3>
+              <PercentileBars rows={percentileRows} position={player.position} />
             </section>
-          </div>
-        )}
+          )}
 
-        {tab === 'production' && (
-          <div className="dr-tabpanel" role="tabpanel">
-            {history === null && <p className="dr-empty">Loading three seasons…</p>}
-            {history?.length === 0 && (
-              <p className="dr-empty">
-                No regular-season tape in the last three years. The projection comes from what
-                players drafted in the same round have historically produced.
-              </p>
-            )}
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">Risk</h3>
+            <dl className="dr-facts">
+              <div>
+                <dt>Injury risk</dt>
+                <dd>{player.injuryRisk}</dd>
+              </div>
+              <div>
+                <dt>Age risk</dt>
+                <dd>{player.ageRisk}</dd>
+              </div>
+              <div>
+                <dt>Role</dt>
+                <dd>{player.competitionLevel.replace(/_/g, ' ').toLowerCase()}</dd>
+              </div>
+              <div>
+                <dt>Trend</dt>
+                <dd>{player.recentTrends.toLowerCase()}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      )}
 
-            {latest && latest.weekly.length > 1 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">{latest.season} season, game by game</h3>
-                {/* The same instrument the board draws, at the size a profile
+      {tab === 'production' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          {history === null && <p className="dr-empty">Loading three seasons…</p>}
+          {history?.length === 0 && (
+            <p className="dr-empty">
+              No regular-season tape in the last three years. The projection comes from what players
+              drafted in the same round have historically produced.
+            </p>
+          )}
+
+          {latest && latest.weekly.length > 1 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">{latest.season} season, game by game</h3>
+              {/* The same instrument the board draws, at the size a profile
                     can afford. A line here and a game log there would be two
                     pictures of one season, and the line is the weaker of them:
                     it joins games that did not touch, it makes a nine-game year
                     the width of a seventeen-game one, and it has nothing to say
                     about which weeks were actually worth starting him. */}
-                <GameLog
-                  weeks={latest.weekly}
-                  replacement={(replacement ?? replacementPoints ?? 0) / 17}
-                  strongWeek={(positionNorm(player.position, 'ppg')?.top ?? 10) * 2}
-                  label={`${player.name}: points in each ${latest.season} game against replacement level`}
-                  width={480}
-                  height={64}
-                />
-                <p className="dr-footnote">
-                  One column a Sunday, empty where he did not play. The dashed rule is what a freely
-                  available {player.position} scores per game — columns above it are weeks he beat
-                  the alternative.
-                </p>
-              </section>
-            )}
+              <GameLog
+                weeks={latest.weekly}
+                replacement={(replacement ?? replacementPoints ?? 0) / 17}
+                strongWeek={(positionNorm(player.position, 'ppg')?.top ?? 10) * 2}
+                label={`${player.name}: points in each ${latest.season} game against replacement level`}
+                width={480}
+                height={64}
+              />
+              <p className="dr-footnote">
+                One column a Sunday, empty where he did not play. The dashed rule is what a freely
+                available {player.position} scores per game — columns above it are weeks he beat the
+                alternative.
+              </p>
+            </section>
+          )}
 
-            {history && history.length > 1 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Season on season</h3>
-                <SeasonMultiples seasons={history} />
-              </section>
-            )}
+          {history && history.length > 1 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Season on season</h3>
+              <SeasonMultiples seasons={history} />
+            </section>
+          )}
 
-            {history && history.length > 0 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Totals</h3>
-                <div className="dr-table-wrap">
-                  <table className="dr-table dr-table-compact">
-                    <thead>
-                      <tr>
-                        <th scope="col">Season</th>
-                        <th scope="col" className="is-numeric">
-                          Tm
+          {history && history.length > 0 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Totals</h3>
+              <div className="dr-table-wrap">
+                <table className="dr-table dr-table-compact">
+                  <thead>
+                    <tr>
+                      <th scope="col">Season</th>
+                      <th scope="col" className="is-numeric">
+                        Tm
+                      </th>
+                      <th scope="col" className="is-numeric">
+                        G
+                      </th>
+                      <th scope="col" className="is-numeric">
+                        PPG
+                      </th>
+                      <th scope="col" className="is-numeric">
+                        Points
+                      </th>
+                      {columns.map(([label]) => (
+                        <th key={label} scope="col" className="is-numeric">
+                          {label}
                         </th>
-                        <th scope="col" className="is-numeric">
-                          G
-                        </th>
-                        <th scope="col" className="is-numeric">
-                          PPG
-                        </th>
-                        <th scope="col" className="is-numeric">
-                          Points
-                        </th>
-                        {columns.map(([label]) => (
-                          <th key={label} scope="col" className="is-numeric">
-                            {label}
-                          </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map((season) => (
+                      <tr key={season.season}>
+                        <td className="dr-num">{season.season}</td>
+                        <td className="is-numeric">{season.team}</td>
+                        <td className="is-numeric dr-num">{season.games}</td>
+                        <td className="is-numeric dr-num" style={{ color: 'var(--dr-ink)' }}>
+                          {season.pointsPerGame}
+                        </td>
+                        <td className="is-numeric dr-num">{Math.round(season.pprPoints)}</td>
+                        {columns.map(([label, read]) => (
+                          <td key={label} className="is-numeric dr-num">
+                            {read(season)}
+                          </td>
                         ))}
                       </tr>
-                    </thead>
-                    <tbody>
-                      {history.map((season) => (
-                        <tr key={season.season}>
-                          <td className="dr-num">{season.season}</td>
-                          <td className="is-numeric">{season.team}</td>
-                          <td className="is-numeric dr-num">{season.games}</td>
-                          <td className="is-numeric dr-num" style={{ color: 'var(--dr-ink)' }}>
-                            {season.pointsPerGame}
-                          </td>
-                          <td className="is-numeric dr-num">{Math.round(season.pprPoints)}</td>
-                          {columns.map(([label, read]) => (
-                            <td key={label} className="is-numeric dr-num">
-                              {read(season)}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            )}
-          </div>
-        )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+        </div>
+      )}
 
-        {tab === 'usage' && (
-          <div className="dr-tabpanel" role="tabpanel">
+      {tab === 'usage' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">How he is used</h3>
+            <dl className="dr-facts">
+              <div>
+                <dt>Snap share</dt>
+                <dd>
+                  {player.snapPercentage != null ? `${Math.round(player.snapPercentage)}%` : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt>Target share</dt>
+                <dd>{player.usage?.targetShare != null ? `${player.usage.targetShare}%` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Carry share</dt>
+                <dd>{player.usage?.carryShare != null ? `${player.usage.carryShare}%` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Games played</dt>
+                <dd>{player.usage?.games ?? player.lastSeasonGames ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Role</dt>
+                <dd>{player.competitionLevel.replace(/_/g, ' ').toLowerCase()}</dd>
+              </div>
+            </dl>
+          </section>
+
+          {player.usage && (
             <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">How he is used</h3>
+              <h3 className="dr-eyebrow">Opportunity, {player.usage.season}</h3>
               <dl className="dr-facts">
                 <div>
-                  <dt>Snap share</dt>
+                  <dt title="Weighted opportunity: targets and air yards in the proportion that predicts receiving points">
+                    WOPR
+                  </dt>
+                  <dd>{player.usage.wopr ?? '—'}</dd>
+                </div>
+                <div>
+                  <dt title="Average depth of target">aDOT</dt>
+                  <dd>{player.usage.adot != null ? `${player.usage.adot} yd` : '—'}</dd>
+                </div>
+                <div>
+                  <dt>Air yards share</dt>
                   <dd>
-                    {player.snapPercentage != null ? `${Math.round(player.snapPercentage)}%` : '—'}
+                    {player.usage.airYardsShare != null ? `${player.usage.airYardsShare}%` : '—'}
                   </dd>
                 </div>
                 <div>
-                  <dt>Target share</dt>
+                  <dt>YAC per catch</dt>
                   <dd>
-                    {player.usage?.targetShare != null ? `${player.usage.targetShare}%` : '—'}
+                    {player.usage.yacPerReception != null
+                      ? `${player.usage.yacPerReception} yd`
+                      : '—'}
                   </dd>
                 </div>
                 <div>
-                  <dt>Carry share</dt>
-                  <dd>{player.usage?.carryShare != null ? `${player.usage.carryShare}%` : '—'}</dd>
+                  <dt>Touches per game</dt>
+                  <dd>{player.usage.touchesPerGame ?? '—'}</dd>
                 </div>
                 <div>
-                  <dt>Games played</dt>
-                  <dd>{player.usage?.games ?? player.lastSeasonGames ?? '—'}</dd>
+                  <dt>First downs per game</dt>
+                  <dd>{player.usage.firstDownsPerGame ?? '—'}</dd>
                 </div>
                 <div>
-                  <dt>Role</dt>
-                  <dd>{player.competitionLevel.replace(/_/g, ' ').toLowerCase()}</dd>
+                  <dt title="Expected points added per touch">EPA per touch</dt>
+                  <dd>{player.usage.epaPerTouch ?? '—'}</dd>
+                </div>
+                <div>
+                  <dt>Red-zone touches</dt>
+                  <dd>
+                    {player.usage.redZoneTouches}
+                    {player.usage.redZoneShare != null && (
+                      <span className="dr-facts-note"> · {player.usage.redZoneShare}% of team</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt title="Inside the five-yard line, where touchdowns are decided">
+                    Goal-line touches
+                  </dt>
+                  <dd>{player.usage.goalLineTouches}</dd>
                 </div>
               </dl>
+              <p className="dr-footnote">
+                Shares are of his own team's volume. Red-zone and goal-line counts come from the
+                play-by-play, so they are touches that actually happened inside the twenty and the
+                five.
+              </p>
             </section>
+          )}
 
-            {player.usage && (
+          {cohort.length > 4 && player.usage?.redZoneTouches != null && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Red-zone work across {player.position}s</h3>
+              <PositionSwarm
+                points={swarmOf((p) => p.usage?.redZoneTouches)}
+                highlightId={player.id}
+                label="Red-zone touches"
+                position={player.position}
+              />
+            </section>
+          )}
+
+          {opportunityScatter.length > 6 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Volume against efficiency</h3>
+              <QuadrantScatter
+                points={opportunityScatter}
+                xLabel="Touches per game"
+                yLabel="EPA per touch"
+                quadrants={['Feature back', 'Volume, little else', 'Fringe', 'Efficient, starved']}
+                highlightId={player.id}
+                formatX={(value) => value.toFixed(1)}
+                formatY={(value) => value.toFixed(3)}
+              />
+              <p className="dr-footnote">
+                The top-right corner is a player who gets the ball a lot and does something with it.
+                The top-left is the one to watch: efficient on a role that could grow.
+              </p>
+            </section>
+          )}
+
+          {latest && (latest.airYards > 0 || latest.yardsAfterCatch > 0) && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Where the yards come from</h3>
+              <div className="dr-split">
+                <span
+                  className="dr-split-part"
+                  style={{
+                    width: `${(latest.airYards / Math.max(1, latest.airYards + latest.yardsAfterCatch)) * 100}%`,
+                  }}
+                >
+                  <em>Air</em>
+                  <strong className="dr-num">{latest.airYards}</strong>
+                </span>
+                <span className="dr-split-part is-secondary">
+                  <em>After catch</em>
+                  <strong className="dr-num">{latest.yardsAfterCatch}</strong>
+                </span>
+              </div>
+              <p className="dr-footnote">
+                Air yards are earned before the ball arrives and depend on how a team uses him;
+                yards after the catch are his own.
+              </p>
+            </section>
+          )}
+
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">Background</h3>
+            <dl className="dr-facts">
+              <div>
+                <dt>Age</dt>
+                <dd>{identity?.age ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Experience</dt>
+                <dd>{identity?.experience != null ? `${identity.experience} yr` : '—'}</dd>
+              </div>
+              <div>
+                <dt>College</dt>
+                <dd>{identity?.college ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Games missed</dt>
+                <dd>
+                  {player.injuryRisk === 'LOW' ? 'few or none' : player.injuryRisk.toLowerCase()}
+                </dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      )}
+
+      {tab === 'context' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          {player.teamContext ? (
+            <>
               <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Opportunity, {player.usage.season}</h3>
+                <h3 className="dr-eyebrow">The {team} offence, 2025</h3>
                 <dl className="dr-facts">
                   <div>
-                    <dt title="Weighted opportunity: targets and air yards in the proportion that predicts receiving points">
-                      WOPR
+                    <dt>Plays per game</dt>
+                    <dd>{player.teamContext.playsPerGame}</dd>
+                  </div>
+                  <div>
+                    <dt title="Seconds between snaps inside a drive — lower is faster">
+                      Seconds per play
                     </dt>
-                    <dd>{player.usage.wopr ?? '—'}</dd>
+                    <dd>{player.teamContext.secondsPerPlay ?? '—'}</dd>
                   </div>
                   <div>
-                    <dt title="Average depth of target">aDOT</dt>
-                    <dd>{player.usage.adot != null ? `${player.usage.adot} yd` : '—'}</dd>
-                  </div>
-                  <div>
-                    <dt>Air yards share</dt>
+                    <dt title="Pass rate with the game within a score, through three quarters">
+                      Neutral pass rate
+                    </dt>
                     <dd>
-                      {player.usage.airYardsShare != null ? `${player.usage.airYardsShare}%` : '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>YAC per catch</dt>
-                    <dd>
-                      {player.usage.yacPerReception != null
-                        ? `${player.usage.yacPerReception} yd`
+                      {player.teamContext.neutralPassRate != null
+                        ? `${player.teamContext.neutralPassRate}%`
                         : '—'}
                     </dd>
                   </div>
                   <div>
-                    <dt>Touches per game</dt>
-                    <dd>{player.usage.touchesPerGame ?? '—'}</dd>
-                  </div>
-                  <div>
-                    <dt>First downs per game</dt>
-                    <dd>{player.usage.firstDownsPerGame ?? '—'}</dd>
-                  </div>
-                  <div>
-                    <dt title="Expected points added per touch">EPA per touch</dt>
-                    <dd>{player.usage.epaPerTouch ?? '—'}</dd>
-                  </div>
-                  <div>
-                    <dt>Red-zone touches</dt>
+                    <dt title="How much more they throw than the situations call for">
+                      Pass rate over expected
+                    </dt>
                     <dd>
-                      {player.usage.redZoneTouches}
-                      {player.usage.redZoneShare != null && (
-                        <span className="dr-facts-note">
-                          {' '}
-                          · {player.usage.redZoneShare}% of team
-                        </span>
-                      )}
+                      {player.teamContext.passRateOverExpected != null
+                        ? `${player.teamContext.passRateOverExpected > 0 ? '+' : ''}${player.teamContext.passRateOverExpected}%`
+                        : '—'}
                     </dd>
                   </div>
                   <div>
-                    <dt title="Inside the five-yard line, where touchdowns are decided">
-                      Goal-line touches
+                    <dt title="Sacks per dropback — the cleanest free read on pass protection">
+                      Sack rate allowed
                     </dt>
-                    <dd>{player.usage.goalLineTouches}</dd>
+                    <dd>
+                      {player.teamContext.sackRateAllowed != null
+                        ? `${player.teamContext.sackRateAllowed}%`
+                        : '—'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Red-zone trips per game</dt>
+                    <dd>{player.teamContext.redZoneTripsPerGame}</dd>
+                  </div>
+                  <div>
+                    <dt title="Expected points added per offensive play">EPA per play</dt>
+                    <dd>{player.teamContext.epaPerPlay ?? '—'}</dd>
                   </div>
                 </dl>
                 <p className="dr-footnote">
-                  Shares are of his own team's volume. Red-zone and goal-line counts come from the
-                  play-by-play, so they are touches that actually happened inside the twenty and the
-                  five.
+                  Opportunity is granted by a team before it is earned by a player: the same target
+                  share is worth more on an offence running 68 plays a game than 58. Everything here
+                  is computed from the 2025 play-by-play.
                 </p>
               </section>
-            )}
 
-            {cohort.length > 4 && player.usage?.redZoneTouches != null && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Red-zone work across {player.position}s</h3>
-                <PositionSwarm
-                  points={swarmOf((p) => p.usage?.redZoneTouches)}
-                  highlightId={player.id}
-                  label="Red-zone touches"
-                  position={player.position}
-                />
-              </section>
-            )}
-
-            {opportunityScatter.length > 6 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Volume against efficiency</h3>
-                <QuadrantScatter
-                  points={opportunityScatter}
-                  xLabel="Touches per game"
-                  yLabel="EPA per touch"
-                  quadrants={[
-                    'Feature back',
-                    'Volume, little else',
-                    'Fringe',
-                    'Efficient, starved',
-                  ]}
-                  highlightId={player.id}
-                  formatX={(value) => value.toFixed(1)}
-                  formatY={(value) => value.toFixed(3)}
-                />
-                <p className="dr-footnote">
-                  The top-right corner is a player who gets the ball a lot and does something with
-                  it. The top-left is the one to watch: efficient on a role that could grow.
-                </p>
-              </section>
-            )}
-
-            {latest && (latest.airYards > 0 || latest.yardsAfterCatch > 0) && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Where the yards come from</h3>
-                <div className="dr-split">
-                  <span
-                    className="dr-split-part"
-                    style={{
-                      width: `${(latest.airYards / Math.max(1, latest.airYards + latest.yardsAfterCatch)) * 100}%`,
-                    }}
-                  >
-                    <em>Air</em>
-                    <strong className="dr-num">{latest.airYards}</strong>
-                  </span>
-                  <span className="dr-split-part is-secondary">
-                    <em>After catch</em>
-                    <strong className="dr-num">{latest.yardsAfterCatch}</strong>
-                  </span>
-                </div>
-                <p className="dr-footnote">
-                  Air yards are earned before the ball arrives and depend on how a team uses him;
-                  yards after the catch are his own.
-                </p>
-              </section>
-            )}
-
-            <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">Background</h3>
-              <dl className="dr-facts">
-                <div>
-                  <dt>Age</dt>
-                  <dd>{identity?.age ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>Experience</dt>
-                  <dd>{identity?.experience != null ? `${identity.experience} yr` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>College</dt>
-                  <dd>{identity?.college ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>Games missed</dt>
-                  <dd>
-                    {player.injuryRisk === 'LOW' ? 'few or none' : player.injuryRisk.toLowerCase()}
-                  </dd>
-                </div>
-              </dl>
-            </section>
-          </div>
-        )}
-
-        {tab === 'context' && (
-          <div className="dr-tabpanel" role="tabpanel">
-            {player.teamContext ? (
-              <>
+              {player.competition && (
                 <section className="dr-modal-section">
-                  <h3 className="dr-eyebrow">The {team} offence, 2025</h3>
+                  <h3 className="dr-eyebrow">Competition for the job</h3>
                   <dl className="dr-facts">
                     <div>
-                      <dt>Plays per game</dt>
-                      <dd>{player.teamContext.playsPerGame}</dd>
-                    </div>
-                    <div>
-                      <dt title="Seconds between snaps inside a drive — lower is faster">
-                        Seconds per play
-                      </dt>
-                      <dd>{player.teamContext.secondsPerPlay ?? '—'}</dd>
-                    </div>
-                    <div>
-                      <dt title="Pass rate with the game within a score, through three quarters">
-                        Neutral pass rate
-                      </dt>
+                      <dt>Depth chart</dt>
                       <dd>
-                        {player.teamContext.neutralPassRate != null
-                          ? `${player.teamContext.neutralPassRate}%`
-                          : '—'}
+                        {player.competition.depth} of {player.competition.roomSize} at{' '}
+                        {player.position}
                       </dd>
                     </div>
                     <div>
-                      <dt title="How much more they throw than the situations call for">
-                        Pass rate over expected
+                      <dt>Next man up</dt>
+                      <dd>{player.competition.nextUp ?? '—'}</dd>
+                    </div>
+                    <div>
+                      <dt title="Points per game between him and the player behind him">
+                        Clear by
                       </dt>
                       <dd>
-                        {player.teamContext.passRateOverExpected != null
-                          ? `${player.teamContext.passRateOverExpected > 0 ? '+' : ''}${player.teamContext.passRateOverExpected}%`
+                        {player.competition.aheadBy != null
+                          ? `${player.competition.aheadBy} ppg`
                           : '—'}
                       </dd>
                     </div>
-                    <div>
-                      <dt title="Sacks per dropback — the cleanest free read on pass protection">
-                        Sack rate allowed
-                      </dt>
-                      <dd>
-                        {player.teamContext.sackRateAllowed != null
-                          ? `${player.teamContext.sackRateAllowed}%`
-                          : '—'}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Red-zone trips per game</dt>
-                      <dd>{player.teamContext.redZoneTripsPerGame}</dd>
-                    </div>
-                    <div>
-                      <dt title="Expected points added per offensive play">EPA per play</dt>
-                      <dd>{player.teamContext.epaPerPlay ?? '—'}</dd>
-                    </div>
+                    {player.competition.starterAhead && (
+                      <div>
+                        <dt>Behind</dt>
+                        <dd>
+                          {player.competition.starterAhead}
+                          {player.competition.behindBy != null && (
+                            <span className="dr-facts-note">
+                              {' '}
+                              · by {player.competition.behindBy} ppg
+                            </span>
+                          )}
+                        </dd>
+                      </div>
+                    )}
                   </dl>
                   <p className="dr-footnote">
-                    Opportunity is granted by a team before it is earned by a player: the same
-                    target share is worth more on an offence running 68 plays a game than 58.
-                    Everything here is computed from the 2025 play-by-play.
+                    Ordered by our own projection among his listed teammates, so a narrow gap is a
+                    job that could change hands.
                   </p>
                 </section>
+              )}
+            </>
+          ) : (
+            <p className="dr-empty">No play-by-play for this team's 2025 offence.</p>
+          )}
+        </div>
+      )}
 
-                {player.competition && (
-                  <section className="dr-modal-section">
-                    <h3 className="dr-eyebrow">Competition for the job</h3>
-                    <dl className="dr-facts">
-                      <div>
-                        <dt>Depth chart</dt>
-                        <dd>
-                          {player.competition.depth} of {player.competition.roomSize} at{' '}
-                          {player.position}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Next man up</dt>
-                        <dd>{player.competition.nextUp ?? '—'}</dd>
-                      </div>
-                      <div>
-                        <dt title="Points per game between him and the player behind him">
-                          Clear by
-                        </dt>
-                        <dd>
-                          {player.competition.aheadBy != null
-                            ? `${player.competition.aheadBy} ppg`
-                            : '—'}
-                        </dd>
-                      </div>
-                      {player.competition.starterAhead && (
-                        <div>
-                          <dt>Behind</dt>
-                          <dd>
-                            {player.competition.starterAhead}
-                            {player.competition.behindBy != null && (
-                              <span className="dr-facts-note">
-                                {' '}
-                                · by {player.competition.behindBy} ppg
-                              </span>
-                            )}
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
-                    <p className="dr-footnote">
-                      Ordered by our own projection among his listed teammates, so a narrow gap is a
-                      job that could change hands.
-                    </p>
-                  </section>
-                )}
-              </>
-            ) : (
-              <p className="dr-empty">No play-by-play for this team's 2025 offence.</p>
-            )}
-          </div>
-        )}
+      {tab === 'career' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          {career === null && <p className="dr-empty">Loading the career…</p>}
+          {career?.length === 0 && (
+            <p className="dr-empty">
+              No regular-season games yet — the projection is drawn from draft capital and what
+              players picked in the same round have produced.
+            </p>
+          )}
 
-        {tab === 'career' && (
-          <div className="dr-tabpanel" role="tabpanel">
-            {career === null && <p className="dr-empty">Loading the career…</p>}
-            {career?.length === 0 && (
-              <p className="dr-empty">
-                No regular-season games yet — the projection is drawn from draft capital and what
-                players picked in the same round have produced.
-              </p>
-            )}
-
-            {career && career.length > 1 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">
-                  {career[0].season}–{career[career.length - 1].season}
-                </h3>
-                <CareerArc seasons={career} missed={player.durability?.seasons} />
-              </section>
-            )}
-
-            {player.durability && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Durability</h3>
-                <dl className="dr-facts">
-                  <div>
-                    <dt>Games missed, three seasons</dt>
-                    <dd>{player.durability.totalMissed}</dd>
-                  </div>
-                  {player.durability.seasons.map((row) => (
-                    <div key={row.season}>
-                      <dt>{row.season}</dt>
-                      <dd>{row.missed === 0 ? 'none' : `${row.missed} missed`}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {player.durability.reported.length > 0 && (
-                  <>
-                    <p className="dr-facts-list">
-                      Treated for{' '}
-                      {player.durability.reported
-                        .map((row) => `${row.part.toLowerCase()} (${row.weeks} weeks listed)`)
-                        .join(', ')}
-                      .
-                    </p>
-                    <p className="dr-footnote">
-                      Weeks on the injury report, which is not the same as games missed — a player
-                      can be listed all season and start every game.
-                    </p>
-                  </>
-                )}
-              </section>
-            )}
-
+          {career && career.length > 1 && (
             <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">Background</h3>
+              <h3 className="dr-eyebrow">
+                {career[0].season}–{career[career.length - 1].season}
+              </h3>
+              <CareerArc seasons={career} missed={player.durability?.seasons} />
+            </section>
+          )}
+
+          {player.durability && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Durability</h3>
               <dl className="dr-facts">
                 <div>
-                  <dt>Age</dt>
-                  <dd>{identity?.age ?? player.age ?? '—'}</dd>
+                  <dt>Games missed, three seasons</dt>
+                  <dd>{player.durability.totalMissed}</dd>
                 </div>
-                <div>
-                  <dt>Experience</dt>
-                  <dd>{identity?.experience != null ? `${identity.experience} yr` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>College</dt>
-                  <dd>{identity?.college ?? '—'}</dd>
-                </div>
-                {player.draftCapital && (
-                  <div>
-                    <dt>Drafted</dt>
-                    <dd>
-                      {player.draftCapital.year} · round {player.draftCapital.round}, pick{' '}
-                      {player.draftCapital.pick}
-                    </dd>
+                {player.durability.seasons.map((row) => (
+                  <div key={row.season}>
+                    <dt>{row.season}</dt>
+                    <dd>{row.missed === 0 ? 'none' : `${row.missed} missed`}</dd>
                   </div>
-                )}
-                {player.breakoutSeason && (
-                  <div>
-                    <dt title="First season averaging 12 points a game over at least eight games">
-                      Broke out
-                    </dt>
-                    <dd>{player.breakoutSeason}</dd>
-                  </div>
-                )}
+                ))}
               </dl>
+              {player.durability.reported.length > 0 && (
+                <>
+                  <p className="dr-facts-list">
+                    Treated for{' '}
+                    {player.durability.reported
+                      .map((row) => `${row.part.toLowerCase()} (${row.weeks} weeks listed)`)
+                      .join(', ')}
+                    .
+                  </p>
+                  <p className="dr-footnote">
+                    Weeks on the injury report, which is not the same as games missed — a player can
+                    be listed all season and start every game.
+                  </p>
+                </>
+              )}
             </section>
-          </div>
-        )}
+          )}
 
-        {tab === 'schedule' && (
-          <div className="dr-tabpanel" role="tabpanel">
-            {schedule === null && <p className="dr-empty">Loading the season…</p>}
-            {schedule && schedule.length === 0 && (
-              <p className="dr-empty">No schedule published yet.</p>
-            )}
-            {schedule && schedule.length > 0 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">{team} season</h3>
-                <ScheduleStrip games={schedule} byeWeek={player.byeWeek ?? null} />
-              </section>
-            )}
-          </div>
-        )}
-
-        {tab === 'defense' && (
-          <div className="dr-tabpanel" role="tabpanel">
-            <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">2025 defensive production</h3>
-              <dl className="dr-facts">
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">Background</h3>
+            <dl className="dr-facts">
+              <div>
+                <dt>Age</dt>
+                <dd>{identity?.age ?? player.age ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Experience</dt>
+                <dd>{identity?.experience != null ? `${identity.experience} yr` : '—'}</dd>
+              </div>
+              <div>
+                <dt>College</dt>
+                <dd>{identity?.college ?? '—'}</dd>
+              </div>
+              {player.draftCapital && (
                 <div>
-                  <dt>Sacks</dt>
-                  <dd>{player.defense?.sacks ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>Interceptions</dt>
-                  <dd>{player.defense?.interceptions ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>Fumbles recovered</dt>
-                  <dd>{player.defense?.fumbleRecoveries ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>Touchdowns</dt>
-                  <dd>{player.defense?.touchdowns ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>Points allowed / game</dt>
-                  <dd>{player.defense?.pointsAllowedPerGame ?? '—'}</dd>
-                </div>
-              </dl>
-            </section>
-
-            <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">Defensive personnel</h3>
-              {defense === null && <p className="dr-empty">Loading the unit…</p>}
-              {defense && (
-                <div className="dr-units">
-                  {(
-                    [
-                      ['Line', defense.dl],
-                      ['Linebackers', defense.lb],
-                      ['Secondary', defense.db],
-                    ] as const
-                  ).map(([label, unit]) => (
-                    <div className="dr-unit" key={label}>
-                      <h4 className="dr-eyebrow">{label}</h4>
-                      <ul>
-                        {unit.map((person) => (
-                          <li key={person.espnId}>
-                            <span className="dr-unit-pos dr-num">{person.position}</span>
-                            {person.name}
-                            {person.jersey && (
-                              <span className="dr-unit-jersey dr-num">#{person.jersey}</span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                  <dt>Drafted</dt>
+                  <dd>
+                    {player.draftCapital.year} · round {player.draftCapital.round}, pick{' '}
+                    {player.draftCapital.pick}
+                  </dd>
                 </div>
               )}
-              <p className="dr-footnote">
-                Personnel come from the current ESPN roster, ordered by jersey number — which stands
-                in for a depth chart the feed does not publish.
-              </p>
+              {player.breakoutSeason && (
+                <div>
+                  <dt title="First season averaging 12 points a game over at least eight games">
+                    Broke out
+                  </dt>
+                  <dd>{player.breakoutSeason}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        </div>
+      )}
+
+      {tab === 'schedule' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          {schedule === null && <p className="dr-empty">Loading the season…</p>}
+          {schedule && schedule.length === 0 && (
+            <p className="dr-empty">No schedule published yet.</p>
+          )}
+          {schedule && schedule.length > 0 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">{team} season</h3>
+              <ScheduleStrip games={schedule} byeWeek={player.byeWeek ?? null} />
             </section>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        {tab === 'value' && (
-          <div className="dr-tabpanel" role="tabpanel">
-            {analytics && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">What to bid</h3>
-                <BidLadder
-                  openingBid={Math.round(analytics.openingBid)}
-                  targetBid={Math.round(analytics.targetBid)}
-                  maxBid={Math.round(analytics.maxBid)}
-                  walkAway={Math.round(analytics.walkAwayPoint)}
-                  currentBid={currentBid}
-                />
-              </section>
+      {tab === 'defense' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">2025 defensive production</h3>
+            <dl className="dr-facts">
+              <div>
+                <dt>Sacks</dt>
+                <dd>{player.defense?.sacks ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Interceptions</dt>
+                <dd>{player.defense?.interceptions ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Fumbles recovered</dt>
+                <dd>{player.defense?.fumbleRecoveries ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Touchdowns</dt>
+                <dd>{player.defense?.touchdowns ?? '—'}</dd>
+              </div>
+              <div>
+                <dt>Points allowed / game</dt>
+                <dd>{player.defense?.pointsAllowedPerGame ?? '—'}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">Defensive personnel</h3>
+            {defense === null && <p className="dr-empty">Loading the unit…</p>}
+            {defense && (
+              <div className="dr-units">
+                {(
+                  [
+                    ['Line', defense.dl],
+                    ['Linebackers', defense.lb],
+                    ['Secondary', defense.db],
+                  ] as const
+                ).map(([label, unit]) => (
+                  <div className="dr-unit" key={label}>
+                    <h4 className="dr-eyebrow">{label}</h4>
+                    <ul>
+                      {unit.map((person) => (
+                        <li key={person.espnId}>
+                          <span className="dr-unit-pos dr-num">{person.position}</span>
+                          {person.name}
+                          {person.jersey && (
+                            <span className="dr-unit-jersey dr-num">#{person.jersey}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             )}
+            <p className="dr-footnote">
+              Personnel come from the current ESPN roster, ordered by jersey number — which stands
+              in for a depth chart the feed does not publish.
+            </p>
+          </section>
+        </div>
+      )}
 
-            {player.market?.consensusRank != null &&
-              player.market.best != null &&
-              player.market.worst != null && (
-                <section className="dr-modal-section">
-                  <h3 className="dr-eyebrow">What the room thinks</h3>
-                  {/* `ourRank` is `modelRank` and not `adp`. `adp` is the
+      {tab === 'value' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          {analytics && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">What to bid</h3>
+              <BidLadder
+                openingBid={Math.round(analytics.openingBid)}
+                targetBid={Math.round(analytics.targetBid)}
+                maxBid={Math.round(analytics.maxBid)}
+                walkAway={Math.round(analytics.walkAwayPoint)}
+                currentBid={currentBid}
+              />
+            </section>
+          )}
+
+          {player.market?.consensusRank != null &&
+            player.market.best != null &&
+            player.market.worst != null && (
+              <section className="dr-modal-section">
+                <h3 className="dr-eyebrow">What the room thinks</h3>
+                {/* `ourRank` is `modelRank` and not `adp`. `adp` is the
                       rank in force, so after "Use consensus" this read "our
                       board #21" beside "consensus #14" — a gap between two
                       market signals, printed as our disagreement with the
                       room. */}
-                  <ConsensusRange
-                    consensus={player.market.consensusRank}
-                    best={player.market.best}
-                    worst={player.market.worst}
-                    ourRank={player.modelRank}
-                    spread={player.market.spread}
-                    asOf={player.market.asOf}
-                    source={player.market.source}
-                  />
-                  {player.market.ownership != null && (
-                    <p className="dr-footnote">
-                      Rostered in {player.market.ownership}% of leagues.
-                      {player.market.searchRank != null &&
-                        ` Sleeper has him the ${ordinal(player.market.searchRank)} most looked-up.`}
-                    </p>
-                  )}
-                </section>
-              )}
-
-            {priceScatter.length > 6 && (
-              <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">Our projection against where the room drafts him</h3>
-                <QuadrantScatter
-                  points={priceScatter}
-                  xLabel="Consensus rank (later →)"
-                  yLabel="Projected points"
-                  quadrants={['Ours alone', 'Rightly ignored', 'Room overrates', 'Consensus star']}
-                  highlightId={player.id}
-                  formatX={(value) => `#${Math.round(value)}`}
+                <ConsensusRange
+                  consensus={player.market.consensusRank}
+                  best={player.market.best}
+                  worst={player.market.worst}
+                  ourRank={player.modelRank}
+                  spread={player.market.spread}
+                  asOf={player.market.asOf}
+                  source={player.market.source}
                 />
-                <p className="dr-footnote">
-                  The top-right corner is the one to hunt: players we project well who the room
-                  drafts late. Faded dots are already gone. Deliberately not price against points —
-                  our dollar value is derived from the projection, so that chart is a straight line
-                  by construction.
-                </p>
+                {player.market.ownership != null && (
+                  <p className="dr-footnote">
+                    Rostered in {player.market.ownership}% of leagues.
+                    {player.market.searchRank != null &&
+                      ` Sleeper has him the ${ordinal(player.market.searchRank)} most looked-up.`}
+                  </p>
+                )}
               </section>
             )}
 
+          {priceScatter.length > 6 && (
             <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">How the price was reached</h3>
-              <dl className="dr-facts">
-                <div>
-                  <dt>List value</dt>
-                  <dd>${player.estimatedValue}</dd>
-                </div>
-                <div>
-                  <dt>Value over replacement</dt>
-                  <dd>{player.valueOverReplacement} pts</dd>
-                </div>
-                <div>
-                  <dt>Market inflation</dt>
-                  <dd>{analytics ? `${analytics.marketInflation}×` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>Position gone</dt>
-                  <dd>{analytics ? `${Math.round(analytics.positionScarcity * 100)}%` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>Your need</dt>
-                  <dd>{analytics ? `${analytics.needMultiplier}×` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>Confidence</dt>
-                  <dd>{analytics ? `${analytics.confidenceLevel}%` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>Adjusted value</dt>
-                  <dd>{money(analytics?.adjustedValue)}</dd>
-                </div>
-                <div>
-                  <dt>Tier</dt>
-                  <dd>{player.tier}</dd>
-                </div>
-              </dl>
+              <h3 className="dr-eyebrow">Our projection against where the room drafts him</h3>
+              <QuadrantScatter
+                points={priceScatter}
+                xLabel="Consensus rank (later →)"
+                yLabel="Projected points"
+                quadrants={['Ours alone', 'Rightly ignored', 'Room overrates', 'Consensus star']}
+                highlightId={player.id}
+                formatX={(value) => `#${Math.round(value)}`}
+              />
               <p className="dr-footnote">
-                List value is value over replacement turned into a share of the league's budget.
-                Inflation, scarcity and need move it as the draft runs — confidence is how much of
-                this player we have actually seen play.
+                The top-right corner is the one to hunt: players we project well who the room drafts
+                late. Faded dots are already gone. Deliberately not price against points — our
+                dollar value is derived from the projection, so that chart is a straight line by
+                construction.
               </p>
             </section>
-          </div>
-        )}
+          )}
 
-        {tab === 'research' && <ResearchPanel playerId={player.id} playerName={player.name} />}
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">How the price was reached</h3>
+            <dl className="dr-facts">
+              <div>
+                <dt>List value</dt>
+                <dd>${player.estimatedValue}</dd>
+              </div>
+              <div>
+                <dt>Value over replacement</dt>
+                <dd>{player.valueOverReplacement} pts</dd>
+              </div>
+              <div>
+                <dt>Market inflation</dt>
+                <dd>{analytics ? `${analytics.marketInflation}×` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Position gone</dt>
+                <dd>{analytics ? `${Math.round(analytics.positionScarcity * 100)}%` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Your need</dt>
+                <dd>{analytics ? `${analytics.needMultiplier}×` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Confidence</dt>
+                <dd>{analytics ? `${analytics.confidenceLevel}%` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Adjusted value</dt>
+                <dd>{money(analytics?.adjustedValue)}</dd>
+              </div>
+              <div>
+                <dt>Tier</dt>
+                <dd>{player.tier}</dd>
+              </div>
+            </dl>
+            <p className="dr-footnote">
+              List value is value over replacement turned into a share of the league's budget.
+              Inflation, scarcity and need move it as the draft runs — confidence is how much of
+              this player we have actually seen play.
+            </p>
+          </section>
+        </div>
+      )}
+
+      {tab === 'research' && <ResearchPanel playerId={player.id} playerName={player.name} />}
+    </>
+  );
+
+  const accent = {
+    '--dr-accent': primary,
+    '--dr-accent-lift': accentFor(primary),
+  } as CSSProperties;
+
+  // Expanded in place on the board: no scrim, no dialog role, and it spans the
+  // grid so the card genuinely grows rather than something appearing over it.
+  if (inline) {
+    return (
+      <div className="dr-profile dr-profile-inline" style={accent}>
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <div className="dr-modal" role="dialog" aria-modal="true" aria-label={`${player.name} profile`}>
+      <button
+        type="button"
+        className="dr-modal-scrim"
+        aria-label="Close profile"
+        onClick={onClose}
+      />
+      <article className="dr-modal-panel dr-profile" style={accent}>
+        {body}
       </article>
     </div>
   );

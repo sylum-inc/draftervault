@@ -31,7 +31,7 @@
  * lookups are: a card cannot await, and a prop would be a new reference on
  * every render and would defeat the board's memo.
  */
-export type NormMetric = 'snap' | 'carry' | 'target' | 'redZone' | 'ppg';
+export type NormMetric = 'snap' | 'carry' | 'target' | 'redZone' | 'ppg' | 'adot';
 
 export interface Norm {
   /** The middle of the position. The notch on the dial. */
@@ -51,10 +51,68 @@ export interface NormSubject {
     carryShare?: number | null;
     targetShare?: number | null;
     redZoneTouches?: number | null;
+    adot?: number | null;
   } | null;
+  /** Only ever used to reach one context per club, never thirty times. */
+  team?: string;
+  teamContext?: OffenceSubject | null;
 }
 
-const METRICS: readonly NormMetric[] = ['snap', 'carry', 'target', 'redZone', 'ppg'];
+/**
+ * The offence a player lines up in, as a scale.
+ *
+ * Lives here rather than in a file of its own because it answers the same
+ * question the position norms do — *compared to what?* — and is primed off the
+ * same array at the same moment. What differs is the cohort: an offence is a
+ * club, so there are thirty-two samples and every player on a roster carries
+ * the same one. Bucketing per player would weight Kansas City by however many
+ * Chiefs the pool happens to hold, which is a distribution of roster depth
+ * rather than of offences.
+ */
+export interface OffenceSubject {
+  playsPerGame?: number | null;
+  neutralPassRate?: number | null;
+  passRateOverExpected?: number | null;
+  sackRateAllowed?: number | null;
+  epaPerPlay?: number | null;
+  redZoneTripsPerGame?: number | null;
+}
+
+export type OffenceMetric =
+  | 'plays'
+  | 'redZoneTrips'
+  | 'passRate'
+  | 'passRateOverExpected'
+  | 'epaPerPlay'
+  | 'sackRate';
+
+const METRICS: readonly NormMetric[] = ['snap', 'carry', 'target', 'redZone', 'ppg', 'adot'];
+
+const OFFENCE_METRICS: readonly OffenceMetric[] = [
+  'plays',
+  'redZoneTrips',
+  'passRate',
+  'passRateOverExpected',
+  'epaPerPlay',
+  'sackRate',
+];
+
+const offenceReading = (context: OffenceSubject, metric: OffenceMetric): number | null => {
+  switch (metric) {
+    case 'plays':
+      return context.playsPerGame ?? null;
+    case 'redZoneTrips':
+      return context.redZoneTripsPerGame ?? null;
+    case 'passRate':
+      return context.neutralPassRate ?? null;
+    case 'passRateOverExpected':
+      return context.passRateOverExpected ?? null;
+    case 'epaPerPlay':
+      return context.epaPerPlay ?? null;
+    case 'sackRate':
+      return context.sackRateAllowed ?? null;
+  }
+};
 
 const readingOf = (player: NormSubject, metric: NormMetric): number | null => {
   switch (metric) {
@@ -68,6 +126,8 @@ const readingOf = (player: NormSubject, metric: NormMetric): number | null => {
       return player.usage?.targetShare ?? null;
     case 'redZone':
       return player.usage?.redZoneTouches ?? null;
+    case 'adot':
+      return player.usage?.adot ?? null;
   }
 };
 
@@ -146,6 +206,45 @@ const build = (
 };
 
 let cache: Map<string, Norm> | null = null;
+let offence: Map<string, Norm> | null = null;
+
+/**
+ * One reading per club, then the distribution over clubs.
+ *
+ * The `min` on the cohort is deliberately absent here: thirty-two is the whole
+ * population rather than a sample of it, so a median over however many clubs
+ * the pool actually reaches is the real median of the offences on the board.
+ */
+const buildOffence = (players: readonly NormSubject[]): Map<string, Norm> => {
+  const perClub = new Map<string, OffenceSubject>();
+  for (const player of players) {
+    if (!player.team || !player.teamContext) continue;
+    if (!perClub.has(player.team)) perClub.set(player.team, player.teamContext);
+  }
+
+  const buckets = new Map<string, number[]>();
+  for (const context of perClub.values()) {
+    for (const metric of OFFENCE_METRICS) {
+      const reading = offenceReading(context, metric);
+      if (reading == null || !Number.isFinite(reading)) continue;
+      const bucket = buckets.get(metric);
+      if (bucket) bucket.push(reading);
+      else buckets.set(metric, [reading]);
+    }
+  }
+
+  const norms = new Map<string, Norm>();
+  for (const [metric, values] of buckets) {
+    if (values.length < 6) continue;
+    values.sort((a, b) => a - b);
+    const top = quantile(values, 0.9);
+    norms.set(metric, {
+      median: quantile(values, 0.5),
+      top: top > 0 ? top : Math.max(...values, 1),
+    });
+  }
+  return norms;
+};
 
 /**
  * Fill the cache from the built board, once.
@@ -169,7 +268,11 @@ export const primeNorms = (
   if (cache && signature === next) return;
   signature = next;
   cache = build(players, rostered);
+  offence = buildOffence(players);
 };
 
 export const positionNorm = (position: string, metric: NormMetric): Norm | null =>
   cache?.get(`${position}:${metric}`) ?? null;
+
+/** The same question about the offence rather than about the player. */
+export const offenceNorm = (metric: OffenceMetric): Norm | null => offence?.get(metric) ?? null;

@@ -105,3 +105,17 @@ export const weeklySeason = (playerId: string): number | null => {
   if (!seasons?.length) return null;
   return seasons[seasons.length - 1].season;
 };
+
+/**
+ * Every season he has played, or null if the file has none.
+ *
+ * Synchronous out of the same cache and for the same reason `weeklyShape` is:
+ * the card that draws a career arc is one of sixty on a memoised board, and a
+ * promise per card is sixty repaints. Null for a rookie, which is the honest
+ * answer — an arc through one point is not an arc, and drawing one would state
+ * a trajectory nobody has observed.
+ */
+export const careerShape = (playerId: string): CareerSeason[] | null => {
+  const seasons = cache?.career[playerId];
+  return seasons && seasons.length > 0 ? seasons : null;
+};

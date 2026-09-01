@@ -45,6 +45,8 @@ import { matchesSearch, searchable } from '@/lib/playerSearch';
 import { copyTextToClipboard, saveTextFile } from '@/lib/saveFile';
 import { primeResearch, researchGeneratedAt, researchMark } from '@/services/playerResearch';
 import { primeHistory } from '@/services/playerHistory';
+import { primeSchedule } from '@/services/nflSchedule';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -233,6 +235,79 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // The research marks are read straight out of a module-level map by each
   // card, so this flag is the only thing that tells the memoised board the map
   // has arrived. It flips once, which costs exactly one re-render of the list.
+  /**
+   * The card that is turned over, and whether it has been raised.
+   *
+   * One at a time on purpose, and one state rather than two, because the two
+   * are a sequence: a card is expanded only from its own back, and closing the
+   * expansion has to land back on the card rather than on the board. Two
+   * independent flags would let the pair reach states the interaction does not
+   * have — expanded but not flipped, flipped somewhere the expansion is not.
+   *
+   * `from` is the cell the card occupied when it was raised, measured at the
+   * click, so the lift animates out of the board rather than fading in at the
+   * centre. Fading in at the centre is a modal, which is the thing this is
+   * deliberately not.
+   */
+  const [open, setOpen] = useState<{
+    id: string;
+    expanded: boolean;
+    from: { dx: number; dy: number; scale: number } | null;
+  } | null>(null);
+  const flippedId = open?.id ?? null;
+  const expandedId = open?.expanded ? open.id : null;
+
+  /**
+   * Where a card sits on the board, as the transform that would put a centred
+   * overlay back on top of it.
+   *
+   * Composed here rather than in the card, because the target is the overlay's
+   * width — a thing the room decides and the card cannot know.
+   */
+  const originOf = (rect: DOMRect | undefined) => {
+    if (!rect || typeof window === 'undefined') return null;
+    const width = Math.min(1180, window.innerWidth * 0.94);
+    return {
+      dx: rect.left + rect.width / 2 - window.innerWidth / 2,
+      dy: rect.top + rect.height / 2 - window.innerHeight / 2,
+      // Never below a tenth: a lift that starts from nothing reads as a fade,
+      // which is the one thing it must not read as.
+      scale: Math.max(0.1, rect.width / width),
+    };
+  };
+
+  const toggleFlip = useCallback((playerId: string) => {
+    setOpen((current) =>
+      current?.id === playerId ? null : { id: playerId, expanded: false, from: null }
+    );
+  }, []);
+
+  const expandCard = useCallback((playerId: string, origin?: DOMRect) => {
+    const from = originOf(origin);
+    setOpen({ id: playerId, expanded: true, from });
+  }, []);
+
+  /* Closing the expansion lands on the back of the card it came from, which is
+     where it was opened from. Two escapes to the board, and each one undoes
+     exactly the step that was taken. */
+  const closeExpanded = useCallback(() => {
+    setOpen((current) => (current ? { ...current, expanded: false, from: null } : null));
+  }, []);
+
+  /* Escape closes the raised card and lands on its back, which is where it was
+     opened from — through the shared stack, so nesting works by construction
+     and a keystroke is answered by whichever dialog registered last. */
+  useDismissOnEscape(closeExpanded, Boolean(expandedId));
+
+  /* Off the whole pool rather than off the filtered board, so a raised card
+     survives the search box being typed in behind it. Closing on a filter
+     change would throw away what somebody was reading because they reached for
+     the keyboard. */
+  const expandedPlayer = useMemo(
+    () => (expandedId ? (players.find((entry) => entry.id === expandedId) ?? null) : null),
+    [expandedId, players]
+  );
+
   const [researchReady, setResearchReady] = useState(false);
   useEffect(() => {
     let live = true;
@@ -259,6 +334,19 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     return () => {
       live = false;
     };
+  }, []);
+
+  /*
+   * And the season, which the back of a card draws the eighteen weeks from.
+   *
+   * One file for all thirty-two clubs, so priming it costs exactly what opening
+   * one profile already cost — and the flag is deliberately not wired into a
+   * re-render: nothing on the *front* of a card reads it, so a repaint on
+   * arrival would re-render sixty cards to change nothing. The back is built
+   * fresh whenever a card is turned over, which is always after this lands.
+   */
+  useEffect(() => {
+    void primeSchedule();
   }, []);
 
   // Any change to what is being shown starts the list again from the top.
@@ -1503,7 +1591,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                   adjust={adjust}
                 />
               ) : (
-                <div className="dr-grid">
+                <div className={`dr-grid${expandedId ? ' is-receded' : ''}`}>
                   {available.slice(0, cardLimit).map((player) => (
                     <PlayerCard
                       key={player.id}
@@ -1521,6 +1609,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                       gainFree={boardGains.get(player.id)?.free}
                       gainSlot={boardGains.get(player.id)?.slot}
                       pulse={pulse.get(player.position)}
+                      onFlip={toggleFlip}
+                      /* Flipped in the grid; the raised copy is rendered once,
+                         below, in its own layer. A card cannot be both, and
+                         leaving the expansion here would have it grow inside a
+                         cell — which is the layout this replaced. */
+                      flipped={flippedId === player.id && !expandedId}
+                      onExpand={expandCard}
                     />
                   ))}
                 </div>
@@ -1528,6 +1623,60 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               {available.length > cardLimit && (
                 <div ref={moreRef} className="dr-more" role="status">
                   {available.length - cardLimit} more — keep scrolling, or search for a name
+                </div>
+              )}
+
+              {/* The raised card, in its own layer above the board.
+                  Rendered here rather than inside the grid because a fixed,
+                  centred overlay cannot be a grid child without the grid
+                  reserving a cell for it — which is exactly the hole in the
+                  row that the lift exists to avoid. The board behind is
+                  dimmed and pushed back rather than replaced, so what closing
+                  restores is the board that was there, unmoved. */}
+              {expandedPlayer && (
+                <div
+                  className="dr-lift"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={`${expandedPlayer.name} dossier`}
+                  onClick={closeExpanded}
+                >
+                  <PlayerCard
+                    player={expandedPlayer}
+                    selected={selected?.id === expandedPlayer.id}
+                    watched={preferences.watchlist.includes(expandedPlayer.id)}
+                    onSelect={nominate}
+                    onToggleWatch={toggleWatch}
+                    onTogglePin={togglePin}
+                    pinned={preferences.pinned.includes(expandedPlayer.id)}
+                    researchReady={researchReady}
+                    historyReady={historyReady}
+                    gainLow={boardGains.get(expandedPlayer.id)?.low}
+                    gainHigh={boardGains.get(expandedPlayer.id)?.high}
+                    gainFree={boardGains.get(expandedPlayer.id)?.free}
+                    gainSlot={boardGains.get(expandedPlayer.id)?.slot}
+                    pulse={pulse.get(expandedPlayer.position)}
+                    onFlip={closeExpanded}
+                    flipped
+                    expanded
+                    liftFrom={open?.from ?? undefined}
+                    /* The dossier goes *into* the raised card, which is what
+                       makes this a drilldown rather than a panel that appears
+                       beside one. */
+                    detail={
+                      <PlayerProfile
+                        inline
+                        player={expandedPlayer}
+                        analytics={selected?.id === expandedPlayer.id ? analytics : null}
+                        currentBid={selected?.id === expandedPlayer.id ? Number(bid) || 0 : 0}
+                        players={players}
+                        replacement={draftService.getReplacementLevel(expandedPlayer.position)}
+                        pinned={preferences.pinned.includes(expandedPlayer.id)}
+                        onTogglePin={() => togglePin(expandedPlayer.id)}
+                        onClose={closeExpanded}
+                      />
+                    }
+                  />
                 </div>
               )}
             </>

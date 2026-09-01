@@ -808,3 +808,824 @@ export const GameLog = memo(GameLogView);
 export const Outcome = memo(OutcomeView);
 export const RoleField = memo(RoleFieldView);
 export const Seasons = memo(SeasonsView);
+
+/* ==========================================================================
+   The second page.
+
+   Everything above answers the two questions an auction asks out loud — what is
+   he, and what is happening to his position right now. These answer the ones
+   asked second and which decide as many bids: what offence feeds him, who else
+   is in his room, where his career is on its own curve, how much the experts
+   disagree with each other rather than with us, how far downfield the ball
+   actually reaches him, and what the eighteen weeks in front of him look like.
+
+   They live on the back of the card rather than the front for a reason of
+   space rather than importance: a front face with nineteen readings on it is
+   already at the limit of what can be scanned while a name is being called,
+   and a twentieth would cost the nineteen. Turning the card over is a
+   deliberate act — it happens between nominations, not during one — so the
+   back is allowed to be dense in a way the front may not be.
+
+   None of them is memoised, and that is not an oversight: exactly one card is
+   ever turned over, so there is no board of sixty to protect. The memo
+   discipline on the front exists because sixty of it mount at once.
+   ========================================================================== */
+
+interface PlayMixProps {
+  /** Snaps a game, which sets the length: a fast offence is a long bar. */
+  plays: number;
+  playsTop: number;
+  playsMedian: number;
+  /** Share of neutral downs thrown, which sets the split. */
+  passRate: number;
+  /** How far that is from what the situations called for. */
+  passRateOverExpected: number | null;
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * How much this offence runs, and what it does with it.
+ *
+ * Two facts that are one question — *is there enough of the ball here, and is
+ * it going the way he catches it* — drawn as one shape rather than two
+ * readings. The bar's **length** is plays a game against the league's fastest;
+ * the **split** inside it is pass against run. A fast pass-happy offence is a
+ * long bar mostly one colour; a slow, run-heavy one is short and mostly the
+ * other, and the two are told apart at a glance rather than by reading two
+ * numerals and doing the join.
+ *
+ * The notch on the split is the rate the *situations* called for — pass rate
+ * minus pass rate over expected. A proportion with no reference is a fact
+ * about a scheme; a proportion beside its counterfactual is a claim about a
+ * coach, and it is the second one that moves a bid: an offence throwing five
+ * points more than its game scripts demand is choosing to, and will keep
+ * choosing to.
+ *
+ * The faint rule is the median offence's length, so short and long are claims
+ * about the league rather than about the pixels available.
+ */
+const PlayMixView = ({
+  plays,
+  playsTop,
+  playsMedian,
+  passRate,
+  passRateOverExpected,
+  label,
+  width = 150,
+  height = 18,
+}: PlayMixProps) => {
+  // Never shorter than a fifth: a length is a reading and a sliver is not one.
+  const span = (value: number) => Math.max(0.2, Math.min(1, value / (playsTop || 1))) * width;
+  const bar = span(plays);
+  const median = span(playsMedian);
+  const passWidth = bar * Math.max(0, Math.min(1, passRate / 100));
+  const expected =
+    passRateOverExpected == null
+      ? null
+      : bar * Math.max(0, Math.min(1, (passRate - passRateOverExpected) / 100));
+
+  return (
+    <svg
+      className="dr-micro dr-micro-mix"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+    >
+      <rect
+        x={0}
+        y={2}
+        width={bar}
+        height={height - 6}
+        rx={2}
+        fill={TRACK}
+        stroke={FAINT}
+        strokeWidth={0.75}
+      />
+      <rect x={0} y={2} width={passWidth} height={height - 6} rx={2} fill="var(--dr-accent-lift)" />
+      {/* The seam between throwing it and handing it off. Without it the two
+          halves are one bar in two shades, which is a magnitude again. */}
+      <line
+        x1={passWidth}
+        x2={passWidth}
+        y1={2}
+        y2={height - 4}
+        stroke="var(--dr-surface)"
+        strokeWidth={1.5}
+      />
+      {/* Where the situations said the split should have been. */}
+      {expected != null && (
+        <line
+          x1={expected}
+          x2={expected}
+          y1={0}
+          y2={height - 3}
+          stroke={INK}
+          strokeWidth={1.25}
+          strokeDasharray="2.5 2"
+          opacity={0.85}
+        />
+      )}
+      {/* The median offence's length, so the bar's own length is a reading. */}
+      <path
+        d={`M${median - 2.5} ${height} L${median} ${height - 3} L${median + 2.5} ${height} Z`}
+        fill={INK}
+        opacity={0.5}
+      />
+    </svg>
+  );
+};
+
+interface GoalLineProps {
+  /** Times a game this offence reaches the red zone. */
+  trips: number;
+  tripsMedian: number;
+  /** His own touches inside it, per game. */
+  touches: number;
+  /** Of those, the ones inside the five. */
+  goalLine: number;
+  label: string;
+  pitch?: number;
+}
+
+/**
+ * Scoring chances, and how many of them are his.
+ *
+ * Touchdowns are most of the difference between two backs with the same yards,
+ * and they are not distributed by talent — they are distributed by how often a
+ * team reaches the red zone and who the coach hands it to when they get there.
+ * Both halves are in the pool and neither was anywhere on the board.
+ *
+ * Drawn as pips on one pitch rather than as two bars, because a red-zone trip
+ * is a discrete event and a drafter counts them: *they get there four times a
+ * game and he touches it twice*. The top row is the offence's chances, the
+ * bottom his touches, and the comparison is length against length on the same
+ * scale — which is the whole argument for small multiples and the thing two
+ * separately-scaled bars could not do.
+ *
+ * Goal-line touches — inside the five, where a carry is worth about six points
+ * a fifth of the time — are the solid pips at the head of his row rather than a
+ * third number. They are the same touches, worth more.
+ *
+ * The faint pip on the top row is the median offence's trips, so "this team
+ * gets there a lot" is a claim about the league.
+ */
+const GoalLineView = ({
+  trips,
+  tripsMedian,
+  touches,
+  goalLine,
+  label,
+  pitch = 11,
+}: GoalLineProps) => {
+  const SLOTS = 7;
+  const width = SLOTS * pitch;
+  const height = 20;
+  const cell = (index: number) => index * pitch;
+  const filled = (value: number) => Math.min(SLOTS, Math.round(value));
+  const tripCount = filled(trips);
+  const touchCount = filled(touches);
+  const goalCount = Math.min(touchCount, filled(goalLine));
+
+  // An empty chance is drawn as an outline rather than as a darker fill: on a
+  // near-black ground a dark fill is not a socket, it is nothing, and a row of
+  // nothing cannot be counted against the row above it.
+  const pips = (count: number, y: number, fill: string) =>
+    Array.from({ length: SLOTS }, (_, index) => (
+      <rect
+        key={`${y}:${index}`}
+        x={cell(index) + 0.5}
+        y={y}
+        width={pitch - 2.5}
+        height={7}
+        rx={1.5}
+        fill={index < count ? fill : 'none'}
+        stroke={index < count ? 'none' : FAINT}
+        strokeWidth={0.75}
+        opacity={index < count ? 0.95 : 0.6}
+      />
+    ));
+
+  return (
+    <svg
+      className="dr-micro dr-micro-goal"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+    >
+      {pips(tripCount, 0, INK)}
+      {/* The median offence, on the row it belongs to. */}
+      <line
+        x1={cell(Math.min(SLOTS, Math.round(tripsMedian)))}
+        x2={cell(Math.min(SLOTS, Math.round(tripsMedian)))}
+        y1={-1}
+        y2={8}
+        stroke={WARN}
+        strokeWidth={1}
+        opacity={0.8}
+      />
+      {pips(touchCount, 11, GOOD)}
+      {/* Inside the five, drawn over his own row rather than beside it. */}
+      {Array.from({ length: goalCount }, (_, index) => (
+        <rect
+          key={`goal:${index}`}
+          x={cell(index) + 2}
+          y={13}
+          width={pitch - 5.5}
+          height={3}
+          rx={1}
+          fill="var(--dr-bg)"
+          opacity={0.85}
+        />
+      ))}
+    </svg>
+  );
+};
+
+interface DepthLadderProps {
+  /** Where he is on the depth chart, 1 being the starter. */
+  depth: number;
+  roomSize: number;
+  /** Points a game he leads the man behind him by. */
+  aheadBy: number | null;
+  /** Points a game he trails the man ahead of him by. */
+  behindBy: number | null;
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * The room he has to get the ball out of, with the margin as the geometry.
+ *
+ * "Depth 1 of 4" is three facts printed as a fraction and it hides the one that
+ * matters: a starter nine points a game clear of his backup and a starter half
+ * a point clear are the same fraction and completely different bets. The second
+ * one loses the job in September.
+ *
+ * So the rungs are drawn at a *distance* proportional to the margin. A locked
+ * starter floats at the top of the ladder with clear air beneath him; a
+ * timeshare's rungs almost touch, which is what a timeshare looks like. The
+ * ladder is the shape of a depth chart and the spacing is the thing a number
+ * could not carry.
+ *
+ * At most four rungs are drawn — the man ahead, him, the next man, and a stub
+ * for whatever else is in the room — because past that the room is not a
+ * ranking, it is a practice squad.
+ */
+const DepthLadderView = ({
+  depth,
+  roomSize,
+  aheadBy,
+  behindBy,
+  label,
+  width = 54,
+  height = 52,
+}: DepthLadderProps) => {
+  // Eight points a game is a clear job; anything past it is the same reading.
+  const GAP_FULL = 8;
+  const pad = 3;
+  const inner = height - pad * 2;
+  const rung = 4;
+  // A margin of nothing still leaves the rungs distinguishable — they are two
+  // men, not one — and a margin past the ceiling stops growing.
+  const gapFor = (margin: number | null) =>
+    margin == null ? 0 : Math.max(0.16, Math.min(1, Math.abs(margin) / GAP_FULL));
+
+  const above = depth > 1 ? gapFor(behindBy) : 0;
+  const below = depth < roomSize ? gapFor(aheadBy) : 0;
+  const rest = roomSize - depth - 1;
+  // Share the inner height between the gaps that exist, so a lone starter is
+  // still drawn at the top of his ladder rather than in the middle of it.
+  const total = above + below + (rest > 0 ? 0.35 : 0) || 1;
+  const unit = (inner - rung * (1 + (depth > 1 ? 1 : 0) + (below > 0 ? 1 : 0))) / total;
+
+  let y = pad;
+  const rows: Array<{ y: number; me: boolean; faint: boolean }> = [];
+  if (depth > 1) {
+    rows.push({ y, me: false, faint: false });
+    y += rung + above * unit;
+  }
+  const mine = y;
+  rows.push({ y, me: true, faint: false });
+  y += rung + below * unit;
+  if (below > 0) rows.push({ y, me: false, faint: false });
+  if (rest > 0) rows.push({ y: y + rung + 0.35 * unit * 0.5, me: false, faint: true });
+
+  return (
+    <svg
+      className="dr-micro dr-micro-depth"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+    >
+      {/*
+        No stile. It was drawn first — a rail down the left, so the rungs would
+        read as one ladder rather than as stripes — and with the air marker down
+        the right the pair closed into a rectangle with a bar across the top.
+        The instrument stopped being a ladder and became a box, which is the
+        exact failure this whole file exists to avoid: a container, with the
+        reading inside it as a magnitude. Left-aligned rungs of two widths are
+        already unmistakably a ladder, and the empty space between them is the
+        reading rather than a gap in a frame.
+      */}
+      {rows.map((row, index) => (
+        <rect
+          key={index}
+          x={0}
+          y={Math.min(row.y, height - pad - rung)}
+          width={row.me ? width : width * 0.58}
+          height={rung}
+          rx={2}
+          fill={row.me ? 'var(--dr-accent-lift)' : INK}
+          opacity={row.faint ? 0.28 : row.me ? 1 : 0.5}
+        />
+      ))}
+      {/* The air beneath him, hugging the rungs rather than framing them. */}
+      {below > 0 && (
+        <line
+          x1={1.5}
+          x2={1.5}
+          y1={mine + rung + 1}
+          y2={Math.min(mine + rung + below * unit, height - pad) - 1}
+          stroke={GOOD}
+          strokeWidth={2.5}
+          opacity={0.7}
+          strokeLinecap="round"
+        />
+      )}
+    </svg>
+  );
+};
+
+interface CareerArcProps {
+  /** Every season he has played, oldest first. */
+  seasons: Array<{ season: number; age: number | null; pointsPerGame: number; games: number }>;
+  /** What the model says he will average next year, if it says anything. */
+  projected: number | null;
+  projectedAge: number | null;
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+/** Thirty and over is the model's worst age group, every season. See modelTrust. */
+const OLD_AGE = 30;
+
+/**
+ * Every season he has played, plotted against how old he was.
+ *
+ * The x-axis is **age**, not the season, and that is the whole instrument. A
+ * career drawn against calendar years says "he was better in 2024", which
+ * anybody can read off the table. Drawn against age it says where he is on the
+ * curve every player is on — and the backtest named that curve as one of the
+ * three places this board should be trusted least, over-projecting the
+ * thirty-and-overs by 52 to 66 points a man in every season it was measured.
+ *
+ * So the region past thirty is shaded, and the projection is drawn as an open
+ * ring at *next* year's age: the question a bid is really asking is whether the
+ * dot the model has put out there is on the line the career has been drawing,
+ * or above it. A hollow mark floating over a descending run of solid ones is
+ * the model paying for old tape, which is the failure it was measured making.
+ *
+ * The dots are sized by games played, because a nine-game season at a high rate
+ * is a different fact from a full one and the mean hides it.
+ */
+const CareerArcView = ({
+  seasons,
+  projected,
+  projectedAge,
+  label,
+  width = 150,
+  height = 54,
+}: CareerArcProps) => {
+  const points = seasons.filter((entry) => entry.age != null) as Array<{
+    season: number;
+    age: number;
+    pointsPerGame: number;
+    games: number;
+  }>;
+  if (points.length === 0) return null;
+
+  const pad = 4;
+  const ages = points.map((entry) => entry.age);
+  if (projectedAge != null) ages.push(projectedAge);
+  const minAge = Math.min(...ages);
+  const maxAge = Math.max(...ages);
+  const ppgTop = Math.max(...points.map((entry) => entry.pointsPerGame), projected ?? 0, 1) * 1.12;
+
+  // A one-season career has no span to draw across, so it is placed in the
+  // middle rather than divided by zero and pinned to the left edge.
+  const span = maxAge - minAge;
+  const x = (age: number) =>
+    span > 0 ? pad + ((age - minAge) / span) * (width - pad * 2) : width / 2;
+  const y = (ppg: number) => height - pad - (Math.max(0, ppg) / ppgTop) * (height - pad * 2);
+
+  const path = points
+    .map((entry, index) => `${index ? 'L' : 'M'}${x(entry.age)} ${y(entry.pointsPerGame)}`)
+    .join(' ');
+  const oldFrom = span > 0 && maxAge >= OLD_AGE ? x(Math.max(minAge, OLD_AGE)) : null;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-career"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+    >
+      {/* Where the model is documented to over-pay. */}
+      {oldFrom != null && oldFrom < width - pad && (
+        <rect
+          x={oldFrom}
+          y={0}
+          width={width - oldFrom}
+          height={height}
+          fill={WARN}
+          opacity={0.09}
+        />
+      )}
+      <line
+        x1={pad}
+        x2={width - pad}
+        y1={height - pad}
+        y2={height - pad}
+        stroke={FAINT}
+        strokeWidth={0.75}
+        opacity={0.7}
+      />
+      {points.length > 1 && (
+        <path
+          d={path}
+          fill="none"
+          stroke="var(--dr-accent-lift)"
+          strokeWidth={1.4}
+          opacity={0.85}
+        />
+      )}
+      {points.map((entry) => (
+        <circle
+          key={entry.season}
+          cx={x(entry.age)}
+          cy={y(entry.pointsPerGame)}
+          // One and a half to three and a half pixels: a nine-game season is
+          // visibly a smaller claim than a seventeen-game one.
+          r={1.5 + Math.max(0, Math.min(1, entry.games / SEASON_GAMES)) * 2}
+          fill="var(--dr-accent-lift)"
+        />
+      ))}
+      {/* The projection, drawn as what it is: not a season anybody played. */}
+      {projected != null && projectedAge != null && (
+        <>
+          {points.length > 0 && (
+            <line
+              x1={x(points[points.length - 1].age)}
+              y1={y(points[points.length - 1].pointsPerGame)}
+              x2={x(projectedAge)}
+              y2={y(projected)}
+              stroke={INK}
+              strokeWidth={1}
+              strokeDasharray="2 2"
+              opacity={0.5}
+            />
+          )}
+          <circle
+            cx={x(projectedAge)}
+            cy={y(projected)}
+            r={3}
+            fill="none"
+            stroke={INK}
+            strokeWidth={1.4}
+          />
+        </>
+      )}
+    </svg>
+  );
+};
+
+interface ConsensusProps {
+  /** The most optimistic expert's overall rank. Lower is better. */
+  best: number;
+  worst: number;
+  consensus: number;
+  /** Ours, on the same axis. */
+  ours: number;
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * How much the experts disagree with each other, against how much we disagree
+ * with them.
+ *
+ * The bargain board prints a gap between our rank and the room's and calls it
+ * an edge. The backtest says to read that gap the other way — a sharp
+ * disagreement with consensus is a reason to doubt this board — and what it
+ * cannot say from a single number is whether the room even holds an opinion.
+ * Ten places clear of a panel that agrees within two is a different claim
+ * entirely from ten places clear of a panel spread over sixty.
+ *
+ * So the whisker is the panel's own best-to-worst range, the solid tick is
+ * where they land in the middle, and our rank is a caret beneath the same axis.
+ * Inside the whisker means somebody at FantasyPros already holds our view.
+ * Outside it means nobody does, and the three seasons say that is where this
+ * board has been wrong.
+ *
+ * Ranks run left to right the way a draft board does: earlier is better and
+ * further left.
+ */
+const ConsensusView = ({
+  best,
+  worst,
+  consensus,
+  ours,
+  label,
+  width = 150,
+  height = 24,
+}: ConsensusProps) => {
+  const pad = 5;
+  const low = Math.min(best, ours);
+  const high = Math.max(worst, ours);
+  // A tenth of the span either side, so a caret sitting exactly on an endpoint
+  // is still drawn as a mark rather than as half of one against the edge.
+  const margin = Math.max(1, (high - low) * 0.12);
+  const from = low - margin;
+  const to = high + margin;
+  const x = (rank: number) => pad + ((rank - from) / (to - from || 1)) * (width - pad * 2);
+  const mid = 9;
+  const outside = ours < best || ours > worst;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-consensus"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+    >
+      <line
+        x1={x(best)}
+        x2={x(worst)}
+        y1={mid}
+        y2={mid}
+        stroke={FAINT}
+        strokeWidth={7}
+        opacity={0.95}
+      />
+      <line
+        x1={x(best)}
+        x2={x(best)}
+        y1={mid - 5}
+        y2={mid + 5}
+        stroke={INK}
+        strokeWidth={1}
+        opacity={0.6}
+      />
+      <line
+        x1={x(worst)}
+        x2={x(worst)}
+        y1={mid - 5}
+        y2={mid + 5}
+        stroke={INK}
+        strokeWidth={1}
+        opacity={0.6}
+      />
+      <line
+        x1={x(consensus)}
+        x2={x(consensus)}
+        y1={mid - 6}
+        y2={mid + 6}
+        stroke={INK}
+        strokeWidth={2}
+      />
+      {/* Ours, as a caret under the axis rather than a second tick on it — the
+          two are different claims and a reader must not have to remember which
+          mark was whose. */}
+      <path
+        d={`M${x(ours) - 4} ${height - 1} L${x(ours)} ${mid + 4} L${x(ours) + 4} ${height - 1} Z`}
+        fill={outside ? WARN : GOOD}
+      />
+    </svg>
+  );
+};
+
+interface CatchDepthProps {
+  /** Average depth of target, in yards past the line. */
+  adot: number;
+  /** Yards he adds after catching it. */
+  yac: number;
+  /** The median at his position, as the rule to clear. */
+  adotMedian: number;
+  /** Full deflection, in yards. */
+  top: number;
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * Where on the field the ball actually reaches him, and how far he takes it.
+ *
+ * Two numbers that mean nothing apart and a great deal together. Eleven yards
+ * of average target depth with three after the catch is a downfield receiver
+ * whose production is the quarterback's; three yards with eight after it is a
+ * screen game, whose production is his own and which survives a change at
+ * quarterback. Both average the same fourteen, and the pool prints both as
+ * numerals in a table.
+ *
+ * So it is drawn on a field: the line of scrimmage at the bottom, his catch
+ * point at his average depth, and the run after it continuing upfield from
+ * there. It is the one instrument here whose axis is literally the thing it
+ * measures — yards — which is why it reads without a legend.
+ *
+ * The faint rule is the median target depth at his position. Above it is a
+ * downfield job; on the line is a checkdown.
+ */
+const CatchDepthView = ({
+  adot,
+  yac,
+  adotMedian,
+  top,
+  label,
+  width = 40,
+  height = 52,
+}: CatchDepthProps) => {
+  const pad = 3;
+  const scale = (yards: number) =>
+    Math.max(0, Math.min(1, yards / (top || 1))) * (height - pad * 2);
+  const los = height - pad;
+  // Negative target depth is real — a screen is caught behind the line — and it
+  // is drawn below the line of scrimmage rather than clamped to it.
+  const catchY = los - scale(Math.max(adot, 0)) + (adot < 0 ? Math.min(pad, -adot * 2) : 0);
+  const topY = catchY - scale(yac);
+  const mid = width / 2;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-catch"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+    >
+      {/* The line of scrimmage, and the median target depth at his position. */}
+      <line x1={0} x2={width} y1={los} y2={los} stroke={INK} strokeWidth={1} opacity={0.55} />
+      <line
+        x1={0}
+        x2={width}
+        y1={los - scale(adotMedian)}
+        y2={los - scale(adotMedian)}
+        stroke={INK}
+        strokeWidth={0.75}
+        strokeDasharray="2 2"
+        opacity={0.3}
+      />
+      {/* The throw, then the run. */}
+      <line x1={mid} x2={mid} y1={los} y2={catchY} stroke={FAINT} strokeWidth={2} opacity={0.9} />
+      <circle cx={mid} cy={catchY} r={2.6} fill="var(--dr-accent-lift)" />
+      <line
+        x1={mid}
+        x2={mid}
+        y1={catchY}
+        y2={Math.max(pad, topY)}
+        stroke={GOOD}
+        strokeWidth={2}
+        opacity={0.8}
+      />
+      <path
+        d={`M${mid - 2.6} ${Math.max(pad, topY) + 3} L${mid} ${Math.max(pad, topY)} L${mid + 2.6} ${Math.max(pad, topY) + 3}`}
+        fill="none"
+        stroke={GOOD}
+        strokeWidth={1.4}
+      />
+    </svg>
+  );
+};
+
+interface SeasonAheadProps {
+  games: Array<{ week: number; opponent: string; home: boolean; difficulty: number | null }>;
+  byeWeek: number | null;
+  label: string;
+  /** The weeks a fantasy season is decided in. */
+  playoffWeeks?: number[];
+  pitch?: number;
+  height?: number;
+}
+
+const LAST_WEEK = 18;
+
+/**
+ * The eighteen weeks in front of him, with the three that decide the season
+ * marked as the three that decide the season.
+ *
+ * A strength-of-schedule number out of ten is an average, and an average over a
+ * season is exactly the wrong summary: a receiver with three of the league's
+ * softest defences in weeks fifteen to seventeen and a brutal September is a
+ * better fantasy asset than the reverse at the identical mean, because one of
+ * those stretches is played when it counts and the other is played while you
+ * are still working out your lineup.
+ *
+ * So every week is its own column, taller and warmer for a defence that gave up
+ * more, the bye is an empty socket rather than a gap the eye has to notice, and
+ * the fantasy playoff weeks carry a rule beneath them. Reading the last three
+ * columns is then a two-second act rather than a trip to a schedule tab.
+ */
+const SeasonAheadView = ({
+  games,
+  byeWeek,
+  label,
+  playoffWeeks = [15, 16, 17],
+  pitch = 8,
+  height = 26,
+}: SeasonAheadProps) => {
+  const width = LAST_WEEK * pitch;
+  const byWeek = new Map(games.map((game) => [game.week, game]));
+  const floor = 3;
+  const usable = height - 6;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-season"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+    >
+      {Array.from({ length: LAST_WEEK }, (_, index) => {
+        const week = index + 1;
+        const game = byWeek.get(week);
+        const x = index * pitch;
+        // The bye is drawn as an absence, which is what it is — a hollow socket
+        // the same size as a week, so the eye counts the season correctly.
+        if (!game || week === byeWeek) {
+          // Full height rather than a stub at the floor: an absence the same
+          // size as a week is counted as a week, and a three-pixel mark among
+          // eighteen columns reads as a rendering fault rather than as the bye.
+          return (
+            <rect
+              key={week}
+              x={x + 0.75}
+              y={height - 6 - usable}
+              width={pitch - 2}
+              height={usable}
+              rx={1}
+              fill="none"
+              stroke={FAINT}
+              strokeWidth={0.75}
+              strokeDasharray="2 2"
+              opacity={0.85}
+            />
+          );
+        }
+        // Null difficulty is a matchup nobody has scored, drawn at the floor
+        // rather than at the middle: a middling column is a claim.
+        const soft = game.difficulty ?? 0;
+        const bar = floor + soft * (usable - floor);
+        return (
+          <rect
+            key={week}
+            x={x + 0.5}
+            y={height - 6 - bar}
+            width={pitch - 1.5}
+            height={bar}
+            rx={1}
+            fill={
+              game.difficulty == null ? TRACK : soft >= 0.62 ? GOOD : soft <= 0.32 ? WARN : FAINT
+            }
+            opacity={game.difficulty == null ? 0.7 : 0.85}
+          />
+        );
+      })}
+      {/* The weeks it is actually decided in. */}
+      <line
+        x1={(playoffWeeks[0] - 1) * pitch + 0.5}
+        x2={playoffWeeks[playoffWeeks.length - 1] * pitch - 1}
+        y1={height - 2}
+        y2={height - 2}
+        stroke={INK}
+        strokeWidth={1.4}
+        opacity={0.7}
+      />
+    </svg>
+  );
+};
+
+export const PlayMix = PlayMixView;
+export const GoalLine = GoalLineView;
+export const DepthLadder = DepthLadderView;
+export const CareerArc = CareerArcView;
+export const Consensus = ConsensusView;
+export const CatchDepth = CatchDepthView;
+export const SeasonAhead = SeasonAheadView;

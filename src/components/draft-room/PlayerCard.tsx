@@ -1,22 +1,31 @@
 import { memo } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { Player, PositionPulse } from '@/services/auctionDraftService';
 import { researchMark } from '@/services/playerResearch';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
 import { accentFor, inkFor } from '@/lib/accent';
 import { Headshot } from './Headshot';
 import {
+  CareerArc,
+  CatchDepth,
+  Consensus,
+  DepthLadder,
   GameLog,
+  GoalLine,
   MoneyBite,
   Outcome,
+  PlayMix,
   RoleField,
   RunTape,
   Seasons,
+  SeasonAhead,
   Shelf,
   SlotFit,
 } from './charts/micro';
-import { weeklySeason, weeklyShape } from '@/services/playerHistory';
-import { positionNorm, type NormMetric } from '@/lib/positionNorms';
+import { careerShape, weeklySeason, weeklyShape } from '@/services/playerHistory';
+import { teamSchedule } from '@/services/nflSchedule';
+import { offenceNorm, positionNorm, type NormMetric } from '@/lib/positionNorms';
+import { modelCaveats } from '@/lib/modelTrust';
 
 interface PlayerCardProps {
   player: Player;
@@ -47,6 +56,50 @@ interface PlayerCardProps {
   onTogglePin: (playerId: string) => void;
   pinned: boolean;
   /**
+   * Turn the card over.
+   *
+   * Clicking the card itself puts a player on the block, which is the auction's
+   * primary act and may not change — so studying somebody needs its own
+   * affordance. It sits with the watch and pin controls, appears on hover for
+   * the same reason they do, and is the only one of the three that is not a
+   * per-person note.
+   *
+   * The rectangle is passed back because the *expand* that follows animates
+   * from where the card actually sits on the board, and by the time anything
+   * renders at the centre of the screen the cell it came from is behind a
+   * scrim and no longer a thing the overlay can ask about.
+   */
+  onFlip?: (playerId: string, origin?: DOMRect) => void;
+  flipped?: boolean;
+  /**
+   * Grow the turned-over card into the full dossier.
+   *
+   * Deliberately reachable only from the back. The front is what is read while
+   * a name is being called and it may not turn into a screen-filling panel on
+   * one click; the back is already a deliberate act, so the step from a dense
+   * second page to every tab of it is the natural next one rather than a
+   * surprise.
+   */
+  onExpand?: (playerId: string, origin?: DOMRect) => void;
+  expanded?: boolean;
+  /**
+   * The dossier, rendered inside the card once it is open.
+   *
+   * Passed in rather than built here so the card stays a card: it knows how to
+   * be big, and the room knows what to put in the space. Undefined on the other
+   * fifty-nine, which is a stable prop and leaves their memo alone.
+   */
+  detail?: ReactNode;
+  /**
+   * Where the card was on the board when it was opened.
+   *
+   * The lift animates *from* here, which is what makes it read as this card
+   * rising rather than as a panel appearing. Measured at the moment of the
+   * click, because by the time it renders the card it came from is behind a
+   * scrim and its position is no longer something the overlay can ask for.
+   */
+  liftFrom?: { dx: number; dy: number; scale: number };
+  /**
    * What buying him gains over the man the snake hands you free, in points.
    *
    * Passed as primitives rather than as the object the engine returns, and the
@@ -76,6 +129,17 @@ interface PlayerCardProps {
   pulse?: PositionPulse;
 }
 
+/**
+ * Where the card sits on the screen, from anything inside it.
+ *
+ * Measured at the moment of the click rather than from a ref, because the lift
+ * animates *from* the cell the card was in and by the time the expanded copy
+ * renders that cell is behind a scrim. `closest` rather than a walk up the
+ * parents, so a control nested one deeper than expected still finds the card.
+ */
+const rectOf = (node: EventTarget & Element): DOMRect | undefined =>
+  node.closest('.dr-card')?.getBoundingClientRect();
+
 const RISK_COLOR: Record<Player['injuryRisk'], string> = {
   LOW: 'var(--dr-value)',
   MEDIUM: 'var(--dr-caution)',
@@ -101,6 +165,12 @@ const PlayerCardView = ({
   onSelect,
   onToggleWatch,
   onTogglePin,
+  onFlip,
+  flipped = false,
+  onExpand,
+  expanded = false,
+  detail,
+  liftFrom,
   gainLow,
   gainHigh,
   gainFree,
@@ -214,14 +284,8 @@ const PlayerCardView = ({
     '--dr-accent-lift': accentFor(primary),
   } as CSSProperties;
 
-  return (
-    <button
-      type="button"
-      className="dr-card"
-      style={style}
-      aria-selected={selected}
-      onClick={() => onSelect(player)}
-    >
+  const face = (
+    <>
       <span
         className="dr-card-star dr-star"
         role="button"
@@ -242,6 +306,28 @@ const PlayerCardView = ({
       >
         {watched ? '★' : '☆'}
       </span>
+      {onFlip && (
+        <span
+          className="dr-card-open"
+          role="button"
+          tabIndex={0}
+          aria-label={`Turn ${player.name} over`}
+          title="Turn the card over — the offence, the room, the career and the season ahead"
+          onClick={(event) => {
+            event.stopPropagation();
+            onFlip(player.id, rectOf(event.currentTarget));
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              event.stopPropagation();
+              onFlip(player.id, rectOf(event.currentTarget));
+            }
+          }}
+        >
+          ↻
+        </span>
+      )}
       <span
         className={`dr-card-pin${pinned ? ' is-pinned' : ''}`}
         role="button"
@@ -637,8 +723,586 @@ const PlayerCardView = ({
             : `${Math.abs(edge)} spots hotter than us`}
         </span>
       )}
-    </button>
+    </>
   );
+
+  /*
+   * The second page, built only for the card that is actually turned over.
+   *
+   * Sixty of these would be sixty career arcs, sixty schedule strips and sixty
+   * reads of two lazy caches, on a board whose whole performance story is that
+   * it mounts sixty cards without stalling. Exactly one card is ever flipped,
+   * so the cost is one card's worth and the memo on the other fifty-nine is
+   * untouched — `flipped` is a boolean and false on all of them.
+   */
+  const context = player.teamContext ?? null;
+  const room = player.competition ?? null;
+  const career = flipped ? careerShape(player.id) : null;
+  const season = flipped ? teamSchedule(team) : null;
+  const caveats = flipped
+    ? modelCaveats({
+        position: player.position,
+        age: player.age ?? null,
+        gamesObserved: player.gamesObserved ?? null,
+      })
+    : [];
+
+  const playsNorm = offenceNorm('plays');
+  const tripsNorm = offenceNorm('redZoneTrips');
+  // Per game rather than per season, because the offence's own number beside it
+  // is per game and a season total against a per-game rate is not a comparison.
+  const usageGames = usage?.games && usage.games > 0 ? usage.games : null;
+  const perGame = (total: number | null | undefined) =>
+    total == null || usageGames == null ? null : total / usageGames;
+
+  const adotNorm = positionNorm(player.position, 'adot');
+  const signed = (value: number, digits = 1) => `${value > 0 ? '+' : ''}${value.toFixed(digits)}`;
+
+  const back = flipped ? (
+    <div className="dr-card-backface">
+      <div className="dr-back-head">
+        <span className="dr-back-id">
+          <b>{identity?.name ?? player.name}</b>
+          <em>
+            {player.position} · {team}
+            {player.age != null && ` · ${player.age}y`}
+            {player.experience != null && ` · yr ${player.experience + 1}`}
+          </em>
+        </span>
+        {onExpand && (
+          <button
+            type="button"
+            className="dr-back-btn"
+            aria-label={`Expand ${player.name} to the full dossier`}
+            title="Every tab, full width"
+            onClick={(event) => {
+              event.stopPropagation();
+              onExpand(player.id, rectOf(event.currentTarget));
+            }}
+          >
+            ⤢
+          </button>
+        )}
+        {onFlip && (
+          <button
+            type="button"
+            className="dr-back-btn"
+            aria-label={`Turn ${player.name} back over`}
+            title="Back to the front"
+            onClick={(event) => {
+              event.stopPropagation();
+              onFlip(player.id);
+            }}
+          >
+            ↺
+          </button>
+        )}
+      </div>
+
+      <div className="dr-back-body">
+        {/* Opportunity is granted by a team before it is earned by a player,
+            and none of it was anywhere on the board. */}
+        {context &&
+          playsNorm &&
+          context.playsPerGame != null &&
+          context.neutralPassRate != null && (
+            <section className="dr-back-block">
+              <h4>The offence</h4>
+              <PlayMix
+                plays={context.playsPerGame}
+                playsTop={playsNorm.top}
+                playsMedian={playsNorm.median}
+                passRate={context.neutralPassRate}
+                passRateOverExpected={context.passRateOverExpected}
+                label={`${context.playsPerGame.toFixed(1)} plays a game against a league top of ${playsNorm.top.toFixed(1)}; ${context.neutralPassRate.toFixed(0)}% of neutral downs thrown${
+                  context.passRateOverExpected != null
+                    ? `, which is ${signed(context.passRateOverExpected)} points against what the situations called for — the dashed notch`
+                    : ''
+                }.`}
+              />
+              <dl className="dr-back-reads">
+                <div>
+                  <dt>Plays/g</dt>
+                  <dd className="dr-num">{context.playsPerGame.toFixed(1)}</dd>
+                </div>
+                <div>
+                  <dt>Pass</dt>
+                  <dd className="dr-num">{Math.round(context.neutralPassRate)}%</dd>
+                </div>
+                {context.passRateOverExpected != null && (
+                  <div title="Pass rate over expected — how much more this offence throws than the game situations called for. A choice, not a script.">
+                    <dt>PROE</dt>
+                    <dd
+                      className="dr-num"
+                      data-tone={context.passRateOverExpected > 0 ? 'good' : undefined}
+                    >
+                      {signed(context.passRateOverExpected)}
+                    </dd>
+                  </div>
+                )}
+                {context.epaPerPlay != null && (
+                  <div title="Expected points added per play. The offence's own quality, independent of volume.">
+                    <dt>EPA/play</dt>
+                    <dd className="dr-num">{context.epaPerPlay.toFixed(2)}</dd>
+                  </div>
+                )}
+                {context.sackRateAllowed != null && (
+                  <div title="Sack rate allowed — the line in front of him, and the reason a passing game stalls.">
+                    <dt>Sack%</dt>
+                    <dd className="dr-num">{context.sackRateAllowed.toFixed(1)}</dd>
+                  </div>
+                )}
+              </dl>
+            </section>
+          )}
+
+        {/* Touchdowns are most of the gap between two players with the same
+            yards, and they are handed out rather than earned at random. */}
+        {context?.redZoneTripsPerGame != null && tripsNorm && usage && (
+          <section className="dr-back-block">
+            <h4>Near the goal line</h4>
+            <GoalLine
+              trips={context.redZoneTripsPerGame}
+              tripsMedian={tripsNorm.median}
+              touches={perGame(usage.redZoneTouches) ?? 0}
+              goalLine={perGame(usage.goalLineTouches) ?? 0}
+              label={`The offence reaches the red zone ${context.redZoneTripsPerGame.toFixed(1)} times a game (median ${tripsNorm.median.toFixed(1)}); he touches it ${(perGame(usage.redZoneTouches) ?? 0).toFixed(1)} times there, ${(perGame(usage.goalLineTouches) ?? 0).toFixed(1)} of them inside the five — the solid pips.`}
+            />
+            <dl className="dr-back-reads">
+              <div>
+                <dt>Trips/g</dt>
+                <dd className="dr-num">{context.redZoneTripsPerGame.toFixed(1)}</dd>
+              </div>
+              <div title="His touches inside the twenty, per game">
+                <dt>His RZ</dt>
+                <dd className="dr-num">{(perGame(usage.redZoneTouches) ?? 0).toFixed(1)}</dd>
+              </div>
+              <div title="Inside the five, where a touch is worth about six points a fifth of the time">
+                <dt>Goal line</dt>
+                <dd className="dr-num">{usage.goalLineTouches}</dd>
+              </div>
+              {usage.redZoneShare != null && (
+                <div title="His share of the team's red-zone work">
+                  <dt>RZ share</dt>
+                  <dd className="dr-num">{Math.round(usage.redZoneShare)}%</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
+
+        {/* A fraction hides the one fact that decides whether he keeps the job. */}
+        {room && room.roomSize > 0 && (
+          <section className="dr-back-block dr-back-block-row">
+            <DepthLadder
+              depth={room.depth}
+              roomSize={room.roomSize}
+              aheadBy={room.aheadBy}
+              behindBy={room.behindBy}
+              label={`Number ${room.depth} of ${room.roomSize} in the room${
+                room.aheadBy != null
+                  ? `, clear of ${room.nextUp ?? 'the next man'} by ${room.aheadBy.toFixed(1)} points a game`
+                  : ''
+              }${room.behindBy != null ? `, behind ${room.starterAhead ?? 'the starter'} by ${room.behindBy.toFixed(1)} points a game` : ''}.`}
+            />
+            <div className="dr-back-block-body">
+              <h4>The room</h4>
+              <p className="dr-back-say">
+                <b className="dr-num">
+                  {room.depth} of {room.roomSize}
+                </b>{' '}
+                {room.starterAhead
+                  ? `behind ${room.starterAhead}${room.behindBy != null ? ` by ${room.behindBy.toFixed(1)}/g` : ''}`
+                  : room.nextUp
+                    ? `clear of ${room.nextUp}${room.aheadBy != null ? ` by ${room.aheadBy.toFixed(1)}/g` : ''}`
+                    : 'with nobody behind him'}
+              </p>
+              <p className="dr-back-say dr-back-say-quiet">
+                {player.competitionLevel.replace(/_/g, ' ').toLowerCase()}
+                {player.primaryBackup ? ` · backup ${player.primaryBackup}` : ''}
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* Against age rather than against the calendar, because thirty-and-over
+            is one of the three places the backtest says not to trust us. */}
+        {career && career.length > 0 && (
+          <section className="dr-back-block">
+            <h4>The career, against his age</h4>
+            <CareerArc
+              seasons={career}
+              projected={player.marketOnly ? null : (player.pointsPerGame ?? null)}
+              projectedAge={player.age != null ? player.age + 1 : null}
+              label={`Points a game in each of his ${career.length} seasons plotted against how old he was; the dot size is games played, the shaded region is thirty and over — where this model over-projects by 52 to 66 points a man — and the open ring is what it says he will average next year.`}
+            />
+            <dl className="dr-back-reads">
+              {player.age != null && (
+                <div>
+                  <dt>Age</dt>
+                  <dd className="dr-num" data-tone={player.age >= 30 ? 'warn' : undefined}>
+                    {player.age}
+                  </dd>
+                </div>
+              )}
+              {player.breakoutSeason != null && (
+                <div title="The first season he scored like a starter">
+                  <dt>Broke out</dt>
+                  <dd className="dr-num">{player.breakoutSeason}</dd>
+                </div>
+              )}
+              {player.draftCapital && (
+                <div
+                  title={`Drafted round ${player.draftCapital.round}, pick ${player.draftCapital.pick} in ${player.draftCapital.year} by ${player.draftCapital.team}`}
+                >
+                  <dt>Drafted</dt>
+                  <dd className="dr-num">
+                    R{player.draftCapital.round}.{player.draftCapital.pick}
+                  </dd>
+                </div>
+              )}
+              {player.gamesObserved != null && (
+                <div title="Games of tape the projection was built from. One to sixteen is the model's worst input, by a distance.">
+                  <dt>Tape</dt>
+                  <dd
+                    className="dr-num"
+                    data-tone={player.gamesObserved <= 16 ? 'warn' : undefined}
+                  >
+                    {player.gamesObserved}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
+
+        {/* Where the ball actually reaches him, which two numerals in a table
+            could never say together. */}
+        {usage && (
+          <section className="dr-back-block dr-back-block-row">
+            {usage.adot != null && usage.yacPerReception != null && (
+              <CatchDepth
+                adot={usage.adot}
+                yac={usage.yacPerReception}
+                adotMedian={adotNorm?.median ?? 0}
+                top={Math.max(18, usage.adot + usage.yacPerReception + 2)}
+                label={`Caught on average ${usage.adot.toFixed(1)} yards past the line${
+                  adotNorm
+                    ? ` against a median ${player.position} of ${adotNorm.median.toFixed(1)} — the dashed rule`
+                    : ''
+                }, then ${usage.yacPerReception.toFixed(1)} more after it. The line of scrimmage is the solid rule at the bottom.`}
+              />
+            )}
+            <div className="dr-back-block-body">
+              <h4>The ball</h4>
+              <dl className="dr-back-reads">
+                {usage.adot != null && (
+                  <div title="Average depth of target — how far past the line the ball is thrown to him">
+                    <dt>aDOT</dt>
+                    <dd className="dr-num">{usage.adot.toFixed(1)}</dd>
+                  </div>
+                )}
+                {usage.yacPerReception != null && (
+                  <div title="Yards he adds himself, after the catch">
+                    <dt>YAC</dt>
+                    <dd className="dr-num">{usage.yacPerReception.toFixed(1)}</dd>
+                  </div>
+                )}
+                {usage.wopr != null && (
+                  <div title="Weighted opportunity rating: target share and air-yards share as one number. The best single measure of how central he is to a passing game.">
+                    <dt>WOPR</dt>
+                    <dd className="dr-num">{usage.wopr.toFixed(2)}</dd>
+                  </div>
+                )}
+                {usage.touchesPerGame != null && (
+                  <div>
+                    <dt>Touch/g</dt>
+                    <dd className="dr-num">{usage.touchesPerGame.toFixed(1)}</dd>
+                  </div>
+                )}
+                {usage.firstDownsPerGame != null && (
+                  <div title="First downs a game — the touches that keep his own offence on the field">
+                    <dt>1D/g</dt>
+                    <dd className="dr-num">{usage.firstDownsPerGame.toFixed(1)}</dd>
+                  </div>
+                )}
+                {usage.epaPerTouch != null && (
+                  <div title="Expected points added per touch. Efficiency, where the front of the card carries volume.">
+                    <dt>EPA/tch</dt>
+                    <dd className="dr-num" data-tone={usage.epaPerTouch > 0 ? 'good' : 'warn'}>
+                      {usage.epaPerTouch.toFixed(2)}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          </section>
+        )}
+
+        {/* How much the room disagrees with itself, which is what decides
+            whether disagreeing with it means anything. */}
+        {player.market?.best != null &&
+          player.market.worst != null &&
+          player.market.consensusRank != null && (
+            <section className="dr-back-block">
+              <h4>What the experts think of each other</h4>
+              <Consensus
+                best={player.market.best}
+                worst={player.market.worst}
+                consensus={player.market.consensusRank}
+                ours={player.modelRank}
+                label={`The panel ranks him between ${player.market.best} and ${player.market.worst}, landing at ${player.market.consensusRank}. We say ${player.modelRank} — ${
+                  player.modelRank < player.market.best || player.modelRank > player.market.worst
+                    ? 'outside the range of every expert opinion, which is where this board has been measured wrong'
+                    : 'inside their own range'
+                }.`}
+              />
+              <dl className="dr-back-reads">
+                <div>
+                  <dt>Ours</dt>
+                  <dd className="dr-num">#{player.modelRank}</dd>
+                </div>
+                <div>
+                  <dt>Panel</dt>
+                  <dd className="dr-num">#{player.market.consensusRank}</dd>
+                </div>
+                <div title="How far apart the experts are from each other. A wide spread is a position nobody has an answer to.">
+                  <dt>Spread</dt>
+                  <dd className="dr-num">
+                    {player.market.best}–{player.market.worst}
+                  </dd>
+                </div>
+                {player.market.ownership != null && (
+                  <div title="Share of leagues he is rostered in">
+                    <dt>Rostered</dt>
+                    <dd className="dr-num">{Math.round(player.market.ownership)}%</dd>
+                  </div>
+                )}
+              </dl>
+            </section>
+          )}
+
+        {/* An average over a season is exactly the wrong summary for a schedule:
+            the three weeks it is decided in are worth the other fourteen. */}
+        {season && season.length > 0 && (
+          <section className="dr-back-block">
+            <h4>The eighteen weeks ahead</h4>
+            <SeasonAhead
+              games={season}
+              byeWeek={player.byeWeek ?? null}
+              label={`The 2026 season week by week — taller and green is a defence that gave up more last season, the hollow socket is the bye in week ${player.byeWeek ?? '—'}, and the rule underneath weeks 15 to 17 is the fantasy playoffs.`}
+            />
+            <dl className="dr-back-reads">
+              <div>
+                <dt>Bye</dt>
+                <dd className="dr-num">{player.byeWeek ?? '—'}</dd>
+              </div>
+              {player.strengthOfSchedule != null && (
+                <div title="Strength of schedule, 1 hardest to 10 softest — the season's average, which the strip above is the shape of">
+                  <dt>SoS</dt>
+                  <dd className="dr-num">{player.strengthOfSchedule}</dd>
+                </div>
+              )}
+              {player.playoffSchedule && (
+                <div title="Weeks 15 to 17, where a fantasy season is decided">
+                  <dt>Playoffs</dt>
+                  <dd
+                    className="dr-num"
+                    data-tone={
+                      player.playoffSchedule === 'EASY'
+                        ? 'good'
+                        : player.playoffSchedule === 'DIFFICULT'
+                          ? 'warn'
+                          : undefined
+                    }
+                  >
+                    {player.playoffSchedule.toLowerCase()}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
+
+        {/* Weeks on the injury report by body part. Treatment rather than
+            absences, which is a different and earlier signal than games missed
+            — and the only place in the pool that carries it. */}
+        {player.durability?.reported && player.durability.reported.length > 0 && (
+          <section className="dr-back-block">
+            <h4>On the report</h4>
+            <ul className="dr-back-parts">
+              {player.durability.reported.slice(0, 5).map((entry) => (
+                <li key={entry.part}>
+                  <span>{entry.part.toLowerCase()}</span>
+                  <b className="dr-num">{entry.weeks}w</b>
+                </li>
+              ))}
+            </ul>
+            <p className="dr-back-say dr-back-say-quiet">
+              {player.durability.totalMissed}{' '}
+              {player.durability.totalMissed === 1 ? 'game' : 'games'} missed across{' '}
+              {player.durability.seasons.length}{' '}
+              {player.durability.seasons.length === 1 ? 'season' : 'seasons'}
+            </p>
+          </section>
+        )}
+
+        {/* Where the backtest says this board is worst, on this player. The same
+            three the nomination stage carries, because a finding that lives in
+            one place is a finding nobody has when it matters. */}
+        {caveats.length > 0 && (
+          <section className="dr-back-block">
+            <h4>Where to trust the room over us</h4>
+            <div className="dr-card-risks">
+              {caveats.map((caveat) => (
+                <span key={caveat.id} data-tone="warn" title={caveat.detail}>
+                  {caveat.label}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* The third register: what happened last Tuesday, which no projection
+            knows and no instrument can draw. */}
+        {mark && mark.direction !== 'NEUTRAL' && (
+          <section className="dr-back-block">
+            <h4>What the web said</h4>
+            <p className="dr-back-say" data-direction={mark.direction}>
+              {mark.headline || 'Sourced findings — open the Research tab'}
+            </p>
+          </section>
+        )}
+      </div>
+
+      {/* The second page is taller than a card, so it scrolls — and a scroll
+          with nothing at its edge to say so is a page that ends at the fold for
+          anybody who does not happen to try. The bar is sticky rather than
+          appended for that reason: it sits at the bottom of the *view*, so it
+          is the thing under the last visible reading whatever has been scrolled
+          past, and it carries the way out of the scroll rather than only a
+          notice that there is one. Absent once the card is raised, where there
+          is nothing left to open and nothing left to scroll. */}
+      {!expanded && onExpand && (
+        <div className="dr-back-more">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onExpand(player.id, rectOf(event.currentTarget));
+            }}
+          >
+            Everything, full width ⤢
+          </button>
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  /*
+   * Front, back, and the back grown. One card in three states.
+   *
+   * The interaction is deliberately a sequence rather than a switch, and the
+   * order was got wrong twice before it was got right. Expanding straight off
+   * the front is a screen-filling panel on a single click, on the one surface
+   * somebody is scanning while a name is being called — and the click that does
+   * it is a hair away from the click that nominates. Turning the card over is
+   * the softer act: it costs the front face, nothing else, and it happens
+   * between nominations rather than during one. Only from there, having already
+   * decided to study somebody, does growing to every tab of it make sense.
+   *
+   * So: click the card to nominate, `↻` to turn it over, `⤢` on the back to
+   * raise it. Each step is reversible by the control that made it.
+   */
+  if (expanded) {
+    /*
+     * Lift it out of the board rather than reflowing the board around it.
+     *
+     * Spanning the grid was tried and it is wrong twice over: the cells beside
+     * it in its own row are left empty, which reads as a rendering fault, and
+     * everything below jumps down the page — so the board being read is
+     * rearranged as the price of reading one card of it. It rises to the middle
+     * instead and the rest recedes behind a scrim, which moves nothing and puts
+     * everything back the instant it closes.
+     *
+     * The lift animates *from* the cell it came from, measured at the click,
+     * which is what makes it read as this card rising rather than as a panel
+     * appearing. A panel that fades in at the centre is a modal, and a modal is
+     * the thing this is deliberately not.
+     */
+    const lifted = {
+      ...style,
+      ...(liftFrom
+        ? {
+            '--dr-lift-dx': `${liftFrom.dx}px`,
+            '--dr-lift-dy': `${liftFrom.dy}px`,
+            '--dr-lift-scale': String(liftFrom.scale),
+          }
+        : {}),
+    } as CSSProperties;
+    return (
+      <article
+        className="dr-card is-expanded"
+        style={lifted}
+        aria-label={`${player.name} detail`}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="dr-card-back">{back}</div>
+        <div className="dr-card-detail">
+          <div className="dr-card-detail-bar">
+            <button type="button" className="dr-button" onClick={() => onSelect(player)}>
+              Put him on the block
+            </button>
+            <span className="dr-footnote" style={{ margin: 0 }}>
+              The board is still behind you, exactly where it was.
+            </span>
+          </div>
+          {detail}
+        </div>
+      </article>
+    );
+  }
+
+  /*
+   * Two faces on one hinge.
+   *
+   * The front stays in the document flow and sets the cell's height; the back
+   * is absolutely positioned over it, so turning the card over never moves the
+   * fifty-nine cards around it. A back that reflowed the grid would make the
+   * act of studying one player rearrange the board you were studying him
+   * against, which is the same objection the expansion answers one level up.
+   *
+   * `aria-hidden` and `inert` on the hidden face are not decoration: without
+   * them a screen reader reads both faces of every card and tab lands on
+   * controls nobody can see.
+   */
+  const hinge = (
+    <div className="dr-flip" data-flipped={flipped ? 'true' : undefined}>
+      <div className="dr-flip-inner">
+        <button
+          type="button"
+          className="dr-card dr-flip-face dr-flip-front"
+          style={style}
+          aria-selected={selected}
+          aria-hidden={flipped || undefined}
+          tabIndex={flipped ? -1 : undefined}
+          onClick={() => onSelect(player)}
+        >
+          {face}
+        </button>
+        <div
+          className="dr-card dr-flip-face dr-flip-back"
+          style={style}
+          aria-hidden={!flipped || undefined}
+          aria-label={`${player.name}, the second page`}
+        >
+          {back}
+        </div>
+      </div>
+    </div>
+  );
+
+  return hinge;
 };
 
 /**

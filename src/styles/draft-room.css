@@ -1484,7 +1484,8 @@
    are also not auction controls: nobody stars a player while money is on the
    table, so they have no claim on the corner the eye goes to first. */
 .dr-card-star,
-.dr-card-pin {
+.dr-card-pin,
+.dr-card-open {
   position: absolute;
   z-index: 2;
   bottom: 6px;
@@ -1506,6 +1507,8 @@
 
 .dr-card:hover .dr-card-star,
 .dr-card:hover .dr-card-pin,
+.dr-card:hover .dr-card-open,
+.dr-card-open:focus-visible,
 .dr-card-star:focus-visible,
 .dr-card-pin:focus-visible,
 .dr-card-star[aria-pressed='true'],
@@ -1923,6 +1926,399 @@
    profile: tabs and the charts inside them
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   the hinge: two faces on one card
+   -------------------------------------------------------------------------- */
+
+/* The front stays in the document flow and sets the cell's height; the back is
+   absolutely positioned over it. That is the load-bearing half of this: a back
+   face that reflowed would make studying one player rearrange the board you
+   were studying him against, and the fifty-nine cards around it would move
+   under the cursor. */
+.dr-flip {
+  perspective: 1400px;
+  min-width: 0;
+}
+
+.dr-flip-inner {
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 460ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.dr-flip[data-flipped='true'] .dr-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.dr-flip-face {
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.dr-flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+/* The hover lift is a `transform`, and a transform on the back face would
+   replace the half-turn that puts it there — the card would show its own back
+   the right way round on the front of the board. Restated rather than
+   inherited, for both states that set it. */
+.dr-flip-back:hover,
+.dr-flip-back[aria-selected='true'] {
+  transform: rotateY(180deg);
+}
+
+/* Nothing on the hidden face may be reached by a cursor or by tab. */
+.dr-flip:not([data-flipped='true']) .dr-flip-back,
+.dr-flip[data-flipped='true'] .dr-flip-front {
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   the back of the card: the second page
+   -------------------------------------------------------------------------- */
+
+.dr-card-backface {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* `min-height` and not `height`: the second page is deliberately taller than
+     a card and has to be allowed to overflow into the scroll, while still
+     filling the face when a player carries less of it. */
+  min-height: 100%;
+}
+
+.dr-back-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s2);
+  padding: 8px 10px;
+  background: var(--dr-surface-2);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-back-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-back-id b {
+  font-size: var(--dr-t-body);
+  font-weight: 600;
+  color: var(--dr-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-back-id em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.02em;
+}
+
+.dr-back-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--dr-line);
+  border-radius: 4px;
+  background: var(--dr-raised);
+  color: var(--dr-ink-dim);
+  font-size: var(--dr-t-small);
+  cursor: pointer;
+  transition:
+    color var(--dr-fast),
+    border-color var(--dr-fast);
+}
+
+.dr-back-btn:hover {
+  color: var(--dr-ink);
+  border-color: var(--dr-accent-lift);
+}
+
+.dr-back-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-back-block {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--dr-line);
+  min-width: 0;
+}
+
+.dr-back-block:last-child {
+  border-bottom: 0;
+}
+
+/* An instrument tall enough to need the words beside it rather than under it. */
+.dr-back-block-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dr-s3);
+}
+
+.dr-back-block-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-back-block h4 {
+  margin: 0 0 5px;
+  font-size: var(--dr-t-micro);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+/* The numerals under an instrument. Wrapping rather than a fixed count,
+   because how many of them exist is a property of the position — a back has no
+   average depth of target and a quarterback has no target share. */
+.dr-back-reads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  margin: 5px 0 0;
+}
+
+.dr-back-reads > div {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dr-back-reads dt {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.02em;
+}
+
+.dr-back-reads dd {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-back-reads dd[data-tone='good'] {
+  color: var(--dr-good);
+}
+
+.dr-back-reads dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-back-say {
+  margin: 4px 0 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.35;
+  color: var(--dr-ink-dim);
+}
+
+.dr-back-say[data-direction='PAY_UP'] {
+  color: var(--dr-good);
+}
+
+.dr-back-say[data-direction='FADE'] {
+  color: var(--dr-bad);
+}
+
+.dr-back-say-quiet {
+  color: var(--dr-ink-faint);
+  font-size: var(--dr-t-micro);
+}
+
+.dr-back-parts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+
+.dr-back-parts li {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-dim);
+}
+
+.dr-back-parts b {
+  color: var(--dr-warn);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sticky at the foot of the view rather than at the foot of the content, so it
+   is under whatever is currently visible and the way out is never itself below
+   the fold. The gradient above it is what says there is more — an edge that
+   fades is read as continuing, an edge that stops is read as the end. */
+.dr-back-more {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: auto;
+  padding: 14px 10px 8px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--dr-surface) 80%, transparent) 45%,
+    var(--dr-surface) 100%
+  );
+}
+
+.dr-back-more button {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  color: var(--dr-ink-dim);
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color var(--dr-fast),
+    border-color var(--dr-fast);
+}
+
+.dr-back-more button:hover {
+  color: var(--dr-ink);
+  border-color: var(--dr-accent-lift);
+}
+
+/* --------------------------------------------------------------------------
+   the raised card
+   -------------------------------------------------------------------------- */
+
+/* The board recedes; it is not replaced.
+   What closing has to restore is the board that was there, in the place it
+   was, which a layout that reflowed around the open card could not do — three
+   empty cells in the row it came from read as a rendering fault, and
+   everything below jumps down the page. */
+.dr-lift {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--dr-s4);
+  background: color-mix(in srgb, var(--dr-bg) 72%, transparent);
+  backdrop-filter: blur(3px);
+  animation: dr-scrim-in 180ms var(--dr-ease);
+}
+
+.dr-grid.is-receded {
+  transform: scale(0.988);
+  filter: brightness(0.72) saturate(0.75);
+  transition:
+    transform var(--dr-med),
+    filter var(--dr-med);
+}
+
+@keyframes dr-scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.dr-card.is-expanded {
+  position: relative;
+  width: min(1180px, 94vw);
+  max-height: 92vh;
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  align-items: stretch;
+  cursor: default;
+  border-color: var(--dr-accent-lift);
+  background: var(--dr-surface-2);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--dr-accent-lift) 40%, transparent),
+    var(--dr-e3);
+  /* Out of the cell it came from rather than in from nowhere. The custom
+     properties are written by the card and are the measured offset of that
+     cell from the centre of the screen; with none set the fallbacks make it a
+     small grow in place, which is the right behaviour for a keyboard open
+     that never had a rectangle to measure. */
+  animation: dr-lift-in 300ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.dr-card.is-expanded:hover {
+  transform: none;
+}
+
+@keyframes dr-lift-in {
+  from {
+    opacity: 0.35;
+    transform: translate(var(--dr-lift-dx, 0px), var(--dr-lift-dy, 0px))
+      scale(var(--dr-lift-scale, 0.94));
+  }
+}
+
+/* Each half scrolls on its own. One scroll for both would put the tabs off the
+   bottom of a long back face, and the tabs are the reason it was raised. */
+.dr-card-back {
+  min-width: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--dr-line);
+  scrollbar-width: thin;
+}
+
+.dr-card-detail {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.dr-card-detail-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s3);
+  padding: 10px var(--dr-s4);
+  background: var(--dr-surface-2);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+@media (max-width: 900px) {
+  .dr-card.is-expanded {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .dr-card-back {
+    border-right: 0;
+    border-bottom: 1px solid var(--dr-line);
+    max-height: 34vh;
+  }
+}
+
 /* The profile is the one screen in the app whose job is *study*, and it was a
    760px column in a 1512px window — half the screen empty either side while
    eight tabs of charts stacked into a scroll nobody reaches the end of. It is
@@ -1932,6 +2328,17 @@
   width: min(1140px, 96vw);
 }
 
+/* Inside a raised card the width is the card's, not the window's. Inheriting
+   the modal's `min(1140px, 96vw)` made the dossier 1140 wide in an 878-pixel
+   column, and the card's `overflow: hidden` then quietly cut the right-hand
+   quarter off every tab — the value swarm, the fourth headline tile, the right
+   column of every two-column panel. A panel that is silently clipped is worse
+   than one that scrolls, because nothing on screen says there is more. */
+.dr-profile-inline {
+  width: 100%;
+  min-width: 0;
+}
+
 /*
  * Two columns where there is room for two.
  *
@@ -1939,6 +2346,7 @@
  * tablet and the phone the artifact gets opened on: it is one column until a
  * section can have 420px, and never squeezes a chart to make a second.
  */
+.dr-card-detail .dr-tabpanel,
 .dr-profile .dr-tabpanel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
@@ -1949,6 +2357,10 @@
 
 /* The readings that describe the whole player run the full width above the
    columns rather than being dealt into one of them. */
+.dr-card-detail .dr-tabpanel > .dr-profile-tiles,
+.dr-card-detail .dr-tabpanel > .dr-verdict-line,
+.dr-card-detail .dr-tabpanel > .dr-notice,
+.dr-card-detail .dr-tabpanel > .dr-full,
 .dr-profile .dr-tabpanel > .dr-profile-tiles,
 .dr-profile .dr-tabpanel > .dr-verdict-line,
 .dr-profile .dr-tabpanel > .dr-notice,
@@ -1958,6 +2370,7 @@
 
 /* In a column layout a full-width rule between sections has nothing to
    separate, so each section becomes its own surface instead. */
+.dr-card-detail .dr-tabpanel > .dr-modal-section,
 .dr-profile .dr-tabpanel > .dr-modal-section {
   border-top: 0;
   border: 1px solid var(--dr-line);
@@ -1967,6 +2380,7 @@
   min-width: 0;
 }
 
+.dr-card-detail .dr-tabpanel > .dr-modal-section > h3,
 .dr-profile .dr-tabpanel > .dr-modal-section > h3 {
   display: block;
   margin-bottom: var(--dr-s2);
@@ -3236,6 +3650,16 @@
 
 .dr-card-pin {
   right: 30px;
+}
+
+.dr-card-open {
+  right: 52px;
+  font-size: var(--dr-t-small);
+}
+
+.dr-card-open:hover {
+  color: var(--dr-ink);
+  background: var(--dr-raised);
 }
 
 .dr-card-pin:hover,
