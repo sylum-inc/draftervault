@@ -659,6 +659,51 @@ the median starter: top right is a bell cow, top left a specialist, bottom right
 a decoy, bottom left a backup. The mark's size is red-zone work, a premium on
 the other two rather than an independent question.
 
+**A team colour is chosen to look good on a helmet.** Used raw as an accent it
+fails in two directions at once: the Raiders and the Ravens vanish into the
+ground, the Dolphins glow over the numbers, and neither has anything to do with
+the player. `accent.ts` lifts the hue into a luminance band that reads, so the
+raw colour is kept only where something sets its own ink against it — a
+position badge — and everything drawn _on_ the dark ground uses the lifted one.
+`inkFor` moved in there too; it had been written out twice, which is two
+answers to one question and the kind of thing noticed only when a light jersey
+turns a label white on white.
+
+The card's own club marking went through three shapes before it was right. A
+42% gradient across the head meant a bright club fought the name. A 3px spine
+down the left edge was worse in a different way — too saturated to ignore, too
+thin to read as deliberate, invisible for a third of the league, and a second
+hard edge a few pixels outside the one the content was aligned to. It is a
+faint corner wash and a ring on the avatar now: the same hue, never crossing a
+number, and present for the Raiders as well as the Dolphins. Five of the card's
+six horizontal rules went with it, because a card with five rules on it reads
+as a form rather than as a card.
+
+**The profile was a 760px column in a 1512px window.** Eight tabs of charts
+stacking into a scroll nobody reaches the end of, with half the screen empty
+either side. It is as wide as the window allows and lays out in columns —
+`auto-fit` at a 420px minimum, so the same rule serves a laptop and the phone
+the artifact gets opened on — which turns most tabs from a scroll into a page.
+Sections became their own surfaces rather than full-width rules, because in a
+column layout a rule between sections has nothing to separate.
+
+Two instruments were drawing the same numbers twice. The overview printed a
+range bar and then, directly beneath it, an outcome curve carrying the same
+floor, projection and ceiling plus the share above replacement — and the bar
+was the weaker claim besides. `RangeBar` is gone from the tree, and the
+nomination stage draws the same curve the card does, because one set of figures
+should not read as a bell in one place and a bar in another. `Sparkline` went
+the same way in favour of the game log.
+
+**And the profile's percentiles were the whole-pool bug again, one panel
+along.** "Against the position" read `player.percentiles`, which the pool
+computes over all 628 — so every player worth opening a profile on scored in
+the high nineties and the panel drew seven full bars saying nothing: projected
+points 100th, ceiling 100th, floor 99th. Recomputed over the men who beat
+replacement at his position — the set he is actually competing with for a
+roster spot — Jahmyr Gibbs reads 99th on points and 53rd on consistency, which
+is a reading rather than a wall.
+
 **Half a card is what a player _is_; the other half is what the room has
 _done_.** Everything on the card read the same at pick one and at pick a
 hundred and fifty, which for an auction is most of the information missing. The
