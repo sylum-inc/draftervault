@@ -34,7 +34,10 @@ interface AuctionSheetImportProps {
     bought: number;
     movers: Array<{ id: string; name: string; from: number; to: number }>;
   };
-  onApply: (ids: string[]) => void;
+  /** The share of the paste that did not resolve travels with it: it is the
+   *  fact that decides whether the board is priced for the auction being held,
+   *  and the text it was measured from is gone the moment this panel closes. */
+  onApply: (ids: string[], loss: number) => void;
   onClear: () => void;
   onClose: () => void;
 }
@@ -408,7 +411,7 @@ export const AuctionSheetImport = ({
             type="button"
             className="dr-button dr-button-primary"
             disabled={ids.length === 0 || tooShort}
-            onClick={() => onApply(ids)}
+            onClick={() => onApply(ids, loss?.share ?? 0)}
           >
             {ids.length === 0
               ? 'Nothing to auction'

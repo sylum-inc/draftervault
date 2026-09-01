@@ -931,6 +931,16 @@ export interface StoredSheet {
    * the draft away.
    */
   priorSize?: number | null;
+  /**
+   * The share of the paste that did not resolve, kept rather than recomputed.
+   *
+   * It is a fact about the import and the text it came from is gone, so it
+   * cannot be recovered afterwards — and it is exactly the fact that decides
+   * whether the board is priced for the auction being held. A paste that loses
+   * a chunk out of the middle leaves the top twenty pricing perfectly sensibly
+   * with `auctionSheetSize` quietly forty rather than sixty.
+   */
+  loss?: number | null;
 }
 
 const EMPTY_SHEET = (): StoredSheet => ({ ids: [], unsold: [] });
@@ -946,6 +956,7 @@ const readStoredSheet = (): StoredSheet => {
         ? parsed.unsold.filter((id): id is string => typeof id === 'string')
         : [],
       priorSize: typeof parsed.priorSize === 'number' ? parsed.priorSize : null,
+      loss: typeof parsed.loss === 'number' ? parsed.loss : null,
     };
   } catch {
     return EMPTY_SHEET();
@@ -3938,7 +3949,7 @@ export class AuctionDraftService {
    *
    * Returns how many of the ids the pool actually knows.
    */
-  setAuctionSheet(ids: readonly string[]): number {
+  setAuctionSheet(ids: readonly string[], loss?: number): number {
     const known = new Set(this.players.map((player) => player.id));
     const wanted = [...new Set(ids)].filter((id) => known.has(id));
     if (!wanted.length || this.tooConcentrated(wanted)) return 0;
@@ -3950,6 +3961,7 @@ export class AuctionDraftService {
       // Only on the first sheet: replacing one sheet with another must not
       // forget the size the board had before any of them arrived.
       priorSize: this.sheet.ids.length ? this.sheet.priorSize : this.league.auctionSheetSize,
+      loss: loss ?? null,
     };
     writeStoredSheet(this.sheet);
 
@@ -5058,6 +5070,10 @@ export class AuctionDraftService {
             saved.auctionSheet.priorSize === null
               ? saved.auctionSheet.priorSize
               : undefined,
+          // Carried for the same reason: the paste it was measured from is
+          // gone, so a restore that dropped it would report a lossy sheet as a
+          // clean one on the machine that has to finish the draft.
+          loss: typeof saved.auctionSheet.loss === 'number' ? saved.auctionSheet.loss : null,
         }
       : EMPTY_SHEET();
     writeStoredSheet(this.sheet);

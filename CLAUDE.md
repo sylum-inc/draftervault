@@ -1112,6 +1112,42 @@ in `LeagueShape`, because `sameLeague` decides whether a draft survives a
 change and a rename must never throw one away. `getMyTeamId()` is what lets the
 rest of the room be read as opponents.
 
+**Every catastrophic failure this app has is silent, and nothing collected
+them.** A league left at the pool's own defaults prices 628 players under
+somebody else's rules. A paste that lost eight names to a spelling re-prices the
+board for an auction nobody is holding. No team marked as yours turns the plan,
+every walk-away and four panels inert. In each case the board renders, the
+numbers look exactly as authoritative as correct ones, and the first evidence is
+a roster nobody can explain in December.
+
+The individual warnings all existed — the settings panel refuses a first run,
+the import panel bands a lossy paste at one row in eight, the market panel dates
+the ADP — and every one of them is seen only by somebody who happens to open
+that panel. What did not exist was anywhere that answers the question worth
+asking before the first name is called: _is this ready?_
+
+`src/lib/readiness.ts` is that, as a fact module in the idiom `modelTrust` uses:
+it states what is true of the setup and never what to bid, and a test asserts no
+check ever prints a dollar figure. Three levels, and the distinction is what to
+do about it now — `blocking` means a number on the board is wrong rather than
+merely unknown, `warn` costs precision and not correctness, and `ready` is
+listed anyway, because a checklist that only shows problems can say something is
+wrong but never that nothing is.
+
+The badge lives in the top bar and disappears entirely when there is nothing to
+say, because a checklist nobody opens is a checklist nobody has. Two of the
+checks change level with the draft rather than being fixed: a stale market is
+blocking before the first pick and a warning after it, since re-pricing mid-
+draft would throw the afternoon away and the honest instruction is different
+once it is too late to act.
+
+`StoredSheet` gained a `loss`, and it is stored rather than recomputed for the
+reason `phase` is stored on a pick: the paste it was measured from is gone the
+moment the panel closes, so it cannot be recovered afterwards — and it is
+exactly the fact that decides whether the board is priced for the auction being
+held. It rides through the draft file too, or a restore would report a lossy
+sheet as a clean one on the machine that has to finish the night.
+
 **Draft night is the deadline, and the room has to survive it.** Three things
 were found by driving a full 192-pick draft rather than by testing one. Reset
 sat beside Undo, took no confirmation, and deleted the pick log outright — it
@@ -2137,8 +2173,10 @@ press, the six side panels put back on the screen the advisor had pushed them
 off, and the number that decides a bid finally solved rather than guessed — a
 knapsack over the sheet that says which three players the hundred dollars
 should buy and what the marginal dollar is worth, replacing a "what to bid"
-that was the price times 1.15 and recommended $28 on a man worth nothing;
-731 tests.
+that was the price times 1.15 and recommended $28 on a man worth nothing, and
+one place that answers whether the board is set up at all rather than six
+panels each holding a piece of the answer;
+747 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

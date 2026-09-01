@@ -5723,3 +5723,116 @@
   min-width: 34px;
   text-align: right;
 }
+
+/* --------------------------------------------------------------------------
+   is this board set up?
+   -------------------------------------------------------------------------- */
+
+/* In the live group, in the colour of what it is: a blocking problem is the
+   same red as Reset because both destroy an afternoon, one loudly and one
+   silently. It is absent entirely when there is nothing to say. */
+.dr-ready {
+  padding: 6px 10px;
+  border-radius: var(--dr-radius-sm);
+  border: 1px solid var(--dr-warn);
+  background: color-mix(in srgb, var(--dr-warn) 14%, transparent);
+  color: var(--dr-warn);
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dr-ready[data-level='blocking'] {
+  border-color: var(--dr-danger);
+  background: color-mix(in srgb, var(--dr-danger) 16%, transparent);
+  color: var(--dr-danger);
+}
+
+.dr-ready-panel {
+  width: min(660px, 94vw);
+  padding: var(--dr-s4);
+}
+
+.dr-checklist {
+  list-style: none;
+  margin: var(--dr-s3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-s2);
+}
+
+.dr-checklist li {
+  display: flex;
+  gap: var(--dr-s3);
+  padding: var(--dr-s3);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+}
+
+.dr-checklist li[data-level='blocking'] {
+  border-color: color-mix(in srgb, var(--dr-danger) 45%, var(--dr-line));
+}
+
+.dr-checklist li[data-level='warn'] {
+  border-color: color-mix(in srgb, var(--dr-warn) 40%, var(--dr-line));
+}
+
+.dr-checklist-mark {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: var(--dr-t-micro);
+  background: var(--dr-raised);
+  color: var(--dr-ink-faint);
+}
+
+li[data-level='blocking'] > .dr-checklist-mark {
+  background: color-mix(in srgb, var(--dr-danger) 20%, transparent);
+  color: var(--dr-danger);
+}
+
+li[data-level='warn'] > .dr-checklist-mark {
+  background: color-mix(in srgb, var(--dr-warn) 20%, transparent);
+  color: var(--dr-warn);
+}
+
+li[data-level='ready'] > .dr-checklist-mark {
+  background: color-mix(in srgb, var(--dr-good) 18%, transparent);
+  color: var(--dr-good);
+}
+
+.dr-checklist-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.dr-checklist-body b {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dr-s2);
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink);
+}
+
+.dr-checklist-body em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-checklist-body > span {
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-dim);
+}

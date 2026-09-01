@@ -23,6 +23,7 @@ import { CompareTray, CompareView } from './CompareTray';
 import { DraftBoard } from './DraftBoard';
 import { BudgetPlanner } from './BudgetPlanner';
 import { RosterPlanPanel } from './RosterPlanPanel';
+import { ReadinessPanel } from './ReadinessPanel';
 import { SpendOutlook } from './SpendOutlook';
 import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
@@ -47,6 +48,9 @@ import { copyTextToClipboard, saveTextFile } from '@/lib/saveFile';
 import { primeResearch, researchGeneratedAt, researchMark } from '@/services/playerResearch';
 import { primeHistory } from '@/services/playerHistory';
 import { primeSchedule } from '@/services/nflSchedule';
+import { readiness, worstOf } from '@/lib/readiness';
+import { sameLeague } from '@/lib/valuation';
+import { dataAges } from '@/lib/dataAge';
 import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 import '@/styles/draft-room.css';
 
@@ -103,6 +107,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     'plan' | 'spend' | 'budget' | 'budgets' | 'rosters' | 'market' | 'bargains'
   >('plan');
   const [resultsOpen, setResultsOpen] = useState(false);
+  const [readyOpen, setReadyOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
@@ -1040,8 +1045,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * and not a league change.
    */
   const applySheet = useCallback(
-    (ids: string[]) => {
-      draftService.setAuctionSheet(ids);
+    (ids: string[], loss = 0) => {
+      draftService.setAuctionSheet(ids, loss);
       setSheetOpen(false);
       resync();
     },
@@ -1239,6 +1244,46 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     [draftService, players, researchReady]
   );
 
+  /*
+   * Whether the board somebody is about to draft off is actually set up.
+   *
+   * Every catastrophic failure this app has is silent — a league left at the
+   * pool's defaults, a sheet that lost eight names to a spelling, no team
+   * marked as yours — and each of the individual warnings is only seen by
+   * whoever opens the panel it lives in. This is the one place that answers
+   * "is this ready", and it is in the top bar because a checklist nobody opens
+   * is a checklist nobody has.
+   */
+  const checks = useMemo(() => {
+    const shape = draftService.getLeagueShape();
+    const depth = draftService.getPoolDepth();
+    const sheet = draftService.getAuctionSheet();
+    const mine = teams.find((team) => team.id === myTeamId) ?? null;
+    const ages = dataAges(stamps);
+    const dayOf = (key: string) => ages.find((age) => age.key === key)?.days ?? null;
+
+    return readiness({
+      leagueConfirmed,
+      leagueIsPoolDefault: sameLeague(shape, draftService.getPoolLeagueShape()),
+      poolShortfall: Object.entries(shape.rostered)
+        .filter(([position, need]) => (depth[position] ?? 0) < need)
+        .map(([position]) => position),
+      sheetSize: sheet.ids.length || null,
+      sheetLoss: sheet.loss ?? 0,
+      sheetIsGuess: !sheet.ids.length && shape.auctionSheetSize != null,
+      myTeam: mine?.name ?? null,
+      unnamedTeams: teams.filter((team) => /^Team \d+$/.test(team.name)).length,
+      totalTeams: teams.length,
+      snakeOrderDrawn: draftService.hasSnakeOrder(),
+      marketDays: dayOf('market'),
+      researchDays: dayOf('research'),
+      drafted: drafted.length,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+  }, [draftService, players, teams, myTeamId, leagueConfirmed, stamps, drafted.length]);
+
+  const readyLevel = worstOf(checks);
+
   const spent = teams.reduce((total, team) => total + team.spent, 0);
   const progress = players.length ? (drafted.length / players.length) * 100 : 0;
   const { season } = snapshotMeta();
@@ -1325,6 +1370,24 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             solid; what is set up once is quiet; what destroys work sits alone
             at the end in the colour of the thing it does. */}
           <div className="dr-topbar-group dr-topbar-live">
+            {/* Whether the board is actually set up.
+                Every catastrophic failure this app has is silent — a league at
+                the pool's defaults, a sheet that lost eight names, no team
+                marked as yours — and each of the individual warnings is only
+                seen by whoever opens the panel it lives in. This is in the top
+                bar because a checklist nobody opens is a checklist nobody has,
+                and it disappears entirely once there is nothing to say. */}
+            {readyLevel !== 'ready' && (
+              <button
+                type="button"
+                className="dr-ready"
+                data-level={readyLevel}
+                onClick={() => setReadyOpen(true)}
+                title="Something about this board is not set up. Open the checklist."
+              >
+                {checks.filter((check) => check.level !== 'ready').length} to fix
+              </button>
+            )}
             <button
               className="dr-button"
               onClick={undo}
@@ -2049,6 +2112,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           onClose={() => setLeagueOpen(false)}
         />
       )}
+
+      {readyOpen && <ReadinessPanel checks={checks} onClose={() => setReadyOpen(false)} />}
 
       {profileOpen && selected && (
         <PlayerProfile
