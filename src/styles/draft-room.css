@@ -494,6 +494,11 @@
   align-items: center;
   gap: var(--dr-s2);
   padding: 10px 11px 8px 13px;
+  /* Two name lines plus the meta line, whether or not the name wraps. Without
+     it a one-line name and a two-line name put every reading below them
+     nineteen pixels apart across a row, and a column of prices stopped being
+     a column. */
+  min-height: 74px;
 }
 
 .dr-card-photo {
@@ -546,17 +551,6 @@
   object-fit: cover;
   object-position: top center;
   background: var(--dr-raised);
-}
-
-.dr-card-logo {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  width: 54px;
-  height: 54px;
-  opacity: 0.07;
-  pointer-events: none;
 }
 
 .dr-card-id {
@@ -699,11 +693,11 @@
 }
 
 .dr-flag {
+  display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  align-self: flex-start;
-  margin-top: 2px;
+  flex: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -1351,7 +1345,9 @@
   }
 
   .dr-grid {
-    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+    /* One card across. Two 180px columns shattered every card into
+       overlapping text. */
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dr-stage-tiles {
@@ -2422,8 +2418,13 @@
 
 .dr-card.is-expanded {
   position: relative;
-  width: min(1180px, 94vw);
-  max-height: 92vh;
+  /* The screen it was raised to use. At 1180 it left six hundred pixels of an
+     1800px window dark on either side, and the two-column cap on the panel
+     below meant the width bought nothing anyway. A fixed height, not a
+     maximum: with `max-height` the card resized to each tab's content and the
+     tab bar moved under the cursor on every click. */
+  width: min(1600px, 94vw);
+  height: min(92vh, 1080px);
   display: grid;
   grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
   align-items: stretch;
@@ -2532,7 +2533,7 @@
  */
 .dr-card-detail .dr-tabpanel,
 .dr-profile .dr-tabpanel {
-  columns: 420px 2;
+  columns: 420px;
   column-gap: var(--dr-s3);
   padding: var(--dr-s3);
 }
@@ -2740,7 +2741,9 @@
 
 .dr-schedule-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  /* Two rows of nine. `auto-fit` at 44px fitted seventeen and orphaned week
+     eighteen on a row of its own. */
+  grid-template-columns: repeat(9, minmax(0, 1fr));
   gap: 3px;
   margin-top: 8px;
 }
@@ -3792,7 +3795,8 @@
   overflow: visible;
 }
 
-.dr-micro-whisker {
+.dr-micro-whisker,
+.dr-card-range > .dr-micro-outcome {
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
@@ -4008,13 +4012,13 @@
    already says which way it cuts. */
 .dr-card-news {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 6px 11px 0 13px;
   padding-left: 7px;
   border-left: 2px solid var(--dr-line-strong);
-  font-size: var(--dr-t-micro);
+  font-size: var(--dr-t-tiny);
   line-height: 1.35;
   color: var(--dr-ink-muted);
 }
@@ -4067,13 +4071,6 @@
    and unreadable, which is the same as absent. The bar is the standing within
    the position and the number beside it is the raw figure, so neither is ever
    the only evidence. */
-
-.dr-card-edge {
-  display: block;
-  margin: 0 11px 9px 13px;
-  font-size: var(--dr-t-micro);
-  line-height: 1.3;
-}
 
 .dr-table-sets {
   display: flex;
@@ -6320,4 +6317,125 @@ li[data-level='ready'] > .dr-checklist-mark {
 .dr-rail > .dr-empty {
   text-align: left;
   padding: 6px 0 0;
+}
+
+/* ---- card polish ---- */
+
+.dr-card-live-read-quiet {
+  justify-content: flex-end;
+}
+
+.dr-card-live-read-quiet em {
+  font-size: var(--dr-t-micro);
+}
+
+/* The seat pips sit at the end of the gain line, which is the sentence they
+   qualify: "+44 over the free man" and "into which of your seats" are one
+   reading. */
+.dr-card-gain {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s2);
+}
+
+.dr-card-gain > .dr-micro-slotfit {
+  margin-left: auto;
+  width: auto;
+  flex: none;
+}
+
+/* ---- dossier polish ---- */
+
+/* The research section is one box; dealt into a column it left the other
+   sixty per cent of the tab blank. */
+.dr-profile .dr-tabpanel > .dr-research,
+.dr-card-detail .dr-tabpanel > .dr-research {
+  column-span: all;
+  max-width: 920px;
+}
+
+/* One elevation step between a section and the panel it sits on. Both were
+   --dr-surface-2, so the "own surface" was a one-pixel line. */
+.dr-card-detail,
+.dr-stage-dossier {
+  background: var(--dr-surface);
+}
+
+/* A quadrant label that runs through the highlighted dot is unreadable both
+   ways; a halo in the ground colour separates them. */
+.dr-quadrant {
+  paint-order: stroke;
+  stroke: var(--dr-surface-2);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* The identity strip across the top of the raised dossier: who, how much,
+   and over whom — on every tab, not only the first. */
+.dr-detail-id {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s2);
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-detail-id .dr-face {
+  --dr-face-size: 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--dr-raised);
+  flex: none;
+}
+
+.dr-detail-name {
+  font-family: var(--dr-display);
+  font-size: var(--dr-t-lead);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-detail-price {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-title);
+  font-weight: 600;
+  color: var(--dr-good);
+  margin-left: var(--dr-s2);
+}
+
+.dr-detail-gain {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-small);
+  color: var(--dr-good);
+}
+
+.dr-detail-gain[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-detail-close {
+  margin-left: auto;
+}
+
+/* Cards size to their own content. Stretched to the tallest in the row, a card
+   with a one-line headline carried sixty pixels of bordered nothing under it
+   to match a neighbour with three lines and two chips. */
+.dr-grid {
+  align-items: start;
+}
+
+/* One line, with the pips at its end. The sentence wrapped under the pips and
+   the chip grew by a line on half the board. */
+.dr-card-gain > b,
+.dr-card-gain > span {
+  white-space: nowrap;
+}
+
+.dr-card-gain {
+  overflow: hidden;
 }

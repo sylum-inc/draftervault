@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { Player, PositionPulse } from '@/services/auctionDraftService';
 import { researchMark } from '@/services/playerResearch';
-import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
+import { getIdentity, teamColors } from '@/services/nflIdentity';
 import { accentFor, inkFor } from '@/lib/accent';
 import { Headshot } from './Headshot';
 import {
@@ -183,10 +183,8 @@ const PlayerCardView = ({
   const weeklyYear = historyReady ? weeklySeason(player.id) : null;
   const team = identity?.team ?? player.team;
   const { primary } = teamColors(team);
-  const logo = teamLogo(team);
 
   const usage = player.usage;
-  const edge = player.market?.edge ?? null;
 
   // What a freely available player at his position scores, recovered from the
   // two numbers the card already has. VORP is points over replacement, so
@@ -386,7 +384,6 @@ const PlayerCardView = ({
           actually reads in. The card went from 260px to about 150, so twice as
           many are on screen. */}
       <div className="dr-card-head">
-        {logo && <img className="dr-card-logo" src={logo} alt="" aria-hidden="true" />}
         <Headshot
           identity={identity}
           fallbackName={player.name}
@@ -402,6 +399,14 @@ const PlayerCardView = ({
             <span className="dr-tier dr-num" data-tier={player.tier}>
               T{player.tier}
             </span>
+            {/* A fact about the player like every other chip on this line. As a
+                fourth grid child it overflowed into a row of its own under the
+                photo — sixteen pixels on every card for one six-pixel dot. */}
+            <span
+              className="dr-flag"
+              style={{ background: RISK_COLOR[player.injuryRisk] }}
+              title={`${player.injuryRisk.toLowerCase()} injury risk`}
+            />
             {mark && mark.direction !== 'NEUTRAL' && (
               <span
                 className="dr-card-research dr-research-mark"
@@ -449,12 +454,6 @@ const PlayerCardView = ({
         >
           ${player.estimatedValue}
         </span>
-
-        <span
-          className="dr-flag"
-          style={{ background: RISK_COLOR[player.injuryRisk] }}
-          title={`${player.injuryRisk.toLowerCase()} injury risk`}
-        />
       </div>
 
       {/* The season's shape, on its own line and at the card's own width.
@@ -478,15 +477,20 @@ const PlayerCardView = ({
                 replacement={pulse.replacement}
                 label={`${pulse.startable} ${player.position}s left above replacement of ${pulse.left} undrafted. He is the ${shelfIndex >= 0 ? `number ${shelfIndex + 1}` : 'not among the'} best left.`}
               />
-              <RunTape
-                gone={pulse.goneRecently}
-                window={pulse.window}
-                label={`${pulse.goneRecently} of the last ${pulse.window || 10} picks were ${player.position}s`}
-              />
+              {/* Only once there is a window to read: ten empty cells before
+                  the first pick were a strip of nothing on sixty cards. */}
+              {pulse.window > 0 && (
+                <RunTape
+                  gone={pulse.goneRecently}
+                  window={pulse.window}
+                  label={`${pulse.goneRecently} of the last ${pulse.window} picks were ${player.position}s`}
+                />
+              )}
             </span>
-            <span className="dr-card-live-read">
-              <b className="dr-num">{pulse.startable}</b>
-              <em>startable</em>
+            {/* Quiet, because it is the same number on every card at the
+                position — the sockets already show it. */}
+            <span className="dr-card-live-read dr-card-live-read-quiet">
+              <em>{pulse.startable} left</em>
             </span>
           </div>
 
@@ -499,21 +503,14 @@ const PlayerCardView = ({
                 label={`He lists at $${player.estimatedValue}; you can go to $${pulse.myCeiling}; ${pulse.rivals.filter((ceiling) => ceiling > player.estimatedValue).length} teams with room here can beat that price.`}
               />
             </span>
-            <span
-              className="dr-card-live-read"
-              title={
-                gainSlot === 'bench'
-                  ? 'Your seats at his position and your flex are both full'
-                  : `${pulse.slotsFilled} of ${pulse.slotsTotal} ${player.position} seats filled${pulse.flexOpen ? ', flex still open' : ''}`
-              }
-            >
-              <SlotFit
-                total={pulse.slotsTotal}
-                filled={pulse.slotsFilled}
-                flexOpen={pulse.flexOpen}
-                label={`${pulse.slotsFilled} of ${pulse.slotsTotal} starting ${player.position} seats filled`}
-              />
-              <em>{pulse.rivals.filter((c) => c > player.estimatedValue).length} can beat</em>
+            {/* The count belongs with the bar it reads: how many teams with room
+                here can still go past his price. It was the quiet caption under
+                the seat pips, labelling an instrument in the other column. */}
+            <span className="dr-card-live-read">
+              <b className="dr-num">
+                {pulse.rivals.filter((ceiling) => ceiling > player.estimatedValue).length}
+              </b>
+              <em>can beat</em>
             </span>
           </div>
         </div>
@@ -711,6 +708,14 @@ const PlayerCardView = ({
               {gainLow === gainHigh ? `over ${gainFree ?? 'free'}` : 'over the free man'}
             </>
           )}
+          {pulse && (
+            <SlotFit
+              total={pulse.slotsTotal}
+              filled={pulse.slotsFilled}
+              flexOpen={pulse.flexOpen}
+              label={`${pulse.slotsFilled} of ${pulse.slotsTotal} starting ${player.position} seats filled${pulse.flexOpen ? ', flex still open' : ''}`}
+            />
+          )}
         </span>
       )}
 
@@ -731,22 +736,6 @@ const PlayerCardView = ({
             </span>
           ))}
         </div>
-      )}
-
-      {edge != null && Math.abs(edge) >= 8 && (
-        <span
-          className="dr-card-edge"
-          style={{ color: edge > 0 ? 'var(--dr-value)' : 'var(--dr-caution)' }}
-          title={
-            edge > 0
-              ? `Expert consensus ranks him ${edge} spots below our board`
-              : `Expert consensus ranks him ${Math.abs(edge)} spots above our board`
-          }
-        >
-          {edge > 0
-            ? `${edge} spots cheaper than consensus`
-            : `${Math.abs(edge)} spots hotter than us`}
-        </span>
       )}
     </>
   );
@@ -814,8 +803,10 @@ const PlayerCardView = ({
           <button
             type="button"
             className="dr-back-btn"
-            aria-label={`Turn ${player.name} back over`}
-            title="Back to the front"
+            aria-label={
+              expanded ? `Back to ${player.name}'s card` : `Turn ${player.name} back over`
+            }
+            title={expanded ? 'Back to the card' : 'Back to the front'}
             onClick={(event) => {
               event.stopPropagation();
               onFlip(player.id);
@@ -1276,13 +1267,46 @@ const PlayerCardView = ({
       >
         <div className="dr-card-back">{back}</div>
         <div className="dr-card-detail">
+          {/* Who, how much, and over whom — on every tab. The price and the
+              gain lived only in the Overview tiles, so on seven of the eight
+              tabs the number a bid is decided on was nowhere on the screen. */}
           <div className="dr-card-detail-bar">
+            <span className="dr-detail-id">
+              <Headshot
+                identity={identity}
+                fallbackName={player.name}
+                width={56}
+                className="dr-detail-face"
+              />
+              <span className="dr-detail-name">{identity?.name ?? player.name}</span>
+              <span className="dr-pos">{player.position}</span>
+              <span className="dr-detail-price">${player.estimatedValue}</span>
+              {gainHigh != null && gainSlot !== 'bench' && (
+                <span
+                  className="dr-detail-gain"
+                  data-tone={gainHigh > 0 ? undefined : 'warn'}
+                  title={`Points over ${gainFree ?? 'the free man'}, free in the snake`}
+                >
+                  {gainLow == null || gainLow === gainHigh
+                    ? `${gainHigh > 0 ? '+' : ''}${gainHigh}`
+                    : `${gainLow > 0 ? '+' : ''}${gainLow}…${gainHigh > 0 ? '+' : ''}${gainHigh}`}{' '}
+                  over free
+                </span>
+              )}
+            </span>
             <button type="button" className="dr-button" onClick={() => onSelect(player)}>
               Put him on the block
             </button>
-            <span className="dr-footnote" style={{ margin: 0 }}>
-              The board is still behind you, exactly where it was.
-            </span>
+            {onFlip && (
+              <button
+                type="button"
+                className="dr-button dr-detail-close"
+                onClick={() => onFlip(player.id)}
+                title="Back to the card — or press Escape"
+              >
+                Close · Esc
+              </button>
+            )}
           </div>
           {detail}
         </div>

@@ -304,7 +304,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    */
   const originOf = (rect: DOMRect | undefined) => {
     if (!rect || typeof window === 'undefined') return null;
-    const width = Math.min(1180, window.innerWidth * 0.94);
+    const width = Math.min(1600, window.innerWidth * 0.94);
     return {
       dx: rect.left + rect.width / 2 - window.innerWidth / 2,
       dy: rect.top + rect.height / 2 - window.innerHeight / 2,

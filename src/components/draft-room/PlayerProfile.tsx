@@ -40,7 +40,6 @@ import {
 import { offenceNorm, positionNorm } from '@/lib/positionNorms';
 import { modelCaveats } from '@/lib/modelTrust';
 import { pointsFor, type LeagueShape } from '@/lib/valuation';
-import { SeasonMultiples } from './charts/SeasonMultiples';
 import { ScheduleStrip, type ScheduleGame } from './charts/ScheduleStrip';
 import { PositionSwarm, type SwarmPoint } from './charts/PositionSwarm';
 import { OutcomeCurve } from './charts/OutcomeCurve';
@@ -128,9 +127,6 @@ const ordinal = (value: number): string => {
   if (tens >= 11 && tens <= 13) return `${value}th`;
   return `${value}${['th', 'st', 'nd', 'rd'][value % 10] ?? 'th'}`;
 };
-
-const money = (value: number | undefined): string =>
-  typeof value === 'number' && Number.isFinite(value) ? `$${Math.round(value)}` : '—';
 
 const statColumns = (position: string): Array<[string, (season: PlayerSeason) => string]> => {
   if (position === 'QB') {
@@ -234,9 +230,15 @@ export const PlayerProfile = ({
         ['research', 'Research'],
       ];
 
+  const firstTabRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    closeRef.current?.focus();
-  }, []);
+    // The modal focuses its close button. Raised inline, nothing received focus
+    // and a keyboard user landed at the top of the document behind the scrim;
+    // the tab bar is the reason it was raised. The spotlight is inline too but
+    // not escapable, and there focus belongs to the bid box.
+    if (inline && escapable) firstTabRef.current?.focus();
+    else closeRef.current?.focus();
+  }, [inline, escapable]);
 
   useDismissOnEscape(onClose, escapable);
 
@@ -452,22 +454,28 @@ export const PlayerProfile = ({
     [player.position, player.age, player.gamesObserved, player.modelRank, player.market]
   );
 
+  /* The whole position, for the scatter — which fades the men already gone and
+     so wants them in the picture. */
   const cohort = useMemo(
     () => players.filter((other) => other.position === player.position),
     [players, player.position]
   );
 
+  /* Over the startable cohort, like every other instrument here. Over all of
+     the position the median running back sat *below* replacement and the value
+     swarm piled at $1 — a picture of the pool's depth, not of the men he is
+     competing with for a seat. */
   const swarmOf = useMemo(
     () =>
       (read: (p: Player) => number | null | undefined): SwarmPoint[] =>
-        cohort
+        startable
           .map((other) => ({
             id: other.id,
             name: getIdentity(other.id)?.name ?? other.name,
             value: read(other) ?? Number.NaN,
           }))
           .filter((point) => Number.isFinite(point.value)),
-    [cohort]
+    [startable]
   );
 
   const opportunityScatter = useMemo<ScatterPoint[]>(
@@ -556,9 +564,10 @@ export const PlayerProfile = ({
       )}
 
       <div className="dr-tabs" role="tablist" aria-label="Player detail">
-        {tabs.map(([key, label]) => (
+        {tabs.map(([key, label], index) => (
           <button
             key={key}
+            ref={index === 0 ? firstTabRef : undefined}
             type="button"
             role="tab"
             aria-selected={tab === key}
@@ -646,6 +655,7 @@ export const PlayerProfile = ({
               floor={player.floor}
               ceiling={player.upside}
               replacement={replacement ?? replacementPoints ?? null}
+              gain={gain}
             />
           </section>
 
@@ -919,12 +929,34 @@ export const PlayerProfile = ({
           {history && history.length > 1 && (
             <section className="dr-modal-section">
               <h3 className="dr-eyebrow">Season on season</h3>
-              <SeasonMultiples seasons={history} />
+              {/* Three game logs, not three polylines. The sparkline this
+                  replaced joined games with a line, stretched a fifteen-game
+                  season to the width of a seventeen-game one and drew no
+                  replacement rule — the three things the GameLog above it was
+                  built to stop doing, redrawn sixty pixels under it. Same
+                  instrument, same bar, same scale, so the seasons compare. */}
+              <div className="dr-multiples">
+                {history.slice(-3).map((season) => (
+                  <figure className="dr-multiple" key={season.season}>
+                    <figcaption>
+                      <b>{season.season}</b> <em>{season.games} games</em>
+                    </figcaption>
+                    <GameLog
+                      weeks={season.weekly}
+                      replacement={(replacement ?? replacementPoints ?? 0) / 17}
+                      strongWeek={(positionNorm(player.position, 'ppg')?.top ?? 10) * 2}
+                      label={`${player.name}: points in each ${season.season} game against replacement level`}
+                      width={150}
+                      height={34}
+                    />
+                  </figure>
+                ))}
+              </div>
             </section>
           )}
 
           {history && history.length > 0 && (
-            <section className="dr-modal-section">
+            <section className="dr-modal-section dr-full">
               <h3 className="dr-eyebrow">Totals</h3>
               <div className="dr-table-wrap">
                 <table className="dr-table dr-table-compact">
@@ -1227,30 +1259,6 @@ export const PlayerProfile = ({
               </p>
             </section>
           )}
-
-          <section className="dr-modal-section">
-            <h3 className="dr-eyebrow">Background</h3>
-            <dl className="dr-facts">
-              <div>
-                <dt>Age</dt>
-                <dd>{identity?.age ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Experience</dt>
-                <dd>{identity?.experience != null ? `${identity.experience} yr` : '—'}</dd>
-              </div>
-              <div>
-                <dt>College</dt>
-                <dd>{identity?.college ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Games missed</dt>
-                <dd>
-                  {player.injuryRisk === 'LOW' ? 'few or none' : player.injuryRisk.toLowerCase()}
-                </dd>
-              </div>
-            </dl>
-          </section>
         </div>
       )}
 
@@ -1847,20 +1855,20 @@ export const PlayerProfile = ({
                 <dt>Tier</dt>
                 <dd>{player.tier}</dd>
               </div>
-              <div>
-                <dt title="Position gone: how much of what this position had for sale is already off the board">
-                  Position gone
-                </dt>
-                <dd>{analytics ? `${Math.round(analytics.positionScarcity * 100)}%` : '—'}</dd>
-              </div>
-              <div>
-                <dt title="How much of this player we have actually seen play">Confidence</dt>
-                <dd>{analytics ? `${analytics.confidenceLevel}%` : '—'}</dd>
-              </div>
-              <div>
-                <dt>Our own number</dt>
-                <dd>{money(player.modelValue)}</dd>
-              </div>
+              {analytics && (
+                <div>
+                  <dt title="Position gone: how much of what this position had for sale is already off the board">
+                    Position gone
+                  </dt>
+                  <dd>{`${Math.round(analytics.positionScarcity * 100)}%`}</dd>
+                </div>
+              )}
+              {analytics && (
+                <div>
+                  <dt title="How much of this player we have actually seen play">Confidence</dt>
+                  <dd>{`${analytics.confidenceLevel}%`}</dd>
+                </div>
+              )}
             </dl>
             <p className="dr-footnote">
               {analytics

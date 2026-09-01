@@ -174,9 +174,9 @@ export const MetricStrip = ({
             x2={x(point.value)}
             y1={axis - 4}
             y2={axis + 4}
-            stroke={hover?.id === point.id ? INK : FAINT}
-            strokeWidth={hover?.id === point.id ? 1.6 : 1}
-            opacity={hover?.id === point.id ? 1 : 0.55}
+            stroke={hover?.id === point.id ? INK : 'var(--dr-ink-faint)'}
+            strokeWidth={hover?.id === point.id ? 1.6 : 1.1}
+            opacity={hover?.id === point.id ? 1 : 0.8}
           />
         ))}
         {reference && (
@@ -194,9 +194,9 @@ export const MetricStrip = ({
         {/* The middle of the field, under the axis so it cannot be mistaken for
             another player. */}
         <path
-          d={`M${x(model.median) - 3} ${axis + 9} L${x(model.median)} ${axis + 4} L${x(model.median) + 3} ${axis + 9} Z`}
+          d={`M${x(model.median) - 4} ${axis + 10} L${x(model.median)} ${axis + 4} L${x(model.median) + 4} ${axis + 10} Z`}
           fill={INK}
-          opacity={0.4}
+          opacity={0.7}
         />
         {model.mine && (
           <>
@@ -504,6 +504,8 @@ interface ThresholdProps {
   floor: number;
   ceiling: number;
   replacement: number | null;
+  /** Points over the free man, so the slider can open on *him* rather than on replacement. */
+  gain?: number | null;
 }
 
 /** The standard normal tail, good to about four decimal places. Abramowitz and
@@ -533,7 +535,13 @@ const tailAbove = (z: number): number => {
  * half their spread and the tail is an ordinary normal one. It opens on
  * replacement level, which is the threshold the whole board is built around.
  */
-export const Threshold = ({ projection, floor, ceiling, replacement }: ThresholdProps) => {
+export const Threshold = ({
+  projection,
+  floor,
+  ceiling,
+  replacement,
+  gain = null,
+}: ThresholdProps) => {
   const sd = Math.max((ceiling - floor) / 2, 1);
   /*
    * Replacement level is inside the range or the slider lies about where it is.
@@ -544,8 +552,17 @@ export const Threshold = ({ projection, floor, ceiling, replacement }: Threshold
    */
   const low = Math.max(0, Math.round(Math.min(floor - sd, replacement ?? floor)));
   const high = Math.round(Math.max(ceiling + sd, replacement ?? ceiling));
+  // Opens on the free man's number where one is known. On replacement it read
+  // "100% chance he clears 72 points" for every player worth raising a card
+  // on, because replacement sits well below a good player's floor.
   const [at, setAt] = useState(() =>
-    Math.min(high, Math.max(low, Math.round(replacement ?? projection)))
+    Math.min(
+      high,
+      Math.max(
+        low,
+        Math.round(gain != null && gain > 0 ? projection - gain : (replacement ?? projection))
+      )
+    )
   );
   // P(X > at) with X normal about the projection, which is Q of the *standard-
   // ised threshold* — not of the distance back to the mean. Written the other

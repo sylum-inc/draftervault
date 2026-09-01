@@ -155,16 +155,24 @@ const GameLogView = ({
           // A week he was not there. An empty socket at the baseline, because
           // "no game" and "a bad game" are different facts and a line could not
           // tell them apart.
+          // Drawn as an outlined socket at the column's full height rather
+          // than a 1.5px sliver in the same grey as a bad week: on a near-black
+          // ground two opacities of one grey are one grey, and "was not there"
+          // and "was there and was bad" are the two facts this strip exists to
+          // keep apart.
           return (
             <rect
               key={index}
-              x={x}
-              y={base - 1.5}
-              width={bar}
-              height={1.5}
-              rx={0.75}
-              fill={FAINT}
-              opacity={0.5}
+              x={x + 0.5}
+              y={1}
+              width={Math.max(0.5, bar - 1)}
+              height={base - 1}
+              rx={1}
+              fill="none"
+              stroke={FAINT}
+              strokeWidth={0.75}
+              strokeDasharray="1.5 1.5"
+              opacity={0.55}
             />
           );
         }
@@ -178,8 +186,8 @@ const GameLogView = ({
             width={bar}
             height={tall}
             rx={1}
-            fill={beat ? GOOD : FAINT}
-            opacity={beat ? 0.9 : 0.75}
+            fill={beat ? GOOD : 'var(--dr-ink-faint)'}
+            opacity={beat ? 0.9 : 0.8}
           />
         );
       })}
@@ -363,6 +371,10 @@ const RoleFieldView = ({
   const my = up(shareMedian, shareTop);
   // Two to five pixels: enough range to read, never enough to swamp the field.
   const r = 2 + Math.max(0, Math.min(1, redZone / (redZoneTop || 1))) * 3;
+  // Inside the plot, halo included. A pinned player's mark ran past the edge
+  // of a 54px field and was clipped to a crescent.
+  const px = Math.min(Math.max(cx, pad + r + 2), size - pad - r - 2);
+  const py = Math.min(Math.max(cy, pad + r + 2), size - pad - r - 2);
   // The quadrant sets the tone, which states the reading a second way for
   // anybody scanning a column rather than studying one card.
   const strong = cx >= mx && cy <= my;
@@ -422,8 +434,8 @@ const RoleFieldView = ({
           </text>
         </g>
       )}
-      <circle cx={cx} cy={cy} r={r + 1.8} fill={strong ? GOOD : WARN} opacity={0.18} />
-      <circle cx={cx} cy={cy} r={r} fill={strong ? GOOD : WARN} opacity={0.95} />
+      <circle cx={px} cy={py} r={r + 1.8} fill={strong ? GOOD : WARN} opacity={0.18} />
+      <circle cx={px} cy={py} r={r} fill={strong ? GOOD : WARN} opacity={0.95} />
     </svg>
   );
 };
@@ -478,7 +490,13 @@ const ShelfView = ({ shelf, mine, replacement, label, width = 150, height = 22 }
   if (!shelf.length) return null;
   const surplus = (points: number) => Math.max(0, points - replacement);
   const scale = Math.max(surplus(shelf[0]), 1);
-  const slot = width / Math.max(shelf.length, 8);
+  // Sixteen sockets, always. With the column count following the list, the
+  // strip redrew itself to fill the width as the position drained, so it
+  // could never be seen to empty — sixteen columns beside a label reading 48,
+  // and the same sixteen beside one reading 12. Fixed sockets fill from the
+  // left and the empty ones stay as outlines, so what is gone is visible.
+  const sockets = 16;
+  const slot = width / sockets;
   const bar = Math.max(2, Math.min(6, slot - 1.6));
   const base = height - 1;
 
@@ -495,7 +513,24 @@ const ShelfView = ({ shelf, mine, replacement, label, width = 150, height = 22 }
       {/* Replacement level is the floor of the picture, so it needs no line:
           a column of no height is a player worth nothing over a free one. */}
       <line x1={0} x2={width} y1={base} y2={base} stroke={FAINT} strokeWidth={0.75} opacity={0.5} />
-      {shelf.map((points, index) => {
+      {Array.from({ length: sockets }, (_, index) => {
+        const points = shelf[index];
+        if (points == null) {
+          return (
+            <rect
+              key={index}
+              x={index * slot + (slot - bar) / 2}
+              y={base - 2}
+              width={bar}
+              height={2}
+              rx={0.5}
+              fill="none"
+              stroke={FAINT}
+              strokeWidth={0.6}
+              opacity={0.5}
+            />
+          );
+        }
         const tall = Math.max(1, (surplus(points) / scale) * (height - 2));
         const above = points > replacement;
         const isHim = index === mine;
@@ -553,7 +588,10 @@ const RunTapeView = ({
   // Loud once a third of the room's recent business has been at this position;
   // below that it is noise, and a tape that shouts at one pick means nothing at
   // four — the same banding the export counter already lives by.
-  const hot = window > 0 && gone / window >= 0.3;
+  // Four of ten is a run; three of ten at a position with three starting
+  // seats a team is the room filling seats, and lit every card amber all
+  // night.
+  const hot = window > 0 && gone / window >= 0.4;
 
   return (
     <svg
@@ -573,8 +611,8 @@ const RunTapeView = ({
           width={bar}
           height={height}
           rx={1}
-          fill={index < gone ? (hot ? WARN : GOOD) : TRACK}
-          opacity={index < gone ? 0.9 : 0.7}
+          fill={index < gone ? (hot ? WARN : GOOD) : 'var(--dr-line)'}
+          opacity={index < gone ? 0.9 : 0.9}
         />
       ))}
     </svg>
