@@ -659,6 +659,50 @@ the median starter: top right is a bell cow, top left a specialist, bottom right
 a decoy, bottom left a backup. The mark's size is red-zone work, a premium on
 the other two rather than an independent question.
 
+**Half a card is what a player _is_; the other half is what the room has
+_done_.** Everything on the card read the same at pick one and at pick a
+hundred and fifty, which for an auction is most of the information missing. The
+live band holds four readings that move, marked off with its own ground so the
+distinction is visible: what is left, how fast it is going, whether you still
+need one, and who can still outbid you.
+
+The **shelf** is the undrafted men at his position as columns, best first, with
+him lit — and its baseline is _replacement level, not zero_. From zero the
+sixteen best backs left are 270 down to 190 and the shelf is sixteen
+near-identical columns, a picture of a position rather than a reading of one.
+From replacement the columns are surplus, which is the only part anybody bids
+on, so the step down from his column to the next is the cliff you are actually
+paying for. It empties as the room drafts, and it counts both halves of the
+draft: a receiver taken in the snake is exactly as unavailable as one bought
+for forty dollars.
+
+The **run tape** is the last ten picks as ten cells, lit for the ones at his
+position, amber past a third. A run is the one genuinely urgent thing in an
+auction and it is invisible in any static number.
+
+The **seat pips** are your own starting slots at his position, filled for the
+ones you have bought, with the seat he would take outlined and a diamond for
+the flex. The most expensive mistake in this format is buying a third running
+back at starter money, and the board will quote a big number for him because
+the number is about the player.
+
+The **money bite** is his price against your own ceiling — the same
+`spendableFor` `validateBid` uses, so a number read off a card is a number the
+engine will accept — with a tick for every opponent who can still go past it.
+
+**A pick moves every position's money, and that had to be measured rather than
+claimed away.** The first test asserted that buying a running back left the
+receiver pulse untouched, and it failed — correctly. Supply is local; money is
+not, because forty dollars spent on a back is forty dollars unavailable for a
+receiver. So the whole board really does re-render on a sale, and the cost is
+real: nominating went 773ms to 1099ms under a 4x CPU throttle. Hoisting
+`spendableFor` out of the per-position loop bought 24ms, which was the tell —
+the cost is React rebuilding sixty element trees, not the arithmetic. Memoising
+the four instruments that describe a _player_ (their props are numbers, strings
+and two arrays that come from module caches) and comparing the live arrays by
+contents rather than by reference brought it to 921ms, and there it was left.
+About 230ms unthrottled, against the 4340ms the board began at.
+
 **The scale cannot come from the board, and getting that wrong made both
 instruments useless in the same way.** `positionNorms.ts` takes the median and
 the ninetieth percentile per position — but over the players the league

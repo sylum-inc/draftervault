@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 /**
  * Micro-instruments: small enough to sit inside a card, shaped by what they
  * measure.
@@ -27,6 +29,14 @@
  * Hand-drawn SVG with no library, for the reason the rest of `charts/` is: the
  * published artifact's CSP blocks every external host, and a chart nobody can
  * render on the night is worse than a number.
+ *
+ * The four that describe a *player* are memoised; the four that describe the
+ * *draft* are not, and the split is deliberate. A pick moves what every team
+ * can pay, so the live half of every card on the board is genuinely stale the
+ * moment anybody buys anybody — but a player's season, range and role are not,
+ * and reconciling sixty of each on every sale cost three hundred milliseconds
+ * for a picture that had not changed. Their props are numbers, strings and two
+ * arrays that come from module caches, so the bail-out is exact.
  */
 
 const INK = 'var(--dr-ink)';
@@ -82,7 +92,7 @@ interface GameLogProps {
  * a game and a starter scores fifteen, so at two and a half times replacement
  * every column on every card pinned and the strip said nothing at all.
  */
-export const GameLog = ({
+const GameLogView = ({
   weeks,
   replacement,
   strongWeek,
@@ -187,7 +197,7 @@ interface OutcomeProps {
  * mass under the free man is a different bid from one with the same projection
  * and none of it, and "floor 253" never said so.
  */
-export const Outcome = ({
+const OutcomeView = ({
   floor,
   projection,
   ceiling,
@@ -302,7 +312,7 @@ interface RoleFieldProps {
  * argument for small multiples, and the thing three self-scaled dials could
  * never do.
  */
-export const RoleField = ({
+const RoleFieldView = ({
   snap,
   snapMedian,
   snapTop,
@@ -376,6 +386,332 @@ export const RoleField = ({
   );
 };
 
+/* ==========================================================================
+   The live half.
+
+   Everything above is a fact about the player and reads the same at pick one
+   and at pick a hundred and fifty. These four move as the room drafts, and
+   between them they are the reason an auction is played rather than
+   calculated: what is left, how fast it is going, whether you still need one,
+   and who can still take him off you.
+   ========================================================================== */
+
+interface ShelfProps {
+  /** Projected points of the best undrafted men here, best first. */
+  shelf: readonly number[];
+  /** Where in that list he is, or -1 when he is already gone. */
+  mine: number;
+  /** Replacement level, drawn as the line worth clearing. */
+  replacement: number;
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * What is left at his position, and what the fall is after him.
+ *
+ * The question an auction actually turns on is not what a player is worth, it
+ * is *what happens if I do not buy him* — and the answer is standing right
+ * next to him on the shelf. One column per undrafted man at his position, best
+ * first, with him lit and a rule at replacement level. The step down from his
+ * column to the next one is the thing you are paying for, and it is the only
+ * number here nobody at the table is computing.
+ *
+ * It empties. Columns vanish as the room drafts, so a position going hollow is
+ * something you watch happen rather than something you are told about after
+ * the fact. Supply counts both halves of a hybrid draft: a receiver taken in
+ * the snake is exactly as unavailable as one bought for forty dollars, and
+ * waiting for him is exactly as impossible.
+ *
+ * **The baseline is replacement level, not zero**, and that is what makes the
+ * cliff visible. Drawn from zero, the sixteen best backs left are two hundred
+ * and seventy points down to a hundred and ninety and the shelf is sixteen
+ * near-identical columns — a picture of a position rather than a reading of
+ * one. Drawn from replacement the columns are *surplus*, which is the only
+ * part anybody is bidding on, and a two-man position with a chasm behind them
+ * looks like a two-man position with a chasm behind them.
+ */
+const ShelfView = ({ shelf, mine, replacement, label, width = 150, height = 22 }: ShelfProps) => {
+  if (!shelf.length) return null;
+  const surplus = (points: number) => Math.max(0, points - replacement);
+  const scale = Math.max(surplus(shelf[0]), 1);
+  const slot = width / Math.max(shelf.length, 8);
+  const bar = Math.max(2, Math.min(6, slot - 1.6));
+  const base = height - 1;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-shelf"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+      preserveAspectRatio="none"
+    >
+      {/* Replacement level is the floor of the picture, so it needs no line:
+          a column of no height is a player worth nothing over a free one. */}
+      <line x1={0} x2={width} y1={base} y2={base} stroke={FAINT} strokeWidth={0.75} opacity={0.5} />
+      {shelf.map((points, index) => {
+        const tall = Math.max(1, (surplus(points) / scale) * (height - 2));
+        const above = points > replacement;
+        const isHim = index === mine;
+        return (
+          <rect
+            key={index}
+            x={index * slot + (slot - bar) / 2}
+            y={base - tall}
+            width={bar}
+            height={tall}
+            rx={1}
+            fill={isHim ? INK : above ? GOOD : FAINT}
+            opacity={isHim ? 1 : above ? 0.55 : 0.4}
+          />
+        );
+      })}
+    </svg>
+  );
+};
+
+interface RunTapeProps {
+  /** How many of the window's picks were at this position. */
+  gone: number;
+  /** How many picks the window holds — ten once the draft is running. */
+  window: number;
+  label: string;
+  cells?: number;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * How fast his position is going, as a tape of the last ten picks.
+ *
+ * A run is the one thing in an auction that is genuinely urgent, and it is
+ * invisible in any static number: four backs off the board in ten picks means
+ * the room has decided backs are scarce, and the price of the next one has
+ * already moved whatever the board says. Ten cells, lit for the picks that were
+ * this position.
+ *
+ * Deliberately not a percentage. "Forty per cent" is a rate and invites the
+ * question over what; ten cells with four lit is a count of things that
+ * happened, which is what it is.
+ */
+const RunTapeView = ({
+  gone,
+  window,
+  label,
+  cells = 10,
+  width = 150,
+  height = 5,
+}: RunTapeProps) => {
+  const slot = width / cells;
+  const bar = Math.max(2, slot - 2.5);
+  // Loud once a third of the room's recent business has been at this position;
+  // below that it is noise, and a tape that shouts at one pick means nothing at
+  // four — the same banding the export counter already lives by.
+  const hot = window > 0 && gone / window >= 0.3;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-runtape"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+      preserveAspectRatio="none"
+    >
+      {Array.from({ length: cells }, (_, index) => (
+        <rect
+          key={index}
+          x={index * slot + (slot - bar) / 2}
+          y={0}
+          width={bar}
+          height={height}
+          rx={1}
+          fill={index < gone ? (hot ? WARN : GOOD) : TRACK}
+          opacity={index < gone ? 0.9 : 0.7}
+        />
+      ))}
+    </svg>
+  );
+};
+
+interface SlotFitProps {
+  /** Starting slots the league fields at his position. */
+  total: number;
+  /** How many of them you have already filled. */
+  filled: number;
+  /** Whether a flex seat is still open to this position. */
+  flexOpen: boolean;
+  label: string;
+  size?: number;
+}
+
+/**
+ * Whether you still need one, drawn as the seats themselves.
+ *
+ * The most expensive mistake available in this format is buying a third
+ * running back at starter money, and the board will happily quote a big number
+ * for him because the number is about the player. This is about the player
+ * *and your roster*: one pip per starting seat at his position, filled for the
+ * ones you have bought, and the seat he would take outlined. When they are all
+ * full the flex pip is the seat, and when that is gone too there is no seat and
+ * the row says so.
+ *
+ * A count in words — "2 of 2 filled" — needs reading. Seats are countable at a
+ * glance, and the outlined one is the answer to the only question being asked.
+ */
+const SlotFitView = ({ total, filled, flexOpen, label, size = 9 }: SlotFitProps) => {
+  const seats = Math.max(0, total);
+  const takes = filled < seats ? filled : flexOpen ? seats : -1;
+  const gap = 4;
+  const count = seats + (seats > 0 || flexOpen ? 1 : 0);
+  const width = count * size + (count - 1) * gap;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-slotfit"
+      width={width}
+      height={size}
+      viewBox={`0 0 ${width} ${size}`}
+      role="img"
+      aria-label={label}
+    >
+      {Array.from({ length: seats }, (_, index) => {
+        const taken = index < filled;
+        const next = index === takes;
+        return (
+          <circle
+            key={index}
+            cx={index * (size + gap) + size / 2}
+            cy={size / 2}
+            r={size / 2 - 1}
+            fill={taken ? GOOD : 'none'}
+            stroke={next ? GOOD : taken ? GOOD : FAINT}
+            strokeWidth={next ? 1.75 : 1}
+            opacity={taken ? 0.85 : 1}
+          />
+        );
+      })}
+      {/* The flex, drawn as a different shape because it is a different kind of
+          seat: any of three positions may sit in it, so it is a slot he
+          competes for rather than one he owns. */}
+      {(seats > 0 || flexOpen) && (
+        <rect
+          x={seats * (size + gap) + 1}
+          y={1}
+          width={size - 2}
+          height={size - 2}
+          rx={1.5}
+          transform={`rotate(45 ${seats * (size + gap) + size / 2} ${size / 2})`}
+          fill="none"
+          stroke={takes === seats ? WARN : FAINT}
+          strokeWidth={takes === seats ? 1.75 : 1}
+          opacity={flexOpen ? 1 : 0.35}
+        />
+      )}
+    </svg>
+  );
+};
+
+interface MoneyBiteProps {
+  /** What the board says he costs. */
+  price: number;
+  /** The most you may legally bid, from the engine's own ceiling. */
+  mine: number;
+  /** What every opponent with room here could go to, highest first. */
+  rivals: readonly number[];
+  label: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * What he costs against what you have, and who can still go past it.
+ *
+ * Two facts that are only meaningful together. A forty-dollar player is cheap
+ * with ninety in your pocket and unbuyable with thirty, and neither of those is
+ * on a card that prints a price. And the ceilings above the track are the
+ * answer to the question that actually loses players: **how many of them can
+ * still beat me.** In this format that number is higher than the room expects,
+ * because there is no reserve to hold money back — believing an opponent is
+ * tapped out when they are not is how a board loses the players it wanted.
+ *
+ * The scale is dollars throughout, so the price, your ceiling and theirs are
+ * all the same axis and can be read off against each other without arithmetic.
+ * The price is the list price rather than tonight's inflated one, deliberately:
+ * the adjusted figure moves on every pick, and putting it here would re-render
+ * every card on the board for a number the nomination stage already carries at
+ * the moment it decides anything.
+ */
+const MoneyBiteView = ({
+  price,
+  mine,
+  rivals,
+  label,
+  width = 150,
+  height = 12,
+}: MoneyBiteProps) => {
+  const scale = Math.max(mine, rivals[0] ?? 0, price, 1);
+  const at = (value: number) => (value / scale) * width;
+  const trackY = height - 5;
+  const beat = rivals.filter((ceiling) => ceiling > price).length;
+
+  return (
+    <svg
+      className="dr-micro dr-micro-money"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={label}
+      preserveAspectRatio="none"
+    >
+      {/* Your money, as the track. */}
+      <rect x={0} y={trackY} width={at(mine)} height={4} rx={2} fill={TRACK} />
+      {/* What he takes out of it. Amber once he costs more than you can pay,
+          which is a different situation from expensive. */}
+      <rect
+        x={0}
+        y={trackY}
+        width={Math.min(at(price), width)}
+        height={4}
+        rx={2}
+        fill={price > mine ? WARN : GOOD}
+        opacity={0.85}
+      />
+      {/* Every opponent who can still outbid you, at the dollar they stop. */}
+      {rivals.slice(0, 11).map((ceiling, index) => (
+        <line
+          key={index}
+          x1={at(ceiling)}
+          x2={at(ceiling)}
+          y1={0}
+          y2={trackY - 1.5}
+          stroke={ceiling > price ? WARN : FAINT}
+          strokeWidth={1}
+          opacity={ceiling > price ? 0.7 : 0.35}
+        />
+      ))}
+      {/* Where your own money runs out, drawn over the ticks so it is never
+          lost among them. */}
+      <line
+        x1={Math.min(at(mine), width - 0.5)}
+        x2={Math.min(at(mine), width - 0.5)}
+        y1={0}
+        y2={height}
+        stroke={INK}
+        strokeWidth={1.25}
+        opacity={0.8}
+      />
+      {beat === 0 && <circle cx={at(price)} cy={trackY + 2} r={2} fill={GOOD} />}
+    </svg>
+  );
+};
+
 interface SeasonsProps {
   /** Most recent last, as the pool stores them. */
   seasons: ReadonlyArray<{ season: number; missed: number }>;
@@ -392,7 +728,7 @@ interface SeasonsProps {
  * column and two full ones is a different bet from one with three amber
  * columns, and the sum is identical.
  */
-export const Seasons = ({ seasons, label, width = 26, height = 14 }: SeasonsProps) => {
+const SeasonsView = ({ seasons, label, width = 26, height = 14 }: SeasonsProps) => {
   if (!seasons.length) return null;
   const shown = seasons.slice(-3);
   const gap = 2;
@@ -430,3 +766,45 @@ export const Seasons = ({ seasons, label, width = 26, height = 14 }: SeasonsProp
     </svg>
   );
 };
+
+/*
+ * A player's own instruments do not change when somebody else is bought.
+ *
+ * `weeks` and `seasons` are the only object props here and both come from
+ * caches — the history file's own arrays and the player's own durability — so
+ * they are the same reference on every render and the comparison holds. The
+ * label strings are rebuilt each time and compare by value, which costs a
+ * string compare and saves reconciling thirty SVG nodes apiece.
+ */
+/**
+ * Contents, not reference.
+ *
+ * The live readings arrive as fresh arrays on every pick, because a pulse is
+ * rebuilt whenever anybody buys anybody — but a running back going takes
+ * nothing off the receiver shelf, and reconciling sixteen columns that have not
+ * moved, for every position, on every sale, is the whole cost of having the
+ * band at all. A twelve-number comparison is cheaper than a DOM diff by a wide
+ * margin, so the comparison goes here rather than the reference being
+ * laundered upstream — this is the place that knows the arrays are short, flat
+ * and numeric.
+ */
+const sameNumbers = (a: readonly number[], b: readonly number[]) =>
+  a.length === b.length && a.every((value, index) => value === b[index]);
+
+export const Shelf = memo(
+  ShelfView,
+  (a, b) => a.mine === b.mine && a.replacement === b.replacement && sameNumbers(a.shelf, b.shelf)
+);
+export const RunTape = memo(RunTapeView);
+export const SlotFit = memo(SlotFitView);
+/* Money is the one that genuinely does move on every sale: what a team spends
+   on a back is money it cannot spend on a receiver either. It re-renders, and
+   that is the reading being correct rather than the instrument being wasteful. */
+export const MoneyBite = memo(
+  MoneyBiteView,
+  (a, b) => a.price === b.price && a.mine === b.mine && sameNumbers(a.rivals, b.rivals)
+);
+export const GameLog = memo(GameLogView);
+export const Outcome = memo(OutcomeView);
+export const RoleField = memo(RoleFieldView);
+export const Seasons = memo(SeasonsView);

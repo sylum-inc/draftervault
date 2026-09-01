@@ -16,6 +16,7 @@ import { readAuctionSheet } from '@/lib/auctionSheet';
  */
 import HOME_SHEET_TEXT from '@/data/league/auction-sheet.txt?raw';
 import {
+  POSITIONS,
   DEFAULT_LEAGUE,
   inflatedPrice,
   leagueShape,
@@ -48,6 +49,44 @@ import { endgame, type Endgame } from '@/lib/endgame';
  * seat he could take is already filled, so quoting an alternative would invent
  * a comparison nobody is making.
  */
+/** How many picks back the run window looks. Two rounds of a twelve-team room. */
+const RUN_WINDOW = 10;
+
+/** How deep a shelf is worth drawing before it becomes texture. */
+const SHELF_DEPTH = 16;
+
+/**
+ * What the draft has done to one position, as of this pick.
+ *
+ * The live half of a player card. Everything in here changes as the room
+ * drafts, and none of it is a fact about any particular player — which is what
+ * lets sixty cards share six of these.
+ */
+export interface PositionPulse {
+  position: string;
+  /** Projected points of the best undrafted men here, best first. */
+  shelf: number[];
+  /** Every undrafted player at the position, not just the ones drawn. */
+  left: number;
+  /** How many of those are still above replacement level. */
+  startable: number;
+  /** Replacement level in points — the line drawn across the shelf. */
+  replacement: number;
+  /** How many of the last ten picks, in either half, were this position. */
+  goneRecently: number;
+  /** How many picks the window actually holds; ten once the draft is going. */
+  window: number;
+  /** Starting slots the league fields here, and how many you have filled. */
+  slotsTotal: number;
+  slotsFilled: number;
+  /** Whether a flex seat is still open to this position, for you. */
+  flexOpen: boolean;
+  /** The most you may legally bid, from the same call `validateBid` makes. */
+  myCeiling: number;
+  /** What every opponent with room here could still go to, highest first. */
+  rivals: number[];
+}
+
 export interface SnakeGain {
   gain: number;
   free: string | null;
@@ -3193,6 +3232,121 @@ export class AuctionDraftService {
       mine,
       (pos) => outlook.positions?.find((row) => row.position === pos)?.free ?? null
     );
+  }
+
+  /**
+   * What the draft has done to each position, recomputed on every pick.
+   *
+   * Everything else on a card is a fact about the player and reads the same at
+   * pick one and pick a hundred and fifty. These four readings are the ones
+   * that move, and they are the reason an auction is played rather than
+   * calculated: what is left, how fast it is going, whether you still need one,
+   * and who can still outbid you.
+   *
+   * All of it is per *position* rather than per player, which is what makes it
+   * affordable. Sixty cards ask four questions each; there are six answers, and
+   * a card at a position nothing happened to keeps the object it already had —
+   * see `usePositionPulse` in the room, which is where that stabilising is
+   * done. Without it every pick would re-render the whole board, which is the
+   * cost this board was measured and fixed for once.
+   */
+  getPositionPulse(): Map<string, PositionPulse> {
+    const out = new Map<string, PositionPulse>();
+    const mine = this.teams.find((team) => team.id === this.myTeamId) ?? null;
+
+    /*
+     * The last ten transactions, whatever half of the draft they happened in.
+     *
+     * Supply counts both halves. A receiver taken in the snake is exactly as
+     * unavailable as one bought for forty dollars — waiting for him is no
+     * longer an option, which is the whole question a run is asking — so this
+     * window does not filter on phase. Money is the thing that only counts the
+     * auction, and no money is read here.
+     */
+    const window = this.history.slice(-RUN_WINDOW);
+    const byId = new Map(this.players.map((player) => [player.id, player]));
+    const recent = window
+      .map((pick) => byId.get(pick.playerId)?.position ?? null)
+      .filter((position): position is Position => position != null);
+
+    /*
+     * Both halves hoisted out of the position loop, which is the difference
+     * between this costing something and costing nothing.
+     *
+     * `spendableFor` does not depend on the position at all — it is a fact
+     * about a team's money — so calling it inside the loop asked the same
+     * twelve questions six times over. And bucketing the board once beats
+     * filtering all six hundred players once per position. Nominating went
+     * from 1099ms under a 4x throttle to a figure worth keeping.
+     */
+    const spendable = new Map(
+      this.teams.map((team) => [team.id, this.spendableFor(team).spendable])
+    );
+    const buckets = new Map<string, Player[]>();
+    for (const player of this.players) {
+      if (player.isDrafted || player.marketOnly) continue;
+      const bucket = buckets.get(player.position);
+      if (bucket) bucket.push(player);
+      else buckets.set(player.position, [player]);
+    }
+    for (const bucket of buckets.values())
+      bucket.sort((a, b) => b.projectedPoints - a.projectedPoints);
+
+    for (const position of POSITIONS) {
+      const live = buckets.get(position) ?? [];
+      const replacement = this.replacement[position] ?? 0;
+
+      /*
+       * Who could still take him off you, at this position.
+       *
+       * A team with no room at the position is not a quiet bidder — it cannot
+       * bid at any price — so it is left out rather than listed at zero, which
+       * is the rule `getBidCompetition` already lives by. The ceiling is
+       * `spendableFor`, the same call `validateBid` makes, because a number the
+       * room reads off a card and the engine then refuses is worse than no
+       * number at all.
+       */
+      const rivals: number[] = [];
+      let myCeiling = 0;
+      let myOpenings = 0;
+      for (const team of this.teams) {
+        const money = Math.max(0, spendable.get(team.id) ?? 0);
+        if (team.id === this.myTeamId) {
+          myCeiling = money;
+          myOpenings = unfilledSlotsFor(position, team.roster, this.league);
+          continue;
+        }
+        const capped = (team.roster[position] ?? 0) >= (this.league.positionLimits[position] ?? 0);
+        if (!capped) rivals.push(money);
+      }
+      rivals.sort((a, b) => b - a);
+
+      out.set(position, {
+        position,
+        // Capped, because a shelf of two hundred receivers is a texture rather
+        // than a reading. The count beside it is the honest total.
+        shelf: live.slice(0, SHELF_DEPTH).map((player) => Math.round(player.projectedPoints)),
+        left: live.length,
+        startable: live.filter((player) => player.projectedPoints > replacement).length,
+        replacement: Math.round(replacement),
+        goneRecently: recent.filter((entry) => entry === position).length,
+        window: recent.length,
+        slotsTotal: this.league.startingLineup[position] ?? 0,
+        slotsFilled: mine
+          ? Math.min(mine.roster[position] ?? 0, this.league.startingLineup[position] ?? 0)
+          : 0,
+        // A flex seat only exists if the league has one and this position may
+        // fill it; a quarterback's card must not offer one it cannot use.
+        flexOpen:
+          mine != null &&
+          FLEX_ELIGIBLE.includes(position as Position) &&
+          myOpenings >
+            Math.max(0, (this.league.startingLineup[position] ?? 0) - (mine.roster[position] ?? 0)),
+        myCeiling,
+        rivals,
+      });
+    }
+    return out;
   }
 
   /**

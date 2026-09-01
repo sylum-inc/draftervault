@@ -5,6 +5,7 @@ import {
   type DraftAnalytics,
   type Player,
   type Team,
+  type PositionPulse,
 } from '@/services/auctionDraftService';
 import { getIdentity, refreshIdentity, snapshotMeta } from '@/services/nflIdentity';
 import { useDraftPreferences } from '@/hooks/use-draft-preferences';
@@ -580,6 +581,42 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * exists, because then there is one true number and a range beside it would
    * be noise.
    */
+  /**
+   * The live half of every card, recomputed on a pick and *stabilised*.
+   *
+   * Six objects serve sixty cards, because every reading in them is about a
+   * position rather than a player. The stabilising is the part that matters:
+   * `getPositionPulse` returns fresh objects each call, and handing a fresh
+   * object to a memoised card defeats the memo — which would re-render the
+   * whole board on every pick, the exact cost the board was measured and fixed
+   * for once.
+   *
+   * So the previous map is kept and an entry is replaced only when its contents
+   * actually differ. Buying a running back re-renders the running backs and
+   * leaves the receivers alone.
+   *
+   * Compared by serialising rather than field by field: the shape is small,
+   * flat and entirely numbers, a hand-written comparison would be one `&&` away
+   * from silently pinning a stale shelf on screen for the rest of the night,
+   * and the failure would look like the instrument simply not working.
+   */
+  const pulseRef = useRef(new Map<string, PositionPulse>());
+  const pulse = useMemo(() => {
+    const next = draftService.getPositionPulse();
+    const held = pulseRef.current;
+    const stable = new Map<string, PositionPulse>();
+    for (const [position, reading] of next) {
+      const previous = held.get(position);
+      stable.set(
+        position,
+        previous && JSON.stringify(previous) === JSON.stringify(reading) ? previous : reading
+      );
+    }
+    pulseRef.current = stable;
+    return stable;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+  }, [draftService, players]);
+
   /**
    * What every player on the board buys over the snake, computed once.
    *
@@ -1483,6 +1520,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                       gainHigh={boardGains.get(player.id)?.high}
                       gainFree={boardGains.get(player.id)?.free}
                       gainSlot={boardGains.get(player.id)?.slot}
+                      pulse={pulse.get(player.position)}
                     />
                   ))}
                 </div>

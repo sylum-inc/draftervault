@@ -1,10 +1,19 @@
 import { memo } from 'react';
 import type { CSSProperties } from 'react';
-import type { Player } from '@/services/auctionDraftService';
+import type { Player, PositionPulse } from '@/services/auctionDraftService';
 import { researchMark } from '@/services/playerResearch';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
 import { Headshot } from './Headshot';
-import { GameLog, Outcome, RoleField, Seasons } from './charts/micro';
+import {
+  GameLog,
+  MoneyBite,
+  Outcome,
+  RoleField,
+  RunTape,
+  Seasons,
+  Shelf,
+  SlotFit,
+} from './charts/micro';
 import { weeklySeason, weeklyShape } from '@/services/playerHistory';
 import { positionNorm, type NormMetric } from '@/lib/positionNorms';
 
@@ -53,6 +62,17 @@ interface PlayerCardProps {
   gainHigh?: number;
   gainFree?: string | null;
   gainSlot?: string;
+  /**
+   * What the draft has done to his position, as of this pick.
+   *
+   * The only prop here that is an object rather than a primitive, and the only
+   * one that changes during a draft. It is safe because it is *stabilised*
+   * upstream: six of these serve sixty cards, and an entry is replaced only
+   * when its contents actually differ — so buying a running back re-renders the
+   * running backs and leaves the receivers alone. Undefined before the engine
+   * has one, in which case the live band is simply absent.
+   */
+  pulse?: PositionPulse;
 }
 
 /** Readable ink for a team color, so light jerseys don't get white-on-white. */
@@ -93,6 +113,7 @@ const PlayerCardView = ({
   gainHigh,
   gainFree,
   gainSlot,
+  pulse,
 }: PlayerCardProps) => {
   const identity = getIdentity(player.id);
   const mark = researchReady ? researchMark(player.id) : null;
@@ -177,6 +198,20 @@ const PlayerCardView = ({
             `with ${usage?.redZoneTouches ?? 0} red-zone touches. The crosshair is the median ${player.position}; the dot's size is red-zone work.`,
         }
       : null;
+
+  /*
+   * Where he stands in what is left at his position.
+   *
+   * Matched on the projection rather than on an id, because the shelf carries
+   * points and not names — it is six small arrays of numbers serving sixty
+   * cards, and putting ids in it would double its size to answer a question one
+   * comparison already answers. A tie between two men projected identically
+   * lights the first, which is the correct answer to "where does a player with
+   * this projection sit on this shelf" even when it is the wrong man.
+   */
+  const shelfIndex = pulse
+    ? pulse.shelf.findIndex((points) => points === Math.round(player.projectedPoints))
+    : -1;
 
   const style = {
     '--dr-accent': primary,
@@ -319,6 +354,62 @@ const PlayerCardView = ({
           the sixteen dearest players unreadable, which is the one thing a name
           on a card has to do. It is also a better instrument at 232px than at
           74: a sparkline is a shape, and a shape needs room. */}
+      {/* The live half. Everything above the rule is a fact about the player and
+          reads the same at pick one and at pick a hundred and fifty; everything
+          in here moves as the room drafts. Kept together and marked, so it is
+          obvious which numbers are answering "what is he" and which are
+          answering "what is happening". */}
+      {pulse && !player.marketOnly && (
+        <div className="dr-card-live">
+          <div className="dr-card-live-row">
+            <span className="dr-card-live-glyphs">
+              <Shelf
+                shelf={pulse.shelf}
+                mine={shelfIndex}
+                replacement={pulse.replacement}
+                label={`${pulse.startable} ${player.position}s left above replacement of ${pulse.left} undrafted. He is the ${shelfIndex >= 0 ? `number ${shelfIndex + 1}` : 'not among the'} best left.`}
+              />
+              <RunTape
+                gone={pulse.goneRecently}
+                window={pulse.window}
+                label={`${pulse.goneRecently} of the last ${pulse.window || 10} picks were ${player.position}s`}
+              />
+            </span>
+            <span className="dr-card-live-read">
+              <b className="dr-num">{pulse.startable}</b>
+              <em>startable</em>
+            </span>
+          </div>
+
+          <div className="dr-card-live-row">
+            <span className="dr-card-live-glyphs">
+              <MoneyBite
+                price={player.estimatedValue}
+                mine={pulse.myCeiling}
+                rivals={pulse.rivals}
+                label={`He lists at $${player.estimatedValue}; you can go to $${pulse.myCeiling}; ${pulse.rivals.filter((ceiling) => ceiling > player.estimatedValue).length} teams with room here can beat that price.`}
+              />
+            </span>
+            <span
+              className="dr-card-live-read"
+              title={
+                gainSlot === 'bench'
+                  ? 'Your seats at his position and your flex are both full'
+                  : `${pulse.slotsFilled} of ${pulse.slotsTotal} ${player.position} seats filled${pulse.flexOpen ? ', flex still open' : ''}`
+              }
+            >
+              <SlotFit
+                total={pulse.slotsTotal}
+                filled={pulse.slotsFilled}
+                flexOpen={pulse.flexOpen}
+                label={`${pulse.slotsFilled} of ${pulse.slotsTotal} starting ${player.position} seats filled`}
+              />
+              <em>{pulse.rivals.filter((c) => c > player.estimatedValue).length} can beat</em>
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Seventeen Sundays, against what a free player at his position scores
           per game. The dashed rule is that bar and it sits at the same height
           on every card, so two strips can be compared straight down a column —
@@ -495,8 +586,13 @@ const PlayerCardView = ({
           ) : (
             <>
               <b className="dr-num">
-                {gainHigh > 0 ? '+' : ''}
-                {gainLow === gainHigh ? gainHigh : `${gainLow}–${gainHigh}`}
+                {/* Signed per number, not once for the pair. Prefixing the
+                    whole range printed "+-30–12" for a back whose gain is
+                    negative at an early draw and positive at a late one —
+                    which is exactly the case the range exists to show. */}
+                {gainLow == null || gainLow === gainHigh
+                  ? `${gainHigh > 0 ? '+' : ''}${gainHigh}`
+                  : `${gainLow > 0 ? '+' : ''}${gainLow} to ${gainHigh > 0 ? '+' : ''}${gainHigh}`}
               </b>{' '}
               {/* The name only when there is one man to name. Across a range
                   the two ends are two different free players — the best one
