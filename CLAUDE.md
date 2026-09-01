@@ -629,6 +629,54 @@ what the research file found last Tuesday, and the gain over the man the snake
 hands you free — was two clicks away in a panel nobody opens with money on the
 table.
 
+**A bar and a dial are containers, and both were tried before either was
+right.** Any number goes in one; nothing about the glyph says what kind of
+thing is being looked at, so it contributes a magnitude already printed as a
+numeral an inch to the left. `charts/micro.tsx` holds four instruments shaped
+by what they measure instead.
+
+The **game log** replaced a sparkline, which was wrong three ways: it drew a
+line between games, asserting something happened in between and making a
+nine-game season the same width as a seventeen-game one, so the most important
+fact about an injured player was invisible; it scaled to his own best week, so
+every squiggle filled its box and no two cards compared; and it drew a mean,
+the one summary already printed twice. It is seventeen columns now — one per
+Sunday, whether or not he filled it — with a dashed rule at what a free player
+at his position scores per game. Columns above it are weeks he beat the
+alternative; the empty sockets are weeks he was not there.
+
+The **outcome curve** replaced a range bar. Floor and ceiling are one standard
+deviation either side, so the honest picture is a bell: a bar says "somewhere in
+here" with every point equally likely. The mass left of replacement is shaded as
+a loss, because that region is the risk in one shape — how much of his range
+finishes below a player you could have had for nothing.
+
+The **role field** replaced three readings, and that was the sharper mistake.
+Snap share, touch share and red-zone work are not three questions, they are one
+— _is he the guy, or is he a piece?_ — and three needles make the reader do that
+join in their head with money on the table. One field, two axes, crosshair at
+the median starter: top right is a bell cow, top left a specialist, bottom right
+a decoy, bottom left a backup. The mark's size is red-zone work, a premium on
+the other two rather than an independent question.
+
+**The scale cannot come from the board, and getting that wrong made both
+instruments useless in the same way.** `positionNorms.ts` takes the median and
+the ninetieth percentile per position — but over the players the league
+_rosters_, not over all 628. Across the whole pool the median running back is on
+the field for 31% of snaps and scores 4.3 points a game, so every one of the
+sixty on a commissioner's sheet sat in the same corner of the role field and
+every column of every game log pinned: Jahmyr Gibbs _averages_ 16.6 points a
+game against a ninetieth percentile of 9.7. Over starters the median back is
+54.5% of snaps and 9.3 a game, and the sixty spread out across it. A drafter
+never compares a player to the four hundredth back.
+
+It is built from the engine's _live_ players rather than from pool.json, which
+is not a detail: `snapPercentage` and `pointsPerGame` are derived when a player
+is built and are null in the file, so reading the file left every snap bucket
+empty and the role field silently rendered nothing at all on every card — the
+failure mode of a lookup that answers "I don't know" the same way it answers
+"there is nothing there".
+
 It is a dossier now. The photo is a 36px mark beside the name, the team colour
 is a 3px spine so every card's ground is the same and the prices down a column
 can be compared, and the price is the second thing read after the name because

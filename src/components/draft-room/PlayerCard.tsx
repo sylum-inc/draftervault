@@ -4,6 +4,9 @@ import type { Player } from '@/services/auctionDraftService';
 import { researchMark } from '@/services/playerResearch';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
 import { Headshot } from './Headshot';
+import { GameLog, Outcome, RoleField, Seasons } from './charts/micro';
+import { weeklySeason, weeklyShape } from '@/services/playerHistory';
+import { positionNorm, type NormMetric } from '@/lib/positionNorms';
 
 interface PlayerCardProps {
   player: Player;
@@ -18,6 +21,16 @@ interface PlayerCardProps {
    * exactly once, which re-renders the board a single time with the marks in.
    */
   researchReady?: boolean;
+  /**
+   * Whether the three-season history file has landed.
+   *
+   * Same bargain as `researchReady` and for the same reason: the shapes live in
+   * a module-level cache a card reads directly, because an array prop per card
+   * would be a new reference on every render and would defeat the memo the
+   * board depends on. It flips false to true exactly once, which re-renders the
+   * board a single time with the sparklines in.
+   */
+  historyReady?: boolean;
   watched: boolean;
   onSelect: (player: Player) => void;
   onToggleWatch: (playerId: string) => void;
@@ -70,6 +83,7 @@ const PlayerCardView = ({
   player,
   selected,
   researchReady = false,
+  historyReady = false,
   watched,
   pinned,
   onSelect,
@@ -82,61 +96,21 @@ const PlayerCardView = ({
 }: PlayerCardProps) => {
   const identity = getIdentity(player.id);
   const mark = researchReady ? researchMark(player.id) : null;
+  const weekly = historyReady ? weeklyShape(player.id) : null;
+  const weeklyYear = historyReady ? weeklySeason(player.id) : null;
   const team = identity?.team ?? player.team;
   const { primary } = teamColors(team);
   const logo = teamLogo(team);
 
-  const percentiles = player.percentiles ?? {};
   const usage = player.usage;
   const edge = player.market?.edge ?? null;
 
-  // Receivers and backs earn their touches differently, so the card shows the
-  // measure that actually describes the role rather than a fixed trio.
-  const signals: Array<{ label: string; value: string; percentile?: number; title: string }> = [];
-  if (player.snapPercentage != null) {
-    signals.push({
-      label: 'Snaps',
-      value: `${Math.round(player.snapPercentage)}%`,
-      percentile: percentiles.snapShare,
-      title: `${Math.round(player.snapPercentage)}% of offensive snaps${percentiles.snapShare != null ? ` — ${percentiles.snapShare}th percentile among ${player.position}s` : ''}`,
-    });
-  }
-  if (usage?.targetShare != null && player.position !== 'RB') {
-    signals.push({
-      label: 'Tgt%',
-      value: `${usage.targetShare}%`,
-      percentile: percentiles.targetShare,
-      title: `${usage.targetShare}% of his team's targets${percentiles.targetShare != null ? ` — ${percentiles.targetShare}th percentile` : ''}`,
-    });
-  } else if (usage?.carryShare != null) {
-    signals.push({
-      label: 'Car%',
-      value: `${usage.carryShare}%`,
-      percentile: percentiles.carryShare,
-      title: `${usage.carryShare}% of his team's carries${percentiles.carryShare != null ? ` — ${percentiles.carryShare}th percentile` : ''}`,
-    });
-  }
-  if (usage?.redZoneTouches) {
-    signals.push({
-      label: 'RZ',
-      value: String(usage.redZoneTouches),
-      percentile: percentiles.redZoneTouches,
-      title: `${usage.redZoneTouches} red-zone touches in ${usage.season}${percentiles.redZoneTouches != null ? ` — ${percentiles.redZoneTouches}th percentile` : ''}`,
-    });
-  }
-
-  /*
-   * Where the projection sits inside his own floor-to-ceiling range.
-   *
-   * A number for the projection says what he is expected to score; this says
-   * what *kind* of player he is. Two backs projected at 240 are not the same
-   * bid when one runs 210-260 and the other 150-380, and nothing on the board
-   * said so — the range was in the profile, behind two clicks nobody makes
-   * while a name is being called. Position on the track is the skew: left of
-   * centre is a ceiling play, right of centre is a floor play.
-   */
+  // What a freely available player at his position scores, recovered from the
+  // two numbers the card already has. VORP is points over replacement, so
+  // replacement is the projection minus it — no new plumbing, and it is the
+  // reference two of the three instruments below are drawn against.
+  const replacement = player.projectedPoints - player.valueOverReplacement;
   const spread = player.upside - player.floor;
-  const skew = spread > 0 ? ((player.projectedPoints - player.floor) / spread) * 100 : 50;
 
   // What a dollar buys, which is the comparison an auction is actually making
   // and which nothing on the card was doing for you.
@@ -158,15 +132,6 @@ const PlayerCardView = ({
         : 'Splitting the job with somebody else',
     });
   }
-  if (player.durability && player.durability.totalMissed >= 4) {
-    risks.push({
-      label: `${player.durability.totalMissed} gms missed`,
-      tone: 'warn',
-      title: player.durability.reported.length
-        ? player.durability.reported.map((r) => `${r.part} (${r.weeks}w)`).join(', ')
-        : `${player.durability.totalMissed} games missed across the last three seasons`,
-    });
-  }
   if (player.recentTrends !== 'STABLE') {
     risks.push({
       label: player.recentTrends === 'RISING' ? 'rising' : 'declining',
@@ -174,6 +139,44 @@ const PlayerCardView = ({
       title: `Recent production is ${player.recentTrends.toLowerCase()}`,
     });
   }
+
+  /*
+   * The role, as one reading rather than three.
+   *
+   * Which share matters depends on the job: a back is defined by his cut of the
+   * carries and a receiver by his cut of the targets, and putting both on every
+   * card would leave half of them reading zero for a reason that is about the
+   * position rather than the player. So the axis is "his share of the work he
+   * is there to do", named accordingly.
+   */
+  const roleShare =
+    player.position === 'RB'
+      ? { value: usage?.carryShare ?? null, metric: 'carry' as NormMetric, label: 'Car' }
+      : { value: usage?.targetShare ?? null, metric: 'target' as NormMetric, label: 'Tgt' };
+  const snapNorm = positionNorm(player.position, 'snap');
+  const shareNorm = positionNorm(player.position, roleShare.metric);
+  const redZoneNorm = positionNorm(player.position, 'redZone');
+
+  const role =
+    !player.marketOnly &&
+    player.snapPercentage != null &&
+    roleShare.value != null &&
+    snapNorm &&
+    shareNorm
+      ? {
+          snap: player.snapPercentage,
+          snapNorm,
+          share: roleShare.value,
+          shareNorm,
+          shareLabel: roleShare.label,
+          redZone: usage?.redZoneTouches ?? 0,
+          redZoneTop: redZoneNorm?.top ?? 1,
+          summary:
+            `On the field for ${Math.round(player.snapPercentage)}% of snaps (median ${player.position} ${Math.round(snapNorm.median)}%), ` +
+            `taking ${Math.round(roleShare.value)}% of the ${roleShare.metric === 'carry' ? 'carries' : 'targets'} (median ${Math.round(shareNorm.median)}%), ` +
+            `with ${usage?.redZoneTouches ?? 0} red-zone touches. The crosshair is the median ${player.position}; the dot's size is red-zone work.`,
+        }
+      : null;
 
   const style = {
     '--dr-accent': primary,
@@ -310,6 +313,35 @@ const PlayerCardView = ({
         />
       </div>
 
+      {/* The season's shape, on its own line and at the card's own width.
+          Wedged into the head beside the price it cost the name its column and
+          the board read "Jahmy r Gibbs", "Christi an…", "Amon- Ra S…" — four of
+          the sixteen dearest players unreadable, which is the one thing a name
+          on a card has to do. It is also a better instrument at 232px than at
+          74: a sparkline is a shape, and a shape needs room. */}
+      {/* Seventeen Sundays, against what a free player at his position scores
+          per game. The dashed rule is that bar and it sits at the same height
+          on every card, so two strips can be compared straight down a column —
+          which a self-scaled sparkline could never be. The empty sockets are
+          the weeks he was not available, which a line hid entirely. */}
+      {weekly && (
+        <div
+          className="dr-card-gamelog"
+          title={`${weeklyYear ?? 'Last season'}: ${weekly.length} of 17 games. The dashed line is ${Math.round(replacement / 17)} points a game — what a freely available ${player.position} scores. ${weekly.filter((week) => week >= replacement / 17).length} weeks beat it.`}
+        >
+          <GameLog
+            weeks={weekly}
+            replacement={replacement / 17}
+            /* Twice a strong starter's average, which is about where a big
+               week lands: at 14.2 points a game for the ninetieth-percentile
+               back, full height is 28 and an average week sits a little over
+               half way. Tighter than that and every column pinned. */
+            strongWeek={(positionNorm(player.position, 'ppg')?.top ?? replacement / 17) * 2}
+            label={`${weeklyYear ?? 'Last season'} game by game against replacement level`}
+          />
+        </div>
+      )}
+
       {/* A market-only player carries placeholder zeroes because `Player`
           requires numbers on these fields, and printing one would state a
           measurement nobody made — "projected 0" reads identically to a
@@ -336,12 +368,16 @@ const PlayerCardView = ({
       {!player.marketOnly && spread > 0 && (
         <div
           className="dr-card-range"
-          title={`Floor ${player.floor} · projected ${player.projectedPoints} · ceiling ${player.upside} — one standard deviation either side of the season total`}
+          title={`Floor ${player.floor} · projected ${player.projectedPoints} · ceiling ${player.upside}. Floor and ceiling are one standard deviation either side, so this is the distribution; the amber is the share of it that finishes below ${Math.round(replacement)} — what a free ${player.position} scores.`}
         >
           <span className="dr-num dr-card-range-end">{player.floor}</span>
-          <span className="dr-card-range-track" aria-hidden="true">
-            <span className="dr-card-range-mark" style={{ left: `${skew}%` }} />
-          </span>
+          <Outcome
+            floor={player.floor}
+            projection={player.projectedPoints}
+            ceiling={player.upside}
+            replacement={replacement > 0 ? replacement : null}
+            label={`Floor ${player.floor}, projected ${player.projectedPoints}, ceiling ${player.upside}, replacement level ${Math.round(replacement)}`}
+          />
           <span className="dr-num dr-card-range-end">{player.upside}</span>
         </div>
       )}
@@ -364,33 +400,78 @@ const PlayerCardView = ({
             <em>consist</em>
             <b className="dr-num">{player.consistency ?? '—'}</b>
           </span>
+          {/* Availability as three columns rather than a total, because a
+              total hides whether six missed games were one bad year or a
+              pattern — and those are different bets with the same sum. Falls
+              back to the risk word for anyone with no seasons on file. */}
           <span
-            title={`${player.injuryRisk.toLowerCase()} injury risk, from games actually missed`}
+            title={
+              player.durability?.seasons.length
+                ? `Games missed by season: ${player.durability.seasons.map((entry) => `${entry.season} — ${entry.missed}`).join(', ')}`
+                : `${player.injuryRisk.toLowerCase()} injury risk`
+            }
           >
-            <em>risk</em>
-            <b style={{ color: RISK_COLOR[player.injuryRisk] }}>
-              {player.injuryRisk.slice(0, 3).toLowerCase()}
-            </b>
+            <em>avail</em>
+            {player.durability?.seasons.length ? (
+              <Seasons
+                seasons={player.durability.seasons}
+                label={`Availability across ${player.durability.seasons.length} seasons`}
+              />
+            ) : (
+              <b style={{ color: RISK_COLOR[player.injuryRisk] }}>
+                {player.injuryRisk.slice(0, 3).toLowerCase()}
+              </b>
+            )}
           </span>
         </div>
       )}
 
       {/* The three numbers that explain the projection, each with its standing
           in the position — a share means nothing without one. */}
-      <div className="dr-card-signals">
-        {(player.marketOnly ? [] : signals).map((signal) => (
-          <span className="dr-card-signal" key={signal.label} title={signal.title}>
-            <em>{signal.label}</em>
-            <span className="dr-num">{signal.value}</span>
-            <span
-              className="dr-card-signal-bar"
-              aria-hidden="true"
-              style={{ width: `${signal.percentile ?? 0}%` }}
-            />
-            <span className="dr-card-signal-pct">{signal.percentile ?? '—'}</span>
-          </span>
-        ))}
-      </div>
+      {/* The instrument cluster: is he the guy, or is he a piece?
+          These three are not three unrelated numbers, they are one question,
+          and the answer is the shape across all of them — high on everything is
+          a workhorse, middling on everything is a committee, high snaps with
+          low carries and no red zone is a specialist. Stacked as three bars you
+          read three lengths one after another; side by side, the pattern of
+          three needles is one glance. */}
+      {/* One field rather than three needles. "Is he the guy" is a question
+          about the combination of how often he is out there and how much of
+          the work he takes, and three separate readings make the reader do
+          that join in their head with money on the table. The crosshair is the
+          median player at his position, so the answer is a location: top right
+          is a bell cow, top left a specialist, bottom right a decoy, bottom
+          left a backup. The mark's size is red-zone work, which is a premium
+          on the other two rather than a third question. */}
+      {role && (
+        <div className="dr-card-role">
+          <RoleField
+            snap={role.snap}
+            snapMedian={role.snapNorm.median}
+            snapTop={role.snapNorm.top}
+            share={role.share}
+            shareMedian={role.shareNorm.median}
+            shareTop={role.shareNorm.top}
+            redZone={role.redZone}
+            redZoneTop={role.redZoneTop}
+            label={role.summary}
+          />
+          <dl className="dr-card-role-read">
+            <div>
+              <dt>Snap</dt>
+              <dd className="dr-num">{Math.round(role.snap)}%</dd>
+            </div>
+            <div>
+              <dt>{role.shareLabel}</dt>
+              <dd className="dr-num">{Math.round(role.share)}%</dd>
+            </div>
+            <div>
+              <dt>Red zn</dt>
+              <dd className="dr-num">{role.redZone}</dd>
+            </div>
+          </dl>
+        </div>
+      )}
 
       {/* The one number nobody else at the table is computing.
           In this format eleven or twelve roster spots a team are snaked for

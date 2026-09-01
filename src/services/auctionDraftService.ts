@@ -32,6 +32,7 @@ import {
 } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { consensusCoverage, consensusOverrides, marketOrder } from '@/lib/consensusBoard';
+import { primeNorms } from '@/lib/positionNorms';
 import {
   snakeOutlook,
   snakeOutlookSpread,
@@ -1287,6 +1288,12 @@ export class AuctionDraftService {
     for (const absentee of AuctionDraftService.market?.absent ?? []) {
       this.players.push(this.buildAbsentee(absentee, wholeBoard));
     }
+
+    // The instruments on the board draw against the position, not against the
+    // sixty men on the sheet, and the readings they scale by — snap share,
+    // points per game — are derived here rather than shipped in the pool. Once
+    // is enough: none of them is a function of the league or of a price.
+    primeNorms(this.players, this.league.rostered);
   }
 
   /**

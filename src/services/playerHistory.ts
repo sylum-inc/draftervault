@@ -70,3 +70,38 @@ export const loadCareer = async (playerId: string): Promise<CareerSeason[]> => {
   const file = await load();
   return file.career[playerId] ?? [];
 };
+
+/**
+ * Warm the cache without wanting anything out of it yet.
+ *
+ * The board wants a season's shape on every card, and sixty asynchronous reads
+ * that each resolve on their own would repaint the board sixty times. This is
+ * the same bargain `playerResearch` already makes: fetch once in the
+ * background, then let callers read synchronously out of the cache and flip a
+ * single boolean when it lands, so the board re-renders exactly once with the
+ * shapes in.
+ */
+export const primeHistory = (): Promise<void> => load().then(() => undefined);
+
+/**
+ * The most recent season's game-by-game scoring, or null if there is none.
+ *
+ * Synchronous on purpose, and null until `primeHistory` resolves — a card
+ * cannot await, and a promise per card is sixty repaints. Null is also the
+ * honest answer for a rookie, which is why the caller draws nothing rather
+ * than drawing a flat line: a flat line is a claim about a season that did not
+ * happen.
+ */
+export const weeklyShape = (playerId: string): number[] | null => {
+  const seasons = cache?.history[playerId];
+  if (!seasons?.length) return null;
+  const latest = seasons[seasons.length - 1];
+  return latest.weekly?.length >= 3 ? latest.weekly : null;
+};
+
+/** Which season `weeklyShape` returned, for labelling it honestly. */
+export const weeklySeason = (playerId: string): number | null => {
+  const seasons = cache?.history[playerId];
+  if (!seasons?.length) return null;
+  return seasons[seasons.length - 1].season;
+};

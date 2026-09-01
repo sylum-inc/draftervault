@@ -43,6 +43,7 @@ import type { RankingOverride } from '@/lib/rankingsCsv';
 import { matchesSearch, searchable } from '@/lib/playerSearch';
 import { copyTextToClipboard, saveTextFile } from '@/lib/saveFile';
 import { primeResearch, researchGeneratedAt, researchMark } from '@/services/playerResearch';
+import { primeHistory } from '@/services/playerHistory';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -235,6 +236,25 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   useEffect(() => {
     let live = true;
     void primeResearch().then(() => live && setResearchReady(true));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  /*
+   * The same bargain for the three-season history, which the cards draw a
+   * season's shape from.
+   *
+   * It is 750 KB and it is deliberately not paid for on first paint — the board
+   * is usable the moment it renders and the sparklines arrive a beat later.
+   * Read synchronously out of a module cache by each card for the reason the
+   * research marks are: an array prop per card would be a new reference on
+   * every render and would defeat the memo the board's performance rests on.
+   */
+  const [historyReady, setHistoryReady] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void primeHistory().then(() => live && setHistoryReady(true));
     return () => {
       live = false;
     };
@@ -1458,6 +1478,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                       onTogglePin={togglePin}
                       pinned={preferences.pinned.includes(player.id)}
                       researchReady={researchReady}
+                      historyReady={historyReady}
                       gainLow={boardGains.get(player.id)?.low}
                       gainHigh={boardGains.get(player.id)?.high}
                       gainFree={boardGains.get(player.id)?.free}
