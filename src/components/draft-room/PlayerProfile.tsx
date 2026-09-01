@@ -421,8 +421,10 @@ export const PlayerProfile = ({
         position: player.position,
         age: player.age ?? null,
         gamesObserved: player.gamesObserved ?? null,
+        modelRank: player.modelRank,
+        market: player.market,
       }),
-    [player.position, player.age, player.gamesObserved]
+    [player.position, player.age, player.gamesObserved, player.modelRank, player.market]
   );
 
   const cohort = useMemo(

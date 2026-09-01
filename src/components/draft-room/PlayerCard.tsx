@@ -744,6 +744,8 @@ const PlayerCardView = ({
         position: player.position,
         age: player.age ?? null,
         gamesObserved: player.gamesObserved ?? null,
+        modelRank: player.modelRank,
+        market: player.market,
       })
     : [];
 

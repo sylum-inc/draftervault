@@ -1960,6 +1960,29 @@ the $1-2 bench players consensus does not bother to rank, they already sit at
 the floor, and inventing a market opinion for them would be inventing the one
 thing the whole module exists to defer to.
 
+**The board's own price can rest on the disagreement the backtest says we
+lose.** The plan's _prices_ come from the market — consensus drives the board —
+but its _gains_ come from `projection.points`, which is ours, because a rank has
+no points behind it and there is nothing else to compute a gain from. So our
+model's error rides into the one number that decides a bid, and the profile
+where it does most damage is the one `CONSENSUS_VERDICT` is already about.
+
+Measured on the shipped board it is mostly not a problem: thirteen of the top
+fourteen buys are within single digits of consensus. The exception is the plan's
+own third pick — Kyren Williams, ours #10 against the room's #42 — which is
+exactly the shape the backtest punished. So a wide disagreement is now a fourth
+`modelCaveat` beside the three the backtest printed, and it earns its place on
+the same evidence: the market's side of the widest gaps was nearer the truth in
+all three seasons and worth about twice as much in hindsight dollars.
+
+It carries the depth bound with it, because a gap is only a claim where a rank
+is. Below the top hundred both boards are ranking noise and the difference
+measures how little either knows — the lesson the bargain board learned when a
+$2 bench receiver a hundred and sixty places adrift led a panel about bargains.
+`TrustSubject` grew a `market` field shaped the way `Player` already is, so all
+four surfaces that hand this function a whole player light up without the two
+numbers being threaded through each of them by hand.
+
 `src/lib/modelTrust.ts` is where that stops being a document and starts being
 something the room can see. It holds the verdict line the bargain board leads
 with and the three blind spots the backtest actually printed — one to sixteen

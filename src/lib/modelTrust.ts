@@ -55,6 +55,16 @@ export interface TrustSubject {
   age?: number | null;
   /** Games of tape the projection was built from. Absent on an older pool. */
   gamesObserved?: number | null;
+  /**
+   * Where we rank him, and where the room does.
+   *
+   * Shaped so the engine's `Player` satisfies it as it stands — four surfaces
+   * already hand this function a whole player, and a flatter field would have
+   * meant threading the same two numbers through each of them by hand, which is
+   * how one of the four gets missed.
+   */
+  modelRank?: number | null;
+  market?: { consensusRank?: number | null } | null;
 }
 
 /**
@@ -68,6 +78,21 @@ export interface TrustSubject {
 const PARTIAL_TAPE_MAX = 16;
 /** Ageing is discounted by the model, and the backtest says not nearly enough. */
 const OLD_AGE = 30;
+
+/*
+ * A disagreement wide enough to have been measured, in a range where a rank
+ * still means something.
+ *
+ * The backtest took the fifteen players each way whose board rank and ADP rank
+ * disagreed most, and the market's side was nearer the truth on 20, 18 and 17
+ * of 30 — worth about twice as much in hindsight dollars. Below the top hundred
+ * both boards are ranking noise, which is the lesson the bargain board already
+ * learned when a $2 bench receiver a hundred and sixty places apart led a panel
+ * about bargains, so the depth bound is part of the test rather than an
+ * afterthought.
+ */
+const WIDE_DISAGREEMENT = 20;
+const RANKS_STILL_MEAN_SOMETHING = 100;
 
 export const modelCaveats = (player: TrustSubject): TrustCaveat[] => {
   const caveats: TrustCaveat[] = [];
@@ -93,6 +118,23 @@ export const modelCaveats = (player: TrustSubject): TrustCaveat[] => {
         "against last season's points at 0.696, 0.675, 0.753). The age curve discounts, but not " +
         'enough and not early enough, and it over-projects this group by 52 to 66 points.',
     });
+  }
+
+  const ours = player.modelRank;
+  const room = player.market?.consensusRank ?? null;
+  if (ours != null && room != null && Math.min(ours, room) <= RANKS_STILL_MEAN_SOMETHING) {
+    const gap = room - ours;
+    if (Math.abs(gap) >= WIDE_DISAGREEMENT) {
+      caveats.push({
+        id: 'consensus:gap',
+        label: gap > 0 ? `${gap} ahead of the room` : `${Math.abs(gap)} behind the room`,
+        detail:
+          `We have him ${ours}, the room has him ${room}. Across ${BACKTEST_SEASONS} the market's ` +
+          'side of the widest disagreements was nearer the truth in all three seasons and worth ' +
+          'about twice as much in hindsight dollars — so a gap this size is a reason to doubt ' +
+          'our number rather than a bargain, and the price above rests on it.',
+      });
+    }
   }
 
   if (player.position === 'TE') {

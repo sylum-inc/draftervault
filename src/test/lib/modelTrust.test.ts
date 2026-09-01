@@ -11,6 +11,35 @@ describe('modelTrust', () => {
   const at = (over: Partial<Parameters<typeof modelCaveats>[0]> = {}) =>
     modelCaveats({ position: 'WR', age: 25, gamesObserved: 45, ...over }).map((c) => c.id);
 
+  /*
+   * The fourth blind spot, and the one the verdict line is literally about.
+   *
+   * Across three held-out seasons the market's side of the widest
+   * disagreements was nearer the truth every year and worth about twice as much
+   * in hindsight dollars — so a gap this size is a reason to doubt our number
+   * rather than the bargain the board's framing implies.
+   */
+  it('flags a wide disagreement with the room, in either direction', () => {
+    expect(at({ modelRank: 10, market: { consensusRank: 42 } })).toContain('consensus:gap');
+    expect(at({ modelRank: 42, market: { consensusRank: 10 } })).toContain('consensus:gap');
+  });
+
+  it('leaves a narrow one alone', () => {
+    expect(at({ modelRank: 10, market: { consensusRank: 25 } })).not.toContain('consensus:gap');
+  });
+
+  /* Below the top hundred both boards are ranking noise, and the gap measures
+     how little either of them knows rather than how much money is on the table
+     — the lesson the bargain board learned when a $2 bench receiver a hundred
+     and sixty places apart led a panel about bargains. */
+  it('says nothing about two boards guessing in the tail', () => {
+    expect(at({ modelRank: 300, market: { consensusRank: 380 } })).not.toContain('consensus:gap');
+  });
+
+  it('says nothing when the room has no opinion at all', () => {
+    expect(at({ modelRank: 10, market: { consensusRank: null } })).not.toContain('consensus:gap');
+  });
+
   it('flags nothing for a player outside every measured blind spot', () => {
     expect(at()).toEqual([]);
   });
