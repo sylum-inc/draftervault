@@ -2108,8 +2108,10 @@ dossier with the board receding behind it and nothing on it moving, and every
 one of that dossier's eight tabs rebuilt out of instruments rather than lists —
 distributions where percentile bars were, where a season's points came from,
 how many weeks he cleared a bar, the price as the chain of multipliers it is,
-and three draggable readings that answer a question a static chart cannot;
-702 tests.
+and three draggable readings that answer a question a static chart cannot,
+the sixty-times-a-night act of recording a sale cut from nine keystrokes to one
+press, and the six side panels put back on the screen the advisor had pushed
+them off; 708 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -2408,6 +2410,44 @@ winning-team select, which names whoever just bought a player — on the panel
 somebody scans for _how much have I got left against them_. It marks yours now,
 the same way `TeamsPanel` already did. That is the third panel found making
 this mistake, after the advisor and the budget planner.
+
+**The act that happens sixty times was a dropdown of twelve identical words.**
+Recording a sale — who won, for how much — is the only thing in this app done
+once per player on the commissioner's sheet, while somebody shouts a number
+across a room, and it was a `<select>` whose every option began with "Team". So
+typeahead matched all twelve and reaching team nine was nine arrow presses or a
+mouse trip into a dropdown that covers the board. Measured in a browser: nine.
+
+A dropdown is the control for a list too long to show. Twelve is a row. Showing
+them costs one line of the band and buys three things: the choice is one press,
+the budgets are legible without opening anything, and the row is the readout for
+who can still bid — the question being asked at exactly that moment, previously
+a sentence underneath. Each chip asks `validateBid`, the same call that runs
+when it is pressed, so a chip that reads as live is a sale the engine will take;
+a full roster or a full position disables it because no price makes those legal,
+while money that cannot reach the bid only dims, because they may still take him
+at a lower number. A team that cannot win stays in place rather than
+disappearing — a row that reorders under the cursor mid-auction is worse than a
+button that says why.
+
+**The focus went to the wrong end of the transaction.** Nominating handed the
+cursor to the winning-team control, and the information arrives in the opposite
+order: the price is shouted _while_ the bidding runs and the winner is only
+known when it stops. It lands in the bid box now, so the running number can be
+typed as it climbs — which is also what keeps the competition readout honest
+while the decision is live. Who won costs one press whenever the bidding ends.
+
+**The advisor pushed all six panels off the bottom of the screen.** Turning it
+on by default was right — the panel answering _what do I do now_ was sitting
+behind a button nobody had pressed — and it made a second thing true that
+nobody looked at. At a 1050px window the box is about 880 tall, so the tab row
+and whatever panel it opens started below the fold: clicking `market` appeared
+to do nothing. Found by screenshotting the tabs rather than by reasoning about
+them, which is how every layout defect in this file was found. The aside is now
+the height of the window under the header and its three parts share it — the
+advisor keeps at most two fifths and scrolls inside that, the tab row is never
+squeezed, and the panel takes what is left. An opinion is worth less than the
+numbers under it, and it is the part that varies most in length.
 
 **Two of the six side panels could not be opened, at any window width.** The
 tab row was a `.dr-segmented` — an `inline-flex` with `overflow: hidden` — and

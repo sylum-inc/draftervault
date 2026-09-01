@@ -452,16 +452,25 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const nominate = useCallback(
     (player: Player) => {
       setSelected(player);
-      // In the auction the next thing anyone types is who won; in the snake
-      // the order has already said, so the confirm button is what Enter needs
-      // to reach. Either way the mouse is never required.
-      window.setTimeout(
-        () =>
-          (
-            document.getElementById('dr-team') ?? document.getElementById('dr-snake-draft')
-          )?.focus(),
-        0
-      );
+      /*
+       * The bid box in the auction, the confirm button in the snake.
+       *
+       * It used to hand focus to the winning-team select, which is the wrong
+       * end of the transaction: the price is shouted *during* the bidding and
+       * the winner is only known when it stops, so the information arrives in
+       * the opposite order to the one the controls asked for. Typing the
+       * running number as it climbs is also what keeps the competition readout
+       * — who can still beat this — honest while the decision is live.
+       *
+       * Who won is now a click on the team row rather than a dropdown, so it
+       * costs nothing to leave until the end.
+       */
+      window.setTimeout(() => {
+        const target = (document.getElementById('dr-bid') ??
+          document.getElementById('dr-snake-draft')) as HTMLElement | null;
+        target?.focus();
+        if (target instanceof HTMLInputElement) target.select();
+      }, 0);
       // A snake pick has no price, so loading an opening bid for one puts a
       // number into `bid` that nothing on screen should be reading. The stage
       // hides the bid box, but the budget planner is handed the same value and
@@ -1443,6 +1452,16 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           ) : (
             <NominationStage
               mode={phase}
+              myTeamId={myTeamId}
+              /* The row asks the engine rather than guessing, so a chip that
+                 looks live is a sale the engine will accept. Twelve cheap
+                 lookups per render of one panel. */
+              checkTeam={
+                selected && phase === 'auction'
+                  ? (candidate, amount) =>
+                      draftService.validateBid(selected.id, candidate, amount || 1)
+                  : undefined
+              }
               player={selected}
               teams={teams}
               teamId={teamId}

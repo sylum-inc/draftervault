@@ -50,27 +50,30 @@ describe('the side panels', () => {
     }
   });
 
-  it('plans your budget, not whoever the winning-team select sits on', () => {
-    // The select is a *recording* control: it names who just bought a player,
-    // so through a normal auction it sits on an opponent most of the night.
-    // This panel was handed it and read "Team 9's budget" on a screen whose
-    // owner is Team 1 — the same mistake the advisor was found making.
+  it('plans your budget, not whoever the winning-team row sits on', () => {
+    // Recording who won is a *recording* control: it names who just bought a
+    // player, so through a normal auction it sits on an opponent most of the
+    // night. This panel was handed it and read "Team 9's budget" on a screen
+    // whose owner is Team 1 — the same mistake the advisor was found making.
     service.renameTeam('team-1', 'The Owner');
     render(<DraftRoom draftService={service} />);
 
     fireEvent.click(tabs().find((tab) => tab.textContent === 'plan')!);
     expect(screen.getByText(/The Owner['’]s budget/)).toBeInTheDocument();
 
-    // Record a sale to somebody else. The select moves; the plan must not.
+    // Record a sale to somebody else. The row moves; the plan must not.
     const player = service.getForSale().find((p) => !p.isDrafted)!;
     fireEvent.click(screen.getAllByText(player.name)[0]);
-    const select = screen.getByLabelText(/winning team/i) as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'team-9' } });
+    fireEvent.click(
+      within(screen.getByRole('group', { name: /winning team/i })).getByRole('button', {
+        name: /Team 9/,
+      })
+    );
 
     // Nominating loads an opening bid, so the header switches from naming a
     // budget to naming a spend. Either way it names a team, and it must be
-    // yours — read inside the panel, since "Team 9" is legitimately in the
-    // select's own options.
+    // yours — read inside the panel, since "Team 9" is legitimately one of the
+    // row's own buttons.
     const planner = document.querySelector('.dr-planner') as HTMLElement;
     expect(within(planner).getByText(/If The Owner spends/)).toBeInTheDocument();
     expect(planner.textContent).not.toContain('Team 9');

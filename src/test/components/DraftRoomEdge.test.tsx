@@ -60,17 +60,21 @@ describe('the room, driven', () => {
     expect(screen.getByText(/No team is marked as yours/)).toBeInTheDocument();
   });
 
-  it('speaks for the owner’s team rather than whoever is in the winning-team box', () => {
+  it('speaks for the owner’s team rather than whoever won the last bid', () => {
     service.setMyTeam('team-1');
     service.renameTeam('team-1', 'The Owner');
     service.renameTeam('team-5', 'Somebody Else');
     render(<DraftRoom draftService={service} />);
     nominate();
 
-    // Selecting a winning team is a recording control: it records who bought a
+    // Naming the winning team is a recording control: it records who bought a
     // player, and through a normal auction it sits on an opponent most of the
     // time. Advice computed against it was advice about their roster.
-    fireEvent.change(screen.getByLabelText('Winning team'), { target: { value: 'team-5' } });
+    fireEvent.click(
+      within(screen.getByRole('group', { name: /winning team/i })).getByRole('button', {
+        name: /Somebody Else/,
+      })
+    );
 
     const advisor = screen.getByLabelText('Advisor — opinions, not measurements');
     expect(within(advisor).getByText('opinion, for The Owner')).toBeInTheDocument();

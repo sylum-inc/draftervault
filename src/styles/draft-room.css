@@ -333,6 +333,12 @@
   gap: var(--dr-gap);
   position: sticky;
   top: 74px;
+  /* The column is as tall as what is left of the window under the sticky
+     header, and its parts share that height rather than running off the bottom
+     of it. Before the advisor was on by default this never came up: one panel
+     at a time fitted. */
+  max-height: calc(100vh - 84px);
+  min-height: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -1814,6 +1820,18 @@
   width: 100%;
   overflow: visible;
   border-radius: 10px;
+  /* Never squeezed: the way to the panels has to stay the same size whatever
+     is above or below it. */
+  flex: none;
+}
+
+/* The panel itself takes what is left and scrolls in it, so switching to a
+   tab always shows that tab rather than scrolling the whole column to find it. */
+.dr-aside > :last-child:not(.dr-aside-tabs):not(.dr-advisor) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .dr-aside-tabs button {
@@ -3547,6 +3565,25 @@
   border-radius: var(--dr-radius);
   background: color-mix(in srgb, var(--dr-caution) 6%, var(--dr-surface));
   padding: 10px 12px;
+  /*
+   * The opinion box may not push the measurements off the screen.
+   *
+   * Turning the advisor on by default was right — the panel answering "what do
+   * I do now" was sitting behind a button nobody had pressed — but it made a
+   * second thing true that nobody looked at: at a 1050px window it is about
+   * 880px tall, so the six panels underneath it started below the fold and
+   * clicking a tab appeared to do nothing. Found by screenshotting the tabs
+   * rather than by reasoning about them.
+   *
+   * It keeps at most two fifths of the column and scrolls inside that, because
+   * an opinion is worth less than the numbers under it and it is the part that
+   * varies most in length — three "do not put these up yet" entries are three
+   * paragraphs.
+   */
+  flex: 0 1 auto;
+  max-height: 40%;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .dr-advisor-head {
@@ -5503,4 +5540,99 @@
   height: 100%;
   border-radius: 3px;
   opacity: 0.85;
+}
+
+/* --------------------------------------------------------------------------
+   the winning team, as a row rather than a dropdown
+   -------------------------------------------------------------------------- */
+
+/* Twelve is a row, not a list. A dropdown is the control for options too many
+   to show, and its cost here was nine arrow presses to reach team nine, sixty
+   times a night, while somebody shouts a price across a room. */
+.dr-teamrow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.dr-teamchip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 4px 6px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  color: var(--dr-ink-dim);
+  cursor: pointer;
+  min-width: 0;
+  transition:
+    border-color var(--dr-fast),
+    background var(--dr-fast),
+    color var(--dr-fast);
+}
+
+.dr-teamchip em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.dr-teamchip b {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+}
+
+.dr-teamchip:hover:not(:disabled) {
+  border-color: var(--dr-accent-lift);
+  color: var(--dr-ink);
+}
+
+/* Who won. The loudest state in the row, because it is the thing being
+   recorded and a mis-recorded sale is the expensive kind of mistake. */
+.dr-teamchip[aria-pressed='true'] {
+  border-color: var(--dr-good);
+  background: color-mix(in srgb, var(--dr-good) 16%, transparent);
+  color: var(--dr-ink);
+}
+
+.dr-teamchip[aria-pressed='true'] b {
+  color: var(--dr-good);
+}
+
+/* Yours. A quiet permanent mark, deliberately a different channel from the
+   pressed state — `teamId` names whoever just bought a player and sits on an
+   opponent most of the night, and four panels have already been caught
+   presenting that as the owner's own roster. */
+.dr-teamchip[data-mine]::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--dr-accent-lift);
+}
+
+.dr-teamchip[data-mine] {
+  position: relative;
+}
+
+/* Money that cannot reach the number on the table. Not disabled — they are
+   legally able to bid, just not this much — so it dims rather than blocks, and
+   the row becomes the answer to "who can still take him off me". */
+.dr-teamchip[data-short] {
+  opacity: 0.45;
+}
+
+.dr-teamchip:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }

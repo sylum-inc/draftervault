@@ -116,6 +116,31 @@ interface NominationStageProps {
    * that is the advisor's, in its own box.
    */
   competition: BidCompetition | null;
+  /**
+   * Which of the twelve is the owner's, so the row can mark it.
+   *
+   * `teamId` is the *recording* control — it names whoever just bought a
+   * player and sits on an opponent most of the night — and four panels have
+   * already been caught presenting that as the owner's own. The row shows both
+   * at once and must not confuse them: pressed is who won, marked is you.
+   */
+  myTeamId?: string | null;
+  /**
+   * Whether this team may win this player at this price, from the engine.
+   *
+   * The row asks `validateBid` — the same call that runs when the button is
+   * pressed — rather than approximating it, so a chip the room reads as live is
+   * a sale the engine will take. It is the principle `getBidCompetition`
+   * already lives by: a number read off the screen that the engine then refuses
+   * is worse than no number at all.
+   *
+   * The two rejections it distinguishes are the two that mean different things
+   * to somebody about to press. A full roster or a full position is structural
+   * — no price makes it legal, so the button is disabled. Money that cannot
+   * reach the bid is not: they may still take him, just not at this number, so
+   * the chip dims and the row becomes the answer to "who can still outbid me".
+   */
+  checkTeam?: (teamId: string, amount: number) => BidCheck | null;
 }
 
 /**
@@ -199,6 +224,8 @@ export const NominationStage = ({
   adjusted,
   inflation,
   competition,
+  myTeamId = null,
+  checkTeam,
 }: NominationStageProps) => {
   const snake = mode === 'snake';
 
@@ -634,29 +661,63 @@ export const NominationStage = ({
           </p>
         ) : (
           <div className="dr-field">
-            <label className="dr-eyebrow" htmlFor="dr-team">
+            <label className="dr-eyebrow" id="dr-team-label">
               Winning team
             </label>
-            <select
-              id="dr-team"
-              className="dr-select"
-              value={teamId}
-              onChange={(event) => onTeamChange(event.target.value)}
-            >
-              <option value="">Select a team…</option>
+            {/*
+             * Twelve buttons, not a dropdown.
+             *
+             * This is the highest-frequency act of the night — sixty times,
+             * while somebody shouts a number across a room — and it was a
+             * `<select>` of twelve options all beginning with the word "Team".
+             * Typeahead is therefore useless (every option matches the same
+             * letter), so reaching team nine was nine arrow presses or a mouse
+             * trip into a dropdown that covers the board. Measured: nine.
+             *
+             * A dropdown is the control for a list too long to show. Twelve is
+             * a row. Showing them costs one line of the band and buys three
+             * things: the choice is one click, the budgets are legible without
+             * opening anything, and the row doubles as the readout for who can
+             * still bid — which is the question being asked at exactly this
+             * moment and was previously a sentence underneath.
+             *
+             * A team with no room stays in place rather than disappearing,
+             * because a row that reorders under the cursor mid-auction is worse
+             * than a disabled button; it says why instead.
+             */}
+            <div className="dr-teamrow" role="group" aria-labelledby="dr-team-label">
               {teams.map((t) => {
-                // A team with no room cannot win anything. It stays in the list
-                // so the order never shifts under the cursor mid-auction, but it
-                // says why it is unavailable rather than accepting the choice and
-                // rejecting the bid afterwards.
-                const full = !canDraft(t);
+                const verdict = checkTeam?.(t.id, amount) ?? null;
+                const blocked =
+                  verdict && !verdict.ok
+                    ? verdict.code === 'roster-full' || verdict.code === 'position-full'
+                    : null;
+                // Falls back to the roster question alone where no checker was
+                // handed down, which is what the control asked before.
+                const full = blocked ?? !canDraft(t);
+                const short = !full && verdict != null && !verdict.ok;
                 return (
-                  <option key={t.id} value={t.id} disabled={full}>
-                    {t.name} · {full ? 'roster full' : `$${t.remaining} left`}
-                  </option>
+                  <button
+                    key={t.id}
+                    type="button"
+                    className="dr-teamchip"
+                    aria-pressed={teamId === t.id}
+                    disabled={full}
+                    data-short={short ? '' : undefined}
+                    data-mine={t.id === myTeamId ? '' : undefined}
+                    title={
+                      verdict && !verdict.ok
+                        ? `${t.name} — ${verdict.message}`
+                        : `${t.name} — $${t.remaining} left`
+                    }
+                    onClick={() => onTeamChange(teamId === t.id ? '' : t.id)}
+                  >
+                    <em>{t.name}</em>
+                    <b className="dr-num">{full ? 'full' : `$${t.remaining}`}</b>
+                  </button>
                 );
               })}
-            </select>
+            </div>
           </div>
         )}
 
