@@ -217,6 +217,76 @@ export const MarketPanel = ({
         </p>
       </div>
 
+      {!snake && (
+        <>
+          <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
+            When to buy
+          </h3>
+          <p
+            className="dr-endgame-verdict"
+            data-lean={endgame.lean}
+            style={{
+              borderLeftColor:
+                endgame.lean === 'buy'
+                  ? 'var(--dr-value)'
+                  : endgame.lean === 'wait'
+                    ? 'var(--dr-caution)'
+                    : 'var(--dr-line-strong)',
+            }}
+          >
+            {endgame.verdict}
+          </p>
+          <dl className="dr-league-summary">
+            <div>
+              <dt>Par from here</dt>
+              <dd className="dr-num">${endgame.par}</dd>
+            </div>
+            <div>
+              <dt>Room is paying</dt>
+              {/* Coloured by what it paid against those players' *list* prices
+                  rather than against par. Par is the average of the players
+                  left and the pace is the average of the players sold — the
+                  dear ones go first, so pace beat par from the opening sale
+                  whatever the room did, and this tile ran amber all night. */}
+              <dd
+                className="dr-num"
+                style={{
+                  color:
+                    endgame.paceOfList == null
+                      ? undefined
+                      : endgame.paceOfList > 1
+                        ? 'var(--dr-caution)'
+                        : 'var(--dr-value)',
+                }}
+              >
+                {endgame.pace == null ? '—' : `$${endgame.pace}`}
+                {endgame.paceOfList != null && (
+                  <span className="dr-pace-share">
+                    {' '}
+                    {endgame.paceOfList >= 1 ? '+' : '−'}
+                    {Math.abs(Math.round((endgame.paceOfList - 1) * 100))}% vs list
+                  </span>
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Can still pay par</dt>
+              <dd className="dr-num">
+                {endgame.liveBidders}/{endgame.teamCount}
+              </dd>
+            </div>
+            {endgame.yourShare != null && (
+              <div>
+                <dt>Your share of the money</dt>
+                <dd className="dr-num" style={{ color: 'var(--dr-value)' }}>
+                  {Math.round(endgame.yourShare * 100)}%
+                </dd>
+              </div>
+            )}
+          </dl>
+        </>
+      )}
+
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
         Supply against demand
       </h3>
@@ -296,12 +366,9 @@ export const MarketPanel = ({
         );
       })}
       <p className="dr-footnote">
-        A position where the seats catch the players left to fill them is a position somebody has to
-        go without &mdash; which is what a run is made of, and the one thing here that shows before
-        it happens rather than after. It is measured against the slack the position opened with, so
-        kicker and defence, where the seats meet the players from the first frame, never light up.
-        The money is a rate because it is fungible: the same dollars are aimed at a team&rsquo;s
-        quarterback and its receivers at once, so the six figures do not add up to the room.
+        Seats catching the players left to fill them is what a run is made of, measured against the
+        slack the position opened with. The money is per seat because it is fungible &mdash; the six
+        figures do not add up to the room.
       </p>
 
       {runsLow.length > 0 && (
@@ -384,76 +451,6 @@ export const MarketPanel = ({
           able to find two answers to one question in two places. Hidden in the
           snake, where no money moves and a par price would be arithmetic about
           nothing. */}
-      {!snake && (
-        <>
-          <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
-            When to buy
-          </h3>
-          <p
-            className="dr-endgame-verdict"
-            data-lean={endgame.lean}
-            style={{
-              borderLeftColor:
-                endgame.lean === 'buy'
-                  ? 'var(--dr-value)'
-                  : endgame.lean === 'wait'
-                    ? 'var(--dr-caution)'
-                    : 'var(--dr-line-strong)',
-            }}
-          >
-            {endgame.verdict}
-          </p>
-          <dl className="dr-league-summary">
-            <div>
-              <dt>Par from here</dt>
-              <dd className="dr-num">${endgame.par}</dd>
-            </div>
-            <div>
-              <dt>Room is paying</dt>
-              {/* Coloured by what it paid against those players' *list* prices
-                  rather than against par. Par is the average of the players
-                  left and the pace is the average of the players sold — the
-                  dear ones go first, so pace beat par from the opening sale
-                  whatever the room did, and this tile ran amber all night. */}
-              <dd
-                className="dr-num"
-                style={{
-                  color:
-                    endgame.paceOfList == null
-                      ? undefined
-                      : endgame.paceOfList > 1
-                        ? 'var(--dr-caution)'
-                        : 'var(--dr-value)',
-                }}
-              >
-                {endgame.pace == null ? '—' : `$${endgame.pace}`}
-                {endgame.paceOfList != null && (
-                  <span className="dr-pace-share">
-                    {' '}
-                    {endgame.paceOfList >= 1 ? '+' : '−'}
-                    {Math.abs(Math.round((endgame.paceOfList - 1) * 100))}% vs list
-                  </span>
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt>Can still pay par</dt>
-              <dd className="dr-num">
-                {endgame.liveBidders}/{endgame.teamCount}
-              </dd>
-            </div>
-            {endgame.yourShare != null && (
-              <div>
-                <dt>Your share of the money</dt>
-                <dd className="dr-num" style={{ color: 'var(--dr-value)' }}>
-                  {Math.round(endgame.yourShare * 100)}%
-                </dd>
-              </div>
-            )}
-          </dl>
-        </>
-      )}
-
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
         Cost of waiting
       </h3>

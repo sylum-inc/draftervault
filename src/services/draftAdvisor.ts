@@ -163,6 +163,44 @@ export const readTheRoom = (
 };
 
 /**
+ * Rivals who would stop at the same number for the same reason, said once.
+ *
+ * Before anybody has bought anything eleven teams have the identical seat open
+ * and the identical money, so a list of rivals is the identical two-line
+ * reason eleven times. One line per distinct price and reason, with the names
+ * run together, is the same information at a tenth of the height.
+ */
+export const groupRoomRead = (
+  room: RoomRead
+): Array<{ names: string; plausible: number; legal: number; why: string; count: number }> => {
+  const groups = new Map<
+    string,
+    { names: string[]; plausible: number; legal: number; why: string }
+  >();
+  for (const rival of room.rivals) {
+    const key = `${rival.plausible}|${rival.why}`;
+    const group = groups.get(key) ?? {
+      names: [],
+      plausible: rival.plausible,
+      legal: rival.legal,
+      why: rival.why,
+    };
+    group.names.push(rival.team.name);
+    groups.set(key, group);
+  }
+  return [...groups.values()].map((group) => ({
+    why: group.why,
+    plausible: group.plausible,
+    legal: group.legal,
+    count: group.names.length,
+    names:
+      group.names.length > 3
+        ? `${group.names.slice(0, 3).join(', ')} and ${group.names.length - 3} more`
+        : group.names.join(', '),
+  }));
+};
+
+/**
  * Bid, take the value, hold or walk.
  *
  * The verdict is a function of three things a bidder cannot hold in their head

@@ -1,3 +1,4 @@
+import { groupRoomRead } from '@/services/draftAdvisor';
 import type { Advice, Alert, NominationPlan, RoomRead } from '@/services/draftAdvisor';
 
 interface AdvisorPanelProps {
@@ -148,12 +149,14 @@ export const AdvisorPanel = ({
           {room.myCeiling != null && <> — you are allowed ${room.myCeiling}.</>}
         </p>
         <ul className="dr-advice-rivals">
-          {room.rivals.map((rival) => (
-            <li key={rival.team.id}>
-              <span className="dr-advice-rival-team">{rival.team.name}</span>
-              <span className="dr-num dr-advice-rival-plausible">${rival.plausible}</span>
-              <span className="dr-advice-rival-legal">of ${rival.legal} allowed</span>
-              <span className="dr-advice-rival-why">{rival.why}</span>
+          {groupRoomRead(room).map((group) => (
+            <li key={`${group.plausible}|${group.why}`}>
+              <span className="dr-advice-rival-team">{group.names}</span>
+              <span className="dr-num dr-advice-rival-plausible">${group.plausible}</span>
+              <span className="dr-advice-rival-legal">
+                of ${group.legal} allowed{group.count > 1 ? ' each' : ''}
+              </span>
+              <span className="dr-advice-rival-why">{group.why}</span>
             </li>
           ))}
         </ul>

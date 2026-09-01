@@ -37,7 +37,14 @@ export const BargainBoard = ({ service, players, onSelect }: BargainBoardProps) 
   );
 
   if (!rows.length) {
-    return <p className="dr-empty dr-panel">No market data for the players still available.</p>;
+    return (
+      <section className="dr-panel dr-rail" aria-label="Bargains">
+        <header className="dr-rail-head">
+          <h2 className="dr-eyebrow">Bargains</h2>
+        </header>
+        <p className="dr-empty">No market data for the players still available.</p>
+      </section>
+    );
   }
 
   // Scaled on the dollar gap, which is now the sort key: a bar drawn from the

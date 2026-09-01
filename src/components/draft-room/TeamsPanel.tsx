@@ -1,5 +1,5 @@
-import type { Player, PlayerPosition, Team } from '@/services/auctionDraftService';
-import { POSITIONS, type LeagueShape } from '@/lib/valuation';
+import type { Player, Team } from '@/services/auctionDraftService';
+import { FLEX_ELIGIBLE, LINEUP_SLOTS, type LeagueShape, type LineupSlot } from '@/lib/valuation';
 
 interface TeamsPanelProps {
   teams: Team[];
@@ -24,10 +24,23 @@ interface TeamsPanelProps {
 const cost = (player: Player): string =>
   player.draftCost != null ? `Bought for $${player.draftCost}` : 'Taken in the snake — no cost';
 
-const startersFor = (league: LeagueShape): Array<[PlayerPosition, number]> =>
-  POSITIONS.map(
-    (position) => [position, league.startingLineup[position] ?? 0] as [PlayerPosition, number]
+/* Every seat the lineup fields, the flex included. It iterated the positions
+   and so drew nine chips for a ten-starter lineup: the flex seat — the one this
+   league's whole difference turns on — was never rendered. */
+const startersFor = (league: LeagueShape): Array<[LineupSlot, number]> =>
+  LINEUP_SLOTS.map(
+    (slot) => [slot, league.startingLineup[slot] ?? 0] as [LineupSlot, number]
   ).filter(([, count]) => count > 0);
+
+/* Whether the flex is taken: bodies at flex-eligible positions beyond the
+   dedicated seats there. The same arithmetic `unfilledSlotsFor` does for the
+   reserve, read off the roster counts this panel already has. */
+const flexTaken = (team: Team, league: LeagueShape): number =>
+  FLEX_ELIGIBLE.reduce(
+    (sum, position) =>
+      sum + Math.max(0, (team.roster[position] ?? 0) - (league.startingLineup[position] ?? 0)),
+    0
+  );
 
 /**
  * Every team's roster as it fills.
@@ -56,7 +69,9 @@ export const TeamsPanel = ({
     <section className="dr-panel dr-rail" aria-label="Team rosters">
       <header className="dr-rail-head">
         <h2 className="dr-eyebrow">Rosters</h2>
-        <span className="dr-eyebrow">needs at a glance</span>
+        <span className="dr-eyebrow dr-num">
+          ${teams.reduce((sum, team) => sum + team.remaining, 0).toLocaleString()} in the room
+        </span>
       </header>
 
       {teams.map((team) => {
@@ -66,6 +81,8 @@ export const TeamsPanel = ({
           (a, b) => (b.draftCost ?? -1) - (a.draftCost ?? -1)
         );
         const active = team.id === activeTeamId;
+        const share = team.budget > 0 ? team.remaining / team.budget : 0;
+        const flexUsed = flexTaken(team, league);
 
         return (
           <div
@@ -89,10 +106,19 @@ export const TeamsPanel = ({
               </span>
             </button>
 
+            {/* Money left, as the bar the budgets tab used to be. */}
+            <span
+              className={`dr-team-bar${share <= 0.05 ? ' is-broke' : share <= 0.2 ? ' is-low' : ''}`}
+              title={`$${team.remaining} of $${team.budget} left`}
+            >
+              <span style={{ width: `${Math.max(0, Math.min(100, share * 100))}%` }} />
+            </span>
+
             <div className="dr-slots">
               {STARTERS.flatMap(([position, required]) =>
                 Array.from({ length: required }, (_, index) => {
-                  const filled = (team.roster[position] ?? 0) > index;
+                  const filled =
+                    position === 'FLEX' ? flexUsed > index : (team.roster[position] ?? 0) > index;
                   return (
                     <span
                       key={`${position}-${index}`}

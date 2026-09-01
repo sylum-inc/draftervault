@@ -15,7 +15,6 @@ import { PlayerTable, type TableSort } from './PlayerTable';
 import { NominationStage } from './NominationStage';
 import { SpotlightTonight } from './SpotlightTonight';
 import { SetupMenu } from './SetupMenu';
-import { BudgetRail } from './BudgetRail';
 import { TeamsPanel } from './TeamsPanel';
 import { MarketPanel } from './MarketPanel';
 import { NominationClock } from './NominationClock';
@@ -109,10 +108,34 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
      room is a fragment of it. The budget *planner* — what one bid leaves
      behind — is `budget`, renamed out of its way. */
   const [asidePanel, setAsidePanel] = useState<
-    'plan' | 'spend' | 'budget' | 'budgets' | 'rosters' | 'market' | 'bargains'
+    'plan' | 'spend' | 'bid' | 'rosters' | 'market' | 'bargains'
   >('plan');
   const [resultsOpen, setResultsOpen] = useState(false);
   const [readyOpen, setReadyOpen] = useState(false);
+
+  /*
+   * How tall the sticky chrome is, written where the CSS can read it.
+   *
+   * The header and the band share one sticky block, and the band is now the
+   * whole dossier — up to seven hundred pixels with a player up, forty with
+   * nobody. The aside is sticky too and used to sit at a fixed 74px, which
+   * put its top half under the bid box on any scroll. A ResizeObserver on the
+   * chrome writes `--dr-chrome-h` on the room, and the aside's offset and
+   * height are calc()s of it. Measured rather than assumed, because the band
+   * folds, the header wraps on a phone, and a ticker line comes and goes.
+   */
+  const rootRef = useRef<HTMLDivElement>(null);
+  const chromeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const chrome = chromeRef.current;
+    const root = rootRef.current;
+    if (!chrome || !root || typeof ResizeObserver === 'undefined') return;
+    const write = () => root.style.setProperty('--dr-chrome-h', `${chrome.offsetHeight}px`);
+    write();
+    const observer = new ResizeObserver(write);
+    observer.observe(chrome);
+    return () => observer.disconnect();
+  }, []);
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
@@ -1398,13 +1421,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const { season } = snapshotMeta();
 
   return (
-    <div className="draft-room">
+    <div className="draft-room" ref={rootRef}>
       {/* Header and block stick together.
           The band was sticky at a fixed offset under a header that wraps —
           so at any width where the setup row wrapped, the block tucked itself
           underneath the header and the bid box was hidden by the thing meant
           to be above it. One sticky context has no offset to get wrong. */}
-      <div className="dr-chrome">
+      <div className="dr-chrome" ref={chromeRef}>
         <header className="dr-topbar">
           {/* The progress bar is the bar's own bottom edge now.
             As a flex item it took `flex: 1` — three hundred-odd pixels of the
@@ -1955,24 +1978,34 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           )}
 
           <div className="dr-segmented dr-aside-tabs" role="group" aria-label="Side panel">
-            {(['plan', 'spend', 'budget', 'budgets', 'rosters', 'market', 'bargains'] as const).map(
-              (panel) => (
-                <button
-                  key={panel}
-                  type="button"
-                  aria-pressed={asidePanel === panel}
-                  onClick={() => setAsidePanel(panel)}
-                >
-                  {panel}
-                </button>
-              )
-            )}
+            {/* Six, in a three-by-two grid. There were seven — a lone button
+                on a third row — and two of them were "Budget" and "Budgets",
+                one letter apart and about different things. The budgets rail
+                was a strict subset of the rosters panel and is folded into
+                it; the planner says what it is. Labels come from a table
+                rather than from capitalising the state key. */}
+            {(
+              [
+                ['plan', 'Plan'],
+                ['spend', 'Spend'],
+                ['bid', 'This bid'],
+                ['rosters', 'Rosters'],
+                ['market', 'Market'],
+                ['bargains', 'Bargains'],
+              ] as const
+            ).map(([panel, label]) => (
+              <button
+                key={panel}
+                type="button"
+                aria-pressed={asidePanel === panel}
+                onClick={() => setAsidePanel(panel)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           {asidePanel === 'spend' && <SpendOutlook service={draftService} players={players} />}
-          {asidePanel === 'budgets' && (
-            <BudgetRail teams={teams} players={players} activeTeamId={teamId} myTeamId={myTeamId} />
-          )}
           {asidePanel === 'rosters' && (
             <TeamsPanel
               teams={teams}
@@ -2000,7 +2033,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           {asidePanel === 'plan' && (
             <RosterPlanPanel service={draftService} players={players} onSelect={nominate} />
           )}
-          {asidePanel === 'budget' && (
+          {asidePanel === 'bid' && (
             <BudgetPlanner
               service={draftService}
               /* Yours, not whoever the winning-team select happens to sit on.

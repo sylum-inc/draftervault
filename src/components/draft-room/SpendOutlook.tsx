@@ -135,7 +135,15 @@ const SpendSpread = ({
     [service, players]
   );
 
-  if (!spread.positions) return <p className="dr-empty dr-panel">{reason ?? spread.reason}</p>;
+  if (!spread.positions)
+    return (
+      <section className="dr-panel dr-rail" aria-label="Spend outlook">
+        <header className="dr-rail-head">
+          <h2 className="dr-eyebrow">Spend</h2>
+        </header>
+        <p className="dr-empty">{reason ?? spread.reason}</p>
+      </section>
+    );
 
   // Settled first: those are the rows to plan on. Within each group, by what
   // the position is worth at its worst, so the ordering is a recommendation

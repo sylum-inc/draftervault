@@ -68,7 +68,7 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
 
   if (plan.reason) {
     return (
-      <div className="dr-panel" aria-label="The plan">
+      <div className="dr-panel dr-plan-panel" aria-label="The plan">
         <header className="dr-bargains-head">
           <span className="dr-eyebrow">The plan</span>
         </header>
@@ -80,7 +80,7 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
   const budget = plan.spend + (plan.curve.length - 1 - plan.spend);
 
   return (
-    <div className="dr-panel" aria-label="The plan">
+    <div className="dr-panel dr-plan-panel" aria-label="The plan">
       <header className="dr-bargains-head">
         <span className="dr-eyebrow">The plan</span>
         <span className="dr-footnote" style={{ margin: 0 }}>

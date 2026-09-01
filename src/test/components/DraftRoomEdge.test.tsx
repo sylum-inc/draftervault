@@ -128,7 +128,7 @@ describe('the room, driven', () => {
   it('explains the inflation number in the market panel', () => {
     service.draftPlayer(service.getAvailablePlayers()[0].id, 'team-2', 120);
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: 'market' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Market' }));
 
     const basis = service.getInflationBasis();
     const market = screen.getByLabelText('Market');

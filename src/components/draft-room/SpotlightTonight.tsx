@@ -12,7 +12,7 @@ import type {
 } from '@/services/auctionDraftService';
 import type { RosterPlan, PlayerValue } from '@/lib/rosterPlan';
 import type { Endgame } from '@/lib/endgame';
-import type { RoomRead } from '@/services/draftAdvisor';
+import { groupRoomRead, type RoomRead } from '@/services/draftAdvisor';
 import type { ResearchMark } from '@/services/playerResearch';
 import { getIdentity } from '@/services/nflIdentity';
 import { RunTape, Shelf, SlotFit } from './charts/micro';
@@ -423,7 +423,7 @@ export const SpotlightTonight = ({
                       Expect it to reach about{' '}
                       <strong className="dr-num">{money(room.topPlausible)}</strong>
                       {' — '}
-                      {groupRivals(room).map((group, index) => (
+                      {groupRoomRead(room).map((group, index) => (
                         <span key={group.why}>
                           {index > 0 && '; '}
                           {group.names} at <b className="dr-num">{money(group.plausible)}</b>
@@ -602,29 +602,4 @@ export const SpotlightTonight = ({
       </div>
     </div>
   );
-};
-
-/**
- * Rivals who would stop at the same number for the same reason, said once.
- *
- * Before anybody has bought anything eleven teams have the identical seat open
- * and the identical money, so the advisor's list was the identical two-line
- * reason eleven times. One line per distinct reason and price, with the names
- * run together, is the same information at a tenth of the height.
- */
-const groupRivals = (room: RoomRead) => {
-  const groups = new Map<string, { why: string; plausible: number; names: string[] }>();
-  for (const rival of room.rivals) {
-    const key = `${rival.plausible}|${rival.why}`;
-    const group = groups.get(key) ?? { why: key, plausible: rival.plausible, names: [] };
-    group.names.push(rival.team.name);
-    groups.set(key, group);
-  }
-  return [...groups.values()].map((group) => ({
-    ...group,
-    names:
-      group.names.length > 3
-        ? `${group.names.slice(0, 3).join(', ')} and ${group.names.length - 3} more`
-        : group.names.join(', '),
-  }));
 };
