@@ -452,86 +452,98 @@ export const rosterPlan = (input: PlanInput): RosterPlan => {
   };
 };
 
+export interface PlayerValue {
+  /** Points he would add to the lineup as it stands, right now. */
+  gain: number;
+  /** The most he is worth at the plan's own rate. */
+  maxPrice: number;
+  /** Which seat he would take: the flex is the one this format contests. */
+  seat: 'starter' | 'flex' | 'bench';
+}
+
 /**
- * The most this player is worth, given everything else the money could buy.
+ * What every player for sale is worth, at the rate the plan sets.
  *
- * Not a multiplier on his price — the thing this module exists to replace — but
- * the exact price at which having him stops beating the best plan that does not.
- * Solved by taking him out of the board entirely and asking what the budget
- * achieves without him, then walking his price up until the two meet.
+ * This replaced an exact re-solve — "what is the most I could pay for him and
+ * still beat the best plan that excludes him" — and the reason is worth stating
+ * carefully, because the re-solve is the *more precise* answer to the *wrong
+ * question*.
  *
- * It is therefore a number that can be *below* his list price, and often is:
- * more than half a commissioner's sheet consists of players whose gain over a
- * free alternative does not repay a dollar. That is the answer this format has
- * and an ordinary auction does not.
+ * The re-solve asks whether to buy him **instead of** the optimal basket. That
+ * only makes sense if the basket is guaranteed, and it never is: sixty players
+ * come up one at a time in an order nobody controls, and you will be outbid on
+ * some of them. Under that uncertainty the re-solve priced fifty-seven of the
+ * sixty at zero — advice that has you holding a hundred dollars and a bad
+ * roster if two of your three targets go elsewhere.
+ *
+ * The question actually faced sixty times, once per name called, is *is he
+ * better value than the money?* — and that is the knapsack's **dual**. The plan
+ * prices a dollar at `perDollar` points; a player is worth exactly the price at
+ * which the points he adds per dollar meet that rate, which is `gain ÷ rate`.
+ * Every player who helps the lineup at all therefore has a real bid, which is
+ * the property that makes this usable at a live auction and the previous
+ * version not.
+ *
+ * The two disagree by the knapsack's duality gap — the plan will pay $47 for a
+ * man the rate prices at $46, because he happens to fit the budget exactly. A
+ * plan that would pay a price is a demonstration that the price is worth
+ * paying, so anybody in it is floored at what it pays for him. The gap closes
+ * and neither number has to be explained away.
  */
-export const maxPriceFor = (
-  input: PlanInput,
-  playerId: string,
-  /** The unrestricted plan, when the caller already has one. */
-  solved?: RosterPlan
-): number | null => {
-  const candidate = input.candidates.find((entry) => entry.id === playerId);
-  if (!candidate || input.budget <= 0) return null;
+export const valueBoard = (input: PlanInput, plan: RosterPlan): Map<string, PlayerValue> => {
+  const out = new Map<string, PlayerValue>();
+  if (!input.candidates.length) return out;
   const shape = shapeOf(input);
-  const slot = shape.positions.indexOf(candidate.position);
-  // A position with no seat left is a bench body — which is not the same as
-  // worthless. He is worth whatever the best lineup has no use for, because
-  // that money buys nothing else and an unspent dollar scores nothing.
-  if (slot < 0) return (solved ?? rosterPlan(input)).slack;
+  const zero = shape.positions.map(() => 0);
+  const base = freeFill(input, shape, zero);
+  const planPrice = new Map(plan.buy.map((entry) => [entry.candidate.id, entry.candidate.price]));
 
-  const plan = solved ?? rosterPlan(input);
-  const withHim = plan.curve[input.budget];
-  const without = solve(input, shape, playerId);
+  for (const candidate of input.candidates) {
+    const slot = shape.positions.indexOf(candidate.position);
+    let gain = 0;
+    let seat: PlayerValue['seat'] = 'bench';
 
-  const seats = input.openSeats[candidate.position] ?? 0;
-  const allowed = allow(input, shape, slot, seats);
-  const fills = new Float64Array(shape.states);
-  for (let state = 0; state < shape.states; state += 1) {
-    fills[state] = freeFill(input, shape, decode(state, shape));
-  }
+    if (slot >= 0 && shape.caps[slot] > 0) {
+      const counts = zero.slice();
+      counts[slot] = 1;
+      /*
+       * Never below nothing, because owning a player is not an obligation to
+       * start him.
+       *
+       * Forced into the seat, a man behind the free alternative comes out at
+       * minus four — as though buying him actively damaged the lineup. He does
+       * not: you bench him and start the free man exactly as you would have.
+       * What he costs is the dollars, and what he adds is zero, and those are
+       * different statements from a negative gain.
+       */
+      gain = Math.max(0, candidate.points + freeFill(input, shape, counts) - base);
+      seat =
+        gain <= 0 ? 'bench' : 1 <= (input.openSeats[candidate.position] ?? 0) ? 'starter' : 'flex';
+    }
 
-  for (let price = input.budget; price >= 0; price -= 1) {
     /*
-     * Two ways to own him, and the second one is the fix.
-     *
-     * Forcing him into a seat is what the search did first, and it makes a man
-     * worse than the free alternative *reduce* the lineup — so his price came
-     * out at zero, as though owning him were an act of self-harm. Nobody starts
-     * a player who is worse than the one the snake handed them: you bench him.
-     * So the honest comparison is the better of starting him and benching him,
-     * and benching costs the lineup nothing at all.
-     *
-     * That is what gives every rosterable player a real price. Money left over
-     * at the end of an auction scores nothing, so a player who adds no points
-     * is still worth every dollar the plan has no other use for.
+     * A player who adds nothing is still worth the money the lineup spares,
+     * because an unspent auction dollar scores nothing at all. And where the
+     * plan cannot use the budget — `perDollar` of zero, the endgame state where
+     * the money outlasts anything worth buying — a player who helps is worth
+     * every dollar left, since holding it is the one guaranteed way to score
+     * nothing with it.
      */
-    const benched = benchAt(without, shape, fills, input.budget - price);
-    let best = benched;
-    for (let state = 0; state < shape.states; state += 1) {
-      if (!allowed[state]) continue;
-      const bought = without.best[state * without.width + (input.budget - price)];
-      if (bought === Number.NEGATIVE_INFINITY) continue;
-      const total = bought + candidate.points + fills[state + shape.strides[slot]];
-      if (total > best) best = total;
-    }
-    // A hair of tolerance, because the comparison is between two floating sums
-    // of the same integers reached by different routes.
-    if (best >= withHim - 1e-9) return price;
-  }
-  return 0;
-};
+    const rate =
+      gain <= 0
+        ? plan.slack
+        : plan.perDollar > 0
+          ? Math.round(gain / plan.perDollar)
+          : input.budget;
 
-/** The best lineup reachable on this budget without starting him. */
-const benchAt = (table: Table, shape: Shape, fills: Float64Array, dollars: number): number => {
-  let best = Number.NEGATIVE_INFINITY;
-  for (let spent = 0; spent <= dollars; spent += 1) {
-    for (let state = 0; state < shape.states; state += 1) {
-      const bought = table.best[state * table.width + spent];
-      if (bought === Number.NEGATIVE_INFINITY) continue;
-      const total = bought + fills[state];
-      if (total > best) best = total;
-    }
+    out.set(candidate.id, {
+      gain: Math.round(gain),
+      seat,
+      maxPrice: Math.max(
+        0,
+        Math.min(input.budget, Math.max(rate, plan.slack, planPrice.get(candidate.id) ?? 0))
+      ),
+    });
   }
-  return best;
+  return out;
 };

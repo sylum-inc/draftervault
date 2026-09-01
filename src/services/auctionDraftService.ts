@@ -35,8 +35,9 @@ import type { RankingOverride } from '@/lib/rankingsCsv';
 import { consensusCoverage, consensusOverrides, marketOrder } from '@/lib/consensusBoard';
 import { primeNorms } from '@/lib/positionNorms';
 import {
-  maxPriceFor,
   rosterPlan,
+  valueBoard,
+  type PlayerValue,
   type PlanCandidate,
   type PlanInput,
   type RosterPlan,
@@ -3228,7 +3229,10 @@ export class AuctionDraftService {
    * roster for which seats are still open — so the plan and the per-player gain
    * can never come to different conclusions about the same board.
    */
-  private planInput(): { input: PlanInput; reason: null } | { input: null; reason: string } {
+  private planInput(
+    /** The snake values every undrafted player; the auction only what is for sale. */
+    scope: 'auction' | 'everyone' = 'auction'
+  ): { input: PlanInput; reason: null } | { input: null; reason: string } {
     /*
      * Where you pick is an input, not a precondition.
      *
@@ -3303,7 +3307,10 @@ export class AuctionDraftService {
     // actually pay, and inflation is exactly the difference between the two.
     const adjust = this.getPriceAdjuster();
     const candidates: PlanCandidate[] = this.players
-      .filter((player) => !player.isDrafted && player.onSheet && !player.marketOnly)
+      .filter(
+        (player) =>
+          !player.isDrafted && !player.marketOnly && (scope === 'everyone' || player.onSheet)
+      )
       .map((player) => ({
         id: player.id,
         name: player.name,
@@ -3399,16 +3406,55 @@ export class AuctionDraftService {
    * Null when a plan cannot honestly be computed at all, which is the same set
    * of refusals the outlook makes: no sheet, no team marked, no order drawn.
    */
-  maxPriceFor(playerId: string): number | null {
+  /**
+   * What every player for sale is worth to this roster, in one pass.
+   *
+   * The plan is one knapsack; valuing the whole board against it is a map read
+   * per player afterwards. That is what makes it affordable to answer "what
+   * should I pay for him" for all sixty rather than only for whoever happens to
+   * be on the block — which was the shape of the previous version, and the
+   * reason it could not put a price on the fifty-nine names that had not been
+   * called yet.
+   */
+  getBidBoard(): Map<string, PlayerValue> {
     const { input } = this.planInput();
-    if (!input) return null;
+    if (!input) return new Map();
+    return valueBoard(input, rosterPlan(input));
+  }
+
+  /**
+   * Every undrafted player, ranked by what he adds to *this* lineup.
+   *
+   * The snake's version of the same question, and the reason it is the same
+   * function: a free pick and a bid differ in what they cost, not in what they
+   * are worth. Ranking by projected points is close and not the same — with the
+   * dedicated seats full and a flex open, the man who helps most is the one
+   * with the widest gap to whoever else would fill that seat, and those two
+   * orderings part company exactly when a roster starts filling up.
+   *
+   * Prices are carried and ignored: nothing in the snake costs money.
+   */
+  getPickBoard(): Map<string, PlayerValue> {
+    const { input } = this.planInput('everyone');
+    if (!input) return new Map();
+    return valueBoard(input, rosterPlan(input));
+  }
+
+  /**
+   * The most this player is worth to you, at the rate the plan sets.
+   *
+   * Capped at what the rules actually allow, because a ceiling the engine would
+   * refuse is worse than no ceiling — the same bar `getBidCompetition` is held
+   * to. Zero survives only where the roster cannot legally carry him.
+   */
+  maxPriceFor(playerId: string): number | null {
     const player = this.players.find((entry) => entry.id === playerId);
     const team = this.teams.find((entry) => entry.id === this.myTeamId);
     if (!player || !team) return null;
-    // A player the roster cannot legally carry is worth nothing at any price,
-    // and that is the one case where zero is a fact rather than a valuation.
     if (!this.checkRoster(player, team).ok) return 0;
-    return maxPriceFor(input, playerId);
+    const value = this.getBidBoard().get(playerId);
+    if (!value) return null;
+    return Math.min(value.maxPrice, Math.max(0, this.spendableFor(team).spendable));
   }
 
   /**

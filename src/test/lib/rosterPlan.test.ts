@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { maxPriceFor, rosterPlan, type PlanInput } from '@/lib/rosterPlan';
+import { rosterPlan, valueBoard, type PlanInput } from '@/lib/rosterPlan';
+
+/** What one player is worth at the rate the plan sets. */
+const priceOf = (input: PlanInput, id: string): number =>
+  valueBoard(input, rosterPlan(input)).get(id)?.maxPrice ?? 0;
+const gainOf = (input: PlanInput, id: string): number =>
+  valueBoard(input, rosterPlan(input)).get(id)?.gain ?? 0;
 
 /**
  * The plan, and the price of a dollar.
@@ -197,72 +203,95 @@ describe('the price of a dollar', () => {
   });
 
   it('is positive when the budget is what binds', () => {
-    // The same board with a quarter of the money: now every dollar is contested.
     const plan = rosterPlan({ ...board, budget: 40 });
     expect(plan.perDollar).toBeGreaterThan(0);
     expect(plan.spend).toBeLessThanOrEqual(40);
   });
+});
 
-  /*
-   * The defect this whole module replaces. `maxBid` was `price * 1.15`, so it
-   * ranked players in exactly the order their prices already did and told the
-   * owner to pay $28 for a man who makes the lineup forty-two points worse.
-   */
-  /*
-   * A player the snake matches is not a player worth nothing.
-   *
-   * This asserted zero first, because the search forced a bought man into a
-   * seat — so somebody behind the free alternative *reduced* the lineup, as
-   * though owning him were an act of self-harm. Nobody starts a player worse
-   * than the one the snake handed them: you bench him, and benching costs the
-   * lineup nothing. What he is worth is whatever the best lineup has no other
-   * use for, because a dollar left unspent at the end of an auction scores
-   * nothing at all.
-   */
-  it('is worth the leftover money for a player the snake matches', () => {
-    const plan = rosterPlan(board);
-    // `meh` is 120 against free backs of 196 and 154 — behind both, so he adds
-    // nothing to the lineup and is worth exactly the money the lineup spares.
-    expect(maxPriceFor(board, 'meh')).toBe(plan.slack);
-    expect(plan.slack).toBeGreaterThan(0);
+/*
+ * The dual, and the property the primal could not have.
+ *
+ * "What is the most I could pay and still beat the best plan without him" is
+ * the more precise answer to the wrong question: it assumes the plan is
+ * guaranteed, and priced fifty-seven of sixty auction players at zero. Sixty
+ * players come up one at a time and you will be outbid on some, so the question
+ * actually faced is whether he is better value than the money — which is the
+ * rate the plan sets, and gives every player who helps at all a real bid.
+ */
+describe('what a player is worth at that rate', () => {
+  const tight: PlanInput = base({
+    openSeats: { RB: 2, WR: 3 },
+    flexOpen: 1,
+    flexPositions: ['RB', 'WR'],
+    candidates: [
+      player('star', 'RB', 30, 278),
+      player('good', 'WR', 20, 240),
+      player('marginal', 'RB', 10, 160),
+      player('behind', 'RB', 10, 100),
+    ],
+    freeByPosition: { RB: [196, 154, 120, 90], WR: [180, 170, 160, 150, 140] },
+    budget: 40,
   });
 
-  it('spares less as the budget tightens, and prices him at exactly that', () => {
-    // The invariant, not a number: a player who adds nothing to the lineup is
-    // worth precisely the money the lineup has no use for — at every budget.
-    // Prices are whole dollars, so an optimum almost never lands exactly on the
-    // budget and there is usually a little change; what changes with the budget
-    // is how much.
-    const wide = rosterPlan({ ...board, budget: 100 });
-    const tight = rosterPlan({ ...board, budget: 30 });
-    expect(maxPriceFor({ ...board, budget: 100 }, 'meh')).toBe(wide.slack);
-    expect(maxPriceFor({ ...board, budget: 30 }, 'meh')).toBe(tight.slack);
-    expect(tight.slack).toBeLessThan(wide.slack);
+  it('gives every player who helps the lineup a price above nothing', () => {
+    const values = valueBoard(tight, rosterPlan(tight));
+    for (const [id, value] of values) {
+      if (value.gain > 0) expect(value.maxPrice, id).toBeGreaterThan(0);
+    }
+    // `good` is not in the plan and is still worth bidding on, which is the
+    // whole point: he is what you buy when somebody outbids you on `star`, and
+    // the version this replaced priced him at nothing for exactly that reason.
+    expect(rosterPlan(tight).buy.map((entry) => entry.candidate.id)).not.toContain('good');
+    expect(priceOf(tight, 'good')).toBeGreaterThan(0);
   });
 
-  it('is worth more than his price when the gap is big', () => {
-    const cheap = maxPriceFor(board, 'cheap')!;
-    // 200 points against a fourth free receiver: worth well past the $8 asked.
-    expect(cheap).toBeGreaterThan(8);
-  });
-
-  it('never exceeds the budget, and never goes negative', () => {
-    for (const entry of board.candidates) {
-      const price = maxPriceFor(board, entry.id)!;
-      expect(price).toBeGreaterThanOrEqual(0);
-      expect(price).toBeLessThanOrEqual(board.budget);
+  it('never prices a man below what the plan itself would pay for him', () => {
+    // Primal and dual disagree by the knapsack's duality gap, and a plan that
+    // would pay a price is a demonstration that the price is worth paying.
+    for (const entry of rosterPlan(tight).buy) {
+      expect(priceOf(tight, entry.candidate.id)).toBeGreaterThanOrEqual(entry.candidate.price);
     }
   });
 
-  it('still prices a man whose every seat is taken, at what the plan spares', () => {
-    const filled = { ...board, openSeats: { RB: 0, WR: 0 }, flexOpen: 0 };
-    // Nothing left to buy, so the whole budget is spare and he is worth all of
-    // it — which is the correct instruction at the end of an auction, where
-    // holding money is the one guaranteed way to score nothing with it.
-    expect(maxPriceFor(filled, 'star')).toBe(rosterPlan(filled).slack);
+  it('is worth more the more he adds, off one line for the whole board', () => {
+    const values = valueBoard(tight, rosterPlan(tight));
+    const ranked = ['star', 'good', 'marginal', 'behind'].map((id) => values.get(id)!);
+    // One rate the whole board is read off, not sixty separate judgements: more
+    // gain can never fetch a lower price. Ties are the budget capping the top,
+    // which is the rules speaking rather than the valuation.
+    for (let index = 1; index < ranked.length; index += 1) {
+      expect(ranked[index - 1].gain).toBeGreaterThan(ranked[index].gain);
+      expect(ranked[index - 1].maxPrice).toBeGreaterThanOrEqual(ranked[index].maxPrice);
+    }
   });
 
-  it('says nothing rather than guessing when he is not on the board', () => {
-    expect(maxPriceFor(board, 'nobody')).toBeNull();
+  it('never asks for more than the budget allows', () => {
+    for (const value of valueBoard(tight, rosterPlan(tight)).values()) {
+      expect(value.maxPrice).toBeLessThanOrEqual(tight.budget);
+    }
+  });
+
+  it('names the seat, because the flex is what this format contests', () => {
+    const values = valueBoard(tight, rosterPlan(tight));
+    expect(values.get('star')!.seat).toBe('starter');
+    // A man behind both free backs adds nothing to the lineup and is bench
+    // depth however much he costs.
+    expect(values.get('behind')!.seat).toBe('bench');
+  });
+
+  /*
+   * The bookkeeping that makes a gain worth computing rather than stating.
+   *
+   * Two RB seats with free men at 196 and 154: the first back bought displaces
+   * the *worse* of them, so a 278-point back is +124 rather than the +82 a gap
+   * to the best free man would report. And then the flex, which had been taking
+   * the best free receiver at 150, can take the freed-up back at 154 instead —
+   * so the real figure is 128. Every hand-worked version of this arithmetic in
+   * this file has come out four points light by forgetting that second step,
+   * which is the argument for the search doing it.
+   */
+  it('measures the gain against the seat he takes and the flex it frees', () => {
+    expect(gainOf(tight, 'star')).toBe(128);
   });
 });

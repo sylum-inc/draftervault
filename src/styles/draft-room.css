@@ -5650,6 +5650,27 @@
   gap: 3px;
 }
 
+/* The plan's own picks, marked inside the board rather than listed apart —
+   they are the same thing read at a different threshold, and two lists would
+   invite reading the second as leftovers. */
+.dr-planlist-row[data-planned] {
+  border-color: color-mix(in srgb, var(--dr-good) 45%, var(--dr-line));
+  background: color-mix(in srgb, var(--dr-good) 8%, var(--dr-raised));
+}
+
+/* Asking more than he is worth. Not a warning about the player — a warning
+   about the price, and the most common state on a commissioner's sheet. */
+.dr-planlist-price[data-over] {
+  color: var(--dr-warn);
+}
+
+.dr-covered {
+  margin: 4px 0 0;
+  font-size: var(--dr-t-micro);
+  line-height: 1.45;
+  color: var(--dr-ink-faint);
+}
+
 .dr-planlist-row {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) auto auto;

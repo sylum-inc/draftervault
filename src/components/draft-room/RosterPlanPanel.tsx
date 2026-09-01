@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { AuctionDraftService, Player } from '@/services/auctionDraftService';
+import type { PlayerValue } from '@/lib/rosterPlan';
 
 interface RosterPlanPanelProps {
   service: AuctionDraftService;
@@ -33,7 +34,37 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [service, players]
   );
-  const byId = useMemo(() => new Map(players.map((entry) => [entry.id, entry])), [players]);
+  /*
+   * The whole auction pool, priced and ranked by what it adds to *this* roster.
+   *
+   * Split rather than filtered: a player the snake covers is not a mistake in
+   * the list, he is the finding — more than a third of a commissioner's sheet
+   * is players who add nothing you would not be handed for nothing, and knowing
+   * which is most of the edge this format offers.
+   */
+  const { targets, covered } = useMemo(() => {
+    const board = service.getBidBoard();
+    const planned = new Set(plan.buy.map((entry) => entry.candidate.id));
+    const rows = players
+      .filter((entry) => !entry.isDrafted && entry.onSheet)
+      .map((entry) => ({
+        player: entry,
+        value: board.get(entry.id),
+        planned: planned.has(entry.id),
+      }))
+      .filter(
+        (row): row is { player: Player; value: PlayerValue; planned: boolean } => !!row.value
+      );
+    return {
+      targets: rows
+        .filter((row) => row.value.maxPrice > 0)
+        .sort((a, b) => b.value.gain - a.value.gain || b.value.maxPrice - a.value.maxPrice),
+      covered: rows
+        .filter((row) => row.value.maxPrice <= 0)
+        .sort((a, b) => b.player.estimatedValue - a.player.estimatedValue)
+        .map((row) => row.player),
+    };
+  }, [service, players, plan]);
 
   if (plan.reason) {
     return (
@@ -57,78 +88,81 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
         </span>
       </header>
 
-      {plan.buy.length === 0 ? (
-        <p className="dr-empty">
-          Nothing on the sheet beats what the snake hands you for nothing. That is a real answer in
-          this format, not a missing one — keep the money.
-        </p>
-      ) : (
+      <dl className="dr-facts">
+        <div>
+          <dt>Spend</dt>
+          <dd>
+            ${plan.spend}
+            <span className="dr-facts-note"> of ${budget}</span>
+          </dd>
+        </div>
+        <div title="Points this plan adds over filling every seat from the snake">
+          <dt>Buys you</dt>
+          <dd style={{ color: 'var(--dr-good)' }}>+{plan.gain} pts</dd>
+        </div>
+        <div title="The rate the whole board below is priced off. A player is worth bidding on while the points he adds per dollar beat it.">
+          <dt>A dollar buys</dt>
+          <dd>{plan.perDollar > 0 ? `${plan.perDollar} pts` : 'nothing more'}</dd>
+        </div>
+        <div title="Money the best lineup does not need. It is the floor under every price below, because an unspent auction dollar scores nothing.">
+          <dt>Spare</dt>
+          <dd style={plan.slack > 0 ? undefined : { color: 'var(--dr-ink-faint)' }}>
+            ${plan.slack}
+          </dd>
+        </div>
+      </dl>
+
+      {/*
+        Every player being auctioned, priced — not three names.
+
+        A shopping list of the optimal basket is only actionable if the basket
+        is guaranteed, and sixty players come up one at a time in an order
+        nobody controls. What is needed at the table is a price for whoever has
+        just been called, which is what the rate gives: the plan is the shape,
+        this is the board you actually bid off.
+      */}
+      <ol className="dr-planlist">
+        {targets.map(({ player, value, planned }) => (
+          <li key={player.id}>
+            <button
+              type="button"
+              className="dr-planlist-row"
+              data-planned={planned ? '' : undefined}
+              onClick={() => onSelect(player)}
+              title={
+                planned
+                  ? `In the plan at $${value.maxPrice}. Worth ${value.gain} points over the man the snake hands you.`
+                  : `Worth up to $${value.maxPrice} — ${value.gain} points over the free man, at ${plan.perDollar || '—'} points a dollar.`
+              }
+            >
+              <span className="dr-pos">{player.position}</span>
+              <span className="dr-planlist-name">{player.name}</span>
+              {value.seat === 'flex' && <span className="dr-planlist-seat">flex</span>}
+              <span className="dr-num dr-planlist-gain">+{value.gain}</span>
+              <span
+                className="dr-num dr-planlist-price"
+                data-over={player.estimatedValue > value.maxPrice ? '' : undefined}
+              >
+                ${value.maxPrice}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+
+      {covered.length > 0 && (
         <>
-          <dl className="dr-facts">
-            <div>
-              <dt>Spend</dt>
-              <dd>
-                ${plan.spend}
-                <span className="dr-facts-note"> of ${budget}</span>
-              </dd>
-            </div>
-            <div title="Points this plan adds over filling every seat from the snake">
-              <dt>Buys you</dt>
-              <dd style={{ color: 'var(--dr-good)' }}>+{plan.gain} pts</dd>
-            </div>
-            <div title="What the last dollar of this budget is buying. A bid beating this rate is worth taking money off the plan for; one below it is not.">
-              <dt>A dollar buys</dt>
-              <dd>{plan.perDollar > 0 ? `${plan.perDollar} pts` : 'nothing more'}</dd>
-            </div>
-            {/* The money the best lineup has no use for. It is the floor under
-                every walk-away on the board, because a dollar left unspent at
-                the end of an auction scores nothing — so anyone you can roster
-                is worth at least this much, however little he adds. */}
-            <div title="Money the best lineup does not need. It is what any player you can roster is worth, however little he adds — an unspent auction dollar scores nothing.">
-              <dt>Spare</dt>
-              <dd style={plan.slack > 0 ? undefined : { color: 'var(--dr-ink-faint)' }}>
-                ${plan.slack}
-              </dd>
-            </div>
-          </dl>
-
-          <ul className="dr-planlist">
-            {plan.buy.map((entry) => {
-              const player = byId.get(entry.candidate.id);
-              return (
-                <li key={entry.candidate.id}>
-                  <button
-                    type="button"
-                    className="dr-planlist-row"
-                    disabled={!player}
-                    onClick={() => player && onSelect(player)}
-                    title={player ? `Put ${player.name} on the block` : undefined}
-                  >
-                    <span className="dr-pos">{entry.candidate.position}</span>
-                    <span className="dr-planlist-name">{entry.candidate.name}</span>
-                    {entry.seat === 'flex' && <span className="dr-planlist-seat">flex</span>}
-                    <span className="dr-num dr-planlist-gain">+{entry.gain}</span>
-                    <span className="dr-num dr-planlist-price">${entry.candidate.price}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <p className="dr-eyebrow" style={{ marginTop: 10 }}>
+            The snake covers these — {covered.length} of {targets.length + covered.length}
+          </p>
+          <p className="dr-covered">{covered.map((player) => player.name).join(' · ')}</p>
         </>
-      )}
-
-      {plan.slack === 0 && plan.buy.length > 0 && (
-        <p className="dr-footnote" style={{ marginTop: 6 }}>
-          Every dollar is committed, so anyone off this list is worth nothing{' '}
-          <em>while the plan holds</em> — and worth bidding on the moment one of these goes to
-          somebody else. The board re-solves on every sale, so the numbers move with it.
-        </p>
       )}
 
       <p className="dr-footnote">
         {plan.perDollar > 0
-          ? `The best set the money can still buy, and what the last dollar of it is worth. Anything on the sheet gaining more than ${plan.perDollar} points a dollar is worth breaking the plan for; anything gaining less is money the snake would have saved you.`
-          : 'The money outlasts anything worth buying here — every seat past this plan is one the snake fills as well as the auction would. Bid up on what is left rather than saving it.'}
+          ? `Every name is priced off the same line: ${plan.perDollar} points a dollar. The prices sum to far more than $${budget} on purpose — they are thresholds, not a shopping list, and you will win a handful of them.`
+          : 'The money outlasts anything worth buying here, so every player who helps at all is worth your whole remaining budget. Holding it is the one guaranteed way to score nothing with it.'}
       </p>
     </div>
   );

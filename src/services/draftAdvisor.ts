@@ -304,15 +304,31 @@ export const adviseOnSnakePick = (
   const byPoints = (a: Player, b: Player) => b.projectedPoints - a.projectedPoints;
 
   const need = unfilledSlotsFor(player.position, team.roster, league);
+
+  /*
+   * Ranked by what each man adds to *this* lineup, not by raw projection.
+   *
+   * The two orderings agree while the roster is empty and part company exactly
+   * when it starts filling: with both back slots gone and a flex open, the
+   * highest-projected back left is not the pick — the pick is whoever has the
+   * widest gap to whatever else would take that flex, which is a comparison
+   * across positions that a per-position sort cannot make. It falls back to
+   * points wherever the plan cannot be computed at all, so the advice never
+   * goes quiet for want of a snake order.
+   */
+  const board = service.getPickBoard();
+  const gainOf = (entry: Player) => board.get(entry.id)?.gain ?? entry.projectedPoints;
+  const byGain = (a: Player, b: Player) => gainOf(b) - gainOf(a);
+
   const bestAtHis = available
     .filter((p) => p.position === player.position)
     .sort(byPoints)
     .find(() => true);
   const bestAtNeed = available
     .filter((p) => unfilledSlotsFor(p.position, team.roster, league) > 0)
-    .sort(byPoints)
+    .sort(byGain)
     .find(() => true);
-  const bestLeft = [...available].sort(byPoints)[0];
+  const bestLeft = [...available].sort(byGain)[0];
 
   // How long the roster waits before it is asked again. At the turn it is one
   // pick; in the middle of a round it is most of two.
@@ -343,7 +359,8 @@ export const adviseOnSnakePick = (
 
   if (bestAtNeed && bestAtNeed.id !== player.id && need === 0) {
     reasons.push(
-      `${bestAtNeed.name} is still there at ${bestAtNeed.position}, which this roster does have to fill.`
+      `${bestAtNeed.name} is still there at ${bestAtNeed.position}, which this roster does have to fill` +
+        (board.has(bestAtNeed.id) ? ` — worth ${gainOf(bestAtNeed)} points to the lineup.` : '.')
     );
   }
 
@@ -372,12 +389,14 @@ export const adviseOnSnakePick = (
   } else if (need > 0) {
     verdict = 'TAKE';
     headline = `Fills a starting slot, and he is the best ${player.position} left.`;
-  } else if (bestAtNeed && bestAtNeed.projectedPoints >= player.projectedPoints - 10) {
+  } else if (bestAtNeed && gainOf(bestAtNeed) >= gainOf(player) - 10) {
     verdict = 'HOLD';
     headline = `A slot still open has somebody comparable in it.`;
   } else if (bestLeft && bestLeft.id === player.id) {
     verdict = 'TAKE';
-    headline = `Best player left on the board.`;
+    headline = board.has(player.id)
+      ? `Adds more to this lineup than anybody left.`
+      : `Best player left on the board.`;
   } else {
     verdict = 'HOLD';
     headline = `Fine, but neither a need nor the best left.`;

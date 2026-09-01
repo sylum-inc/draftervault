@@ -2205,11 +2205,55 @@ first is the one a purchase displaces. One plan, one number, no caveat. Once
 the order is drawn it uses the real seat instead: an average over draws you now
 know you did not get is worse than the one you did.
 
+**Every player being auctioned needs a price, and the exact answer could not
+give one.** `maxPriceFor` asked "what is the most I could pay for him and still
+beat the best plan that excludes him" — the _more precise_ answer to the _wrong
+question_. It assumes the optimal basket is guaranteed, and it never is: sixty
+players come up one at a time in an order nobody controls, and you will be
+outbid on some of them. Under that assumption it priced fifty-seven of the
+sixty at zero, which is advice that leaves you holding a hundred dollars and a
+bad roster the moment two of your three targets go elsewhere.
+
+The question actually faced sixty times, once per name called, is _is he better
+value than the money?_ — and that is the knapsack's **dual**, not its primal.
+The plan prices a dollar at `perDollar` points; a player is worth the price at
+which the points he adds per dollar meet that rate, which is `gain ÷ rate`.
+Every player who helps the lineup at all therefore has a real bid, which is the
+property that makes this usable at a live auction and the previous version not.
+
+The two disagree by the knapsack's duality gap — the plan will pay $47 for a man
+the rate prices at $46, because he happens to fit the budget exactly — so
+anybody in the plan is floored at what the plan pays for him. A plan that would
+pay a price is a demonstration that the price is worth paying, and the gap
+closes without either number having to be explained away.
+
+It is also what makes the whole board affordable: one knapsack, then a map read
+per player, so all sixty are priced in the 36ms the single player used to cost.
+`getBidBoard` is that, and the plan panel is the board it produces — thirty-five
+names with real prices, and the twenty-five the snake covers listed once at the
+bottom rather than hidden. Both halves are the finding: more than a third of a
+commissioner's sheet adds nothing you would not be handed for nothing, and
+knowing which is most of the edge this format offers.
+
+`getPickBoard` is the same function pointed at the snake, because a free pick
+and a bid differ in what they cost and not in what they are worth. The advisor
+ranked the snake by projected points, which agrees with lineup gain while the
+roster is empty and parts company exactly when it fills: with both back slots
+gone and a flex open, the pick is not the highest-projected back left, it is
+whoever has the widest gap to whatever else would take that flex — a comparison
+across positions a per-position sort cannot make.
+
 **A bench body is not a worthless one, and getting that wrong priced half the
 sheet at zero.** The search forced a bought player into a seat, so a man behind
 the free alternative _reduced_ the lineup and came out worth nothing — as though
 owning him were an act of self-harm. Nobody starts a player worse than the one
 the snake handed them: you bench him, and benching costs the lineup nothing.
+
+A gain is also never negative now, for the same reason: forced into a seat, a
+man behind the free alternative came out at minus four, as though buying him
+damaged the lineup. He does not — you bench him and start the free man exactly
+as you would have. What he costs is the dollars and what he adds is nothing,
+which is a different statement from a negative.
 
 What he is worth instead is the plan's **slack** — the money the best lineup has
 no use for, taken as the cheapest budget that still reaches it rather than
