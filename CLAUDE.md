@@ -2178,7 +2178,8 @@ one place that answers whether the board is set up at all rather than six
 panels each holding a piece of the answer, and the half of scarcity that had
 never been counted — the seats the room still has to fill and the money aimed at
 them;
-758 tests.
+758 tests, and the block rebuilt as the Spotlight — the whole dossier beside the bid
+box, with a live tab for what this bid does to your draft tonight.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -2806,6 +2807,129 @@ Instead `marketOnly` carries "we know nothing", and the rule it buys is that no
 panel may print one of those placeholder zeroes. The card and the nomination
 stage both show `—` and say why; the stage matters most, because "Projected 0"
 beside a bid box reads as a measurement and the measurement does not exist.
+
+**The block is the Spotlight now, and the dossier is on it.** The nomination
+band was a strip of six numbers, a 172px window onto prose with two hundred
+pixels of nothing under it, and a "Full profile" button — so the whole of what
+the board knows about the man being called was one click away from the one
+moment it is needed. `NominationStage` is one strip across the top (who he is,
+the six numbers a bid is decided on, the sentence that decides it), the dossier
+down the left, and the controls down the right in a column the dossier cannot
+move. The band has a fixed height and the tabs scroll inside it; the controls
+not moving is the rule that was kept, without the dead space that keeping it
+badly had cost. It folds — `▴ Fold` — to the strip and one row of controls, and
+below 1180px it is folded by CSS, because there is no room for a dossier under a
+strip and a form on one narrow column.
+
+`PlayerProfile` gained a `tonight` slot and is rendered inline inside the stage
+exactly as it is inside the raised card, so the block is not a second dossier
+that can drift from the first. What the slot carries is `SpotlightTonight`: what
+one bid on this player does to _your_ draft in the state the room is in right
+now. The seat he would take and the free man he displaces; the price worked as
+the chain it is — list, tonight, and the plan's walk-away as the last step, with
+a live reading of the bid typed so far against the plan's rate; the plan with
+him marked; who can legally take him off you, with the advisor's estimate of who
+_would_ in the same dashed box the advisor uses everywhere else; his position's
+shelf, run tape and demand row; the money in the room with par against pace;
+what the bid leaves you; and what the web said. None of it is new arithmetic.
+Every figure is one the engine already computes and a side panel already prints
+for the room as a whole — the tab points them at the one name being called,
+because a reading two tabs away is a reading nobody has with money on the table.
+The raised card and the modal deliberately do not get the tab: they are about
+the player, and the difference between the two surfaces is exactly this.
+
+The card carries a `◎` in its control cluster that puts him up top, and the
+table a column of them. Clicking the card still nominates; the glyph is the
+same act with a name on it, because a face that has to be clicked somewhere to
+do the one thing the board is for is a control nobody was told about. The
+cluster is 24px on its own ground rather than 20px glyphs over the card's last
+line of text.
+
+**A face is a layer over a monogram, never a branch between them.** Driven with
+the CDN unreachable, a sixty-card board showed sixty empty rings and not one
+set of initials — the fallback that exists for exactly that case rendered zero
+times. The cause is the service worker: its fetch handler takes every request,
+and a fetch for a CDN image on a dead network never settles, so the image sits
+`complete: false` for the whole night and no `error` event ever fires. An
+`onError` swap cannot see that. `Headshot` renders the initials always and the
+image over them; a photo that arrives covers the letters and one that never
+arrives, for any reason including reasons that fire no event, leaves them
+showing. The driver in the scratchpad blocks service workers and fulfils the CDN
+from `.cache/images/`, which is how screenshots show faces in a sandbox that
+cannot reach ESPN — and why the screenshots before it did not.
+
+**Two walk-aways on one screen.** The Value tab still carried the "What to bid"
+ladder built on `analytics.maxBid` — `riskAdjustedValue × 1.15`, the same
+multiplier for everybody, which the roster plan had already been written to
+replace — and it printed $42 beside a strip reading $52 for the same man. The
+ladder is gone; `BidScrub` reads the plan's number, so there is one walk-away
+in the room and it is the plan's.
+
+**Tokens that were referenced and never defined.** `--dr-ink-dim`, `--dr-dim`,
+`--dr-font-mono`, `--dr-bg` and `--dr-t-head` were used at twenty-two sites in
+the stylesheet and defined nowhere, so every one of them resolved to `inherit`:
+the team chips printed their names at full white, the bargain caveat was the
+brightest text in its panel, the "When to buy" tiles fell back to the browser's
+generic monospace, and the raised card's scrim had no background at all. They
+resolve to the canonical names now, and the check that finds them is one line of
+shell — every `var(--dr-*)` in the file against every `--dr-*:` declared.
+`--dr-ink-faint` was #5b6880, 3.2:1 on the surface it is printed on and the
+second most used colour in the room, at ten pixels; it is #728299, 4.6:1. Twenty-
+four font sizes below the scale's own ten-pixel floor were raised to it.
+Instruments fill "above the bar" with `--dr-mark`, a muted teal, rather than the
+verdict green: twelve elements on one card in that green left the price and the
+gain — the two things a bid is decided on — with nothing to stand out against.
+`GOOD` in `micro.tsx` resolves to the mark; `HOT` is the verdict green, for the
+one dot on a strip that is _him_.
+
+**The Bloomberg stylesheets were dead, both of them.** `bloomberg-sleeper.css`
+was imported by `index.css` and none of its ninety-eight classes was rendered by
+any component; `bloomberg-terminal.css` was not imported at all. Seventeen
+hundred lines, one of them shipping in the bundle. Deleted. The convention above
+that mentions `bloomberg-terminal.css` for the web-font lesson is history, not a
+file to look for.
+
+**What is set up once is behind one button.** The top bar carried eleven
+controls of one weight and wrapped to a second row at every laptop width — 95px
+at 1440, 133 at 1100 — and the row it wrapped onto held "Reset" alone. Six of
+those are pressed once a night or never: the rankings, the sheet, the league,
+the snake order, the file panel, the server. `SetupMenu` holds them, with a
+count of how many have something in force and a dot on each that does. The bar
+is 53px at 1440 with a player on the block.
+
+**The aside follows the chrome.** It was sticky at a fixed 74px while the block
+above it had become the whole dossier, so its top half sat under the bid box on
+any scroll. A `ResizeObserver` on `.dr-chrome` writes `--dr-chrome-h` on the
+room and the aside's offset and height are `calc()`s of it. It has a `height`
+rather than a `max-height`, which is what lets the advisor's percentage cap
+resolve — a percentage of a maximum resolves to nothing, so the box was as tall
+as its text and the tab row jumped between panels. Seven tabs became six:
+"Budgets" was a strict subset of "Rosters" and is folded into it as the money
+bar under each name; "Budget" beside it was the bid planner, one letter from a
+different thing, and is "This bid". The rosters panel drew nine seat chips for a
+ten-starter lineup because it iterated the positions and the flex is not one; it
+iterates the lineup slots. "When to buy" sits under the inflation meter, where
+the code comment already said it belonged.
+
+**The card front and the raised dossier, worked over from a screenshot audit.**
+Recorded as one list because the shape of every item is the same — something
+that was true of the code and invisible until the render was looked at. The
+crest behind the price at seven per cent painted a grey box under the one number
+that matters. The injury flag was a fourth grid child overflowing into a row of
+its own. A one-line name and a two-line name put every reading below them
+nineteen pixels apart across a row. The shelf's column count followed the list,
+so it redrew to fill the width and could never be seen to empty; it is sixteen
+sockets. "Can beat" was the quiet caption under the seat pips, labelling an
+instrument in the other column. The run tape was ten invisible cells before the
+first pick. A missed week and a bad week were two opacities of one grey. The
+raised card was 1180px in an 1800px window and resized to each tab so the tab
+bar moved under the cursor; it is 1600 and a fixed height, with an identity
+strip carrying the price and the gain on every tab, a Close, and focus on the
+tab bar. The Overview swarms were drawn over all of the position, so the median
+back sat below replacement and the value swarm piled at a dollar; they are over
+the startable cohort like every other instrument. "Season on season" was the
+sparkline the codebase had already retired, drawn under the game log that
+replaced it; it is three game logs at the same bar.
 
 ## The night, driven end to end
 

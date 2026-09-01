@@ -1456,7 +1456,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             </span>
           </div>
 
-          <div className="dr-stat">
+          <div className="dr-stat dr-stat-committed">
             <span className="dr-eyebrow">Committed</span>
             <span className="dr-stat-value" style={{ color: 'var(--dr-value)' }}>
               ${spent}

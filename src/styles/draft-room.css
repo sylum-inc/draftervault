@@ -6439,3 +6439,44 @@ li[data-level='ready'] > .dr-checklist-mark {
 .dr-card-gain {
   overflow: hidden;
 }
+
+/* ---- narrow polish ---- */
+
+/* On a phone the sheet's controls stack: the bid box, then the team chips in
+   rows of four, then the verdict and the button. Twelve chips on one 370px row
+   were nineteen pixels wide each, and every name in them overflowed its chip. */
+@media (max-width: 700px) {
+  .dr-stage[data-folded] .dr-stage-form,
+  .dr-stage:not([data-folded]) .dr-stage-form {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'bid' 'teams' 'verdict' 'sold' 'pass' 'hint';
+  }
+
+  .dr-stage .dr-teamrow {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dr-stage-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dr-stage-hero {
+    flex-wrap: wrap;
+  }
+
+  /* The bar's groups wrap too, instead of running off the right edge. */
+  .dr-topbar-group {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+}
+
+/* Under 1400px the bar gives up two readouts it can spare — the committed
+   dollars are on the market panel, and "on the block" is the band under it —
+   and stays one row down to 1200. */
+@media (max-width: 1400px) {
+  .dr-stat-committed,
+  .dr-clock > .dr-eyebrow {
+    display: none;
+  }
+}
