@@ -44,7 +44,6 @@ describe('the value verdict, against a roster that is full', () => {
         onTeamChange={() => {}}
         onBidChange={() => {}}
         onConfirm={() => {}}
-        onOpenProfile={() => {}}
         canDraft={() => true}
         sheetRemaining={null}
         onUnsold={() => {}}
@@ -115,7 +114,6 @@ describe('the value verdict, against a roster that is full', () => {
         onTeamChange={() => {}}
         onBidChange={() => {}}
         onConfirm={() => {}}
-        onOpenProfile={() => {}}
         canDraft={() => true}
         sheetRemaining={null}
         onUnsold={() => {}}
@@ -175,7 +173,6 @@ describe('the free man in the snake, and what was found about him', () => {
         onTeamChange={() => {}}
         onBidChange={() => {}}
         onConfirm={() => {}}
-        onOpenProfile={() => {}}
         canDraft={() => true}
         sheetRemaining={null}
         onUnsold={() => {}}

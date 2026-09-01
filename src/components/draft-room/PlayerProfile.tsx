@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { DraftAnalytics, Player } from '@/services/auctionDraftService';
 import {
@@ -41,7 +42,6 @@ import { modelCaveats } from '@/lib/modelTrust';
 import { pointsFor, type LeagueShape } from '@/lib/valuation';
 import { SeasonMultiples } from './charts/SeasonMultiples';
 import { ScheduleStrip, type ScheduleGame } from './charts/ScheduleStrip';
-import { BidLadder } from './charts/BidLadder';
 import { PositionSwarm, type SwarmPoint } from './charts/PositionSwarm';
 import { OutcomeCurve } from './charts/OutcomeCurve';
 import { ConsensusRange } from './charts/ConsensusRange';
@@ -77,6 +77,8 @@ interface PlayerProfileProps {
   gainFree?: string | null;
   /** The most the owner's team may legally bid, from the engine. */
   ceiling?: number | null;
+  /** The plan's walk-away for him, when a plan can be computed. */
+  walkAway?: number | null;
   pinned?: boolean;
   onTogglePin?: () => void;
   onClose: () => void;
@@ -90,9 +92,26 @@ interface PlayerProfileProps {
    * of them.
    */
   inline?: boolean;
+  /**
+   * The live half, when there is one.
+   *
+   * The spotlight hands in a rendered "Tonight" tab — what one bid on this
+   * player does to *your* draft in the state the room is in right now — and it
+   * goes first, because on the block that is the question being asked. The
+   * raised card and the modal deliberately do not get one: they are about the
+   * player, and the difference between the two surfaces is exactly this tab.
+   */
+  tonight?: ReactNode;
+  /**
+   * Whether Escape closes it. The spotlight says no: it is not a dialog, and a
+   * keystroke that cleared the block mid-bid would be a keystroke that lost a
+   * player.
+   */
+  escapable?: boolean;
 }
 
 type Tab =
+  | 'tonight'
   | 'overview'
   | 'production'
   | 'usage'
@@ -172,13 +191,16 @@ export const PlayerProfile = ({
   gain = null,
   gainFree = null,
   ceiling = null,
+  walkAway = null,
   pinned = false,
   onTogglePin,
   onClose,
   inline = false,
+  tonight,
+  escapable = true,
 }: PlayerProfileProps) => {
   const closeRef = useRef<HTMLButtonElement>(null);
-  const [tab, setTab] = useState<Tab>('overview');
+  const [tab, setTab] = useState<Tab>(tonight ? 'tonight' : 'overview');
   const [history, setHistory] = useState<PlayerSeason[] | null>(null);
   const [defense, setDefense] = useState<DefenseUnits | null>(null);
   const [schedule, setSchedule] = useState<ScheduleGame[] | null>(null);
@@ -190,8 +212,10 @@ export const PlayerProfile = ({
   const logo = teamLogo(team);
   const isDefense = player.position === 'DST';
 
+  const live: Array<[Tab, string]> = tonight ? [['tonight', 'Tonight']] : [];
   const tabs: Array<[Tab, string]> = isDefense
     ? [
+        ...live,
         ['overview', 'Overview'],
         ['defense', 'Unit'],
         ['schedule', 'Schedule'],
@@ -199,6 +223,7 @@ export const PlayerProfile = ({
         ['research', 'Research'],
       ]
     : [
+        ...live,
         ['overview', 'Overview'],
         ['production', 'Production'],
         ['usage', 'Usage'],
@@ -213,7 +238,7 @@ export const PlayerProfile = ({
     closeRef.current?.focus();
   }, []);
 
-  useDismissOnEscape(onClose);
+  useDismissOnEscape(onClose, escapable);
 
   // Each of these lives in its own lazily loaded file, fetched the first time a
   // tab needs it so opening a profile never waits on data nobody looks at.
@@ -551,6 +576,8 @@ export const PlayerProfile = ({
           {identity.injury.detail ? ` — ${identity.injury.detail}` : ''}
         </p>
       )}
+
+      {tab === 'tonight' && tonight}
 
       {tab === 'overview' && (
         <div className="dr-tabpanel" role="tabpanel">
@@ -1696,19 +1723,12 @@ export const PlayerProfile = ({
 
       {tab === 'value' && (
         <div className="dr-tabpanel" role="tabpanel">
-          {analytics && (
-            <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">What to bid</h3>
-              <BidLadder
-                openingBid={Math.round(analytics.openingBid)}
-                targetBid={Math.round(analytics.targetBid)}
-                maxBid={Math.round(analytics.maxBid)}
-                walkAway={Math.round(analytics.walkAwayPoint)}
-                currentBid={currentBid}
-              />
-            </section>
-          )}
-
+          {/* The "What to bid" ladder that sat here read `analytics.maxBid`,
+              which is `riskAdjustedValue × 1.15` — the same multiplier for
+              everybody, so it ranked players exactly as their prices already did
+              and printed a second walk-away that disagreed with the plan's by ten
+              dollars on the same screen. The plan's number is the one number, and
+              it is read below beside what a bid buys. */}
           {/* Every other price on this screen is a number somebody else arrived
               at. The one that decides the night is the number about to be said
               out loud, and it moves a dollar at a time while people shout — so
@@ -1723,6 +1743,7 @@ export const PlayerProfile = ({
               gain={gain}
               gainFree={gainFree}
               ceiling={ceiling}
+              walkAway={walkAway}
             />
           </section>
 

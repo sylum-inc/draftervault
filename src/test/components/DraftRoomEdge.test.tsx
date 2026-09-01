@@ -106,9 +106,12 @@ describe('the room, driven', () => {
 
     const stage = screen.getByLabelText(`Nomination: ${player.name}`);
     const adjust = service.getPriceAdjuster();
-    expect(
-      within(stage).getByText(`$${adjust.price(player)} at ${adjust.inflation.toFixed(2)}×`)
-    ).toBeInTheDocument();
+    // One tile, two figures: the restated price and the multiplier that made
+    // it. Read off the tile itself, because the same dollar figure can appear
+    // again further down the block in the plan.
+    const tile = within(stage).getByTitle("List price restated at the room's inflation");
+    expect(tile).toHaveTextContent(`$${adjust.price(player)}`);
+    expect(tile).toHaveTextContent(`${adjust.inflation.toFixed(2)}×`);
   });
 
   it('shows the adjusted price as its own column on the table board', () => {

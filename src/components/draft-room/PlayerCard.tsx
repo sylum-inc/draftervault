@@ -306,6 +306,31 @@ const PlayerCardView = ({
       >
         {watched ? '★' : '☆'}
       </span>
+      {/* Put him up top. The whole card already nominates on click, and that
+          stays; this is the same act with a glyph on it, because a face that
+          must be clicked somewhere to do the one thing the board is for is a
+          control nobody was told about. It is the first in the cluster since it
+          is the one used with money on the table. */}
+      <span
+        className="dr-card-spot"
+        role="button"
+        tabIndex={0}
+        aria-label={`Spotlight ${player.name} — put him up top`}
+        title="Spotlight — put him up top, with the full dossier and tonight's numbers"
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect(player);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            onSelect(player);
+          }
+        }}
+      >
+        ◎
+      </span>
       {onFlip && (
         <span
           className="dr-card-open"

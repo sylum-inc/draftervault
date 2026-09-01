@@ -49,7 +49,12 @@ import { memo } from 'react';
 export const INK = 'var(--dr-ink)';
 export const FAINT = 'var(--dr-line-strong)';
 export const TRACK = 'var(--dr-raised)';
-export const GOOD = 'var(--dr-good)';
+/* What an instrument fills "above the bar" with. Not the verdict green: twelve
+   elements on one card in that green left the price and the gain — the two
+   things a bid is decided on — with nothing to stand out against. */
+export const GOOD = 'var(--dr-mark)';
+/* The verdict green itself, for the one mark on an instrument that is *him*. */
+export const HOT = 'var(--dr-good)';
 export const WARN = 'var(--dr-warn)';
 
 /** A full season, which is the frame every game log is drawn in. */
@@ -1076,7 +1081,7 @@ const GoalLineView = ({
           width={pitch - 5.5}
           height={3}
           rx={1}
-          fill="var(--dr-bg)"
+          fill="var(--dr-ground)"
           opacity={0.85}
         />
       ))}

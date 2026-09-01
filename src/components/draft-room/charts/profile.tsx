@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { FAINT, GOOD, INK, TRACK, WARN } from './micro';
+import { FAINT, GOOD, HOT, INK, TRACK, WARN } from './micro';
 
 /**
  * The dossier's instruments: the same rule as `micro.tsx` at the size a raised
@@ -200,8 +200,8 @@ export const MetricStrip = ({
         />
         {model.mine && (
           <>
-            <circle cx={x(model.mine.value)} cy={axis} r={5.5} fill={GOOD} opacity={0.2} />
-            <circle cx={x(model.mine.value)} cy={axis} r={3} fill={GOOD} />
+            <circle cx={x(model.mine.value)} cy={axis} r={5.5} fill={HOT} opacity={0.2} />
+            <circle cx={x(model.mine.value)} cy={axis} r={3} fill={HOT} />
           </>
         )}
       </svg>
@@ -668,6 +668,8 @@ interface BidScrubProps {
   gainFree: string | null;
   /** The most this team may legally bid, which is what the engine will accept. */
   ceiling: number | null;
+  /** The plan's walk-away, when a plan can be computed. */
+  walkAway?: number | null;
 }
 
 /**
@@ -693,6 +695,7 @@ export const BidScrub = ({
   gain,
   gainFree,
   ceiling,
+  walkAway = null,
 }: BidScrubProps) => {
   const max = Math.max(ceiling ?? 0, Math.round((adjusted ?? list) * 1.6), list + 5, 10);
   const [bid, setBid] = useState(() => Math.max(1, Math.round(adjusted ?? list)));
@@ -739,6 +742,14 @@ export const BidScrub = ({
             <dt>Gain per $</dt>
             <dd className="dr-num" data-tone={gainPerDollar > 0 ? 'good' : 'warn'}>
               {gainPerDollar.toFixed(2)}
+            </dd>
+          </div>
+        )}
+        {walkAway != null && (
+          <div title="The plan's number: past this the same money buys more elsewhere on the sheet">
+            <dt>Walk away</dt>
+            <dd className="dr-num" data-tone={bid > walkAway ? 'warn' : 'good'}>
+              ${walkAway}
             </dd>
           </div>
         )}

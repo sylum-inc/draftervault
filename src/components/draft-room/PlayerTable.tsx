@@ -450,6 +450,9 @@ export const PlayerTable = ({
               </th>
             ))}
             <th scope="col">Trend</th>
+            <th scope="col" title="Spotlight — put him up top">
+              <span aria-hidden="true">◎</span>
+            </th>
             <th scope="col" title="Watchlist">
               ★
             </th>
@@ -529,6 +532,20 @@ export const PlayerTable = ({
 
                 <td style={{ color: trend.tone }} title={trend.label}>
                   {trend.glyph}
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    className="dr-star dr-spot"
+                    aria-label={`Spotlight ${player.name} — put him up top`}
+                    title="Spotlight — put him up top"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSelect(player);
+                    }}
+                  >
+                    ◎
+                  </button>
                 </td>
                 <td>
                   <button

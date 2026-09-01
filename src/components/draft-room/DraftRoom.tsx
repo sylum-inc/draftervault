@@ -13,6 +13,8 @@ import { useDraftServer } from '@/hooks/use-draft-server';
 import { PlayerCard } from './PlayerCard';
 import { PlayerTable, type TableSort } from './PlayerTable';
 import { NominationStage } from './NominationStage';
+import { SpotlightTonight } from './SpotlightTonight';
+import { SetupMenu } from './SetupMenu';
 import { BudgetRail } from './BudgetRail';
 import { TeamsPanel } from './TeamsPanel';
 import { MarketPanel } from './MarketPanel';
@@ -94,7 +96,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [query, setQuery] = useState('');
   const [position, setPosition] = useState<(typeof POSITIONS)[number]>('ALL');
   const [sort, setSort] = useState<SortKey>('rank');
-  const [profileOpen, setProfileOpen] = useState(false);
+  /* The spotlight's dossier can be folded away to the strip and the controls —
+     a small window, or a quiet moment when the board matters more. Per window,
+     not per person: it is a layout, not a preference. */
+  const [stageFolded, setStageFolded] = useState(false);
   const [resumed, setResumed] = useState(0);
   const [tableSort, setTableSort] = useState<TableSort>('rank');
   const [tableDescending, setTableDescending] = useState(false);
@@ -341,14 +346,20 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
      walk-away of nothing is almost never "he is worthless" — it is "every
      dollar is already committed to somebody better", and those are different
      instructions the moment one of those players goes to somebody else. */
+  /* The plan itself — one knapsack per pick, about forty milliseconds — read
+     here once and handed to everything that quotes it, so the strip's tile and
+     the live tab cannot come to disagree about what the money is promised to. */
+  const plan = useMemo(
+    () => draftService.getRosterPlan(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [players, draftService]
+  );
   const planNames = useMemo(
     () =>
-      draftService
-        .getRosterPlan()
-        .buy.filter((entry) => entry.candidate.id !== selected?.id)
+      plan.buy
+        .filter((entry) => entry.candidate.id !== selected?.id)
         .map((entry) => entry.candidate.name),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selected?.id, players, draftService]
+    [plan, selected?.id]
   );
 
   /* Off the whole pool rather than off the filtered board, so a raised card
@@ -461,6 +472,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // `players` is a dependency because a reprice replaces the whole array
     // without the selection changing identity, and the analytics behind it move
     // with the prices.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
   }, [selected, teamId, draftService, players]);
 
   /**
@@ -578,7 +590,6 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     sync();
     setSelected(null);
     setBid('');
-    setProfileOpen(false);
   }, [selected, teamId, bid, draftService, sync, snake, onTheClock]);
 
   /**
@@ -935,7 +946,6 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const complete = useMemo(() => draftService.isComplete(), [draftService, players, teams]);
 
   const anyModalOpen =
-    profileOpen ||
     resultsOpen ||
     boardOpen ||
     compareOpen ||
@@ -1285,6 +1295,105 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const readyLevel = worstOf(checks);
 
   const spent = teams.reduce((total, team) => total + team.spent, 0);
+  /*
+   * Everything the live tab reads, gathered once per render of the block.
+   *
+   * None of it is new arithmetic: the plan, the bid board, the position pulse,
+   * the scarcity row, the inflation basis and the endgame are all computed
+   * above for the panels that print them for the room as a whole. This points
+   * the same readings at the one player on the block, which is where they are
+   * needed while a name is being called.
+   */
+  const bidValue = useMemo(
+    () =>
+      selected
+        ? ((snake ? draftService.getPickBoard() : draftService.getBidBoard()).get(selected.id) ??
+          null)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [selected?.id, snake, players, draftService]
+  );
+  const myAtPosition = useMemo(
+    () =>
+      selected && myTeamId
+        ? players
+            .filter((entry) => entry.draftedBy === myTeamId && entry.position === selected.position)
+            .sort((a, b) => (a.pickNumber ?? 0) - (b.pickNumber ?? 0))
+        : [],
+    [players, selected, myTeamId]
+  );
+  const bidNumber = Number.parseInt(bid, 10);
+  const spendSim = useMemo(
+    () =>
+      selected && myTeam && !snake && Number.isFinite(bidNumber) && bidNumber >= 1
+        ? draftService.simulateSpend(myTeam.id, bidNumber)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [selected, myTeam, snake, bidNumber, players, draftService]
+  );
+  const selectedResearch = useMemo(
+    () => (selected ? researchMark(selected.id) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- researchReady is when the file lands
+    [selected?.id, researchReady]
+  );
+  /* In the snake, the best free picks by what they add to the lineup on the
+     clock — the pick board, which is the bid board pointed at the snake. */
+  const freePicks = useMemo(() => {
+    if (!snake) return [];
+    const byId = new Map(players.map((entry) => [entry.id, entry]));
+    return [...draftService.getPickBoard()]
+      .map(([id, entry]) => ({ player: byId.get(id)!, gain: entry.gain, seat: entry.seat }))
+      .filter((entry) => entry.player && !entry.player.isDrafted && entry.gain > 0)
+      .sort((a, b) => b.gain - a.gain)
+      .slice(0, 8);
+  }, [snake, players, draftService]);
+
+  const dossier = selected ? (
+    <PlayerProfile
+      inline
+      escapable={false}
+      player={selected}
+      analytics={analytics}
+      currentBid={Number.isFinite(bidNumber) ? bidNumber : 0}
+      players={players}
+      replacement={draftService.getReplacementLevel(selected.position)}
+      league={draftService.getLeagueShape()}
+      gain={snakeGain?.gain ?? snakeBounds?.high.gain ?? null}
+      gainFree={snakeGain?.free ?? snakeBounds?.high.free ?? null}
+      ceiling={pulse.get(selected.position)?.myCeiling ?? null}
+      walkAway={walkAway}
+      pinned={preferences.pinned.includes(selected.id)}
+      onTogglePin={() => togglePin(selected.id)}
+      onClose={() => setSelected(null)}
+      tonight={
+        <SpotlightTonight
+          player={selected}
+          mode={phase}
+          bid={bidNumber}
+          myTeam={myTeam}
+          myAtPosition={myAtPosition}
+          snakeGain={snakeGain}
+          snakeBounds={snakeBounds}
+          research={selectedResearch}
+          walkAway={walkAway}
+          value={bidValue}
+          plan={plan}
+          adjusted={selected && !snake ? adjust.price(selected) : null}
+          inflation={adjust.inflation}
+          competition={competition}
+          room={roomRead}
+          pulse={pulse.get(selected.position)}
+          scarcity={market.scarcity.find((row) => row.position === selected.position)}
+          basis={basis}
+          endgame={endgameState}
+          spend={spendSim}
+          onTheClock={onTheClock}
+          freePicks={freePicks}
+        />
+      }
+    />
+  ) : null;
+
   const progress = players.length ? (drafted.length / players.length) * 100 : 0;
   const { season } = snapshotMeta();
 
@@ -1450,53 +1559,47 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             </button>
           </div>
 
-          <div className="dr-topbar-group dr-topbar-setup">
-            <button
-              className="dr-button dr-button-ghost"
-              aria-pressed={customCount > 0}
-              onClick={() => setImportOpen(true)}
-              title="Use your own rankings instead of ours"
-            >
-              {customCount > 0 ? `Your ranks (${customCount})` : 'Import ranks'}
-            </button>
-            <button
-              className="dr-button dr-button-ghost"
-              aria-pressed={sheet.ids.length > 0}
-              onClick={() => setSheetOpen(true)}
-              title="The commissioner's sheet — the players money actually buys"
-            >
-              {sheet.ids.length > 0 ? `Sheet (${sheet.ids.length})` : 'Auction sheet'}
-            </button>
-            <button
-              className="dr-button dr-button-ghost"
-              onClick={() => setLeagueOpen(true)}
-              title="Teams, budget and roster shape — every price is computed from them"
-            >
-              {league.teams} × ${league.budget}
-            </button>
-            <button
-              className="dr-button dr-button-ghost"
-              onClick={() => setOrderOpen(true)}
-              title="The order the snake is called in — the commissioner sets it"
-            >
-              Snake order
-            </button>
-            <button
-              className="dr-button dr-button-ghost"
-              onClick={() => setFileOpen(true)}
-              title="Save the draft to a file, or load one"
-            >
-              File
-            </button>
-            <button
-              className="dr-button dr-button-ghost"
-              aria-pressed={server.discovery.state === 'ready'}
-              onClick={() => setServerOpen(true)}
-              title="Saved drafts and rebuilds, when a server is running. The app does not need one."
-            >
-              {serverLabel}
-            </button>
-          </div>
+          {/* What is set up once, behind one button — see `SetupMenu` for why.
+              The count on it is how many of these have something in force. */}
+          <SetupMenu
+            items={[
+              {
+                label: customCount > 0 ? `Your ranks (${customCount})` : 'Import ranks',
+                title: 'Use your own rankings instead of ours',
+                onSelect: () => setImportOpen(true),
+                active: customCount > 0,
+              },
+              {
+                label: sheet.ids.length > 0 ? `Sheet (${sheet.ids.length})` : 'Auction sheet',
+                title: "The commissioner's sheet — the players money actually buys",
+                onSelect: () => setSheetOpen(true),
+                active: sheet.ids.length > 0,
+              },
+              {
+                label: `League · ${league.teams} × $${league.budget}`,
+                title: 'Teams, budget and roster shape — every price is computed from them',
+                onSelect: () => setLeagueOpen(true),
+              },
+              {
+                label: 'Snake order',
+                title: 'The order the snake is called in — the commissioner sets it',
+                onSelect: () => setOrderOpen(true),
+                active: draftService.hasSnakeOrder(),
+              },
+              {
+                label: 'Draft file',
+                title: 'Save the draft to a file, or load one — or press s',
+                onSelect: () => setFileOpen(true),
+              },
+              {
+                label: serverLabel,
+                title:
+                  'Saved drafts and rebuilds, when a server is running. The app does not need one.',
+                onSelect: () => setServerOpen(true),
+                active: server.discovery.state === 'ready',
+              },
+            ]}
+          />
 
           <button
             className="dr-button dr-button-danger"
@@ -1592,7 +1695,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               onTeamChange={setTeamId}
               onBidChange={setBid}
               onConfirm={confirm}
-              onOpenProfile={() => setProfileOpen(true)}
+              dossier={dossier}
+              folded={stageFolded}
+              onToggleFold={() => setStageFolded((folded) => !folded)}
               canDraft={(team) => draftService.canDraft(team)}
               onTheClock={onTheClock}
               snakeGain={snakeGain}
@@ -2114,23 +2219,6 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
       )}
 
       {readyOpen && <ReadinessPanel checks={checks} onClose={() => setReadyOpen(false)} />}
-
-      {profileOpen && selected && (
-        <PlayerProfile
-          player={selected}
-          analytics={analytics}
-          players={players}
-          replacement={draftService.getReplacementLevel(selected.position)}
-          league={draftService.getLeagueShape()}
-          gain={boardGains.get(selected.id)?.high ?? null}
-          gainFree={boardGains.get(selected.id)?.free ?? null}
-          ceiling={pulse.get(selected.position)?.myCeiling ?? null}
-          currentBid={Number.parseInt(bid, 10) || undefined}
-          pinned={preferences.pinned.includes(selected.id)}
-          onTogglePin={() => togglePin(selected.id)}
-          onClose={() => setProfileOpen(false)}
-        />
-      )}
     </div>
   );
 };

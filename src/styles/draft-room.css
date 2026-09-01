@@ -15,7 +15,11 @@
 
   --dr-ink: #edf1f7;
   --dr-ink-muted: #8996ac;
-  --dr-ink-faint: #5b6880;
+  /* 4.6:1 on --dr-surface. It was #5b6880, which is 3.2:1 — and it was the
+     colour of every caption on every card at ten pixels, the second most used
+     colour in the room. A caption that fails contrast at the smallest size on
+     the screen is not a quiet caption, it is an absent one. */
+  --dr-ink-faint: #728299;
 
   /* Semantic signals, kept separate from the team accent. */
   --dr-value: #3dd68c;
@@ -72,6 +76,13 @@
      four places that were each picking their own green. Backgrounds are paired
      with the ink so a token can be filled rather than only coloured. */
   --dr-good: #3dd68c;
+  /* What an instrument draws with when it is drawing "above the bar" — the
+     game log's columns, the shelf, the outcome curve's upper mass. Deliberately
+     not --dr-good: twelve elements on one card in the verdict green meant the
+     price and the gain, which are the two things a bid is decided on, had
+     nothing left to stand out against. Instruments carry information in their
+     shape; the colour only has to be legible. */
+  --dr-mark: #4f8c74;
   --dr-good-bg: rgba(61, 214, 140, 0.12);
   --dr-good-line: rgba(61, 214, 140, 0.36);
   --dr-warn: #f0a93b;
@@ -482,6 +493,7 @@
 }
 
 .dr-card-photo {
+  --dr-face-size: 36px;
   width: 36px;
   height: 36px;
   flex: none;
@@ -494,14 +506,42 @@
   box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--dr-accent-lift) 70%, transparent);
 }
 
-.dr-card-monogram {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/*
+ * A face is a layer over a monogram, never a branch between them.
+ *
+ * The sizing class (`.dr-card-photo`, `.dr-stage-photo`, ...) sets the box and
+ * the ring; this makes that box a stack. The initials are always painted; the
+ * image sits over them and covers them the moment it arrives. An image that
+ * never arrives — blocked, offline, or held by a service worker whose fetch
+ * never settles and so fires no event — leaves the letters showing, which is
+ * the whole reason this is a stack and not an `onError` swap.
+ */
+.dr-face {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.dr-face-mono {
   font-family: var(--dr-display);
-  font-size: var(--dr-t-small);
   font-weight: 700;
+  font-size: calc(var(--dr-face-size, 36px) * 0.36);
+  letter-spacing: 0.02em;
+  line-height: 1;
   color: var(--dr-ink-muted);
+  user-select: none;
+}
+
+.dr-face-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  background: var(--dr-raised);
 }
 
 .dr-card-logo {
@@ -678,9 +718,11 @@
 /* With nobody on the block there is nothing to decide, so the band is a line
    saying so rather than a two-hundred-pixel slab of empty panel across the top
    of the board. */
-.dr-stage.dr-stage-empty {
+.dr-stage.dr-stage-empty,
+.dr-stage.dr-stage-done {
   display: flex;
   grid-template-columns: none;
+  height: auto;
   box-shadow: none;
 }
 
@@ -695,136 +737,224 @@
   text-align: center;
 }
 
+/*
+ * The spotlight.
+ *
+ * A strip across the top — who he is, the numbers a bid is decided on, the
+ * sentence that decides it — then the dossier down the left and the controls
+ * down the right. The band has a fixed height and the dossier scrolls inside
+ * it, so nothing a tab does can move the bid box: the controls not moving is
+ * the whole point of a band, and it is kept without the dead space that
+ * keeping it cost before, when the middle column was a 172px window onto prose
+ * over two hundred pixels of nothing.
+ */
 .dr-stage {
   overflow: hidden;
   display: grid;
-  /* Who / why / what am I doing about it. The last column is fixed because the
-     controls must not move when a longer name or an extra research flag lands
-     in the middle one — muscle memory is the whole point of a band. */
-  grid-template-columns: minmax(0, 252px) minmax(0, 1fr) minmax(0, 326px);
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 326px);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: clamp(440px, 58vh, 760px);
   box-shadow: var(--dr-e2);
 }
 
-/* The identity panel reads as its own surface rather than as a hole beside the
-   reading column, because its content is short and the band's height is set by
-   the controls opposite. Slightly lifted, so the emptiness is panel rather than
-   gap. */
-.dr-stage-who {
-  border-right: 1px solid var(--dr-line);
+/* Folded, or with no dossier to show: the strip, and the controls in one row
+   beneath it rather than a column beside it — a 494px column of controls next
+   to a 230px strip is a band that is two thirds empty. */
+.dr-stage[data-folded] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  height: auto;
+}
+
+.dr-stage[data-folded] .dr-stage-form,
+.dr-stage-form.is-row {
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) auto auto auto;
+  grid-template-areas: 'bid teams verdict sold pass' 'hint hint hint hint hint';
+  align-items: center;
+  gap: var(--dr-s2) var(--dr-s3);
+  padding: var(--dr-s2) var(--dr-s4);
+  border-left: 0;
+  overflow: visible;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field:has(#dr-bid) {
+  grid-area: bid;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field:has(.dr-teamrow) {
+  grid-area: teams;
+}
+
+.dr-stage[data-folded] .dr-teamrow {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-verdict {
+  grid-area: verdict;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-button-primary {
+  grid-area: sold;
+  min-width: 150px;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-button:not(.dr-button-primary) {
+  grid-area: pass;
+  flex: none;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-notice,
+.dr-stage[data-folded] .dr-stage-form > .dr-stage-hint {
+  grid-area: hint;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field {
+  gap: 3px;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field > .dr-eyebrow {
+  display: none;
+}
+
+.dr-stage-top {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  border-bottom: 1px solid var(--dr-line);
   background: var(--dr-surface-2);
 }
 
-.dr-stage-read {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
-  align-content: start;
-  gap: var(--dr-s2) var(--dr-s4);
-  padding: var(--dr-s3) var(--dr-s4);
+.dr-stage[data-folded] .dr-stage-top {
+  border-bottom: 0;
+}
+
+.dr-stage-dossier {
+  grid-column: 1;
+  grid-row: 2;
   min-width: 0;
-  /* The reading column is the one that varies — a gain line, a research flag,
-     a market-only note, the competition list — so it scrolls rather than
-     growing the band. A band that changes height moves the controls, and the
-     controls not moving is the whole point of a band. */
-  max-height: 172px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* The profile inside the band is a column: tabs fixed, panel scrolling. */
+.dr-stage-dossier > .dr-profile {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.dr-stage-dossier > .dr-profile > .dr-tabs {
+  flex: none;
+  background: var(--dr-surface);
+}
+
+.dr-stage-dossier > .dr-profile > .dr-tabpanel,
+.dr-stage-dossier > .dr-profile > .dr-notice {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  /* A row cut in half by the scroll edge reads as a rendering fault rather than
-     as more content. The mask fades the last few pixels so it reads as more. */
-  mask-image: linear-gradient(180deg, #000 calc(100% - 18px), transparent 100%);
+  scrollbar-width: thin;
 }
 
-/* The prose runs down the left of this column; the measured strip (range,
-   percentiles) sits beside it rather than under it, which is what was leaving
-   half the band empty at the top and clipping the competition at the bottom. */
-.dr-stage-read > .dr-stage-snakegain,
-.dr-stage-read > .dr-stage-marketonly {
-  grid-column: 1;
-}
-
-.dr-stage-read > .dr-stage-rangeread {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--dr-s2);
-  margin-top: 4px;
-}
-
-.dr-stage-rangeread span {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.dr-stage-rangeread em {
-  font-style: normal;
-  font-size: var(--dr-t-micro);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--dr-ink-faint);
-}
-
-.dr-stage-rangeread strong {
-  font-size: var(--dr-t-body);
-  font-weight: 600;
-}
-
-.dr-stage-rangeread span:nth-child(2) {
-  align-items: center;
-}
-
-.dr-stage-rangeread span:last-child {
-  align-items: flex-end;
-}
-
-.dr-stage-range {
+.dr-stage-form {
   grid-column: 2;
-  grid-row: 1 / span 3;
+  grid-row: 1 / -1;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
-.dr-stage-read > .dr-outbid {
-  grid-column: 1;
-}
-
-/* The left column ends with its numbers against the bottom edge rather than
-   floating a third of the way down a column whose height is set by the
-   controls beside it. */
-.dr-stage-who {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Tiles sit directly under the identity rather than being pushed to the foot
-   of a column whose height belongs to the controls opposite. Slack at the
-   bottom of a panel reads as padding; slack in the middle of one reads as a
-   missing element. */
-.dr-stage-who > .dr-stage-tiles {
-  margin-top: 0;
-}
-
-/* The snake has no bid box, so the third column would be an empty panel with a
-   border down its side. Two columns there instead. */
+/* The snake has no bid box; the form column is the one line saying who the
+   pick goes to, so it can be narrower. */
 .dr-stage[data-mode='snake'] {
-  grid-template-columns: minmax(0, 252px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 260px);
+}
+
+.dr-stage-idblock {
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-stage-fold {
+  flex: none;
+  align-self: flex-start;
+  margin-left: auto;
+  padding: 4px 9px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-pill);
+  background: transparent;
+  color: var(--dr-ink-muted);
+  font-size: var(--dr-t-tiny);
+  white-space: nowrap;
+}
+
+.dr-stage-fold:hover {
+  color: var(--dr-ink);
+  border-color: var(--dr-line-strong);
+}
+
+/* The sentence under the tiles. It is the one line of prose in the strip and
+   it is what the six numbers abbreviate. */
+.dr-stage-line {
+  padding: 6px var(--dr-s4) 8px;
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-stage-line:empty {
+  display: none;
+}
+
+.dr-stage-line > p {
+  margin: 0;
+}
+
+.dr-stage-hint {
+  margin: 0;
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  text-align: center;
 }
 
 @media (max-width: 1180px) {
   .dr-stage,
   .dr-stage[data-mode='snake'] {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
   }
 
-  .dr-stage-who,
+  /* No room for a dossier under a strip and a form on one narrow column, so
+     the band folds to the strip and the controls. The tabs are still a click
+     away on the card. */
+  .dr-stage-dossier,
+  .dr-stage-fold {
+    display: none;
+  }
+
   .dr-stage-form {
-    border: 0;
+    grid-column: 1;
+    grid-row: 2;
+    border-left: 0;
     border-top: 1px solid var(--dr-line);
   }
 
-  .dr-stage-who {
-    border-top: 0;
-  }
-
-  .dr-stage-read {
-    max-height: none;
+  .dr-stage[data-folded] .dr-stage-form,
+  .dr-stage:not([data-folded]) .dr-stage-form {
+    grid-template-columns: 160px minmax(0, 1fr);
+    grid-template-areas: 'bid teams' 'verdict sold' 'pass pass' 'hint hint';
   }
 }
 
@@ -833,7 +963,7 @@
   display: flex;
   align-items: center;
   gap: var(--dr-s3);
-  padding: var(--dr-s3) var(--dr-s4) var(--dr-s3);
+  padding: var(--dr-s3) var(--dr-s4) var(--dr-s2);
   background:
     radial-gradient(
       120% 140% at 100% 0%,
@@ -849,6 +979,7 @@
    recognising who was just called is faster than reading — but it is worth a
    circle, not a quarter of the band. */
 .dr-stage-photo {
+  --dr-face-size: 62px;
   width: 62px;
   height: 62px;
   flex: none;
@@ -890,10 +1021,30 @@
 
 .dr-stage-tiles {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 1px;
   background: var(--dr-line);
   border-top: 1px solid var(--dr-line);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* The tone is a live reading, not a property of the player: a walk-away is
+   amber only once the bid on the table has gone past it, and the gain is
+   coloured by which seat it fills. */
+.dr-tile dd[data-tone='good'] {
+  color: var(--dr-good);
+}
+
+.dr-tile dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-tile dd[data-tone='bad'] {
+  color: var(--dr-bad);
+}
+
+.dr-tile dd.is-price {
+  color: var(--dr-good);
 }
 
 .dr-tile {
@@ -1432,7 +1583,7 @@
    marked, because a $1 price tag on a player nobody is bidding on and a $1
    price tag on a scrub look identical otherwise. */
 .dr-snake {
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -1491,18 +1642,21 @@
    table, so they have no claim on the corner the eye goes to first. */
 .dr-card-star,
 .dr-card-pin,
-.dr-card-open {
+.dr-card-open,
+.dr-card-spot {
   position: absolute;
   z-index: 2;
   bottom: 6px;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
   font-size: var(--dr-t-body);
-  color: var(--dr-ink-faint);
+  color: var(--dr-ink-muted);
+  background: var(--dr-surface-2);
+  box-shadow: 0 0 0 1px var(--dr-line);
   opacity: 0;
   transition: opacity var(--dr-fast);
 }
@@ -1567,7 +1721,7 @@
 
 .dr-unit-pos {
   min-width: 22px;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.08em;
   color: var(--dr-accent);
 }
@@ -1769,7 +1923,7 @@
   padding: 1px 4px;
   border: 1px solid var(--dr-line-strong);
   border-radius: 3px;
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--dr-ink-faint);
@@ -2058,7 +2212,7 @@
   border: 1px solid var(--dr-line);
   border-radius: 4px;
   background: var(--dr-raised);
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
   font-size: var(--dr-t-small);
   cursor: pointer;
   transition:
@@ -2150,7 +2304,7 @@
   margin: 4px 0 0;
   font-size: var(--dr-t-small);
   line-height: 1.35;
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-back-say[data-direction='PAY_UP'] {
@@ -2180,7 +2334,7 @@
   align-items: baseline;
   gap: 4px;
   font-size: var(--dr-t-micro);
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-back-parts b {
@@ -2212,7 +2366,7 @@
   border: 1px solid var(--dr-line);
   border-radius: var(--dr-radius-sm);
   background: var(--dr-raised);
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
   font-size: var(--dr-t-micro);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -2243,7 +2397,7 @@
   display: grid;
   place-items: center;
   padding: var(--dr-s4);
-  background: color-mix(in srgb, var(--dr-bg) 72%, transparent);
+  background: color-mix(in srgb, var(--dr-ground) 72%, transparent);
   backdrop-filter: blur(3px);
   animation: dr-scrim-in 180ms var(--dr-ease);
 }
@@ -2432,7 +2586,7 @@
   border: none;
   border-bottom: 2px solid transparent;
   background: none;
-  color: var(--dr-ink-faint);
+  color: var(--dr-ink-muted);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -2449,7 +2603,7 @@
 
 .dr-tab[aria-selected='true'] {
   color: var(--dr-ink);
-  border-bottom-color: var(--dr-accent);
+  border-bottom-color: var(--dr-accent-lift, var(--dr-accent));
 }
 
 .dr-tabpanel {
@@ -2538,7 +2692,7 @@
 
 .dr-percentile-rank em {
   font-style: normal;
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
 }
 
 /* --- season small multiples ---------------------------------------------- */
@@ -2574,7 +2728,7 @@
 
 .dr-multiple figcaption em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   color: var(--dr-ink-faint);
 }
 
@@ -2599,7 +2753,7 @@
 }
 
 .dr-week-number {
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
   /* Sits on a tinted fill, so it needs more than the faint ink. */
   color: var(--dr-ink-muted);
   mix-blend-mode: screen;
@@ -2676,7 +2830,7 @@
 
 .dr-split-part em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.85;
@@ -2687,130 +2841,6 @@
 }
 
 /* --- bid ladder ---------------------------------------------------------- */
-
-.dr-ladder {
-  margin-top: 16px;
-}
-
-.dr-ladder-track {
-  position: relative;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--dr-raised);
-}
-
-.dr-ladder-band {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  background: color-mix(in srgb, var(--dr-value) 45%, transparent);
-}
-
-.dr-ladder-band.is-premium {
-  background: color-mix(in srgb, var(--dr-caution) 45%, transparent);
-}
-
-.dr-ladder-tick {
-  position: absolute;
-  top: -4px;
-  width: 2px;
-  height: 18px;
-  background: var(--dr-ink-muted);
-}
-
-.dr-ladder-tick.is-limit {
-  background: var(--dr-danger);
-}
-
-.dr-ladder-live {
-  position: absolute;
-  top: -26px;
-  transform: translateX(-50%);
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--dr-ink);
-  color: var(--dr-ground);
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.dr-ladder-live::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -9px;
-  width: 2px;
-  height: 9px;
-  margin-left: -1px;
-  background: var(--dr-ink);
-}
-
-.dr-ladder-live.is-over {
-  background: var(--dr-danger);
-  color: #fff;
-}
-
-.dr-ladder-live.is-over::after {
-  background: var(--dr-danger);
-}
-
-.dr-ladder-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
-  font-size: 11px;
-}
-
-.dr-ladder-labels span {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dr-ladder-labels em {
-  font-style: normal;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--dr-ink-faint);
-}
-
-.dr-ladder-labels strong {
-  font-size: 14px;
-  color: var(--dr-ink);
-}
-
-.dr-stage-range {
-  padding: 12px 14px 0;
-  border-bottom: 1px solid var(--dr-line);
-}
-
-.dr-stage-signals {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.dr-stage-signals span {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dr-stage-signals em {
-  font-style: normal;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--dr-ink-faint);
-}
-
-.dr-stage-signals strong {
-  font-size: 13px;
-  color: var(--dr-ink);
-}
 
 /* --------------------------------------------------------------------------
    position palette
@@ -2838,14 +2868,14 @@
 .dr-quadrant,
 .dr-consensus-tick {
   font-family: var(--dr-mono);
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
   fill: var(--dr-ink-faint);
   letter-spacing: 0.04em;
 }
 
 .dr-quadrant {
   font-family: var(--dr-sans);
-  font-size: 8.5px;
+  font-size: var(--dr-t-micro);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   fill: var(--dr-ink-faint);
@@ -2940,7 +2970,7 @@
 .dr-consensus-key em,
 .dr-arc-key em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -2978,7 +3008,7 @@
 
 .dr-pos-chip {
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   padding: 1px 5px;
   border-radius: 3px;
   background: var(--dr-raised);
@@ -3015,7 +3045,7 @@
   display: grid;
   place-items: center;
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-weight: 600;
   color: #fff;
   /* A 2px ground gap so adjacent cells never merge into one block. */
@@ -3337,7 +3367,7 @@
 .dr-gridboard-pick em {
   font-style: normal;
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   color: var(--dr-ink-faint);
 }
 
@@ -3390,7 +3420,7 @@
 }
 
 .dr-planner-grid dt {
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -3456,7 +3486,7 @@
   padding: 6px 8px;
   border-left: 2px solid var(--dr-caution);
   background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   font-size: 10px;
   line-height: 1.45;
 }
@@ -3467,7 +3497,7 @@
   border: 1px solid color-mix(in srgb, var(--dr-caution) 45%, transparent);
   border-radius: 2px;
   color: var(--dr-caution);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-style: normal;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -3539,7 +3569,7 @@
 
 .dr-bargain-numbers em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   color: var(--dr-ink-faint);
 }
 
@@ -3595,7 +3625,7 @@
 
 .dr-advisor-badge {
   font-family: var(--dr-sans);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3700,11 +3730,11 @@
    -------------------------------------------------------------------------- */
 
 .dr-card-pin {
-  right: 30px;
+  right: 36px;
 }
 
 .dr-card-open {
-  right: 52px;
+  right: 64px;
   font-size: var(--dr-t-small);
 }
 
@@ -4165,7 +4195,7 @@
 }
 
 .dr-league-summary dt {
-  font: 600 10px/1.2 var(--dr-font-mono, monospace);
+  font: 600 10px/1.2 var(--dr-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -4173,7 +4203,7 @@
 
 .dr-league-summary dd {
   margin: 3px 0 0;
-  font: 600 18px/1.1 var(--dr-font-mono, monospace);
+  font: 600 18px/1.1 var(--dr-mono);
   color: var(--dr-ink);
 }
 
@@ -4466,7 +4496,7 @@
   background: var(--dr-accent);
   color: var(--dr-accent-ink);
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -4521,7 +4551,7 @@
    point: the panel is asking to be checked, not believed. */
 .dr-research {
   border: 1px solid var(--dr-line);
-  border-left: 3px solid var(--dr-dim);
+  border-left: 3px solid var(--dr-ink-muted);
   border-radius: 4px;
   padding: 14px 16px;
   background: var(--dr-surface);
@@ -4560,7 +4590,7 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-research-stale {
@@ -4589,7 +4619,7 @@
 .dr-research-impact {
   font-size: 14px;
   line-height: 1.35;
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   width: 12px;
   flex: none;
 }
@@ -4604,11 +4634,11 @@
 .dr-research-source {
   margin: 3px 0 0;
   font-size: 11px;
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-research-source a {
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -4643,6 +4673,11 @@
 
 /* Who is on the clock, above the player. The auction has a nomination clock in
    the top bar; the snake's turn is the whole of what the stage is asking. */
+.dr-stage-hero > .dr-stage-clock {
+  flex: none;
+  margin: 0 var(--dr-s3);
+}
+
 .dr-stage-clock {
   display: flex;
   align-items: baseline;
@@ -4710,66 +4745,6 @@
   color: var(--dr-ink-faint);
 }
 
-.dr-outbid {
-  padding: 10px 14px 0;
-}
-
-.dr-outbid-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.dr-outbid-caveat {
-  font-size: 10px;
-  color: var(--dr-ink-faint);
-}
-
-.dr-outbid-list {
-  list-style: none;
-  margin: 4px 0 0;
-  padding: 0;
-}
-
-.dr-outbid-list li {
-  display: grid;
-  grid-template-columns: 1fr 46px auto;
-  align-items: baseline;
-  gap: 8px;
-  padding: 3px 0;
-  border-top: 1px solid var(--dr-line);
-  font-size: 12px;
-}
-
-.dr-outbid-list li:first-child {
-  border-top: none;
-}
-
-.dr-outbid-team {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dr-outbid-ceiling {
-  text-align: right;
-  font-weight: 600;
-}
-
-.dr-outbid-note,
-.dr-outbid-empty {
-  font-size: 11px;
-  color: var(--dr-ink-faint);
-}
-
-.dr-outbid-empty {
-  margin: 4px 0 0;
-}
-
-.dr-outbid .dr-footnote {
-  margin-top: 6px;
-}
-
 .dr-drivers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -4778,7 +4753,7 @@
 }
 
 .dr-drivers dt {
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -4869,7 +4844,7 @@
   padding: 1px 5px;
   border-radius: 3px;
   font-family: var(--dr-sans);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -5049,7 +5024,7 @@
   border: 1px solid color-mix(in srgb, var(--dr-caution) 40%, transparent);
   border-radius: 2px;
   color: var(--dr-caution);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-style: normal;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -5061,7 +5036,7 @@
   padding: 6px 8px;
   border-left: 2px solid var(--dr-caution);
   background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   font-size: 10px;
   line-height: 1.45;
 }
@@ -5260,7 +5235,7 @@
 }
 
 .dr-mix-tick {
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.04em;
   fill: var(--dr-ink-faint);
 }
@@ -5273,7 +5248,7 @@
   min-height: 2.4em;
   font-size: var(--dr-t-small);
   line-height: 1.3;
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-mix-read b {
@@ -5293,7 +5268,7 @@
 
 .dr-threshold-say {
   font-size: var(--dr-t-body);
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-threshold-say b {
@@ -5313,7 +5288,7 @@
 }
 
 .dr-role-corners {
-  font-size: 7px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -5325,7 +5300,7 @@
   border: 0;
   padding: 0;
   background: none;
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
   font: inherit;
   text-decoration: underline dotted;
   text-underline-offset: 2px;
@@ -5344,7 +5319,7 @@
 }
 
 .dr-scrub-head b {
-  font-size: var(--dr-t-head);
+  font-size: var(--dr-t-title);
   color: var(--dr-value);
   font-variant-numeric: tabular-nums;
 }
@@ -5565,7 +5540,7 @@
   border: 1px solid var(--dr-line);
   border-radius: var(--dr-radius-sm);
   background: var(--dr-raised);
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
   cursor: pointer;
   min-width: 0;
   transition:
@@ -5834,7 +5809,7 @@ li[data-level='ready'] > .dr-checklist-mark {
 .dr-checklist-body > span {
   font-size: var(--dr-t-small);
   line-height: 1.45;
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
 }
 
 /* Supply and demand on one row: what is gone, the seats still chasing what is
@@ -5855,7 +5830,7 @@ li[data-level='ready'] > .dr-checklist-mark {
 }
 
 .dr-supply[data-pressure='high'] .dr-supply-money {
-  color: var(--dr-ink-dim);
+  color: var(--dr-ink-muted);
 }
 
 /*
@@ -5882,4 +5857,423 @@ li[data-level='ready'] > .dr-checklist-mark {
 .dr-supply-head span:nth-child(3),
 .dr-supply-head span:nth-child(4) {
   text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   the spotlight's live tab
+   -------------------------------------------------------------------------- */
+
+/* Its own grid rather than the dossier's column flow: these sections have an
+   order that is a reading order — your seat, then the price, then the plan —
+   and a column flow would deal them wherever they fit. */
+.dr-tonight {
+  columns: auto !important;
+  column-count: auto !important;
+  padding: var(--dr-s3);
+}
+
+/* Packed columns rather than a grid: a grid puts these in rows, and a short
+   section beside a tall one leaves the difference as dead space — "your seat"
+   is four lines and "who can beat it" is twelve. Columns fill down and then
+   across, so each section starts where the last one ended. */
+.dr-tonight-grid {
+  columns: 300px;
+  column-gap: var(--dr-s3);
+}
+
+.dr-tonight-section {
+  break-inside: avoid;
+  margin-bottom: var(--dr-s3);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+  padding: var(--dr-s3);
+  min-width: 0;
+}
+
+.dr-tonight-section.is-wide {
+  column-span: all;
+}
+
+.dr-tonight-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--dr-s2);
+  margin-bottom: var(--dr-s2);
+}
+
+.dr-tonight-head > h3 {
+  margin: 0;
+}
+
+.dr-tonight-aside {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  white-space: nowrap;
+}
+
+.dr-tonight-verdict {
+  margin: 0 0 var(--dr-s3);
+  font-size: var(--dr-t-body);
+  line-height: 1.5;
+  color: var(--dr-ink);
+}
+
+.dr-tonight-note {
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-seat {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s3);
+  margin-bottom: var(--dr-s2);
+}
+
+.dr-tonight-seat > p {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-seat strong {
+  color: var(--dr-ink);
+}
+
+.dr-tonight-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dr-tonight-list > li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 52px 44px;
+  align-items: center;
+  gap: var(--dr-s2);
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: var(--dr-t-small);
+}
+
+.dr-tonight-list > li.is-him {
+  background: color-mix(in srgb, var(--dr-accent-lift) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dr-accent-lift) 45%, transparent);
+}
+
+.dr-tonight-rivals > li {
+  grid-template-columns: minmax(0, 120px) 52px minmax(0, 1fr);
+}
+
+.dr-tonight-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-tonight-right {
+  text-align: right;
+}
+
+.dr-tonight-why,
+.dr-tonight-seatword {
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-tonight-live {
+  margin: var(--dr-s2) 0 0;
+  padding: 6px 8px;
+  border-radius: var(--dr-radius-sm);
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+  background: var(--dr-surface);
+  border: 1px solid var(--dr-line);
+}
+
+.dr-tonight-live[data-tone='good'] {
+  border-color: var(--dr-good-line);
+  background: var(--dr-good-bg);
+  color: var(--dr-ink);
+}
+
+.dr-tonight-live[data-tone='bad'] {
+  border-color: var(--dr-bad-line);
+  background: var(--dr-bad-bg);
+  color: var(--dr-ink);
+}
+
+.dr-tonight-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--dr-s2);
+}
+
+.dr-tonight-shelf svg {
+  width: 100%;
+}
+
+.dr-tonight-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: var(--dr-s2) var(--dr-s3);
+  margin: 0;
+}
+
+.dr-tonight-facts dt {
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-facts dd {
+  margin: 2px 0 0;
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-lead);
+  font-weight: 600;
+}
+
+.dr-tonight-facts dd > span {
+  font-size: var(--dr-t-small);
+  font-weight: 500;
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-facts dd[data-squeeze='some'] {
+  color: var(--dr-warn);
+}
+
+.dr-tonight-facts dd[data-squeeze='high'],
+.dr-tonight-facts dd[data-tone='bad'] {
+  color: var(--dr-bad);
+}
+
+.dr-tonight-facts dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-tonight-line {
+  margin: 0 0 var(--dr-s2);
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-line b {
+  color: var(--dr-ink);
+}
+
+.dr-tonight-line[data-lean='buy'] {
+  color: var(--dr-good);
+}
+
+.dr-tonight-line[data-lean='wait'] {
+  color: var(--dr-warn);
+}
+
+.dr-tonight-research {
+  color: var(--dr-ink);
+  padding-left: 8px;
+  border-left: 2px solid var(--dr-line-strong);
+}
+
+.dr-tonight-research[data-direction='PAY_UP'] {
+  border-left-color: var(--dr-good);
+}
+
+.dr-tonight-research[data-direction='FADE'] {
+  border-left-color: var(--dr-bad);
+}
+
+.is-good {
+  color: var(--dr-good);
+}
+
+.is-warn {
+  color: var(--dr-warn);
+}
+
+.is-bad {
+  color: var(--dr-bad);
+}
+
+/* An opinion inside a facts tab wears the advisor's own dashed box, so the
+   register is read off the border before the words are read at all. */
+.dr-opinion {
+  margin-top: var(--dr-s2);
+  padding: 8px 10px;
+  border: 1px dashed var(--dr-caution);
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-caution) 6%, var(--dr-surface));
+}
+
+.dr-opinion-line {
+  margin: 4px 0 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-opinion-line strong,
+.dr-opinion-line b {
+  color: var(--dr-ink);
+}
+
+/* The spotlight glyph on a card: first in the cluster, and the cluster itself
+   is bigger and sits on its own ground — twenty-pixel glyphs with nothing
+   behind them were landing on the card's last line of text. */
+.dr-card-spot {
+  right: 92px;
+  font-size: var(--dr-t-lead);
+}
+
+.dr-card:hover .dr-card-spot,
+.dr-card-spot:focus-visible {
+  opacity: 1;
+}
+
+.dr-card-spot:hover {
+  color: var(--dr-ink);
+}
+
+.dr-star.dr-spot {
+  font-size: 14px;
+}
+
+.dr-star.dr-spot:hover {
+  color: var(--dr-ink);
+}
+
+/* The confirm button was painted in the raw club colour, which for eight clubs
+   is within 1.4:1 of the panel behind it — a SOLD button you cannot see on
+   Raiders night. The club stays in the hero gradient; the action that records
+   money is in the one pairing that reads on every night. */
+.dr-stage-form > .dr-button-primary {
+  background: var(--dr-ink);
+  color: var(--dr-ground);
+  border-color: transparent;
+  letter-spacing: 0.04em;
+}
+
+.dr-stage-form > .dr-button-primary:hover:not(:disabled) {
+  background: #fff;
+}
+
+.dr-stage-form > .dr-button-primary:disabled {
+  background: var(--dr-raised);
+  color: var(--dr-ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   the setup menu
+   -------------------------------------------------------------------------- */
+
+.dr-menu {
+  position: relative;
+  flex: none;
+}
+
+.dr-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dr-menu-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--dr-radius-pill);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  font-family: var(--dr-mono);
+  font-size: var(--dr-t-micro);
+  font-weight: 600;
+}
+
+.dr-menu-caret {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 45;
+  min-width: 220px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--dr-surface-2);
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius);
+  box-shadow: var(--dr-e3);
+  animation: dr-fade-in var(--dr-fast);
+}
+
+.dr-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dr-s3);
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--dr-radius-sm);
+  background: transparent;
+  color: var(--dr-ink);
+  font-size: var(--dr-t-small);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dr-menu-item:hover,
+.dr-menu-item:focus-visible {
+  background: var(--dr-hover);
+}
+
+.dr-menu-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dr-good);
+  flex: none;
+}
+
+/* The bar no longer needs to wrap at a desk: eleven controls became five and a
+   menu. It still may on a phone, where a phone is a phone. */
+@media (min-width: 1400px) {
+  .dr-topbar {
+    flex-wrap: nowrap;
+  }
+}
+
+/* A phone is a phone: the groups themselves wrap rather than running off the
+   right edge, which was a 94px horizontal scroll on a 390px screen. */
+@media (max-width: 560px) {
+  .dr-topbar-group {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .dr-topbar-live {
+    margin-left: 0;
+  }
 }
