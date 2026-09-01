@@ -318,22 +318,47 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * player money is actually being decided about.
    */
   /*
-   * Exactly one of the two, never both.
+   * The most the man on the block is worth, solved rather than guessed.
    *
-   * Each is a knapsack over the whole sheet and the bounded form is two of
-   * them, so computing the point estimate as well would be a third solve whose
-   * answer is never shown — about forty wasted milliseconds on the one path
-   * that runs while a name is being called.
+   * Memoised on the player and the board because it is a knapsack over the
+   * whole sheet — about forty milliseconds — and the answer only moves when the
+   * board does. Deliberately *not* computed for every card: sixty of these
+   * would be two and a half seconds, and the number is only ever needed for the
+   * player money is actually being decided about.
    */
-  const { walkAway, walkAwayBounds } = useMemo(() => {
-    if (!selected) return { walkAway: null, walkAwayBounds: null };
-    const bounds = draftService.maxPriceBounds(selected.id);
-    return bounds
-      ? { walkAway: null, walkAwayBounds: bounds }
-      : { walkAway: draftService.maxPriceFor(selected.id), walkAwayBounds: null };
+  const walkAway = useMemo(
+    () => (selected ? draftService.maxPriceFor(selected.id) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected?.id, players, draftService]);
+    [selected?.id, players, draftService]
+  );
 
+  /* What the money is already promised to, so a low ceiling says why. A
+     walk-away of nothing is almost never "he is worthless" — it is "every
+     dollar is already committed to somebody better", and those are different
+     instructions the moment one of those players goes to somebody else. */
+  const planNames = useMemo(
+    () =>
+      draftService
+        .getRosterPlan()
+        .buy.filter((entry) => entry.candidate.id !== selected?.id)
+        .map((entry) => entry.candidate.name),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selected?.id, players, draftService]
+  );
+
+  /* Off the whole pool rather than off the filtered board, so a raised card
+     survives the search box being typed in behind it. Closing on a filter
+     change would throw away what somebody was reading because they reached for
+     the keyboard. */
+  /*
+   * The most the man on the block is worth, solved rather than guessed.
+   *
+   * Memoised on the player and the pick count because it is a knapsack over the
+   * whole sheet — about forty milliseconds — and the answer only moves when the
+   * board does. Deliberately *not* computed for every card: sixty of these
+   * would be two and a half seconds, and the number is only ever needed for the
+   * player money is actually being decided about.
+   */
   const expandedPlayer = useMemo(
     () => (expandedId ? (players.find((entry) => entry.id === expandedId) ?? null) : null),
     [expandedId, players]
@@ -1485,7 +1510,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               mode={phase}
               myTeamId={myTeamId}
               walkAway={walkAway}
-              walkAwayBounds={walkAwayBounds}
+              planNames={planNames}
               /* The row asks the engine rather than guessing, so a chip that
                  looks live is a sale the engine will accept. Twelve cheap
                  lookups per render of one panel. */

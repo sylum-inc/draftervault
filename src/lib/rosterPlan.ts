@@ -108,6 +108,17 @@ export interface RosterPlan {
   perDollar: number;
   /** Best lineup points reachable at each budget from 0 to `budget`. */
   curve: readonly number[];
+  /**
+   * Dollars the best lineup does not need.
+   *
+   * Not `budget - spend`: there can be several ways to reach the same lineup
+   * and this is the cheapest of them, so it is the most that can be spent
+   * elsewhere without costing a point. It is the floor under every price in
+   * `maxPriceFor`, because **money left unspent at the end of an auction scores
+   * nothing** — so any player who can be rostered is worth at least this much,
+   * however little he adds to the lineup.
+   */
+  slack: number;
   /** Set when no plan can honestly be computed, and nothing else is. */
   reason: string | null;
 }
@@ -121,6 +132,7 @@ const EMPTY: RosterPlan = {
   gain: 0,
   perDollar: 0,
   curve: [0],
+  slack: 0,
   reason: null,
 };
 
@@ -423,12 +435,19 @@ export const rosterPlan = (input: PlanInput): RosterPlan => {
   const window = Math.min(10, input.budget);
   const perDollar = window > 0 ? (curve[input.budget] - curve[input.budget - window]) / window : 0;
 
+  // The cheapest budget that still reaches the best lineup. Everything above it
+  // is money the plan has no use for, and in an auction that money is worth
+  // nothing unless it is spent on somebody.
+  let cheapest = input.budget;
+  while (cheapest > 0 && curve[cheapest - 1] >= curve[input.budget] - 1e-9) cheapest -= 1;
+
   return {
     buy: buy.sort((a, b) => b.candidate.price - a.candidate.price),
     spend,
     gain: Math.round(total - baseline),
     perDollar: Math.round(Math.max(0, perDollar) * 100) / 100,
     curve,
+    slack: input.budget - cheapest,
     reason: null,
   };
 };
@@ -456,11 +475,13 @@ export const maxPriceFor = (
   if (!candidate || input.budget <= 0) return null;
   const shape = shapeOf(input);
   const slot = shape.positions.indexOf(candidate.position);
-  // A position the plan has no seat for is worth nothing at any price: he would
-  // sit on the bench, which the snake fills for free.
-  if (slot < 0) return 0;
+  // A position with no seat left is a bench body — which is not the same as
+  // worthless. He is worth whatever the best lineup has no use for, because
+  // that money buys nothing else and an unspent dollar scores nothing.
+  if (slot < 0) return (solved ?? rosterPlan(input)).slack;
 
-  const withHim = (solved ?? rosterPlan(input)).curve[input.budget];
+  const plan = solved ?? rosterPlan(input);
+  const withHim = plan.curve[input.budget];
   const without = solve(input, shape, playerId);
 
   const seats = input.openSeats[candidate.position] ?? 0;
@@ -471,7 +492,22 @@ export const maxPriceFor = (
   }
 
   for (let price = input.budget; price >= 0; price -= 1) {
-    let best = Number.NEGATIVE_INFINITY;
+    /*
+     * Two ways to own him, and the second one is the fix.
+     *
+     * Forcing him into a seat is what the search did first, and it makes a man
+     * worse than the free alternative *reduce* the lineup — so his price came
+     * out at zero, as though owning him were an act of self-harm. Nobody starts
+     * a player who is worse than the one the snake handed them: you bench him.
+     * So the honest comparison is the better of starting him and benching him,
+     * and benching costs the lineup nothing at all.
+     *
+     * That is what gives every rosterable player a real price. Money left over
+     * at the end of an auction scores nothing, so a player who adds no points
+     * is still worth every dollar the plan has no other use for.
+     */
+    const benched = benchAt(without, shape, fills, input.budget - price);
+    let best = benched;
     for (let state = 0; state < shape.states; state += 1) {
       if (!allowed[state]) continue;
       const bought = without.best[state * without.width + (input.budget - price)];
@@ -484,4 +520,18 @@ export const maxPriceFor = (
     if (best >= withHim - 1e-9) return price;
   }
   return 0;
+};
+
+/** The best lineup reachable on this budget without starting him. */
+const benchAt = (table: Table, shape: Shape, fills: Float64Array, dollars: number): number => {
+  let best = Number.NEGATIVE_INFINITY;
+  for (let spent = 0; spent <= dollars; spent += 1) {
+    for (let state = 0; state < shape.states; state += 1) {
+      const bought = table.best[state * table.width + spent];
+      if (bought === Number.NEGATIVE_INFINITY) continue;
+      const total = bought + fills[state];
+      if (total > best) best = total;
+    }
+  }
+  return best;
 };

@@ -2115,7 +2115,7 @@ off, and the number that decides a bid finally solved rather than guessed — a
 knapsack over the sheet that says which three players the hundred dollars
 should buy and what the marginal dollar is worth, replacing a "what to bid"
 that was the price times 1.15 and recommended $28 on a man worth nothing;
-730 tests.
+731 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -2190,14 +2190,39 @@ Josh Allen $41 → **$17**, McCaffrey $40 → **$17**, Nacua $44 → **$25**. Mo
 than half a commissioner's sheet is players the snake very nearly matches,
 which is a thing a multiplier on the price could never say.
 
-**It bounds rather than refuses, because the order is drawn at the table.**
-Everything downstream of `getSpendOutlook` refuses without a snake order, which
-is right and would leave a month in which the number this format turns on
-cannot be looked at. Picking first hands you the best free men, so the gaps are
-narrowest and the plan buys least; picking last is the reverse, and every other
-seat lies between. So the plan is solved at the seat that helps most — nothing
-it promises can be taken away by the draw — and the walk-away is printed as the
-range across both ends, in the idiom `snakeOutlookSpread` already established.
+**Where you pick is an input, not a precondition.** Everything downstream of
+`getSpendOutlook` refuses without a drawn order, which is right for a _reading_
+— computed at somebody else's seat it is somebody else's draft. The plan
+inherited that and was first solved at the safest seat, which was defensible and
+wrong in a knowable direction: it understated every gap on the board for the
+eleven draws out of twelve you are not going to get, and it made a question the
+commissioner answers at the table into a question the tool asked first.
+
+The draw is uniform over the seats and nobody knows it, so the baseline is the
+**expected** free man at each rank, averaged over all twelve element by element
+— the average n-th free man, not the n-th of an averaged list, because only the
+first is the one a purchase displaces. One plan, one number, no caveat. Once
+the order is drawn it uses the real seat instead: an average over draws you now
+know you did not get is worse than the one you did.
+
+**A bench body is not a worthless one, and getting that wrong priced half the
+sheet at zero.** The search forced a bought player into a seat, so a man behind
+the free alternative _reduced_ the lineup and came out worth nothing — as though
+owning him were an act of self-harm. Nobody starts a player worse than the one
+the snake handed them: you bench him, and benching costs the lineup nothing.
+
+What he is worth instead is the plan's **slack** — the money the best lineup has
+no use for, taken as the cheapest budget that still reaches it rather than
+`budget - spend`. The reason it is a floor under every price on the board is
+that **a dollar left unspent at the end of an auction scores nothing**, so
+anyone the roster can legally carry is worth at least that much however little
+he adds. Zero survives in exactly two places, and both are facts rather than
+valuations: a roster that cannot carry him at any price, and a plan with no
+slack at all — which on the shipped board is every dollar of the hundred
+committed to Bijan, Amon-Ra and Kyren. The stage says which of the two it is
+rather than printing a bare nought, because "worth nothing" and "worth nothing
+_while the plan holds_" are different instructions the moment one of those three
+goes to somebody else.
 
 **The inner loop allocated, and it was on the path that runs while a name is
 being called.** Items × dollars × states is about three quarters of a million

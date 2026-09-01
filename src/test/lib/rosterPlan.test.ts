@@ -208,9 +208,36 @@ describe('the price of a dollar', () => {
    * ranked players in exactly the order their prices already did and told the
    * owner to pay $28 for a man who makes the lineup forty-two points worse.
    */
-  it('is worth nothing for a player the snake matches', () => {
-    // `meh` is 120 against free backs of 196 and 154 — behind both.
-    expect(maxPriceFor(board, 'meh')).toBe(0);
+  /*
+   * A player the snake matches is not a player worth nothing.
+   *
+   * This asserted zero first, because the search forced a bought man into a
+   * seat — so somebody behind the free alternative *reduced* the lineup, as
+   * though owning him were an act of self-harm. Nobody starts a player worse
+   * than the one the snake handed them: you bench him, and benching costs the
+   * lineup nothing. What he is worth is whatever the best lineup has no other
+   * use for, because a dollar left unspent at the end of an auction scores
+   * nothing at all.
+   */
+  it('is worth the leftover money for a player the snake matches', () => {
+    const plan = rosterPlan(board);
+    // `meh` is 120 against free backs of 196 and 154 — behind both, so he adds
+    // nothing to the lineup and is worth exactly the money the lineup spares.
+    expect(maxPriceFor(board, 'meh')).toBe(plan.slack);
+    expect(plan.slack).toBeGreaterThan(0);
+  });
+
+  it('spares less as the budget tightens, and prices him at exactly that', () => {
+    // The invariant, not a number: a player who adds nothing to the lineup is
+    // worth precisely the money the lineup has no use for — at every budget.
+    // Prices are whole dollars, so an optimum almost never lands exactly on the
+    // budget and there is usually a little change; what changes with the budget
+    // is how much.
+    const wide = rosterPlan({ ...board, budget: 100 });
+    const tight = rosterPlan({ ...board, budget: 30 });
+    expect(maxPriceFor({ ...board, budget: 100 }, 'meh')).toBe(wide.slack);
+    expect(maxPriceFor({ ...board, budget: 30 }, 'meh')).toBe(tight.slack);
+    expect(tight.slack).toBeLessThan(wide.slack);
   });
 
   it('is worth more than his price when the gap is big', () => {
@@ -227,9 +254,12 @@ describe('the price of a dollar', () => {
     }
   });
 
-  it('is zero for a position with no seat left to fill', () => {
+  it('still prices a man whose every seat is taken, at what the plan spares', () => {
     const filled = { ...board, openSeats: { RB: 0, WR: 0 }, flexOpen: 0 };
-    expect(maxPriceFor(filled, 'star')).toBe(0);
+    // Nothing left to buy, so the whole budget is spare and he is worth all of
+    // it — which is the correct instruction at the end of an auction, where
+    // holding money is the one guaranteed way to score nothing with it.
+    expect(maxPriceFor(filled, 'star')).toBe(rosterPlan(filled).slack);
   });
 
   it('says nothing rather than guessing when he is not on the board', () => {

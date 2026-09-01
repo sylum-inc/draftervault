@@ -3228,19 +3228,61 @@ export class AuctionDraftService {
    * roster for which seats are still open — so the plan and the per-player gain
    * can never come to different conclusions about the same board.
    */
-  private planInput(
-    atPick: number | null = null
-  ): { input: PlanInput; reason: null } | { input: null; reason: string } {
-    const outlook = atPick == null ? this.getSpendOutlook() : this.outlookAtPick(atPick);
-    if (!outlook.positions) {
-      return { input: null, reason: outlook.reason ?? 'No outlook to plan against.' };
+  private planInput(): { input: PlanInput; reason: null } | { input: null; reason: string } {
+    /*
+     * Where you pick is an input, not a precondition.
+     *
+     * The outlook refuses without a drawn order, correctly — computed at
+     * somebody else's seat it is somebody else's draft. The plan was then
+     * solved at the seat that helps *least*, which was safe and wrong in a
+     * knowable direction: it understated every gap on the board for the eleven
+     * draws out of twelve you are not going to get.
+     *
+     * The draw is uniform over the seats and nobody knows it, so the honest
+     * baseline is the *expected* free man at each rank — averaged over all
+     * twelve, element by element. One plan, no caveat, and it stops being a
+     * question the owner has to answer before the tool will work. Once the
+     * commissioner does draw the order this uses the real seat instead: an
+     * average over draws you now know you did not get is worse than the one
+     * you did.
+     */
+    const outlooks: SnakeOutlook[] = [];
+    if (this.hasSnakeOrder() && this.myTeamId) {
+      const exact = this.getSpendOutlook();
+      if (exact.positions) outlooks.push(exact);
     }
+    if (!outlooks.length) {
+      for (let seat = 1; seat <= this.teams.length; seat += 1) {
+        const at = this.outlookAtPick(seat);
+        if (!at.positions)
+          return { input: null, reason: at.reason ?? 'No outlook to plan against.' };
+        outlooks.push(at);
+      }
+    }
+
     const team = this.teams.find((entry) => entry.id === this.myTeamId);
     if (!team) return { input: null, reason: 'No team is marked as yours.' };
 
+    // Element-wise, so the n-th free man is the average n-th free man rather
+    // than the n-th of some averaged list — different numbers, and only the
+    // first is the one a purchase actually displaces.
     const freeByPosition: Record<string, readonly number[]> = {};
-    for (const position of outlook.positions)
-      freeByPosition[position.position] = position.freeRanked;
+    for (const position of outlooks[0].positions ?? []) {
+      const lists = outlooks.map(
+        (outlook) =>
+          outlook.positions?.find((entry) => entry.position === position.position)?.freeRanked ?? []
+      );
+      const deepest = Math.max(...lists.map((list) => list.length));
+      const averaged: number[] = [];
+      for (let rank = 0; rank < deepest; rank += 1) {
+        const have = lists
+          .map((list) => list[rank])
+          .filter((value): value is number => value != null);
+        if (!have.length) break;
+        averaged.push(have.reduce((sum, value) => sum + value, 0) / have.length);
+      }
+      freeByPosition[position.position] = averaged;
+    }
 
     // Seats still open, the flex counted separately — the plan decides which
     // position fills it, which is the whole reason a flex moves prices.
@@ -3329,23 +3371,6 @@ export class AuctionDraftService {
   }
 
   /**
-   * The two draws that bound everything else, or null when the order is known.
-   *
-   * Picking first hands you the best free men, so the gaps an auction can buy
-   * are at their narrowest and the plan buys least; picking last is the
-   * reverse. Every other seat lies between, so two solves bound all twelve —
-   * and both ends are numbers the plan would genuinely print at some draw
-   * rather than an interpolation nobody would ever get.
-   */
-  private planDraws(): [number, number] | null {
-    if (this.hasSnakeOrder() && this.myTeamId) {
-      const upcoming = this.getSnakeUpcoming(this.teams.length * 3);
-      if (upcoming.some((slot) => slot.team.id === this.myTeamId)) return null;
-    }
-    return [1, this.teams.length];
-  }
-
-  /**
    * The best roster the remaining money can still buy, and what a dollar is
    * worth under it.
    *
@@ -3354,20 +3379,11 @@ export class AuctionDraftService {
    * lineup's points and not a sum of per-player gains.
    */
   getRosterPlan(): RosterPlan {
-    const draws = this.planDraws();
-    // Before the order is drawn, the conservative draw: picking first is where
-    // the snake gives most and an auction therefore buys least. A plan that
-    // holds at the seat that helps most holds at all twelve.
-    const { input, reason } = this.planInput(draws ? draws[0] : null);
+    const { input, reason } = this.planInput();
     if (!input) {
-      return { buy: [], spend: 0, gain: 0, perDollar: 0, curve: [0], reason };
+      return { buy: [], spend: 0, gain: 0, perDollar: 0, curve: [0], slack: 0, reason };
     }
     return rosterPlan(input);
-  }
-
-  /** Whether the plan above is the seat you were dealt or the safest guess. */
-  isPlanBounded(): boolean {
-    return this.planDraws() != null;
   }
 
   /**
@@ -3384,32 +3400,15 @@ export class AuctionDraftService {
    * of refusals the outlook makes: no sheet, no team marked, no order drawn.
    */
   maxPriceFor(playerId: string): number | null {
-    const draws = this.planDraws();
-    const { input } = this.planInput(draws ? draws[0] : null);
+    const { input } = this.planInput();
     if (!input) return null;
+    const player = this.players.find((entry) => entry.id === playerId);
+    const team = this.teams.find((entry) => entry.id === this.myTeamId);
+    if (!player || !team) return null;
+    // A player the roster cannot legally carry is worth nothing at any price,
+    // and that is the one case where zero is a fact rather than a valuation.
+    if (!this.checkRoster(player, team).ok) return 0;
     return maxPriceFor(input, playerId);
-  }
-
-  /**
-   * The same walk-away bounded across every draw, when the order is not drawn.
-   *
-   * Null once it is — an exact number and a range beside it would be two
-   * answers to one question, which is the rule the snake gain already lives by.
-   */
-  maxPriceBounds(playerId: string): { low: number; high: number } | null {
-    const draws = this.planDraws();
-    if (!draws) return null;
-    const low = this.planInput(draws[0]).input;
-    const high = this.planInput(draws[1]).input;
-    if (!low || !high) return null;
-    // The plan is handed in rather than re-solved inside: each of these is a
-    // knapsack over the whole sheet, and this path runs while a name is being
-    // called.
-    const at = (input: PlanInput) => maxPriceFor(input, playerId, rosterPlan(input));
-    const lowPrice = at(low);
-    const highPrice = at(high);
-    if (lowPrice == null || highPrice == null) return null;
-    return { low: Math.min(lowPrice, highPrice), high: Math.max(lowPrice, highPrice) };
   }
 
   /**

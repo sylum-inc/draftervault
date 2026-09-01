@@ -134,13 +134,8 @@ interface NominationStageProps {
    * no snake order drawn, which are the same refusals the outlook makes.
    */
   walkAway?: number | null;
-  /**
-   * The same figure bounded across every draw, before the order is drawn.
-   *
-   * Only one of the two is ever set, for the reason the snake gain holds to:
-   * an exact number and a range beside it would be two answers to one question.
-   */
-  walkAwayBounds?: { low: number; high: number } | null;
+  /** What the rest of the money is already promised to, so a low ceiling says why. */
+  planNames?: string[];
   /**
    * Whether this team may win this player at this price, from the engine.
    *
@@ -242,7 +237,7 @@ export const NominationStage = ({
   competition,
   myTeamId = null,
   walkAway = null,
-  walkAwayBounds = null,
+  planNames = [],
   checkTeam,
 }: NominationStageProps) => {
   const snake = mode === 'snake';
@@ -402,28 +397,21 @@ export const NominationStage = ({
                 <dt>Walk away</dt>
                 <dd
                   style={
-                    (walkAwayBounds?.high ?? walkAway) != null &&
-                    (walkAwayBounds?.high ?? walkAway)! < player.estimatedValue
+                    walkAway != null && walkAway < player.estimatedValue
                       ? { color: 'var(--dr-warn)' }
                       : undefined
                   }
                   title={
-                    walkAwayBounds
-                      ? `Between $${walkAwayBounds.low} picking first and $${walkAwayBounds.high} picking last — the snake order is not drawn, so this is the range across all of them.`
-                      : walkAway == null
-                        ? 'Needs a sheet and a team marked as yours — without them, what a dollar is worth cannot be computed.'
-                        : walkAway === 0
-                          ? 'The snake hands you as much at this position. Every dollar here is a dollar wasted.'
-                          : `Past $${walkAway} the same money buys more elsewhere on the sheet.`
+                    walkAway == null
+                      ? 'Needs a sheet and a team marked as yours — without them, what a dollar is worth cannot be computed.'
+                      : walkAway === 0
+                        ? planNames.length
+                          ? `Every dollar is already promised to ${planNames.join(', ')}. He is worth bidding on the moment one of them goes to somebody else.`
+                          : 'Your roster cannot carry him at all — no price makes this legal.'
+                        : `Past $${walkAway} the same money buys more elsewhere on the sheet.`
                   }
                 >
-                  {walkAwayBounds
-                    ? walkAwayBounds.low === walkAwayBounds.high
-                      ? `$${walkAwayBounds.low}`
-                      : `$${walkAwayBounds.low}–${walkAwayBounds.high}`
-                    : walkAway == null
-                      ? '—'
-                      : `$${walkAway}`}
+                  {walkAway == null ? '—' : `$${walkAway}`}
                 </dd>
               </div>
             </>

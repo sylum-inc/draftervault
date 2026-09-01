@@ -33,11 +33,6 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [service, players]
   );
-  const bounded = useMemo(
-    () => service.isPlanBounded(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [service, players]
-  );
   const byId = useMemo(() => new Map(players.map((entry) => [entry.id, entry])), [players]);
 
   if (plan.reason) {
@@ -58,7 +53,7 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
       <header className="dr-bargains-head">
         <span className="dr-eyebrow">The plan</span>
         <span className="dr-footnote" style={{ margin: 0 }}>
-          {bounded ? 'picking first' : 'at your pick'}
+          at tonight&rsquo;s prices
         </span>
       </header>
 
@@ -84,6 +79,16 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
             <div title="What the last dollar of this budget is buying. A bid beating this rate is worth taking money off the plan for; one below it is not.">
               <dt>A dollar buys</dt>
               <dd>{plan.perDollar > 0 ? `${plan.perDollar} pts` : 'nothing more'}</dd>
+            </div>
+            {/* The money the best lineup has no use for. It is the floor under
+                every walk-away on the board, because a dollar left unspent at
+                the end of an auction scores nothing — so anyone you can roster
+                is worth at least this much, however little he adds. */}
+            <div title="Money the best lineup does not need. It is what any player you can roster is worth, however little he adds — an unspent auction dollar scores nothing.">
+              <dt>Spare</dt>
+              <dd style={plan.slack > 0 ? undefined : { color: 'var(--dr-ink-faint)' }}>
+                ${plan.slack}
+              </dd>
             </div>
           </dl>
 
@@ -112,15 +117,11 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
         </>
       )}
 
-      {/* Solved at the seat that helps most, so it is the plan that survives
-          every draw. Picking later means worse free men, wider gaps and a plan
-          that buys more — never less — so nothing here is a promise the draw
-          can take away. */}
-      {bounded && (
+      {plan.slack === 0 && plan.buy.length > 0 && (
         <p className="dr-footnote" style={{ marginTop: 6 }}>
-          The snake order is not drawn, so this is solved at the seat that helps most — picking
-          first, where the snake hands you the best free men and an auction buys least. Any other
-          draw makes this plan better, not worse.
+          Every dollar is committed, so anyone off this list is worth nothing{' '}
+          <em>while the plan holds</em> — and worth bidding on the moment one of these goes to
+          somebody else. The board re-solves on every sale, so the numbers move with it.
         </p>
       )}
 

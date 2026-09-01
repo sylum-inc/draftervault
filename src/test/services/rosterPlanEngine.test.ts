@@ -30,37 +30,32 @@ describe('what the money should buy', () => {
   });
 
   /*
-   * The commissioner draws the order at the table, sometimes on the night, so
-   * refusing until he does would leave a month in which the one number this
-   * format turns on cannot be looked at. Picking first is where the snake gives
-   * most and an auction buys least, so a plan that holds there holds at every
-   * seat — nothing it promises can be taken away by the draw.
+   * Where you pick is an input, not a precondition.
+   *
+   * The order is drawn at the table and often on the night, so refusing until
+   * it exists leaves a month in which the number this format turns on cannot be
+   * looked at. The draw is uniform and unknown, so the baseline is the expected
+   * free man averaged over every seat — one plan, no caveat, and no question
+   * the owner has to answer before the tool will work.
    */
-  it('plans at the safest draw while the order is undrawn, and says so', () => {
-    expect(service.isPlanBounded()).toBe(true);
+  it('plans without a drawn order at all', () => {
     const plan = service.getRosterPlan();
     expect(plan.reason).toBeNull();
     expect(plan.buy.length).toBeGreaterThan(0);
     expect(plan.spend).toBeLessThanOrEqual(HOME_LEAGUE.budget);
   });
 
-  it('stops bounding once the order exists', () => {
-    service.setSnakeOrder(service.getTeams().map((team) => team.id));
-    expect(service.isPlanBounded()).toBe(false);
-    expect(service.maxPriceBounds(service.getForSale()[0].id)).toBeNull();
-    expect(service.maxPriceFor(service.getForSale()[0].id)).not.toBeNull();
-  });
-
-  it('bounds the walk-away across the draws, low end first', () => {
-    const player = service
-      .getForSale()
-      .filter((entry) => !entry.isDrafted)
-      .sort((a, b) => b.estimatedValue - a.estimatedValue)[0];
-    const bounds = service.maxPriceBounds(player.id)!;
-    expect(bounds).not.toBeNull();
-    expect(bounds.low).toBeLessThanOrEqual(bounds.high);
-    // Picking later means worse free men, so a wider gap and a higher ceiling.
-    expect(bounds.high).toBeGreaterThanOrEqual(bounds.low);
+  it('uses the seat you were dealt once there is one', () => {
+    const before = service.getRosterPlan().gain;
+    // Picking last is the friendliest draw — the free men are worst, so the
+    // gaps an auction can buy are widest — and it must move off the average.
+    service.setSnakeOrder(
+      service
+        .getTeams()
+        .map((team) => team.id)
+        .reverse()
+    );
+    expect(service.getRosterPlan().gain).not.toBe(before);
   });
 
   /*
@@ -76,7 +71,7 @@ describe('what the money should buy', () => {
     const cheapskates = service
       .getForSale()
       .filter((entry) => !entry.isDrafted && entry.estimatedValue >= 20)
-      .map((entry) => ({ entry, max: service.maxPriceBounds(entry.id)?.high ?? 0 }))
+      .map((entry) => ({ entry, max: service.maxPriceFor(entry.id) ?? 0 }))
       .filter((row) => row.max < row.entry.estimatedValue);
     // More than half a commissioner's sheet is players the snake very nearly
     // matches; a ladder that can only ever say "pay a bit more than the price"
@@ -86,26 +81,48 @@ describe('what the money should buy', () => {
 
   it('never recommends paying more than the budget allows', () => {
     for (const player of service.getForSale().slice(0, 12)) {
-      const bounds = service.maxPriceBounds(player.id);
-      if (!bounds) continue;
-      expect(bounds.high).toBeLessThanOrEqual(HOME_LEAGUE.budget);
-      expect(bounds.low).toBeGreaterThanOrEqual(0);
+      const price = service.maxPriceFor(player.id);
+      if (price == null) continue;
+      expect(price).toBeLessThanOrEqual(HOME_LEAGUE.budget);
+      expect(price).toBeGreaterThanOrEqual(0);
     }
   });
 
-  it('buys nothing at a position the roster has already filled', () => {
-    const teams = service.getTeams();
-    const mine = teams.find((team) => team.id === 'team-1')!;
+  /*
+   * A bench body is not a worthless one.
+   *
+   * The search used to force a bought player into a seat, so a man behind the
+   * free alternative *reduced* the lineup and priced at zero — as though owning
+   * him were self-harm. Nobody starts a player worse than the one the snake
+   * handed them; you bench him, and benching costs the lineup nothing. What he
+   * is worth is whatever the best lineup has no other use for, because an
+   * unspent auction dollar scores nothing at all.
+   */
+  it('still prices a player every starting seat is already full of', () => {
+    const mine = service.getTeams().find((team) => team.id === 'team-1')!;
     const backs = service
       .getPlayers()
       .filter((entry) => entry.position === 'RB' && !entry.isDrafted)
       .slice(0, 3);
     for (const back of backs) service.draftPlayer(back.id, mine.id, 1);
-    // Two starting RB seats and a flex, all filled: another back is a bench
-    // body, and the snake fills a bench for nothing.
     const another = service
       .getForSale()
       .find((entry) => entry.position === 'RB' && !entry.isDrafted)!;
-    expect(service.maxPriceBounds(another.id)?.high ?? 0).toBe(0);
+    const price = service.maxPriceFor(another.id)!;
+    expect(price).toBe(service.getRosterPlan().slack);
+  });
+
+  it('is nothing only when the roster cannot legally carry him', () => {
+    const mine = service.getTeams().find((team) => team.id === 'team-1')!;
+    const limit = service.getLeagueShape().positionLimits.TE ?? 0;
+    const ends = service
+      .getPlayers()
+      .filter((entry) => entry.position === 'TE' && !entry.isDrafted)
+      .slice(0, limit);
+    for (const end of ends) service.draftPlayer(end.id, mine.id, 1);
+    const another = service
+      .getForSale()
+      .find((entry) => entry.position === 'TE' && !entry.isDrafted)!;
+    expect(service.maxPriceFor(another.id)).toBe(0);
   });
 });
