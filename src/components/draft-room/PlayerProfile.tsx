@@ -10,15 +10,35 @@ import {
 import {
   loadCareer,
   loadPlayerHistory,
+  seasonShape,
   type CareerSeason,
   type PlayerSeason,
 } from '@/services/playerHistory';
-import { loadSchedule } from '@/services/nflSchedule';
+import { loadSchedule, teamSchedule } from '@/services/nflSchedule';
 import { Headshot } from './Headshot';
 import { accentFor } from '@/lib/accent';
-import { PercentileBars } from './charts/PercentileBars';
-import { GameLog } from './charts/micro';
-import { positionNorm } from '@/lib/positionNorms';
+import {
+  CatchDepth,
+  DepthLadder,
+  GameLog,
+  GoalLine,
+  PlayMix,
+  RoleField,
+  Seasons,
+} from './charts/micro';
+import {
+  BidScrub,
+  MetricStrip,
+  PriceChain,
+  ScoringMix,
+  Threshold,
+  WeeksAbove,
+  type MixSeason,
+  type StripPoint,
+} from './charts/profile';
+import { offenceNorm, positionNorm } from '@/lib/positionNorms';
+import { modelCaveats } from '@/lib/modelTrust';
+import { pointsFor, type LeagueShape } from '@/lib/valuation';
 import { SeasonMultiples } from './charts/SeasonMultiples';
 import { ScheduleStrip, type ScheduleGame } from './charts/ScheduleStrip';
 import { BidLadder } from './charts/BidLadder';
@@ -40,6 +60,23 @@ interface PlayerProfileProps {
   /** The rest of the pool, so a player can be shown inside his own position. */
   players?: Player[];
   replacement?: number | null;
+  /**
+   * The league being played, so a season's points are restated the way every
+   * other number here already is.
+   *
+   * The totals table and the scoring mix both read `pprPoints`, which is the
+   * full-PPR figure nflverse scores — printing that beside a half-PPR
+   * projection is the quiet drift `valuation.ts` exists to prevent, one
+   * register out. Restated through the same `pointsFor` the pool builder and
+   * the board come through, so there is no second definition of what a catch
+   * is worth.
+   */
+  league?: LeagueShape | null;
+  /** Points a bid buys over the man the snake hands you free, if knowable. */
+  gain?: number | null;
+  gainFree?: string | null;
+  /** The most the owner's team may legally bid, from the engine. */
+  ceiling?: number | null;
   pinned?: boolean;
   onTogglePin?: () => void;
   onClose: () => void;
@@ -131,6 +168,10 @@ export const PlayerProfile = ({
   replacementPoints,
   players = [],
   replacement = null,
+  league = null,
+  gain = null,
+  gainFree = null,
+  ceiling = null,
   pinned = false,
   onTogglePin,
   onClose,
@@ -193,103 +234,197 @@ export const PlayerProfile = ({
   const columns = statColumns(player.position);
 
   /*
-   * Where he stands among the men who actually start at his position.
+   * The men he is actually competing with for a roster spot.
    *
-   * These read `player.percentiles` first, which the pool computes over every
-   * player it holds — and the pool is six hundred and twenty-eight people, most
-   * of them depth. Against that field every player worth opening a profile on
-   * scores in the high nineties, so the panel drew seven full bars and said
-   * nothing: projected points 100th, ceiling 100th, floor 99th. A reading that
-   * is the same for everybody you would look at is not a reading.
+   * `player.percentiles` reads over every player the pool holds, and the pool
+   * is six hundred and twenty-eight people, most of them depth. Against that
+   * field everybody worth opening a dossier on scores in the high nineties, so
+   * the panel this replaced drew eight nearly-full bars and said nothing:
+   * projected points 100th, ceiling 100th, floor 99th. A reading that is the
+   * same for everybody you would look at is not a reading.
    *
-   * The cohort is the startable half instead — the players at his position who
-   * beat replacement level, which is exactly the set he is competing with for a
-   * roster spot and the same principle the board's own instruments were fixed
-   * on. Replacement is already in hand here, so this needs nothing the panel
-   * did not have.
+   * The cohort is the startable half instead — his position, above replacement
+   * level — which is the same principle the board's own instruments were fixed
+   * on, and it is what makes a strip of the field worth drawing at all.
    */
-  const percentileRows = useMemo(() => {
+  const startable = useMemo(() => {
     const bar = replacement ?? replacementPoints ?? null;
-    const field = players.filter(
+    return players.filter(
       (other) =>
         other.position === player.position &&
         !other.marketOnly &&
         (bar == null || other.projectedPoints > bar)
     );
+  }, [players, player.position, replacement, replacementPoints]);
 
-    const standing = (read: (entry: Player) => number | null | undefined): number | null => {
-      const mine = read(player);
-      if (mine == null || !Number.isFinite(mine)) return null;
-      const values = field
-        .map(read)
-        .filter((value): value is number => value != null && Number.isFinite(value));
-      // Below six the percentile is an accident of who happened to be measured,
-      // which is the same floor `positionNorms` holds itself to.
-      if (values.length < 6) return null;
-      const below = values.filter((value) => value < mine).length;
-      const equal = values.filter((value) => value === mine).length;
-      // Midpoint for ties, so two identical players do not come out a rank
-      // apart because of the order they were listed in.
-      return Math.round(((below + equal / 2) / values.length) * 100);
+  const stripOf = useMemo(
+    () =>
+      (read: (entry: Player) => number | null | undefined): StripPoint[] =>
+        startable
+          .map((other) => ({
+            id: other.id,
+            name: getIdentity(other.id)?.name ?? other.name,
+            value: read(other) ?? Number.NaN,
+          }))
+          .filter((point) => Number.isFinite(point.value)),
+    [startable]
+  );
+
+  /*
+   * One reading per club, never one per player.
+   *
+   * The offence strips answer "how does this offence compare with the other
+   * thirty-one", and every player on a roster carries the identical context —
+   * so bucketing per player would weight Kansas City by however many Chiefs the
+   * pool happens to hold. That is a distribution of roster depth wearing the
+   * label of a distribution of offences, and it is the same mistake
+   * `offenceNorm` is shaped to avoid one layer down.
+   */
+  const clubStripOf = useMemo(() => {
+    const perClub = new Map<string, Player>();
+    for (const other of players) {
+      if (!other.teamContext || perClub.has(other.team)) continue;
+      perClub.set(other.team, other);
+    }
+    const clubs = [...perClub.entries()];
+    return (read: (entry: Player) => number | null | undefined): StripPoint[] =>
+      clubs
+        .map(([club, entry]) => ({ id: club, name: club, value: read(entry) ?? Number.NaN }))
+        .filter((point) => Number.isFinite(point.value));
+  }, [players]);
+
+  /*
+   * Where a season's points came from, at this league's scoring.
+   *
+   * The components are computed rather than apportioned, and the remainder is
+   * shown as `other` instead of being scaled away: a season also contains
+   * two-point conversions and lost fumbles, and closing the gap by stretching
+   * the parts would state a decomposition that is not the one that happened.
+   */
+  const mixSeasons = useMemo<MixSeason[]>(() => {
+    if (!history?.length || !league) return [];
+    return history.map((season) => {
+      const total = pointsFor(
+        { position: player.position, points: season.pprPoints, receptions: season.receptions },
+        league
+      );
+      const touchdowns = (season.receivingTds + season.rushingTds) * 6;
+      const receiving = season.receivingYards / 10 + season.receptions * league.receptionPoints;
+      const rushing = season.rushingYards / 10;
+      const passing = season.passingYards / 25 + season.passingTds * 4 - season.interceptions * 2;
+      const other = total - touchdowns - receiving - rushing - passing;
+      return {
+        season: season.season,
+        total,
+        // Touchdowns first, so the band's height is directly comparable with
+        // the tick drawn at the cohort's own share.
+        parts: [
+          { key: 'td', label: 'touchdowns', points: touchdowns },
+          { key: 'rec', label: 'receiving', points: receiving },
+          { key: 'rush', label: 'rushing', points: rushing },
+          { key: 'pass', label: 'passing', points: passing },
+          { key: 'other', label: 'everything else', points: Math.max(0, other) },
+        ].filter((part) => part.points > 0.5),
+        tdShare: total > 0 ? touchdowns / total : 0,
+      };
+    });
+  }, [history, league, player.position]);
+
+  /*
+   * What a typical starter at this position takes from touchdowns.
+   *
+   * Measured over the cohort rather than chosen, because a constant nobody
+   * derived is indistinguishable on screen from one three seasons produced —
+   * the argument `modelTrust` already makes for carrying three blind spots and
+   * not a dozen. The whole history file is in memory once anybody's game log
+   * has loaded, so this is sixty map reads.
+   */
+  const tdNorm = useMemo(() => {
+    if (!league || !history?.length) return null;
+    const shares: number[] = [];
+    for (const other of startable) {
+      const season = seasonShape(other.id);
+      if (!season) continue;
+      const total = pointsFor(
+        { position: other.position, points: season.pprPoints, receptions: season.receptions },
+        league
+      );
+      if (total < 20) continue;
+      shares.push(((season.receivingTds + season.rushingTds) * 6) / total);
+    }
+    if (shares.length < 6) return null;
+    shares.sort((a, b) => a - b);
+    return shares[Math.floor(shares.length / 2)];
+  }, [startable, league, history]);
+
+  /*
+   * How hard the three weeks that decide a fantasy season are, for everybody at
+   * his position.
+   *
+   * A strength-of-schedule number is a season average, and an average is
+   * exactly the wrong summary: soft defences in December and a brutal September
+   * beat the reverse at the identical mean. This is the December half on its
+   * own, against the men he is competing with — which nobody at the table is
+   * computing, and which is free once the schedule file is in memory.
+   */
+  const playoffStrips = useMemo(() => {
+    if (!schedule?.length) return [];
+    const easeFor = (club: string): number | null => {
+      const games = teamSchedule(club);
+      if (!games?.length) return null;
+      const weeks = games.filter(
+        (game) => game.week >= 15 && game.week <= 17 && game.difficulty != null
+      );
+      if (!weeks.length) return null;
+      return weeks.reduce((sum, game) => sum + (game.difficulty ?? 0), 0) / weeks.length;
     };
+    const cache = new Map<string, number | null>();
+    return stripOf((entry) => {
+      if (!cache.has(entry.team)) cache.set(entry.team, easeFor(entry.team));
+      return cache.get(entry.team) ?? null;
+    });
+  }, [schedule, stripOf]);
 
-    const rows: Array<{ label: string; percentile: number; value: string }> = [];
-    const add = (
-      label: string,
-      read: (entry: Player) => number | null | undefined,
-      format: (value: number) => string
-    ) => {
-      const percentile = standing(read);
-      const mine = read(player);
-      if (percentile == null || mine == null) return;
-      rows.push({ label, percentile, value: format(mine) });
+  /*
+   * The role, as one reading rather than three, and which share is asked about
+   * depends on the job: a back is defined by his cut of the carries and a
+   * receiver by his cut of the targets. Putting both on every player would
+   * leave half of them reading zero for a reason that is about the position
+   * rather than about the man.
+   */
+  const roleRead = useMemo(() => {
+    const share =
+      player.position === 'RB'
+        ? { value: player.usage?.carryShare ?? null, metric: 'carry' as const, label: 'Carry' }
+        : { value: player.usage?.targetShare ?? null, metric: 'target' as const, label: 'Target' };
+    const snapNorm = positionNorm(player.position, 'snap');
+    const shareNorm = positionNorm(player.position, share.metric);
+    if (player.marketOnly || player.snapPercentage == null || share.value == null) return null;
+    if (!snapNorm || !shareNorm) return null;
+    return {
+      snap: player.snapPercentage,
+      snapNorm,
+      share: share.value,
+      shareNorm,
+      shareLabel: share.label,
+      redZone: player.usage?.redZoneTouches ?? 0,
+      redZoneTop: positionNorm(player.position, 'redZone')?.top ?? 1,
+      summary:
+        `On the field for ${Math.round(player.snapPercentage)}% of snaps (median ${player.position} ${Math.round(snapNorm.median)}%), ` +
+        `taking ${Math.round(share.value)}% of the ${share.metric === 'carry' ? 'carries' : 'targets'} (median ${Math.round(shareNorm.median)}%).`,
     };
+  }, [player]);
 
-    add(
-      'Projected points',
-      (entry) => entry.projectedPoints,
-      (value) => `${Math.round(value)}`
-    );
-    add(
-      'Points per game',
-      (entry) => entry.pointsPerGame,
-      (value) => value.toFixed(1)
-    );
-    add(
-      'Ceiling',
-      (entry) => entry.upside,
-      (value) => `${Math.round(value)}`
-    );
-    add(
-      'Floor',
-      (entry) => entry.floor,
-      (value) => `${Math.round(value)}`
-    );
-    add(
-      'Consistency',
-      (entry) => entry.consistency,
-      (value) => `${value}/10`
-    );
-    add(
-      'Snap share',
-      (entry) => entry.snapPercentage,
-      (value) => `${Math.round(value)}%`
-    );
-    add(
-      'Target share',
-      (entry) => entry.usage?.targetShare,
-      (value) => `${value}%`
-    );
-    add(
-      'Red-zone touches',
-      (entry) => entry.usage?.redZoneTouches,
-      (value) => `${value}`
-    );
-    return rows;
-  }, [player, players, replacement, replacementPoints]);
+  const caveats = useMemo(
+    () =>
+      modelCaveats({
+        position: player.position,
+        age: player.age ?? null,
+        gamesObserved: player.gamesObserved ?? null,
+      }),
+    [player.position, player.age, player.gamesObserved]
+  );
 
-  // The player's own position, as points, so every distribution chart below is
-  // drawn against the field he is actually competing with for a roster spot.
   const cohort = useMemo(
     () => players.filter((other) => other.position === player.position),
     [players, player.position]
@@ -430,10 +565,29 @@ export const PlayerProfile = ({
               <dt>VORP</dt>
               <dd>{player.valueOverReplacement}</dd>
             </div>
-            <div className="dr-tile">
-              <dt>Bye</dt>
-              <dd>{player.byeWeek || '—'}</dd>
-            </div>
+            {/* The number this format actually turns on, where it is knowable.
+                VORP is the gap to the last man the *league* rosters, which is
+                the right bar when the auction buys a whole roster and the wrong
+                one here — eleven seats a team are snaked for nothing, so what a
+                bid buys is the gap to whoever survives to your pick. The bye
+                week is a fine fact and it is not a headline. */}
+            {gain != null ? (
+              <div
+                className="dr-tile"
+                title={`Points over ${gainFree ?? 'the man the snake hands you free'}`}
+              >
+                <dt>Over free</dt>
+                <dd style={{ color: gain > 0 ? 'var(--dr-good)' : 'var(--dr-warn)' }}>
+                  {gain > 0 ? '+' : ''}
+                  {gain}
+                </dd>
+              </div>
+            ) : (
+              <div className="dr-tile">
+                <dt>Bye</dt>
+                <dd>{player.byeWeek || '—'}</dd>
+              </div>
+            )}
           </dl>
 
           <p className="dr-verdict-line">{verdict(player)}</p>
@@ -453,7 +607,95 @@ export const PlayerProfile = ({
               ceiling={player.upside}
               replacement={replacement ?? replacementPoints ?? null}
             />
+            {/* The curve is the right picture and answers a question nobody
+                has. The question people have arrives with a number already in
+                it — "my other back gives me 210, does this man beat that" —
+                and it is different for every reader, which is the case for
+                making it draggable rather than drawing forty more marks. */}
+            <Threshold
+              projection={player.projectedPoints}
+              floor={player.floor}
+              ceiling={player.upside}
+              replacement={replacement ?? replacementPoints ?? null}
+            />
           </section>
+
+          {startable.length > 5 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">
+                Against the {startable.length} startable {player.position}s
+              </h3>
+              {/* Eight strips where eight percentile bars were. A bar is a
+                  container: all eight read ninety-something on one shared 0-100
+                  scale and the panel said the same thing eight times. What it
+                  hid is the only interesting part — that the distributions
+                  differ. Consistency is tight and crowded, ceiling is skewed
+                  with a long thin tail, red-zone touches are bimodal because a
+                  team either feeds a man at the goal line or it does not. A
+                  percentile of 90 means something different in each. */}
+              <MetricStrip
+                label="Projected"
+                points={stripOf((entry) => entry.projectedPoints)}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}`}
+                reference={
+                  (replacement ?? replacementPoints) != null
+                    ? { value: (replacement ?? replacementPoints)!, label: 'replacement' }
+                    : null
+                }
+              />
+              <MetricStrip
+                label="Per game"
+                points={stripOf((entry) => entry.pointsPerGame)}
+                mineId={player.id}
+                format={(value) => value.toFixed(1)}
+              />
+              <MetricStrip
+                label="Ceiling"
+                points={stripOf((entry) => entry.upside)}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}`}
+              />
+              <MetricStrip
+                label="Floor"
+                points={stripOf((entry) => entry.floor)}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}`}
+              />
+              <MetricStrip
+                label="Consistency"
+                points={stripOf((entry) => entry.consistency)}
+                mineId={player.id}
+                format={(value) => `${value}/10`}
+              />
+              <MetricStrip
+                label="Snap share"
+                points={stripOf((entry) => entry.snapPercentage)}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}%`}
+              />
+              <MetricStrip
+                label={player.position === 'RB' ? 'Carry share' : 'Target share'}
+                points={stripOf((entry) =>
+                  player.position === 'RB' ? entry.usage?.carryShare : entry.usage?.targetShare
+                )}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}%`}
+              />
+              <MetricStrip
+                label="Red zone"
+                points={stripOf((entry) => entry.usage?.redZoneTouches)}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}`}
+              />
+              <p className="dr-footnote">
+                Every tick is one of the {startable.length} {player.position}s who beat replacement
+                level — the men he is competing with for a roster spot, not the six hundred in the
+                pool. The dot is him, the small arrow underneath is the median, and hovering names
+                whoever is under the cursor.
+              </p>
+            </section>
+          )}
 
           {cohort.length > 4 && (
             <section className="dr-modal-section">
@@ -477,33 +719,92 @@ export const PlayerProfile = ({
             </section>
           )}
 
-          {percentileRows.length > 0 && (
-            <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">Against the position</h3>
-              <PercentileBars rows={percentileRows} position={player.position} />
-            </section>
-          )}
-
+          {/* Four categorical words — LOW, LOW, minor competition, stable — is
+              what this section was, on a screen whose whole subject is how much
+              to believe the number above it. Every one of those words is a
+              summary of something measured, and the measurements are better. */}
           <section className="dr-modal-section">
-            <h3 className="dr-eyebrow">Risk</h3>
-            <dl className="dr-facts">
-              <div>
-                <dt>Injury risk</dt>
-                <dd>{player.injuryRisk}</dd>
+            <h3 className="dr-eyebrow">What could go wrong</h3>
+            <div className="dr-risks">
+              {player.durability?.seasons?.length ? (
+                <div className="dr-risk">
+                  <Seasons
+                    seasons={player.durability.seasons}
+                    label={`Availability across ${player.durability.seasons.length} seasons`}
+                    width={38}
+                    height={22}
+                  />
+                  <span>
+                    <b>
+                      {player.durability.totalMissed}{' '}
+                      {player.durability.totalMissed === 1 ? 'game' : 'games'} missed
+                    </b>
+                    <em>
+                      {player.durability.seasons
+                        .map((row) => `${row.season} ${row.missed}`)
+                        .join(' · ')}
+                    </em>
+                  </span>
+                </div>
+              ) : null}
+
+              {player.competition && player.competition.roomSize > 1 && (
+                <div className="dr-risk">
+                  <DepthLadder
+                    depth={player.competition.depth}
+                    roomSize={player.competition.roomSize}
+                    aheadBy={player.competition.aheadBy}
+                    behindBy={player.competition.behindBy}
+                    label={`Number ${player.competition.depth} of ${player.competition.roomSize} in the room`}
+                    width={40}
+                    height={40}
+                  />
+                  <span>
+                    <b>
+                      {player.competition.depth} of {player.competition.roomSize} in the room
+                    </b>
+                    <em>
+                      {player.competition.starterAhead
+                        ? `behind ${player.competition.starterAhead}${player.competition.behindBy != null ? ` by ${player.competition.behindBy}/g` : ''}`
+                        : player.competition.nextUp
+                          ? `clear of ${player.competition.nextUp}${player.competition.aheadBy != null ? ` by ${player.competition.aheadBy}/g` : ''}`
+                          : 'nobody behind him'}
+                    </em>
+                  </span>
+                </div>
+              )}
+
+              <div className="dr-risk">
+                <span>
+                  <b>{player.recentTrends.toLowerCase()} production</b>
+                  <em>
+                    {player.competitionLevel.replace(/_/g, ' ').toLowerCase()}
+                    {player.expectedGames != null &&
+                      ` · ${player.expectedGames.toFixed(1)} games expected`}
+                  </em>
+                </span>
               </div>
-              <div>
-                <dt>Age risk</dt>
-                <dd>{player.ageRisk}</dd>
-              </div>
-              <div>
-                <dt>Role</dt>
-                <dd>{player.competitionLevel.replace(/_/g, ' ').toLowerCase()}</dd>
-              </div>
-              <div>
-                <dt>Trend</dt>
-                <dd>{player.recentTrends.toLowerCase()}</dd>
-              </div>
-            </dl>
+            </div>
+
+            {/* The three places the backtest measured this board worst, on this
+                player. It renders here as well as on the nomination stage
+                because a finding that lives in one panel is a finding nobody
+                has at the moment a name is called. */}
+            {caveats.length > 0 && (
+              <>
+                <div className="dr-card-risks" style={{ marginTop: 8 }}>
+                  {caveats.map((caveat) => (
+                    <span key={caveat.id} data-tone="warn" title={caveat.detail}>
+                      {caveat.label}
+                    </span>
+                  ))}
+                </div>
+                <p className="dr-footnote">
+                  Measured over three held-out seasons, these are the profiles our projection sorted
+                  worst against the draft market. Trust the room over this board here.
+                </p>
+              </>
+            )}
           </section>
         </div>
       )}
@@ -539,6 +840,49 @@ export const PlayerProfile = ({
                 One column a Sunday, empty where he did not play. The dashed rule is what a freely
                 available {player.position} scores per game — columns above it are weeks he beat the
                 alternative.
+              </p>
+            </section>
+          )}
+
+          {/* The same seventeen numbers, asked the other question.
+              The log above is chronological, which answers "was he trending".
+              This answers "how often did starting him win the week", and they
+              are genuinely different: a man who is never bad and a man who is
+              never good score the same on a symmetric variance measure, and a
+              lineup cares enormously which one it has. Drawn as a staircase
+              because the count only changes at the weeks he actually played. */}
+          {latest && latest.weekly.length > 3 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">How many weeks he cleared a bar</h3>
+              <WeeksAbove
+                weeks={latest.weekly}
+                replacement={(replacement ?? replacementPoints ?? 0) / 17}
+                season={17}
+              />
+              <p className="dr-footnote">
+                Read across at any score for the number of weeks he beat it. The denominator is a
+                full season rather than games played, so weeks he missed are visibly weeks he
+                cleared nothing — which is the only honest reading when what is being bought is a
+                starting slot for eighteen weeks.
+              </p>
+            </section>
+          )}
+
+          {/* Two backs projected for the same total are not the same bet when
+              one of them got ninety points of it from touchdowns. Touchdown
+              rate is the least stable thing in football — handed out by field
+              position and play-calling rather than earned at a repeatable rate
+              — and the projection cannot say so, because it only ever saw the
+              total. */}
+          {mixSeasons.length > 0 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Where the points came from</h3>
+              <ScoringMix seasons={mixSeasons} tdNorm={tdNorm} />
+              <p className="dr-footnote">
+                At this league&rsquo;s scoring, not the full PPR the source file counts. The dashed
+                tick on each column is the share a typical startable {player.position} takes from
+                touchdowns — a column whose warning band clears it is a season built on scores,
+                which is the part least likely to repeat.
               </p>
             </section>
           )}
@@ -604,94 +948,197 @@ export const PlayerProfile = ({
 
       {tab === 'usage' && (
         <div className="dr-tabpanel" role="tabpanel">
-          <section className="dr-modal-section">
-            <h3 className="dr-eyebrow">How he is used</h3>
-            <dl className="dr-facts">
-              <div>
-                <dt>Snap share</dt>
-                <dd>
-                  {player.snapPercentage != null ? `${Math.round(player.snapPercentage)}%` : '—'}
-                </dd>
+          {/* Snap share, touch share and red-zone work were three cells of a
+              nine-cell list. They are not three questions — they are one, *is
+              he the guy or is he a piece* — and a list makes the reader do that
+              join. The field the card carries answers it as a location. */}
+          {roleRead && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Is he the guy?</h3>
+              <div className="dr-role-wide">
+                <RoleField
+                  snap={roleRead.snap}
+                  snapMedian={roleRead.snapNorm.median}
+                  snapTop={roleRead.snapNorm.top}
+                  share={roleRead.share}
+                  shareMedian={roleRead.shareNorm.median}
+                  shareTop={roleRead.shareNorm.top}
+                  redZone={roleRead.redZone}
+                  redZoneTop={roleRead.redZoneTop}
+                  label={roleRead.summary}
+                  size={128}
+                  quadrants
+                />
+                <dl className="dr-facts">
+                  <div>
+                    <dt>Snap share</dt>
+                    <dd>{Math.round(roleRead.snap)}%</dd>
+                  </div>
+                  <div>
+                    <dt>{roleRead.shareLabel} share</dt>
+                    <dd>{Math.round(roleRead.share)}%</dd>
+                  </div>
+                  <div>
+                    <dt>Red-zone touches</dt>
+                    <dd>{roleRead.redZone}</dd>
+                  </div>
+                  <div>
+                    <dt>Role</dt>
+                    <dd>{player.competitionLevel.replace(/_/g, ' ').toLowerCase()}</dd>
+                  </div>
+                  <div>
+                    <dt>Games played</dt>
+                    <dd>{player.usage?.games ?? player.lastSeasonGames ?? '—'}</dd>
+                  </div>
+                </dl>
               </div>
-              <div>
-                <dt>Target share</dt>
-                <dd>{player.usage?.targetShare != null ? `${player.usage.targetShare}%` : '—'}</dd>
+              <p className="dr-footnote">
+                The crosshair is the median startable {player.position}: top right is a bell cow,
+                top left a specialist, bottom right a decoy, bottom left a backup. The dot&rsquo;s
+                size is red-zone work, which is a premium on the other two rather than a third
+                question.
+              </p>
+            </section>
+          )}
+
+          {/* Eleven yards of target depth with three after the catch is a
+              downfield receiver whose production is the quarterback's; three
+              with eight after it is a screen game that survives a change at
+              quarterback. Both average fourteen, and the list this replaces
+              printed both as numerals two rows apart. */}
+          {player.usage?.adot != null && player.usage.yacPerReception != null && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Where the ball reaches him</h3>
+              <div className="dr-role-wide">
+                <CatchDepth
+                  adot={player.usage.adot}
+                  yac={player.usage.yacPerReception}
+                  adotMedian={positionNorm(player.position, 'adot')?.median ?? 0}
+                  top={Math.max(18, player.usage.adot + player.usage.yacPerReception + 2)}
+                  label={`Caught on average ${player.usage.adot} yards past the line, then ${player.usage.yacPerReception} more after it.`}
+                  width={64}
+                  height={104}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <MetricStrip
+                    label="aDOT"
+                    points={stripOf((entry) => entry.usage?.adot)}
+                    mineId={player.id}
+                    format={(value) => `${value.toFixed(1)} yd`}
+                    width={230}
+                  />
+                  <MetricStrip
+                    label="YAC/catch"
+                    points={stripOf((entry) => entry.usage?.yacPerReception)}
+                    mineId={player.id}
+                    format={(value) => `${value.toFixed(1)} yd`}
+                    width={230}
+                  />
+                  <MetricStrip
+                    label="WOPR"
+                    points={stripOf((entry) => entry.usage?.wopr)}
+                    mineId={player.id}
+                    format={(value) => value.toFixed(2)}
+                    width={230}
+                  />
+                  <MetricStrip
+                    label="Air yd share"
+                    points={stripOf((entry) => entry.usage?.airYardsShare)}
+                    mineId={player.id}
+                    format={(value) => `${Math.round(value)}%`}
+                    width={230}
+                  />
+                </div>
               </div>
-              <div>
-                <dt>Carry share</dt>
-                <dd>{player.usage?.carryShare != null ? `${player.usage.carryShare}%` : '—'}</dd>
+              <p className="dr-footnote">
+                The solid rule is the line of scrimmage and the dashed one is the median target
+                depth at his position: above it is a downfield job, on it is a checkdown. WOPR is
+                target share and air-yards share as one number — the best single read on how central
+                he is to a passing game.
+              </p>
+            </section>
+          )}
+
+          {/* Touchdowns are most of the gap between two players with the same
+              yards, and both halves of who gets them — how often the offence
+              arrives, and who the coach hands it to — were in the pool with
+              nowhere on screen to be. */}
+          {player.usage && player.teamContext?.redZoneTripsPerGame != null && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Scoring chances, and his cut</h3>
+              <div className="dr-role-wide">
+                <GoalLine
+                  trips={player.teamContext.redZoneTripsPerGame}
+                  tripsMedian={offenceNorm('redZoneTrips')?.median ?? 3}
+                  touches={
+                    player.usage.games > 0 ? player.usage.redZoneTouches / player.usage.games : 0
+                  }
+                  goalLine={
+                    player.usage.games > 0 ? player.usage.goalLineTouches / player.usage.games : 0
+                  }
+                  label={`The offence reaches the red zone ${player.teamContext.redZoneTripsPerGame} times a game; he touches it ${(player.usage.redZoneTouches / Math.max(1, player.usage.games)).toFixed(1)} times there.`}
+                  pitch={16}
+                />
+                <dl className="dr-facts">
+                  <div>
+                    <dt>Team trips / game</dt>
+                    <dd>{player.teamContext.redZoneTripsPerGame}</dd>
+                  </div>
+                  <div>
+                    <dt>His red-zone touches</dt>
+                    <dd>
+                      {player.usage.redZoneTouches}
+                      {player.usage.redZoneShare != null && (
+                        <span className="dr-facts-note">
+                          {' '}
+                          · {player.usage.redZoneShare}% of the team
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt title="Inside the five, where a touch is worth about six points a fifth of the time">
+                      Goal-line touches
+                    </dt>
+                    <dd>{player.usage.goalLineTouches}</dd>
+                  </div>
+                </dl>
               </div>
-              <div>
-                <dt>Games played</dt>
-                <dd>{player.usage?.games ?? player.lastSeasonGames ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Role</dt>
-                <dd>{player.competitionLevel.replace(/_/g, ' ').toLowerCase()}</dd>
-              </div>
-            </dl>
-          </section>
+            </section>
+          )}
 
           {player.usage && (
             <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">Opportunity, {player.usage.season}</h3>
-              <dl className="dr-facts">
-                <div>
-                  <dt title="Weighted opportunity: targets and air yards in the proportion that predicts receiving points">
-                    WOPR
-                  </dt>
-                  <dd>{player.usage.wopr ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt title="Average depth of target">aDOT</dt>
-                  <dd>{player.usage.adot != null ? `${player.usage.adot} yd` : '—'}</dd>
-                </div>
-                <div>
-                  <dt>Air yards share</dt>
-                  <dd>
-                    {player.usage.airYardsShare != null ? `${player.usage.airYardsShare}%` : '—'}
-                  </dd>
-                </div>
-                <div>
-                  <dt>YAC per catch</dt>
-                  <dd>
-                    {player.usage.yacPerReception != null
-                      ? `${player.usage.yacPerReception} yd`
-                      : '—'}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Touches per game</dt>
-                  <dd>{player.usage.touchesPerGame ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>First downs per game</dt>
-                  <dd>{player.usage.firstDownsPerGame ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt title="Expected points added per touch">EPA per touch</dt>
-                  <dd>{player.usage.epaPerTouch ?? '—'}</dd>
-                </div>
-                <div>
-                  <dt>Red-zone touches</dt>
-                  <dd>
-                    {player.usage.redZoneTouches}
-                    {player.usage.redZoneShare != null && (
-                      <span className="dr-facts-note"> · {player.usage.redZoneShare}% of team</span>
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt title="Inside the five-yard line, where touchdowns are decided">
-                    Goal-line touches
-                  </dt>
-                  <dd>{player.usage.goalLineTouches}</dd>
-                </div>
-              </dl>
+              <h3 className="dr-eyebrow">Volume and efficiency, {player.usage.season}</h3>
+              <MetricStrip
+                label="Touches/g"
+                points={stripOf((entry) => entry.usage?.touchesPerGame)}
+                mineId={player.id}
+                format={(value) => value.toFixed(1)}
+              />
+              <MetricStrip
+                label="Targets/g"
+                points={stripOf((entry) => entry.usage?.targetsPerGame)}
+                mineId={player.id}
+                format={(value) => value.toFixed(1)}
+              />
+              <MetricStrip
+                label="1st downs/g"
+                points={stripOf((entry) => entry.usage?.firstDownsPerGame)}
+                mineId={player.id}
+                format={(value) => value.toFixed(1)}
+              />
+              <MetricStrip
+                label="EPA/touch"
+                points={stripOf((entry) => entry.usage?.epaPerTouch)}
+                mineId={player.id}
+                format={(value) => value.toFixed(3)}
+                reference={{ value: 0, label: 'break even' }}
+              />
               <p className="dr-footnote">
-                Shares are of his own team's volume. Red-zone and goal-line counts come from the
-                play-by-play, so they are touches that actually happened inside the twenty and the
-                five.
+                Shares and rates are of his own team&rsquo;s volume, computed from the 2025
+                play-by-play. The dashed rule on EPA is break-even: a touch that gains the offence
+                nothing.
               </p>
             </section>
           )}
@@ -782,114 +1229,153 @@ export const PlayerProfile = ({
         <div className="dr-tabpanel" role="tabpanel">
           {player.teamContext ? (
             <>
+              {/* This tab was two lists of numerals and not one chart, on the
+                  subject the whole tab exists for: opportunity is granted by a
+                  team before it is earned by a player, and the same target
+                  share is worth more on an offence running 68 plays a game than
+                  58. A list has nowhere to put "than". */}
               <section className="dr-modal-section">
-                <h3 className="dr-eyebrow">The {team} offence, 2025</h3>
-                <dl className="dr-facts">
-                  <div>
-                    <dt>Plays per game</dt>
-                    <dd>{player.teamContext.playsPerGame}</dd>
-                  </div>
-                  <div>
-                    <dt title="Seconds between snaps inside a drive — lower is faster">
-                      Seconds per play
-                    </dt>
-                    <dd>{player.teamContext.secondsPerPlay ?? '—'}</dd>
-                  </div>
-                  <div>
-                    <dt title="Pass rate with the game within a score, through three quarters">
-                      Neutral pass rate
-                    </dt>
-                    <dd>
-                      {player.teamContext.neutralPassRate != null
-                        ? `${player.teamContext.neutralPassRate}%`
-                        : '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt title="How much more they throw than the situations call for">
-                      Pass rate over expected
-                    </dt>
-                    <dd>
-                      {player.teamContext.passRateOverExpected != null
-                        ? `${player.teamContext.passRateOverExpected > 0 ? '+' : ''}${player.teamContext.passRateOverExpected}%`
-                        : '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt title="Sacks per dropback — the cleanest free read on pass protection">
-                      Sack rate allowed
-                    </dt>
-                    <dd>
-                      {player.teamContext.sackRateAllowed != null
-                        ? `${player.teamContext.sackRateAllowed}%`
-                        : '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Red-zone trips per game</dt>
-                    <dd>{player.teamContext.redZoneTripsPerGame}</dd>
-                  </div>
-                  <div>
-                    <dt title="Expected points added per offensive play">EPA per play</dt>
-                    <dd>{player.teamContext.epaPerPlay ?? '—'}</dd>
-                  </div>
-                </dl>
+                <h3 className="dr-eyebrow">How the {team} play</h3>
+                <PlayMix
+                  plays={player.teamContext.playsPerGame}
+                  playsTop={offenceNorm('plays')?.top ?? player.teamContext.playsPerGame}
+                  playsMedian={offenceNorm('plays')?.median ?? player.teamContext.playsPerGame}
+                  passRate={player.teamContext.neutralPassRate ?? 50}
+                  passRateOverExpected={player.teamContext.passRateOverExpected}
+                  label={`${player.teamContext.playsPerGame} plays a game, ${player.teamContext.neutralPassRate ?? '—'}% of neutral downs thrown.`}
+                  width={280}
+                  height={26}
+                />
                 <p className="dr-footnote">
-                  Opportunity is granted by a team before it is earned by a player: the same target
-                  share is worth more on an offence running 68 plays a game than 58. Everything here
-                  is computed from the 2025 play-by-play.
+                  The bar&rsquo;s length is plays a game against the league&rsquo;s fastest and the
+                  arrow beneath it the median offence; the split inside is pass against run. The
+                  dashed notch is the rate the <em>situations</em> called for — a proportion beside
+                  its counterfactual is a claim about a coach rather than a fact about a scheme, and
+                  it is the second one that moves a bid.
+                </p>
+              </section>
+
+              {/* Where this offence sits among the thirty-two, which is the
+                  only form the question has. "61.8 plays a game" is a number
+                  nobody carries a reference for. */}
+              <section className="dr-modal-section">
+                <h3 className="dr-eyebrow">Against the other offences</h3>
+                <MetricStrip
+                  label="Plays / game"
+                  points={clubStripOf((entry) => entry.teamContext?.playsPerGame)}
+                  mineId={team}
+                  format={(value) => value.toFixed(1)}
+                />
+                <MetricStrip
+                  label="Pass rate"
+                  points={clubStripOf((entry) => entry.teamContext?.neutralPassRate)}
+                  mineId={team}
+                  format={(value) => `${value.toFixed(0)}%`}
+                />
+                <MetricStrip
+                  label="Pass vs expected"
+                  points={clubStripOf((entry) => entry.teamContext?.passRateOverExpected)}
+                  mineId={team}
+                  format={(value) => `${value > 0 ? '+' : ''}${value.toFixed(1)}`}
+                  reference={{ value: 0, label: 'as expected' }}
+                />
+                <MetricStrip
+                  label="EPA / play"
+                  points={clubStripOf((entry) => entry.teamContext?.epaPerPlay)}
+                  mineId={team}
+                  format={(value) => value.toFixed(3)}
+                  reference={{ value: 0, label: 'break even' }}
+                />
+                <MetricStrip
+                  label="Red-zone trips"
+                  points={clubStripOf((entry) => entry.teamContext?.redZoneTripsPerGame)}
+                  mineId={team}
+                  format={(value) => value.toFixed(1)}
+                />
+                <MetricStrip
+                  label="Sacks allowed"
+                  points={clubStripOf((entry) => entry.teamContext?.sackRateAllowed)}
+                  mineId={team}
+                  format={(value) => `${value.toFixed(1)}%`}
+                  invert
+                />
+                <MetricStrip
+                  label="Seconds / play"
+                  points={clubStripOf((entry) => entry.teamContext?.secondsPerPlay)}
+                  mineId={team}
+                  format={(value) => `${value.toFixed(1)}s`}
+                  invert
+                />
+                <p className="dr-footnote">
+                  One tick per club, not per player — every man on a roster carries the same
+                  offence, so counting them individually would weight a team by how many of its
+                  players the pool happens to hold. Sack rate and seconds per play are read the
+                  other way round: lower is better, and the percentile is flipped to say so.
                 </p>
               </section>
 
               {player.competition && (
                 <section className="dr-modal-section">
                   <h3 className="dr-eyebrow">Competition for the job</h3>
-                  <dl className="dr-facts">
-                    <div>
-                      <dt>Depth chart</dt>
-                      <dd>
-                        {player.competition.depth} of {player.competition.roomSize} at{' '}
-                        {player.position}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Next man up</dt>
-                      <dd>{player.competition.nextUp ?? '—'}</dd>
-                    </div>
-                    <div>
-                      <dt title="Points per game between him and the player behind him">
-                        Clear by
-                      </dt>
-                      <dd>
-                        {player.competition.aheadBy != null
-                          ? `${player.competition.aheadBy} ppg`
-                          : '—'}
-                      </dd>
-                    </div>
-                    {player.competition.starterAhead && (
+                  <div className="dr-role-wide">
+                    <DepthLadder
+                      depth={player.competition.depth}
+                      roomSize={player.competition.roomSize}
+                      aheadBy={player.competition.aheadBy}
+                      behindBy={player.competition.behindBy}
+                      label={`Number ${player.competition.depth} of ${player.competition.roomSize} in the room.`}
+                      width={64}
+                      height={96}
+                    />
+                    <dl className="dr-facts">
                       <div>
-                        <dt>Behind</dt>
+                        <dt>Depth chart</dt>
                         <dd>
-                          {player.competition.starterAhead}
-                          {player.competition.behindBy != null && (
-                            <span className="dr-facts-note">
-                              {' '}
-                              · by {player.competition.behindBy} ppg
-                            </span>
-                          )}
+                          {player.competition.depth} of {player.competition.roomSize} at{' '}
+                          {player.position}
                         </dd>
                       </div>
-                    )}
-                  </dl>
+                      <div>
+                        <dt>Next man up</dt>
+                        <dd>{player.competition.nextUp ?? '—'}</dd>
+                      </div>
+                      <div>
+                        <dt title="Points per game between him and the player behind him">
+                          Clear by
+                        </dt>
+                        <dd>
+                          {player.competition.aheadBy != null
+                            ? `${player.competition.aheadBy} ppg`
+                            : '—'}
+                        </dd>
+                      </div>
+                      {player.competition.starterAhead && (
+                        <div>
+                          <dt>Behind</dt>
+                          <dd>
+                            {player.competition.starterAhead}
+                            {player.competition.behindBy != null && (
+                              <span className="dr-facts-note">
+                                {' '}
+                                · by {player.competition.behindBy} ppg
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
                   <p className="dr-footnote">
-                    Ordered by our own projection among his listed teammates, so a narrow gap is a
-                    job that could change hands.
+                    The rungs are drawn a distance apart proportional to the margin, because
+                    &ldquo;1 of 4&rdquo; is the same fraction for a starter nine points a game clear
+                    of his backup and one half a point clear — and the second loses the job in
+                    September. Ordered by our own projection among his listed teammates.
                   </p>
                 </section>
               )}
             </>
           ) : (
-            <p className="dr-empty">No play-by-play for this team's 2025 offence.</p>
+            <p className="dr-empty">No play-by-play for this team&rsquo;s 2025 offence.</p>
           )}
         </div>
       )}
@@ -913,21 +1399,82 @@ export const PlayerProfile = ({
             </section>
           )}
 
+          {/* Where he is on the curve, against the men he is competing with.
+              The arc above says what shape his own career is on; these say
+              whether that shape is early or late for the position — which is
+              the question the backtest cared about, having found thirty-and-over
+              the worst age group this model projects, every season. */}
+          {startable.length > 5 && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Against the position</h3>
+              <MetricStrip
+                label="Age"
+                points={stripOf((entry) => entry.age)}
+                mineId={player.id}
+                format={(value) => `${value}`}
+                reference={{ value: 30, label: 'the blind spot' }}
+                invert
+              />
+              <MetricStrip
+                label="Games of tape"
+                points={stripOf((entry) => entry.gamesObserved)}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}`}
+                reference={{ value: 16, label: 'partial-season tape' }}
+              />
+              <MetricStrip
+                label="Games missed"
+                points={stripOf((entry) => entry.durability?.totalMissed)}
+                mineId={player.id}
+                format={(value) => `${Math.round(value)}`}
+                invert
+              />
+              <MetricStrip
+                label="Expected games"
+                points={stripOf((entry) => entry.expectedGames)}
+                mineId={player.id}
+                format={(value) => value.toFixed(1)}
+              />
+              <p className="dr-footnote">
+                Both dashed rules are places the backtest measured this board worst: past thirty it
+                over-projects by 52 to 66 points a man, and on one to sixteen games of tape it
+                showed no ranking signal at all across three held-out seasons.
+              </p>
+              {caveats.length > 0 && (
+                <div className="dr-card-risks" style={{ marginTop: 8 }}>
+                  {caveats.map((caveat) => (
+                    <span key={caveat.id} data-tone="warn" title={caveat.detail}>
+                      {caveat.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
           {player.durability && (
             <section className="dr-modal-section">
               <h3 className="dr-eyebrow">Durability</h3>
-              <dl className="dr-facts">
-                <div>
-                  <dt>Games missed, three seasons</dt>
-                  <dd>{player.durability.totalMissed}</dd>
-                </div>
-                {player.durability.seasons.map((row) => (
-                  <div key={row.season}>
-                    <dt>{row.season}</dt>
-                    <dd>{row.missed === 0 ? 'none' : `${row.missed} missed`}</dd>
+              <div className="dr-role-wide">
+                <Seasons
+                  seasons={player.durability.seasons}
+                  label={`Games played in each of ${player.durability.seasons.length} seasons`}
+                  width={54}
+                  height={34}
+                />
+                <dl className="dr-facts">
+                  <div>
+                    <dt>Games missed, three seasons</dt>
+                    <dd>{player.durability.totalMissed}</dd>
                   </div>
-                ))}
-              </dl>
+                  {player.durability.seasons.map((row) => (
+                    <div key={row.season}>
+                      <dt>{row.season}</dt>
+                      <dd>{row.missed === 0 ? 'none' : `${row.missed} missed`}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
               {player.durability.reported.length > 0 && (
                 <>
                   <p className="dr-facts-list">
@@ -990,10 +1537,73 @@ export const PlayerProfile = ({
             <p className="dr-empty">No schedule published yet.</p>
           )}
           {schedule && schedule.length > 0 && (
-            <section className="dr-modal-section">
-              <h3 className="dr-eyebrow">{team} season</h3>
-              <ScheduleStrip games={schedule} byeWeek={player.byeWeek ?? null} />
-            </section>
+            <>
+              <section className="dr-modal-section dr-full">
+                <h3 className="dr-eyebrow">{team} season</h3>
+                <ScheduleStrip games={schedule} byeWeek={player.byeWeek ?? null} />
+              </section>
+
+              {/* The whole tab was that one strip. A season is eighteen
+                  separate bets and the three at the end of it are worth the
+                  other fifteen, because they are the ones played when the
+                  league is decided — so they get named rather than averaged
+                  away into a number out of ten. */}
+              <section className="dr-modal-section">
+                <h3 className="dr-eyebrow">The weeks it is decided in</h3>
+                <ul className="dr-weeklist">
+                  {schedule
+                    .filter((game) => game.week >= 15 && game.week <= 17)
+                    .map((game) => (
+                      <li key={game.week}>
+                        <span className="dr-weeklist-week dr-num">W{game.week}</span>
+                        <span className="dr-weeklist-opp">
+                          {game.home ? 'vs' : 'at'} {game.opponent}
+                        </span>
+                        <span className="dr-weeklist-track">
+                          <span
+                            className="dr-weeklist-fill"
+                            style={{
+                              width: `${Math.round((game.difficulty ?? 0) * 100)}%`,
+                              background:
+                                (game.difficulty ?? 0) >= 0.62
+                                  ? 'var(--dr-good)'
+                                  : (game.difficulty ?? 0) <= 0.32
+                                    ? 'var(--dr-warn)'
+                                    : 'var(--dr-line-strong)',
+                            }}
+                          />
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+                <p className="dr-footnote">
+                  Longer and greener is a defence that gave up more last season. Bye in week{' '}
+                  {player.byeWeek || '—'}, which is the one week of the eighteen he is guaranteed to
+                  score nothing.
+                </p>
+              </section>
+
+              {/* Nobody at the table is computing this, and it is free once the
+                  schedule file is in memory: how his December compares with the
+                  December of every other man he could be bought instead of. */}
+              {playoffStrips.length > 5 && (
+                <section className="dr-modal-section">
+                  <h3 className="dr-eyebrow">December, against the other {player.position}s</h3>
+                  <MetricStrip
+                    label="Weeks 15-17"
+                    points={playoffStrips}
+                    mineId={player.id}
+                    format={(value) => `${Math.round(value * 100)}% soft`}
+                  />
+                  <p className="dr-footnote">
+                    The average of how much his weeks 15 to 17 opponents gave up, against the same
+                    figure for every startable {player.position}. A season average cannot say this:
+                    soft defences in December and a brutal September beat the reverse at the
+                    identical mean, and only one of those stretches is played when it counts.
+                  </p>
+                </section>
+              )}
+            </>
           )}
         </div>
       )}
@@ -1002,28 +1612,47 @@ export const PlayerProfile = ({
         <div className="dr-tabpanel" role="tabpanel">
           <section className="dr-modal-section">
             <h3 className="dr-eyebrow">2025 defensive production</h3>
-            <dl className="dr-facts">
-              <div>
-                <dt>Sacks</dt>
-                <dd>{player.defense?.sacks ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Interceptions</dt>
-                <dd>{player.defense?.interceptions ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Fumbles recovered</dt>
-                <dd>{player.defense?.fumbleRecoveries ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Touchdowns</dt>
-                <dd>{player.defense?.touchdowns ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Points allowed / game</dt>
-                <dd>{player.defense?.pointsAllowedPerGame ?? '—'}</dd>
-              </div>
-            </dl>
+            {/* Thirty-two units, so the cohort is complete rather than a
+                sample — which makes a strip the most informative thing that can
+                be drawn here, and a list of five numerals about the least. A
+                defence with thirty-eight sacks is only interesting relative to
+                the other thirty-one, and none of them was on screen. */}
+            <MetricStrip
+              label="Sacks"
+              points={stripOf((entry) => entry.defense?.sacks)}
+              mineId={player.id}
+              format={(value) => `${Math.round(value)}`}
+            />
+            <MetricStrip
+              label="Interceptions"
+              points={stripOf((entry) => entry.defense?.interceptions)}
+              mineId={player.id}
+              format={(value) => `${Math.round(value)}`}
+            />
+            <MetricStrip
+              label="Fumbles"
+              points={stripOf((entry) => entry.defense?.fumbleRecoveries)}
+              mineId={player.id}
+              format={(value) => `${Math.round(value)}`}
+            />
+            <MetricStrip
+              label="Touchdowns"
+              points={stripOf((entry) => entry.defense?.touchdowns)}
+              mineId={player.id}
+              format={(value) => `${Math.round(value)}`}
+            />
+            <MetricStrip
+              label="Points allowed"
+              points={stripOf((entry) => entry.defense?.pointsAllowedPerGame)}
+              mineId={player.id}
+              format={(value) => value.toFixed(1)}
+              invert
+            />
+            <p className="dr-footnote">
+              Points allowed is read the other way round — lower is better, and the percentile is
+              flipped to say so. Defensive scoring barely predicts itself year to year, which is why
+              every one of these prices out at a dollar or two whatever the strip says.
+            </p>
           </section>
 
           <section className="dr-modal-section">
@@ -1078,6 +1707,23 @@ export const PlayerProfile = ({
             </section>
           )}
 
+          {/* Every other price on this screen is a number somebody else arrived
+              at. The one that decides the night is the number about to be said
+              out loud, and it moves a dollar at a time while people shout — so
+              the useful thing is the same three readings recomputed at whatever
+              is being considered, rather than a fourth static figure. */}
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">What a bid buys</h3>
+            <BidScrub
+              list={player.estimatedValue}
+              adjusted={analytics ? analytics.adjustedValue : null}
+              projection={player.projectedPoints}
+              gain={gain}
+              gainFree={gainFree}
+              ceiling={ceiling}
+            />
+          </section>
+
           {player.market?.consensusRank != null &&
             player.market.best != null &&
             player.market.worst != null && (
@@ -1129,44 +1775,74 @@ export const PlayerProfile = ({
 
           <section className="dr-modal-section">
             <h3 className="dr-eyebrow">How the price was reached</h3>
+            {/* Six unrelated cells is the shape of a lookup table, and this is
+                not one — it is a chain. A list price derived from points over
+                replacement, multiplied by what the room is paying tonight,
+                multiplied by what this roster still needs. The useful reading
+                is which step moved it, because "the model likes him" and "you
+                need one and the room is hot" are different reasons to be
+                looking at the same $54, and only one of them survives you
+                filling the slot. */}
+            <PriceChain
+              steps={[
+                {
+                  label: 'Over replacement',
+                  dollars: player.modelValue,
+                  applied: `${player.valueOverReplacement} pts`,
+                  note: "Value over replacement, turned into a share of the league's budget.",
+                },
+                ...(player.customRanking
+                  ? [
+                      {
+                        label: 'Your ranking',
+                        dollars: player.estimatedValue,
+                        applied: 'imported',
+                        note: 'An imported ranking or the bundled consensus is driving this board.',
+                      },
+                    ]
+                  : []),
+                ...(analytics
+                  ? [
+                      {
+                        label: "Tonight's room",
+                        dollars: player.estimatedValue * analytics.marketInflation,
+                        applied: `×${analytics.marketInflation}`,
+                        note: 'Money still unspent against the value still for sale.',
+                      },
+                      {
+                        label: 'Your need',
+                        dollars: analytics.adjustedValue,
+                        applied: `×${analytics.needMultiplier}`,
+                        note: 'What an unfilled starting slot at this position is worth to you.',
+                      },
+                    ]
+                  : []),
+              ]}
+            />
             <dl className="dr-facts">
-              <div>
-                <dt>List value</dt>
-                <dd>${player.estimatedValue}</dd>
-              </div>
-              <div>
-                <dt>Value over replacement</dt>
-                <dd>{player.valueOverReplacement} pts</dd>
-              </div>
-              <div>
-                <dt>Market inflation</dt>
-                <dd>{analytics ? `${analytics.marketInflation}×` : '—'}</dd>
-              </div>
-              <div>
-                <dt>Position gone</dt>
-                <dd>{analytics ? `${Math.round(analytics.positionScarcity * 100)}%` : '—'}</dd>
-              </div>
-              <div>
-                <dt>Your need</dt>
-                <dd>{analytics ? `${analytics.needMultiplier}×` : '—'}</dd>
-              </div>
-              <div>
-                <dt>Confidence</dt>
-                <dd>{analytics ? `${analytics.confidenceLevel}%` : '—'}</dd>
-              </div>
-              <div>
-                <dt>Adjusted value</dt>
-                <dd>{money(analytics?.adjustedValue)}</dd>
-              </div>
               <div>
                 <dt>Tier</dt>
                 <dd>{player.tier}</dd>
               </div>
+              <div>
+                <dt title="Position gone: how much of what this position had for sale is already off the board">
+                  Position gone
+                </dt>
+                <dd>{analytics ? `${Math.round(analytics.positionScarcity * 100)}%` : '—'}</dd>
+              </div>
+              <div>
+                <dt title="How much of this player we have actually seen play">Confidence</dt>
+                <dd>{analytics ? `${analytics.confidenceLevel}%` : '—'}</dd>
+              </div>
+              <div>
+                <dt>Our own number</dt>
+                <dd>{money(player.modelValue)}</dd>
+              </div>
             </dl>
             <p className="dr-footnote">
-              List value is value over replacement turned into a share of the league's budget.
-              Inflation, scarcity and need move it as the draft runs — confidence is how much of
-              this player we have actually seen play.
+              {analytics
+                ? 'Inflation and need move the list price as the draft runs; the last bar is the price to actually decide against.'
+                : 'Put him on the block to see tonight’s inflation and your own need folded in — those two steps are about the room, and the room has not been asked yet.'}
             </p>
           </section>
         </div>

@@ -39,11 +39,18 @@ import { memo } from 'react';
  * arrays that come from module caches, so the bail-out is exact.
  */
 
-const INK = 'var(--dr-ink)';
-const FAINT = 'var(--dr-line-strong)';
-const TRACK = 'var(--dr-raised)';
-const GOOD = 'var(--dr-good)';
-const WARN = 'var(--dr-warn)';
+/*
+ * The palette every instrument here draws in, exported because the profile's
+ * larger instruments draw in the same one. Two copies of five colour tokens is
+ * two answers to "what does a reference mark look like", and the divergence
+ * would show up as one chart's median notch being a different grey from
+ * another's directly beneath it.
+ */
+export const INK = 'var(--dr-ink)';
+export const FAINT = 'var(--dr-line-strong)';
+export const TRACK = 'var(--dr-raised)';
+export const GOOD = 'var(--dr-good)';
+export const WARN = 'var(--dr-warn)';
 
 /** A full season, which is the frame every game log is drawn in. */
 const SEASON_GAMES = 17;
@@ -102,8 +109,12 @@ const GameLogView = ({
 }: GameLogProps) => {
   if (!weeks.length) return null;
 
-  const bar = 3;
   const slot = width / SEASON_GAMES;
+  // Was a fixed three pixels, which is right at the card's 232 and wrong at the
+  // profile's 480: the columns stayed hairlines while the gaps doubled, and
+  // seventeen Sundays read as a comb rather than as a season. Proportional to
+  // the slot, with a floor so a narrow strip still has columns.
+  const bar = Math.max(3, Math.min(slot * 0.55, 14));
   const scale = Math.max(strongWeek, replacement * 1.5, 1);
   const base = height - 1;
   const rule = base - (replacement / scale) * (height - 2);
@@ -284,6 +295,15 @@ interface RoleFieldProps {
   redZoneTop: number;
   label: string;
   size?: number;
+  /**
+   * Name the four corners.
+   *
+   * Off on a card, where the field is 54px and four labels would be four
+   * illegible smudges over the reading — the caption carries them there. On at
+   * profile size, where the field is twice as wide and the tab's own heading is
+   * the question the corners answer.
+   */
+  quadrants?: boolean;
 }
 
 /**
@@ -323,6 +343,7 @@ const RoleFieldView = ({
   redZoneTop,
   label,
   size = 54,
+  quadrants = false,
 }: RoleFieldProps) => {
   const pad = 4;
   const inner = size - pad * 2;
@@ -380,6 +401,22 @@ const RoleFieldView = ({
         strokeWidth={0.75}
         opacity={0.3}
       />
+      {quadrants && (
+        <g className="dr-role-corners" fill={INK} opacity={0.4}>
+          <text x={pad + 1} y={pad + 7}>
+            specialist
+          </text>
+          <text x={size - pad - 1} y={pad + 7} textAnchor="end">
+            bell cow
+          </text>
+          <text x={pad + 1} y={size - pad - 2}>
+            backup
+          </text>
+          <text x={size - pad - 1} y={size - pad - 2} textAnchor="end">
+            decoy
+          </text>
+        </g>
+      )}
       <circle cx={cx} cy={cy} r={r + 1.8} fill={strong ? GOOD : WARN} opacity={0.18} />
       <circle cx={cx} cy={cy} r={r} fill={strong ? GOOD : WARN} opacity={0.95} />
     </svg>

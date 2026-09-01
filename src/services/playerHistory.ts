@@ -119,3 +119,17 @@ export const careerShape = (playerId: string): CareerSeason[] | null => {
   const seasons = cache?.career[playerId];
   return seasons && seasons.length > 0 ? seasons : null;
 };
+
+/**
+ * His most recent season, out of the same cache and for the same reason.
+ *
+ * `weeklyShape` already reaches into this record for the game log; the scoring
+ * mix needs the rest of it — and, more to the point, needs it for *everybody*
+ * at a position at once, so that "unusually touchdown-dependent" can be a
+ * measured claim about the cohort rather than a constant somebody chose. Sixty
+ * synchronous map reads is nothing; sixty promises would be sixty repaints.
+ */
+export const seasonShape = (playerId: string): PlayerSeason | null => {
+  const seasons = cache?.history[playerId];
+  return seasons && seasons.length > 0 ? seasons[seasons.length - 1] : null;
+};

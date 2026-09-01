@@ -925,6 +925,122 @@ identical mean. The bye is a full-height dashed socket rather than a stub,
 because an absence the same size as a week is counted as a week and a
 three-pixel mark among eighteen columns reads as a rendering fault.
 
+**The tabs behind the raised card were nineteen lists of numerals and thirteen
+charts, three of which were bars.** The card got the instrument treatment twice
+and the dossier it opens into never did — so the surface with the most room on
+it was the sparsest thing in the app. A number in a list is not wrong; it is the
+most precise form there is. But a _column_ of them answers no question, because
+every question a drafter has is comparative — against the other men at his
+position, against what a free player scores, against what the room will pay —
+and a list has nowhere to put the comparison. The reader carries it in their
+head with money on the table.
+
+`charts/profile.tsx` is the same rule as `micro.tsx` at the size a raised card
+can afford, and the palette is imported from there rather than restated: two
+copies of five colour tokens is two answers to what a reference mark looks like,
+and it shows up as one chart's median notch being a different grey from
+another's directly beneath it.
+
+**A percentile is a position in a distribution, so `MetricStrip` draws the
+distribution.** `PercentileBars` is gone. Eight bars on one shared 0-100 scale
+said the same thing eight times, and what they hid is the only interesting part:
+_the distributions differ_. Consistency at a position is tight and crowded;
+ceiling is skewed with a long thin tail; red-zone touches are bimodal, because a
+team either feeds a man at the goal line or it does not. A percentile of 90
+means something different in each of those three, and a bar cannot say which one
+you are in. Every startable player is a tick on the real axis, he is the lit
+caret, the median is a notch under it, and hovering names the nearest man —
+which is the question a distribution provokes and the one an auction needs,
+because the answer is usually somebody you could buy instead.
+
+It is the workhorse: eight readings on the overview, four on usage, seven clubs
+deep on the offence, the December schedule against the position, and five across
+the thirty-two defences. Two things it has to get right. The domain is the 2nd
+to 98th percentile, so one outlier cannot compress the field into the first
+third of the axis. And `invert` exists because five readings on these screens
+are better when smaller — age, games missed, sack rate allowed, points allowed,
+seconds per play — and a percentile that does not flip reports the best defence
+in the league as the worst.
+
+**Three more, each the shape of its own data.** `ScoringMix` is where a season's
+points actually came from, because two backs projected for the same total are
+not the same bet when one got ninety of last year's from touchdowns — the least
+stable thing in football, handed out by field position and play-calling rather
+than earned at a repeatable rate, and invisible to a projection that only ever
+saw the total. The tick on each column is the share a typical startable player
+at that position takes from scores, _measured over the cohort_ rather than
+chosen: the whole history file is already in memory once any game log has
+loaded, so it is sixty map reads, and a constant nobody derived would be
+indistinguishable on screen from one three seasons produced.
+
+`WeeksAbove` replaces "consistency 7/10". Variance is symmetric — it scores a
+man who is never bad and a man who is never good the same — and what a lineup
+needs is the other question, _how often did starting him win the week_, which is
+a staircase. The denominator is a full season rather than games played, so a man
+who missed six weeks visibly cleared nothing in six of them.
+
+`PriceChain` replaces six unrelated cells with the chain they actually are: a
+list price from points over replacement, times what the room is paying tonight,
+times what this roster still needs. The useful reading is _which step moved it_,
+because "the model likes him" and "you need one and the room is hot" are
+different reasons to be looking at the same $54 and only one of them survives
+you filling the slot.
+
+**Interaction is held to the same bar as ink: it earns its place by answering a
+question that was already being asked.** `Threshold` is a slider because the
+outcome curve above it is the right picture and answers a question nobody has —
+the question people have arrives with a number already in it (_my other back
+gives me 210, does this man beat that_) and it is different for every reader,
+which is the case for making it draggable rather than for drawing forty more
+marks. `BidScrub` is the same argument about the only number that decides the
+night: every other price on the screen is one somebody else arrived at, and the
+one being said out loud moves a dollar at a time while people shout. It carries
+gain-per-dollar where the snake outlook is knowable, because that is what this
+format turns on — on the shipped board a $48 bid on Gibbs is buying the 124
+points between him and RJ Harvey, not the 278 on his card.
+
+Two things the interaction had to get right, both found by driving it. The
+readout under an instrument has a fixed minimum height, because a chart that
+reflows when you point at it is a chart you cannot point at twice. And the
+hovered value replaces the resting one in a fixed-width right-hand column rather
+than appending to it, so eight strips stay a table the eye can run down.
+
+**Two defects, and the shape of both is worth keeping.** `Threshold` shipped
+reading "0% chance he clears 72 points" for a player projected at 278 with a
+floor of 253. `tailAbove` is Q(z) — the chance of exceeding a _standardised
+threshold_ — and it was being handed the distance back to the mean instead,
+which inverts every reading. The second is subtler: replacement level sits well
+below a good player's floor and the slider opens on it, so a range of
+floor-to-ceiling clamped the handle to its left end while the label read the
+true number. A control saying one thing and showing another is worse than no
+control. Three tests pin both.
+
+**The dead space was a grid putting independent things in rows.** Every tab had
+a hole in the middle of it — a four-line panel beside a swarm plot left three
+hundred empty pixels on a screen whose whole complaint was sparseness — because
+`auto-fit` lays sections out in rows and a short one beside a tall one leaves
+the difference. There is no row structure to preserve here: the sections are
+independent and their order is a reading order, not a table. Multi-column flows
+them instead and the columns balance themselves, with `break-inside: avoid`
+keeping a chart off a column break and `column-span: all` for the headline
+tiles.
+
+Two smaller things went with it. `.dr-role-wide > .dr-facts` states its track
+count rather than using `auto-fit`, because `flex: 1` sets a base size of zero
+and `auto-fit` resolves against that base rather than the width the item grows
+to — so five readings beside the role field came out as one tall column. And the
+range inputs carry `color-scheme: dark`, without which the browser paints its
+light-theme track: a bright white bar across a near-black panel, and the loudest
+thing on a screen where it is a control rather than a reading.
+
+**A season's points are restated at the league being played.** `player-history.
+json` stores nflverse's full-PPR total, and the totals table and the scoring mix
+both read it — printing a season a fifth too large directly beneath a projection
+that is not, which is the quiet drift `valuation.ts` exists to prevent one
+register out. The profile takes the league and goes through the same `pointsFor`
+the pool builder and the board come through, so there is no second definition of
+what a catch is worth.
+
 **The offence needed a scale too, and its cohort is not the players.**
 `offenceNorm` lives beside `positionNorm` because it answers the same question —
 _compared to what?_ — and is primed off the same array at the same moment. What
@@ -1988,8 +2104,12 @@ signal that was actually measured — live half-PPR ADP, refreshable on its own 
 seconds, with expert consensus extending it past where real drafts stop; and the
 card given a back and a raised state — front to scan, `↻` to turn it over onto a
 second page of seven more instruments, `⤢` to raise that page into the full
-dossier with the board receding behind it and nothing on it moving;
-694 tests.
+dossier with the board receding behind it and nothing on it moving, and every
+one of that dossier's eight tabs rebuilt out of instruments rather than lists —
+distributions where percentile bars were, where a season's points came from,
+how many weeks he cleared a bar, the price as the chain of multipliers it is,
+and three draggable readings that answer a question a static chart cannot;
+702 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes

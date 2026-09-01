@@ -1671,6 +1671,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                         currentBid={selected?.id === expandedPlayer.id ? Number(bid) || 0 : 0}
                         players={players}
                         replacement={draftService.getReplacementLevel(expandedPlayer.position)}
+                        /* The league, so a season's points are restated the way
+                           every other number in the room already is — the pool
+                           file counts full PPR and this one is half. */
+                        league={draftService.getLeagueShape()}
+                        gain={boardGains.get(expandedPlayer.id)?.high ?? null}
+                        gainFree={boardGains.get(expandedPlayer.id)?.free ?? null}
+                        ceiling={pulse.get(expandedPlayer.position)?.myCeiling ?? null}
                         pinned={preferences.pinned.includes(expandedPlayer.id)}
                         onTogglePin={() => togglePin(expandedPlayer.id)}
                         onClose={closeExpanded}
@@ -1969,6 +1976,10 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           analytics={analytics}
           players={players}
           replacement={draftService.getReplacementLevel(selected.position)}
+          league={draftService.getLeagueShape()}
+          gain={boardGains.get(selected.id)?.high ?? null}
+          gainFree={boardGains.get(selected.id)?.free ?? null}
+          ceiling={pulse.get(selected.position)?.myCeiling ?? null}
           currentBid={Number.parseInt(bid, 10) || undefined}
           pinned={preferences.pinned.includes(selected.id)}
           onTogglePin={() => togglePin(selected.id)}

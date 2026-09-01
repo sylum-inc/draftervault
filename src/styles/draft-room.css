@@ -2340,19 +2340,31 @@
 }
 
 /*
- * Two columns where there is room for two.
+ * Columns that pack, rather than a grid that leaves holes.
  *
- * `auto-fit` rather than a fixed two, so the same rule serves a laptop, a
- * tablet and the phone the artifact gets opened on: it is one column until a
- * section can have 420px, and never squeezes a chart to make a second.
+ * This was `grid-template-columns: repeat(auto-fit, minmax(420px, 1fr))`, and a
+ * grid puts its items in *rows*: a short section beside a tall one leaves the
+ * height difference as dead space, and every tab had one — a four-line panel
+ * next to a swarm plot left three hundred empty pixels in the middle of a
+ * screen whose whole complaint was sparseness. There is no row structure to
+ * preserve here; the sections are independent and their order is a reading
+ * order, not a table.
+ *
+ * Multi-column flows them instead, so each section starts where the last one
+ * ended and the columns balance themselves. `break-inside: avoid` is what keeps
+ * a chart from being sliced down the middle by a column break.
  */
 .dr-card-detail .dr-tabpanel,
 .dr-profile .dr-tabpanel {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  gap: var(--dr-s3);
-  align-items: start;
+  columns: 420px 2;
+  column-gap: var(--dr-s3);
   padding: var(--dr-s3);
+}
+
+.dr-card-detail .dr-tabpanel > *,
+.dr-profile .dr-tabpanel > * {
+  break-inside: avoid;
+  margin-bottom: var(--dr-s3);
 }
 
 /* The readings that describe the whole player run the full width above the
@@ -2360,12 +2372,14 @@
 .dr-card-detail .dr-tabpanel > .dr-profile-tiles,
 .dr-card-detail .dr-tabpanel > .dr-verdict-line,
 .dr-card-detail .dr-tabpanel > .dr-notice,
+.dr-card-detail .dr-tabpanel > .dr-empty,
 .dr-card-detail .dr-tabpanel > .dr-full,
 .dr-profile .dr-tabpanel > .dr-profile-tiles,
 .dr-profile .dr-tabpanel > .dr-verdict-line,
 .dr-profile .dr-tabpanel > .dr-notice,
+.dr-profile .dr-tabpanel > .dr-empty,
 .dr-profile .dr-tabpanel > .dr-full {
-  grid-column: 1 / -1;
+  column-span: all;
 }
 
 /* In a column layout a full-width rule between sections has nothing to
@@ -5136,4 +5150,357 @@
 
 .dr-stage-snakegain[data-slot='flex'] {
   border-left-color: var(--dr-caution);
+}
+
+/* --------------------------------------------------------------------------
+   the dossier's instruments
+   -------------------------------------------------------------------------- */
+
+/* A metric against its whole cohort. The label and the readout are fixed
+   columns so eight of these stack into a table the eye can run down — the
+   strips line up, which is the entire argument for small multiples and the
+   thing eight self-scaled charts could never give. */
+.dr-strip {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 92px;
+  align-items: center;
+  gap: var(--dr-s2);
+  min-width: 0;
+}
+
+.dr-strip-label {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-strip-plot {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  cursor: crosshair;
+}
+
+/* Fixed width and right-aligned, so the numbers form a column and swapping in
+   a hovered player's name cannot shove the strip about under the cursor. */
+.dr-strip-read {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+}
+
+.dr-strip-read em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-strip-read b {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dr-mix,
+.dr-weeks {
+  min-width: 0;
+}
+
+.dr-mix svg,
+.dr-weeks svg {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.dr-mix-tick {
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  fill: var(--dr-ink-faint);
+}
+
+/* The readout under an instrument. Fixed to two lines' worth of space so a
+   hover cannot reflow the panel it lives in — a chart that moves when you
+   point at it is a chart you cannot point at twice. */
+.dr-mix-read {
+  margin: 4px 0 0;
+  min-height: 2.4em;
+  font-size: var(--dr-t-small);
+  line-height: 1.3;
+  color: var(--dr-ink-dim);
+}
+
+.dr-mix-read b {
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-threshold {
+  margin-top: var(--dr-s2);
+}
+
+.dr-threshold-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dr-threshold-say {
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink-dim);
+}
+
+.dr-threshold-say b {
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-threshold input[type='range'],
+.dr-scrub input[type='range'] {
+  width: 100%;
+  accent-color: var(--dr-accent-lift);
+  /* Without this the browser paints its light-theme track — a bright white bar
+     across a near-black panel, which is the loudest thing on the screen and is
+     a control, not a reading. */
+  color-scheme: dark;
+  cursor: ew-resize;
+}
+
+.dr-role-corners {
+  font-size: 7px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* A word that acts. Deliberately not a `.dr-button`: it sets a value in a
+   sentence rather than performing an action, so it should read as part of the
+   sentence. */
+.dr-linkish {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--dr-ink-dim);
+  font: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.dr-linkish:hover {
+  color: var(--dr-ink);
+}
+
+.dr-scrub-head {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--dr-s2);
+}
+
+.dr-scrub-head b {
+  font-size: var(--dr-t-head);
+  color: var(--dr-value);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-scrub-reads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: var(--dr-s2) 0 var(--dr-s2);
+}
+
+.dr-scrub-reads > div {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.dr-scrub-reads dt {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-scrub-reads dd {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-scrub-reads dd[data-tone='good'] {
+  color: var(--dr-good);
+}
+
+.dr-scrub-reads dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+/* The price, as the chain of multipliers it actually is. */
+.dr-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dr-chain-step {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) 46px 72px;
+  align-items: center;
+  gap: var(--dr-s2);
+}
+
+.dr-chain-label {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-chain-track {
+  height: 9px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-chain-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.dr-chain-applied {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.dr-chain-money {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+}
+
+.dr-chain-money em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+}
+
+.dr-chain-money em[data-move='up'] {
+  color: var(--dr-warn);
+}
+
+.dr-chain-money em[data-move='down'] {
+  color: var(--dr-good);
+}
+
+/* An instrument tall enough that its words belong beside it, not under it. */
+.dr-role-wide {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dr-s3);
+  min-width: 0;
+}
+
+.dr-role-wide > .dr-facts {
+  /* `flex: 1` sets a base of zero, and `auto-fit` resolves its track count
+     against that base rather than against the width the item grows to — so the
+     five readings beside the role field came out as one tall column. Stated
+     explicitly instead, with a real basis to grow from. */
+  flex: 1 1 220px;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  min-width: 0;
+  margin-top: 0;
+}
+
+.dr-risks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-s2);
+}
+
+.dr-risk {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s3);
+}
+
+.dr-risk > span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-risk b {
+  font-size: var(--dr-t-small);
+  font-weight: 600;
+  color: var(--dr-ink);
+}
+
+.dr-risk em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+/* The three weeks a fantasy season is decided in, named rather than averaged. */
+.dr-weeklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dr-weeklist li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 96px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--dr-s2);
+}
+
+.dr-weeklist-week {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-weeklist-opp {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-weeklist-track {
+  height: 9px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-weeklist-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  opacity: 0.85;
 }
