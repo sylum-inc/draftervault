@@ -15,9 +15,9 @@ import {
 } from '@/services/playerHistory';
 import { loadSchedule } from '@/services/nflSchedule';
 import { Headshot } from './Headshot';
-import { Sparkline } from './Sparkline';
-import { RangeBar } from './charts/RangeBar';
 import { PercentileBars } from './charts/PercentileBars';
+import { GameLog } from './charts/micro';
+import { positionNorm } from '@/lib/positionNorms';
 import { SeasonMultiples } from './charts/SeasonMultiples';
 import { ScheduleStrip, type ScheduleGame } from './charts/ScheduleStrip';
 import { BidLadder } from './charts/BidLadder';
@@ -180,45 +180,101 @@ export const PlayerProfile = ({
   const latest = history?.[history.length - 1];
   const columns = statColumns(player.position);
 
+  /*
+   * Where he stands among the men who actually start at his position.
+   *
+   * These read `player.percentiles` first, which the pool computes over every
+   * player it holds — and the pool is six hundred and twenty-eight people, most
+   * of them depth. Against that field every player worth opening a profile on
+   * scores in the high nineties, so the panel drew seven full bars and said
+   * nothing: projected points 100th, ceiling 100th, floor 99th. A reading that
+   * is the same for everybody you would look at is not a reading.
+   *
+   * The cohort is the startable half instead — the players at his position who
+   * beat replacement level, which is exactly the set he is competing with for a
+   * roster spot and the same principle the board's own instruments were fixed
+   * on. Replacement is already in hand here, so this needs nothing the panel
+   * did not have.
+   */
   const percentileRows = useMemo(() => {
-    const p = player.percentiles ?? {};
+    const bar = replacement ?? replacementPoints ?? null;
+    const field = players.filter(
+      (other) =>
+        other.position === player.position &&
+        !other.marketOnly &&
+        (bar == null || other.projectedPoints > bar)
+    );
+
+    const standing = (read: (entry: Player) => number | null | undefined): number | null => {
+      const mine = read(player);
+      if (mine == null || !Number.isFinite(mine)) return null;
+      const values = field
+        .map(read)
+        .filter((value): value is number => value != null && Number.isFinite(value));
+      // Below six the percentile is an accident of who happened to be measured,
+      // which is the same floor `positionNorms` holds itself to.
+      if (values.length < 6) return null;
+      const below = values.filter((value) => value < mine).length;
+      const equal = values.filter((value) => value === mine).length;
+      // Midpoint for ties, so two identical players do not come out a rank
+      // apart because of the order they were listed in.
+      return Math.round(((below + equal / 2) / values.length) * 100);
+    };
+
     const rows: Array<{ label: string; percentile: number; value: string }> = [];
-    if (p.points != null)
-      rows.push({
-        label: 'Projected points',
-        percentile: p.points,
-        value: `${player.projectedPoints}`,
-      });
-    if (p.pointsPerGame != null)
-      rows.push({
-        label: 'Points per game',
-        percentile: p.pointsPerGame,
-        value: `${(player.projectedPoints / Math.max(1, player.lastSeasonGames || 17)).toFixed(1)}`,
-      });
-    if (p.ceiling != null)
-      rows.push({ label: 'Ceiling', percentile: p.ceiling, value: `${player.upside}` });
-    if (p.floor != null)
-      rows.push({ label: 'Floor', percentile: p.floor, value: `${player.floor}` });
-    if (p.consistency != null)
-      rows.push({
-        label: 'Consistency',
-        percentile: p.consistency,
-        value: `${player.consistency}/10`,
-      });
-    if (p.snapShare != null && player.snapPercentage != null)
-      rows.push({
-        label: 'Snap share',
-        percentile: p.snapShare,
-        value: `${Math.round(player.snapPercentage)}%`,
-      });
-    if (p.targetShare != null && player.targetShare != null)
-      rows.push({
-        label: 'Target share',
-        percentile: p.targetShare,
-        value: `${player.targetShare}%`,
-      });
+    const add = (
+      label: string,
+      read: (entry: Player) => number | null | undefined,
+      format: (value: number) => string
+    ) => {
+      const percentile = standing(read);
+      const mine = read(player);
+      if (percentile == null || mine == null) return;
+      rows.push({ label, percentile, value: format(mine) });
+    };
+
+    add(
+      'Projected points',
+      (entry) => entry.projectedPoints,
+      (value) => `${Math.round(value)}`
+    );
+    add(
+      'Points per game',
+      (entry) => entry.pointsPerGame,
+      (value) => value.toFixed(1)
+    );
+    add(
+      'Ceiling',
+      (entry) => entry.upside,
+      (value) => `${Math.round(value)}`
+    );
+    add(
+      'Floor',
+      (entry) => entry.floor,
+      (value) => `${Math.round(value)}`
+    );
+    add(
+      'Consistency',
+      (entry) => entry.consistency,
+      (value) => `${value}/10`
+    );
+    add(
+      'Snap share',
+      (entry) => entry.snapPercentage,
+      (value) => `${Math.round(value)}%`
+    );
+    add(
+      'Target share',
+      (entry) => entry.usage?.targetShare,
+      (value) => `${value}%`
+    );
+    add(
+      'Red-zone touches',
+      (entry) => entry.usage?.redZoneTouches,
+      (value) => `${value}`
+    );
     return rows;
-  }, [player]);
+  }, [player, players, replacement, replacementPoints]);
 
   // The player's own position, as points, so every distribution chart below is
   // drawn against the field he is actually competing with for a roster spot.
@@ -377,12 +433,13 @@ export const PlayerProfile = ({
 
             <section className="dr-modal-section">
               <h3 className="dr-eyebrow">Likely season</h3>
-              <RangeBar
-                floor={player.floor}
-                projection={player.projectedPoints}
-                ceiling={player.upside}
-                replacement={replacementPoints ?? replacement ?? undefined}
-              />
+              {/* The range bar that used to sit here printed floor, projection
+                  and ceiling; the curve directly below it printed floor,
+                  projection, ceiling and the share above replacement. Two
+                  instruments, one of them a strict superset, stacked — and the
+                  bar was the weaker claim besides, saying "somewhere in here"
+                  with every point equally likely when the numbers are one
+                  standard deviation either side of a mean. */}
               <OutcomeCurve
                 projection={player.projectedPoints}
                 floor={player.floor}
@@ -457,11 +514,25 @@ export const PlayerProfile = ({
             {latest && latest.weekly.length > 1 && (
               <section className="dr-modal-section">
                 <h3 className="dr-eyebrow">{latest.season} season, game by game</h3>
-                <Sparkline
-                  values={latest.weekly}
-                  label={`${player.name}: PPR points in each ${latest.season} game`}
-                  height={72}
+                {/* The same instrument the board draws, at the size a profile
+                    can afford. A line here and a game log there would be two
+                    pictures of one season, and the line is the weaker of them:
+                    it joins games that did not touch, it makes a nine-game year
+                    the width of a seventeen-game one, and it has nothing to say
+                    about which weeks were actually worth starting him. */}
+                <GameLog
+                  weeks={latest.weekly}
+                  replacement={(replacement ?? replacementPoints ?? 0) / 17}
+                  strongWeek={(positionNorm(player.position, 'ppg')?.top ?? 10) * 2}
+                  label={`${player.name}: points in each ${latest.season} game against replacement level`}
+                  width={480}
+                  height={64}
                 />
+                <p className="dr-footnote">
+                  One column a Sunday, empty where he did not play. The dashed rule is what a freely
+                  available {player.position} scores per game — columns above it are weeks he beat
+                  the alternative.
+                </p>
               </section>
             )}
 

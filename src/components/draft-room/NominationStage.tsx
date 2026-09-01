@@ -10,9 +10,10 @@ import type {
   Team,
 } from '@/services/auctionDraftService';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
+import { accentFor, inkFor } from '@/lib/accent';
+import { Outcome } from './charts/micro';
 import { modelCaveats } from '@/lib/modelTrust';
 import { Headshot } from './Headshot';
-import { RangeBar } from './charts/RangeBar';
 
 interface NominationStageProps {
   /**
@@ -116,13 +117,6 @@ interface NominationStageProps {
    */
   competition: BidCompetition | null;
 }
-
-const inkFor = (hex: string): string => {
-  const value = hex.replace('#', '');
-  if (value.length !== 6) return '#ffffff';
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16) / 255);
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6 ? '#0b0f17' : '#ffffff';
-};
 
 /**
  * How this bid compares to the model's number, in plain words.
@@ -243,7 +237,11 @@ export const NominationStage = ({
   const verdict = verdictFor(amount, analytics, snakeGain);
   const rejection = check && !check.ok ? check : null;
 
-  const style = { '--dr-accent': primary, '--dr-accent-ink': inkFor(primary) } as CSSProperties;
+  const style = {
+    '--dr-accent': primary,
+    '--dr-accent-ink': inkFor(primary),
+    '--dr-accent-lift': accentFor(primary),
+  } as CSSProperties;
   const step = (delta: number) =>
     onBidChange(String(Math.max(1, (Number.parseInt(bid, 10) || 0) + delta)));
 
@@ -484,13 +482,37 @@ export const NominationStage = ({
         )}
 
         <div className="dr-stage-range">
+          {/* The same instrument the card draws, not a second one for the same
+              numbers. The board showed a bell and the block showed a bar, for
+              one set of figures — and the bar was the weaker claim of the two,
+              since floor and ceiling are one standard deviation either side and
+              a bar says every point between them is equally likely. */}
           {!player.marketOnly && (
-            <RangeBar
-              floor={player.floor}
-              projection={player.projectedPoints}
-              ceiling={player.upside}
-              replacement={player.projectedPoints - player.valueOverReplacement || undefined}
-            />
+            <>
+              <Outcome
+                floor={player.floor}
+                projection={player.projectedPoints}
+                ceiling={player.upside}
+                replacement={player.projectedPoints - player.valueOverReplacement || null}
+                label={`Floor ${player.floor}, projected ${player.projectedPoints}, ceiling ${player.upside}`}
+                width={260}
+                height={40}
+              />
+              <div className="dr-stage-rangeread">
+                <span>
+                  <em>Floor</em>
+                  <strong className="dr-num">{player.floor}</strong>
+                </span>
+                <span>
+                  <em>Projected</em>
+                  <strong className="dr-num">{player.projectedPoints}</strong>
+                </span>
+                <span>
+                  <em>Ceiling</em>
+                  <strong className="dr-num">{player.upside}</strong>
+                </span>
+              </div>
+            </>
           )}
           <div className="dr-stage-signals" hidden={player.marketOnly}>
             {player.percentiles?.points != null && (

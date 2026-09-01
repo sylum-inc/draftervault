@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import type { Player, PositionPulse } from '@/services/auctionDraftService';
 import { researchMark } from '@/services/playerResearch';
 import { getIdentity, teamColors, teamLogo } from '@/services/nflIdentity';
+import { accentFor, inkFor } from '@/lib/accent';
 import { Headshot } from './Headshot';
 import {
   GameLog,
@@ -74,15 +75,6 @@ interface PlayerCardProps {
    */
   pulse?: PositionPulse;
 }
-
-/** Readable ink for a team color, so light jerseys don't get white-on-white. */
-const inkFor = (hex: string): string => {
-  const value = hex.replace('#', '');
-  if (value.length !== 6) return '#ffffff';
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16) / 255);
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 0.6 ? '#0b0f17' : '#ffffff';
-};
 
 const RISK_COLOR: Record<Player['injuryRisk'], string> = {
   LOW: 'var(--dr-value)',
@@ -216,6 +208,10 @@ const PlayerCardView = ({
   const style = {
     '--dr-accent': primary,
     '--dr-accent-ink': inkFor(primary),
+    // The same hue, lifted into a band that reads on the ground. Anything drawn
+    // *on* the dark surface uses this; only the position badge, which sets its
+    // own ink, gets the raw club colour.
+    '--dr-accent-lift': accentFor(primary),
   } as CSSProperties;
 
   return (
@@ -292,7 +288,9 @@ const PlayerCardView = ({
             <span className="dr-pos">{player.position}</span>
             {team}
             {identity?.jersey && <span className="dr-num">#{identity.jersey}</span>}
-            <span className="dr-tier dr-num">T{player.tier}</span>
+            <span className="dr-tier dr-num" data-tier={player.tier}>
+              T{player.tier}
+            </span>
             {mark && mark.direction !== 'NEUTRAL' && (
               <span
                 className="dr-card-research dr-research-mark"
