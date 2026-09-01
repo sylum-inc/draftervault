@@ -126,6 +126,22 @@ interface NominationStageProps {
    */
   myTeamId?: string | null;
   /**
+   * The most he is worth, given everything else this budget could buy.
+   *
+   * The plan's number rather than a multiplier on his price — see
+   * `src/lib/rosterPlan.ts` for why a multiplier could never be one. Null when
+   * a plan cannot honestly be computed: no sheet, no team marked as yours, or
+   * no snake order drawn, which are the same refusals the outlook makes.
+   */
+  walkAway?: number | null;
+  /**
+   * The same figure bounded across every draw, before the order is drawn.
+   *
+   * Only one of the two is ever set, for the reason the snake gain holds to:
+   * an exact number and a range beside it would be two answers to one question.
+   */
+  walkAwayBounds?: { low: number; high: number } | null;
+  /**
    * Whether this team may win this player at this price, from the engine.
    *
    * The row asks `validateBid` — the same call that runs when the button is
@@ -225,6 +241,8 @@ export const NominationStage = ({
   inflation,
   competition,
   myTeamId = null,
+  walkAway = null,
+  walkAwayBounds = null,
   checkTeam,
 }: NominationStageProps) => {
   const snake = mode === 'snake';
@@ -366,9 +384,47 @@ export const NominationStage = ({
                   )}
                 </dd>
               </div>
+              {/*
+                What he is worth against everything else the money could buy.
+                This tile used to print `analytics.maxBid`, which was
+                `riskAdjustedValue * 1.15` — the same multiplier for everybody,
+                so it ranked players in exactly the order their prices already
+                did and carried no information the price beside it did not. On
+                the shipped board it said $37 for Derrick Henry, whose gain over
+                the free back is nine points, and $28 for Omarion Hampton, whose
+                gain is minus forty-two. Twenty-eight dollars to make the team
+                worse than doing nothing, under a heading that says what to bid.
+
+                It is the plan's own answer now: the price above which the same
+                money buys more somewhere else. See `src/lib/rosterPlan.ts`.
+              */}
               <div className="dr-tile">
-                <dt>Max bid</dt>
-                <dd>${analytics ? Math.round(analytics.maxBid) : '—'}</dd>
+                <dt>Walk away</dt>
+                <dd
+                  style={
+                    (walkAwayBounds?.high ?? walkAway) != null &&
+                    (walkAwayBounds?.high ?? walkAway)! < player.estimatedValue
+                      ? { color: 'var(--dr-warn)' }
+                      : undefined
+                  }
+                  title={
+                    walkAwayBounds
+                      ? `Between $${walkAwayBounds.low} picking first and $${walkAwayBounds.high} picking last — the snake order is not drawn, so this is the range across all of them.`
+                      : walkAway == null
+                        ? 'Needs a sheet and a team marked as yours — without them, what a dollar is worth cannot be computed.'
+                        : walkAway === 0
+                          ? 'The snake hands you as much at this position. Every dollar here is a dollar wasted.'
+                          : `Past $${walkAway} the same money buys more elsewhere on the sheet.`
+                  }
+                >
+                  {walkAwayBounds
+                    ? walkAwayBounds.low === walkAwayBounds.high
+                      ? `$${walkAwayBounds.low}`
+                      : `$${walkAwayBounds.low}–${walkAwayBounds.high}`
+                    : walkAway == null
+                      ? '—'
+                      : `$${walkAway}`}
+                </dd>
               </div>
             </>
           )}

@@ -54,6 +54,16 @@ export interface PositionOutlook {
   position: string;
   /** The best player expected to survive to your next snake pick. */
   free: OutlookSubject | null;
+  /**
+   * Every free man at this position, best first, as projected points.
+   *
+   * The headline number only ever needs the first of these, but a *plan* needs
+   * the run of them: a league starting two backs that buys one has still to
+   * fill the other seat from the snake, and which free man that is depends on
+   * how many you bought. One is a reading; the list is what makes the
+   * counterfactual computable.
+   */
+  freeRanked: number[];
   /** How many at this position are gone before you pick, on this estimate. */
   goneBefore: number;
   /** The best player still for sale at auction here. */
@@ -150,12 +160,17 @@ export const snakeOutlook = (input: OutlookInput): SnakeOutlook => {
      * budget should not be spent on.
      */
     const free = best(surviving, position);
+    const freeRanked = surviving
+      .filter((player) => player.position === position)
+      .map((player) => player.points)
+      .sort((a, b) => b - a);
     const forSaleHere = best(forSale, position);
     const gain = forSaleHere ? forSaleHere.points - (free?.points ?? 0) : 0;
     const price = forSaleHere?.price ?? 0;
     return {
       position,
       free,
+      freeRanked,
       goneBefore: takenBefore.filter((player) => player.position === position).length,
       forSale: forSaleHere,
       gain: Math.round(gain),

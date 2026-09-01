@@ -22,6 +22,7 @@ import { PlayerProfile } from './PlayerProfile';
 import { CompareTray, CompareView } from './CompareTray';
 import { DraftBoard } from './DraftBoard';
 import { BudgetPlanner } from './BudgetPlanner';
+import { RosterPlanPanel } from './RosterPlanPanel';
 import { SpendOutlook } from './SpendOutlook';
 import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
@@ -94,9 +95,13 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [tableSort, setTableSort] = useState<TableSort>('rank');
   const [tableDescending, setTableDescending] = useState(false);
   const [watchedOnly, setWatchedOnly] = useState(false);
+  /* `plan` is the roster plan and opens by default: it is the only panel that
+     answers what to do with the whole budget, and every other reading in the
+     room is a fragment of it. The budget *planner* — what one bid leaves
+     behind — is `budget`, renamed out of its way. */
   const [asidePanel, setAsidePanel] = useState<
-    'budgets' | 'rosters' | 'market' | 'bargains' | 'plan' | 'spend'
-  >('budgets');
+    'plan' | 'spend' | 'budget' | 'budgets' | 'rosters' | 'market' | 'bargains'
+  >('plan');
   const [resultsOpen, setResultsOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
@@ -303,6 +308,32 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
      survives the search box being typed in behind it. Closing on a filter
      change would throw away what somebody was reading because they reached for
      the keyboard. */
+  /*
+   * The most the man on the block is worth, solved rather than guessed.
+   *
+   * Memoised on the player and the pick count because it is a knapsack over the
+   * whole sheet — about forty milliseconds — and the answer only moves when the
+   * board does. Deliberately *not* computed for every card: sixty of these
+   * would be two and a half seconds, and the number is only ever needed for the
+   * player money is actually being decided about.
+   */
+  /*
+   * Exactly one of the two, never both.
+   *
+   * Each is a knapsack over the whole sheet and the bounded form is two of
+   * them, so computing the point estimate as well would be a third solve whose
+   * answer is never shown — about forty wasted milliseconds on the one path
+   * that runs while a name is being called.
+   */
+  const { walkAway, walkAwayBounds } = useMemo(() => {
+    if (!selected) return { walkAway: null, walkAwayBounds: null };
+    const bounds = draftService.maxPriceBounds(selected.id);
+    return bounds
+      ? { walkAway: null, walkAwayBounds: bounds }
+      : { walkAway: draftService.maxPriceFor(selected.id), walkAwayBounds: null };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id, players, draftService]);
+
   const expandedPlayer = useMemo(
     () => (expandedId ? (players.find((entry) => entry.id === expandedId) ?? null) : null),
     [expandedId, players]
@@ -1453,6 +1484,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             <NominationStage
               mode={phase}
               myTeamId={myTeamId}
+              walkAway={walkAway}
+              walkAwayBounds={walkAwayBounds}
               /* The row asks the engine rather than guessing, so a chip that
                  looks live is a sale the engine will accept. Twelve cheap
                  lookups per render of one panel. */
@@ -1729,7 +1762,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           )}
 
           <div className="dr-segmented dr-aside-tabs" role="group" aria-label="Side panel">
-            {(['spend', 'budgets', 'rosters', 'market', 'bargains', 'plan'] as const).map(
+            {(['plan', 'spend', 'budget', 'budgets', 'rosters', 'market', 'bargains'] as const).map(
               (panel) => (
                 <button
                   key={panel}
@@ -1772,6 +1805,9 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
             <BargainBoard service={draftService} players={players} onSelect={nominate} />
           )}
           {asidePanel === 'plan' && (
+            <RosterPlanPanel service={draftService} players={players} onSelect={nominate} />
+          )}
+          {asidePanel === 'budget' && (
             <BudgetPlanner
               service={draftService}
               /* Yours, not whoever the winning-team select happens to sit on.

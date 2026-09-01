@@ -38,7 +38,10 @@ describe('the side panels', () => {
   it('opens every one of them', () => {
     render(<DraftRoom draftService={service} />);
     const names = tabs().map((tab) => tab.textContent);
-    expect(names).toEqual(['spend', 'budgets', 'rosters', 'market', 'bargains', 'plan']);
+    // `plan` is the roster plan and leads, because it is the only one that
+    // answers what to do with the whole budget; `budget` is the planner that
+    // says what one bid leaves behind.
+    expect(names).toEqual(['plan', 'spend', 'budget', 'budgets', 'rosters', 'market', 'bargains']);
 
     for (const name of names) {
       const tab = tabs().find((button) => button.textContent === name)!;
@@ -58,7 +61,7 @@ describe('the side panels', () => {
     service.renameTeam('team-1', 'The Owner');
     render(<DraftRoom draftService={service} />);
 
-    fireEvent.click(tabs().find((tab) => tab.textContent === 'plan')!);
+    fireEvent.click(tabs().find((tab) => tab.textContent === 'budget')!);
     expect(screen.getByText(/The Owner['’]s budget/)).toBeInTheDocument();
 
     // Record a sale to somebody else. The row moves; the plan must not.

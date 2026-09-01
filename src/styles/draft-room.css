@@ -5636,3 +5636,69 @@
   opacity: 0.3;
   cursor: not-allowed;
 }
+
+/* --------------------------------------------------------------------------
+   the plan
+   -------------------------------------------------------------------------- */
+
+.dr-planlist {
+  list-style: none;
+  margin: var(--dr-s2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dr-planlist-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: var(--dr-s2);
+  width: 100%;
+  padding: 5px 7px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--dr-fast),
+    background var(--dr-fast);
+}
+
+.dr-planlist-row:hover:not(:disabled) {
+  border-color: var(--dr-accent-lift);
+  background: var(--dr-surface-2);
+}
+
+.dr-planlist-name {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The seat, when it is the one this format is really contested over. */
+.dr-planlist-seat {
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+  border: 1px solid var(--dr-line);
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+.dr-planlist-gain {
+  font-size: var(--dr-t-small);
+  color: var(--dr-good);
+}
+
+.dr-planlist-price {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  min-width: 34px;
+  text-align: right;
+}

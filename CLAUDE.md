@@ -2110,8 +2110,12 @@ distributions where percentile bars were, where a season's points came from,
 how many weeks he cleared a bar, the price as the chain of multipliers it is,
 and three draggable readings that answer a question a static chart cannot,
 the sixty-times-a-night act of recording a sale cut from nine keystrokes to one
-press, and the six side panels put back on the screen the advisor had pushed
-them off; 708 tests.
+press, the six side panels put back on the screen the advisor had pushed them
+off, and the number that decides a bid finally solved rather than guessed — a
+knapsack over the sheet that says which three players the hundred dollars
+should buy and what the marginal dollar is worth, replacing a "what to bid"
+that was the price times 1.15 and recommended $28 on a man worth nothing;
+730 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -2142,6 +2146,68 @@ Open, roughly in order of value:
    `wholeNight.test.ts` now carries the same journey at the engine, over a real
    sheet with thirty sold, because a browser drive happens once and a test
    happens every time.
+
+**The panel headed "What to bid" was telling you to pay for players who make
+the team worse.** `maxBid` was `riskAdjustedValue * 1.15` and `walkAwayPoint`
+was that plus one, on top of an `adjustedValue` built from a scarcity
+coefficient of 0.15 and a risk ladder of 0.88/0.95/0.90/0.96 — every one of
+them a constant nobody derived, and the same multiplier for everybody. So the
+number ranked players in exactly the order their prices already did and carried
+no information the price beside it did not.
+
+Measured on the shipped board at the home league, it said $37 for Derrick Henry
+against a gain over the free back of nine points, $32 for Kenneth Walker at
+nine, and **$28 for Omarion Hampton, whose gain is minus forty-two** — twenty
+eight dollars to finish worse than doing nothing — while quoting $32 for
+Amon-Ra St. Brown at plus eighty-three. It was the same defect the bargain
+board was already pulled out of once (`edge * 0.12`, a constant nobody
+derived), sitting on the one number that decides whether a player is won.
+
+**`src/lib/rosterPlan.ts` is what a bid should actually be measured against.**
+The question every other panel was answering around: _given the money and this
+sheet of sixty, which players should I end up with?_ Each one costs whole
+dollars and, if bought, fills a seat the snake would otherwise have filled for
+nothing, so it is a knapsack — and two things fall out of solving it. The
+**plan**, the best affordable set at tonight's prices; and the **price of a
+dollar**, how many points the marginal one buys, which is the rate every bid is
+really competing with.
+
+The objective is the lineup's points and **not a sum of per-player gains**, and
+the worked example that forces it is worth keeping. A league starting two backs
+with free men A (196) and B (154): buying nobody scores A + B. Buying Gibbs
+(278) scores Gibbs + A, because the _other_ seat still takes the best free back
+— so the first back you buy is measured against **B, the worse one**, and the
+second against A. Adding up "gain over the best free man" twice would credit A's
+replacement twice and never B's. Scoring the whole lineup makes the baseline a
+constant, so which free man each purchase displaces becomes bookkeeping the
+search does rather than a rule anybody states.
+
+On the shipped board the plan is three players — Bijan $47, Amon-Ra $28, Kyren
+Williams $25 — for the whole hundred and **+278 points over an all-snake
+roster**, at 2.7 points a dollar. And the walk-aways are a different draft from
+the ladder's: Henry $37 → **$0**, Walker $32 → **$0**, Hampton $28 → **$0**,
+Josh Allen $41 → **$17**, McCaffrey $40 → **$17**, Nacua $44 → **$25**. More
+than half a commissioner's sheet is players the snake very nearly matches,
+which is a thing a multiplier on the price could never say.
+
+**It bounds rather than refuses, because the order is drawn at the table.**
+Everything downstream of `getSpendOutlook` refuses without a snake order, which
+is right and would leave a month in which the number this format turns on
+cannot be looked at. Picking first hands you the best free men, so the gaps are
+narrowest and the plan buys least; picking last is the reverse, and every other
+seat lies between. So the plan is solved at the seat that helps most — nothing
+it promises can be taken away by the draw — and the walk-away is printed as the
+range across both ends, in the idiom `snakeOutlookSpread` already established.
+
+**The inner loop allocated, and it was on the path that runs while a name is
+being called.** Items × dollars × states is about three quarters of a million
+passes on a real sheet, and decoding the roster state inside it built a fresh
+array every time: nominating went from about 200ms to 700ms under a 4x CPU
+throttle. The hundred and twenty states are decoded once into an `Int32Array`,
+feasibility is decided per candidate rather than per candidate-and-dollar, and
+the unrestricted plan is handed into `maxPriceFor` rather than re-solved inside
+it. Back to about 320ms, and it re-solves when the player changes rather than
+on every keystroke in the bid box.
 
 **Money left over players left is a constraint, not a forecast, and it decides
 when to buy.** `snakeOutlook` says _what_ a dollar buys; `endgame.ts` says

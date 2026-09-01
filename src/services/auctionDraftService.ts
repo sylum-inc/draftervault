@@ -35,6 +35,13 @@ import type { RankingOverride } from '@/lib/rankingsCsv';
 import { consensusCoverage, consensusOverrides, marketOrder } from '@/lib/consensusBoard';
 import { primeNorms } from '@/lib/positionNorms';
 import {
+  maxPriceFor,
+  rosterPlan,
+  type PlanCandidate,
+  type PlanInput,
+  type RosterPlan,
+} from '@/lib/rosterPlan';
+import {
   snakeOutlook,
   snakeOutlookSpread,
   type SnakeOutlook,
@@ -3211,6 +3218,198 @@ export class AuctionDraftService {
       // the order, so the draw is exactly one through the number of teams.
       Array.from({ length: this.teams.length }, (_, index) => index + 1)
     );
+  }
+
+  /**
+   * The inputs a plan is solved from, or null with the reason it cannot be.
+   *
+   * Assembled from exactly the same places the outlook is — the sheet for what
+   * is for sale, the market's order for who the room takes before you, your own
+   * roster for which seats are still open — so the plan and the per-player gain
+   * can never come to different conclusions about the same board.
+   */
+  private planInput(
+    atPick: number | null = null
+  ): { input: PlanInput; reason: null } | { input: null; reason: string } {
+    const outlook = atPick == null ? this.getSpendOutlook() : this.outlookAtPick(atPick);
+    if (!outlook.positions) {
+      return { input: null, reason: outlook.reason ?? 'No outlook to plan against.' };
+    }
+    const team = this.teams.find((entry) => entry.id === this.myTeamId);
+    if (!team) return { input: null, reason: 'No team is marked as yours.' };
+
+    const freeByPosition: Record<string, readonly number[]> = {};
+    for (const position of outlook.positions)
+      freeByPosition[position.position] = position.freeRanked;
+
+    // Seats still open, the flex counted separately — the plan decides which
+    // position fills it, which is the whole reason a flex moves prices.
+    const openSeats: Record<string, number> = {};
+    for (const [position, seats] of Object.entries(this.league.startingLineup)) {
+      if (position === 'FLEX') continue;
+      openSeats[position] = Math.max(0, seats - (team.roster[position as PlayerPosition] ?? 0));
+    }
+    const spare = FLEX_ELIGIBLE.reduce(
+      (total, eligible) =>
+        total +
+        Math.max(0, (team.roster[eligible] ?? 0) - (this.league.startingLineup[eligible] ?? 0)),
+      0
+    );
+    const flexOpen = Math.max(0, (this.league.startingLineup.FLEX ?? 0) - spare);
+
+    // Tonight's price rather than the list one: a plan is about what you will
+    // actually pay, and inflation is exactly the difference between the two.
+    const adjust = this.getPriceAdjuster();
+    const candidates: PlanCandidate[] = this.players
+      .filter((player) => !player.isDrafted && player.onSheet && !player.marketOnly)
+      .map((player) => ({
+        id: player.id,
+        name: player.name,
+        position: player.position,
+        price: Math.max(1, Math.round(adjust.price(player))),
+        points: player.projectedPoints,
+      }));
+
+    return {
+      input: {
+        candidates,
+        freeByPosition,
+        openSeats,
+        flexOpen,
+        flexPositions: FLEX_ELIGIBLE,
+        budget: Math.max(0, this.spendableFor(team).spendable),
+      },
+      reason: null,
+    };
+  }
+
+  /**
+   * The same outlook at a seat you name, rather than the one you were dealt.
+   *
+   * The commissioner draws the order at the table, sometimes on the night, and
+   * everything downstream of `getSpendOutlook` refuses until he does — which is
+   * correct, and leaves a month in which the one number this format turns on
+   * cannot be looked at. This is the seam `getSpendSpread` already uses to
+   * bound the outlook across every draw; the plan wants it too.
+   */
+  private outlookAtPick(pick: number): SnakeOutlook {
+    if (this.league.auctionSheetSize === null) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason:
+          'This league auctions the whole board, so there is no snake half to measure against.',
+      };
+    }
+    if (!this.myTeamId) {
+      return {
+        positions: null,
+        atOverall: null,
+        reason:
+          'Mark which team is yours in league settings — an outlook without it is somebody else’s draft.',
+      };
+    }
+    const ranked = marketOrder(this.marketSubjects());
+    const order = new Map(ranked.map((entry, index) => [entry.gsis, index]));
+    const subject = (player: Player) => ({
+      id: player.id,
+      name: player.name,
+      position: player.position,
+      points: player.projectedPoints,
+      price: player.estimatedValue,
+      order: order.get(player.id) ?? ranked.length + player.adp,
+    });
+    const live = this.players.filter((player) => !player.isDrafted);
+    return snakeOutlook({
+      snakePool: live.filter((player) => !player.onSheet).map(subject),
+      forSale: live.filter((player) => player.onSheet).map(subject),
+      yourNextSnakePick: pick,
+      positions: ['RB', 'WR', 'TE', 'QB', 'K', 'DST'],
+    });
+  }
+
+  /**
+   * The two draws that bound everything else, or null when the order is known.
+   *
+   * Picking first hands you the best free men, so the gaps an auction can buy
+   * are at their narrowest and the plan buys least; picking last is the
+   * reverse. Every other seat lies between, so two solves bound all twelve —
+   * and both ends are numbers the plan would genuinely print at some draw
+   * rather than an interpolation nobody would ever get.
+   */
+  private planDraws(): [number, number] | null {
+    if (this.hasSnakeOrder() && this.myTeamId) {
+      const upcoming = this.getSnakeUpcoming(this.teams.length * 3);
+      if (upcoming.some((slot) => slot.team.id === this.myTeamId)) return null;
+    }
+    return [1, this.teams.length];
+  }
+
+  /**
+   * The best roster the remaining money can still buy, and what a dollar is
+   * worth under it.
+   *
+   * The one question every other panel in this app was answering around rather
+   * than answering. See `src/lib/rosterPlan.ts` for why the objective is the
+   * lineup's points and not a sum of per-player gains.
+   */
+  getRosterPlan(): RosterPlan {
+    const draws = this.planDraws();
+    // Before the order is drawn, the conservative draw: picking first is where
+    // the snake gives most and an auction therefore buys least. A plan that
+    // holds at the seat that helps most holds at all twelve.
+    const { input, reason } = this.planInput(draws ? draws[0] : null);
+    if (!input) {
+      return { buy: [], spend: 0, gain: 0, perDollar: 0, curve: [0], reason };
+    }
+    return rosterPlan(input);
+  }
+
+  /** Whether the plan above is the seat you were dealt or the safest guess. */
+  isPlanBounded(): boolean {
+    return this.planDraws() != null;
+  }
+
+  /**
+   * The most this player is worth to you, given everything else the money could
+   * buy instead.
+   *
+   * Replaces a `riskAdjustedValue * 1.15` that ranked players in exactly the
+   * order their prices already did — so the panel headed *What to bid* carried
+   * no information the price beside it did not, and on the shipped board it
+   * told the owner to go to $28 on a man whose gain over the free back is minus
+   * forty-two points.
+   *
+   * Null when a plan cannot honestly be computed at all, which is the same set
+   * of refusals the outlook makes: no sheet, no team marked, no order drawn.
+   */
+  maxPriceFor(playerId: string): number | null {
+    const draws = this.planDraws();
+    const { input } = this.planInput(draws ? draws[0] : null);
+    if (!input) return null;
+    return maxPriceFor(input, playerId);
+  }
+
+  /**
+   * The same walk-away bounded across every draw, when the order is not drawn.
+   *
+   * Null once it is — an exact number and a range beside it would be two
+   * answers to one question, which is the rule the snake gain already lives by.
+   */
+  maxPriceBounds(playerId: string): { low: number; high: number } | null {
+    const draws = this.planDraws();
+    if (!draws) return null;
+    const low = this.planInput(draws[0]).input;
+    const high = this.planInput(draws[1]).input;
+    if (!low || !high) return null;
+    // The plan is handed in rather than re-solved inside: each of these is a
+    // knapsack over the whole sheet, and this path runs while a name is being
+    // called.
+    const at = (input: PlanInput) => maxPriceFor(input, playerId, rosterPlan(input));
+    const lowPrice = at(low);
+    const highPrice = at(high);
+    if (lowPrice == null || highPrice == null) return null;
+    return { low: Math.min(lowPrice, highPrice), high: Math.max(lowPrice, highPrice) };
   }
 
   /**
