@@ -1660,7 +1660,7 @@
 
 .dr-supply {
   display: grid;
-  grid-template-columns: 30px 1fr 52px;
+  grid-template-columns: 28px minmax(0, 1fr) 56px 44px;
   align-items: center;
   gap: 8px;
   padding: 4px 0;
@@ -5835,4 +5835,51 @@ li[data-level='ready'] > .dr-checklist-mark {
   font-size: var(--dr-t-small);
   line-height: 1.45;
   color: var(--dr-ink-dim);
+}
+
+/* Supply and demand on one row: what is gone, the seats still chasing what is
+   left, and the money behind them. */
+.dr-supply-money {
+  min-width: 44px;
+  text-align: right;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-supply[data-pressure='some'] .dr-supply-count b {
+  color: var(--dr-warn);
+}
+
+.dr-supply[data-pressure='high'] .dr-supply-count b {
+  color: var(--dr-danger);
+}
+
+.dr-supply[data-pressure='high'] .dr-supply-money {
+  color: var(--dr-ink-dim);
+}
+
+/*
+  The header for the supply rows. Two bare numeric columns are two unlabelled
+  numbers, and the footnote under them is read once where a column header is
+  read every time the eye comes back to a row.
+*/
+.dr-supply-head {
+  padding-bottom: 2px;
+  font-size: var(--dr-t-micro);
+  /*
+    Lower case and no tracking, unlike every other label on this panel: at 10px
+    uppercase with letter-spacing, `seats/left` is sixty-five pixels wide in a
+    fifty-six pixel column and runs into the money header beside it. A header
+    that collides with its neighbour is worse than no header.
+  */
+  color: var(--dr-ink-faint);
+}
+
+.dr-supply-head span:nth-child(2) {
+  text-align: left;
+}
+
+.dr-supply-head span:nth-child(3),
+.dr-supply-head span:nth-child(4) {
+  text-align: right;
 }

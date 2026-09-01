@@ -556,6 +556,56 @@ export interface MarketState {
     sold: number;
     /** Points between the best player left here and the fifth: the cost of waiting. */
     cliff: number;
+    /**
+     * Dedicated starting seats the *whole room* still has to fill here.
+     *
+     * The half of an auction nothing above was counting. Everything else in
+     * this row is supply — how many are gone, how many are left, what the drop
+     * costs — and supply on its own cannot say whether a position is about to
+     * go. Eleven teams needing a tight end with three startable ones left is a
+     * run that has not happened yet; three teams needing one with twenty left
+     * is a position you can wait on all night. The flex is deliberately not
+     * counted in here: it belongs to no position until somebody spends it, and
+     * adding it to all three would treat one seat as three.
+     */
+    seatsLeft: number;
+    /** Undrafted players here who beat replacement — what those seats can be filled from. */
+    startableLeft: number;
+    /**
+     * How far the seats have closed on the players left to fill them.
+     *
+     * Measured against where the position *started*, not against zero, and that
+     * is the whole reading. At kicker the pool holds one per club and the
+     * league rosters twelve, so the seats meet the players in the opening frame
+     * and never part again — a bare `seats >= players` test lights that row red
+     * before anybody has drafted and stays red all night, which is the
+     * permanent false alarm the advisor's own roster-need alert was already
+     * pulled out of once. What is worth saying is that a position has *become*
+     * squeezed, so the slack it opened with is the denominator: `high` is the
+     * seats having caught the players, `some` is over half the slack gone, and
+     * a position with no slack to lose says nothing at all.
+     */
+    squeeze: 'none' | 'some' | 'high';
+    /**
+     * Money belonging to teams that still have a dedicated seat open here,
+     * divided by the seats they have to fill with it.
+     *
+     * Two reasons it is a rate and not the total. Money is fungible across
+     * positions — a team's $190 sits in its quarterback row and its receiver
+     * row at once — so the totals do not add up to the room's money and must
+     * never be read as though they did; a rate makes no such claim. And before
+     * anybody has bought anything every team has a seat open everywhere, so the
+     * total is the room's whole budget in all six rows: six identical figures,
+     * which is the shape of a reading that is not being taken. Per seat they
+     * differ from the first frame, because the seats do — twelve quarterback
+     * seats and thirty-six receiver seats against the same money is $190 a seat
+     * against $63, which is also directly comparable to a price.
+     *
+     * Null where the room has no seat left here at all: there is nothing to
+     * divide by, and 0 would read as "no money wants one" rather than "nobody
+     * needs one".
+     */
+    moneyPerSeat: number | null;
   }>;
 }
 
@@ -2524,8 +2574,61 @@ export class AuctionDraftService {
           ? Math.round(remaining[0].projectedPoints - remaining[4].projectedPoints)
           : 0;
 
+      /*
+       * Demand, which is what turns supply into a run.
+       *
+       * Counted over dedicated starting slots only. `unfilledSlotsFor` falls
+       * through to the flex allowance once a position's own seats are full,
+       * which is right when asking "does this player fill a hole for that
+       * team" and wrong when summing across positions — the one flex seat
+       * would be counted once for the backs, once for the receivers and once
+       * for the tight ends, and the room would look three times as hungry as
+       * it is.
+       */
+      let seatsLeft = 0;
+      let moneyChasing = 0;
+      for (const team of this.teams) {
+        const open = Math.max(
+          0,
+          (this.league.startingLineup[position] ?? 0) - (team.roster[position] ?? 0)
+        );
+        if (open <= 0) continue;
+        seatsLeft += open;
+        moneyChasing += Math.max(0, this.spendableFor(team).spendable);
+      }
+      // Null where a position has nobody to set a bar with; then every
+      // undrafted player at it counts, which is the honest reading of "we do
+      // not know where replacement is" rather than a silent zero.
+      const replacement = this.getReplacementLevel(position) ?? 0;
+      const startableLeft = this.players.filter(
+        (p) => p.position === position && !p.isDrafted && p.projectedPoints > replacement
+      ).length;
+
+      // The slack the position opened with, which is what the squeeze is
+      // measured against. Both halves are recomputed rather than remembered:
+      // the seats are a property of the league and the startable count is a
+      // property of the pool, so neither depends on the draft and neither has
+      // to be stored to survive a reload, a replay or an undo.
+      const headroom =
+        this.players.filter((p) => p.position === position && p.projectedPoints > replacement)
+          .length -
+        (this.league.startingLineup[position] ?? 0) * this.teams.length;
+      const slackLeft = startableLeft - seatsLeft;
+      const squeeze: 'none' | 'some' | 'high' =
+        seatsLeft <= 0 || headroom <= 0
+          ? 'none'
+          : slackLeft <= 0
+            ? 'high'
+            : slackLeft * 2 <= headroom
+              ? 'some'
+              : 'none';
+
       return {
         position,
+        seatsLeft,
+        startableLeft,
+        squeeze,
+        moneyPerSeat: seatsLeft > 0 ? moneyChasing / seatsLeft : null,
         // Off the board, however he left it. A sheet player nobody bid on and
         // somebody then took in the snake is exactly as unavailable as one who
         // went for $40, and this is the number that says whether waiting is

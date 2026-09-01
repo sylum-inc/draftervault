@@ -218,12 +218,41 @@ export const MarketPanel = ({
       </div>
 
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
-        Position supply
+        Supply against demand
       </h3>
+      {/*
+        Supply on its own cannot say whether a position is about to go.
+        Everything this panel counted was one half — how many are gone, how many
+        are left, what the drop costs — and a run is the other half arriving:
+        eleven teams needing a tight end with three startable ones left is a run
+        that has not happened yet, while three teams needing one with twenty
+        left is a position you can wait on all night. The bar is what is gone;
+        the numbers beside it are seats the room still has to fill against
+        players left to fill them, and the money that belongs to the teams doing
+        the filling.
+      */}
+      {/*
+        Two bare numeric columns are two unlabelled numbers. The footnote says
+        what they are, but a footnote is read once and a column header is read
+        every time the eye comes back to the row.
+      */}
+      <div className="dr-supply dr-supply-head" aria-hidden="true">
+        <span />
+        <span>gone</span>
+        <span>seats/left</span>
+        <span>$/seat</span>
+      </div>
       {market.scarcity.map((row) => {
         const gone = row.total ? row.gone / row.total : 0;
+        // The engine decides this, because deciding it needs the slack the
+        // position opened with — which is a fact about the league and the pool
+        // rather than about anything on screen.
         return (
-          <div className="dr-supply" key={row.position}>
+          <div
+            className="dr-supply"
+            key={row.position}
+            data-pressure={row.squeeze === 'none' ? undefined : row.squeeze}
+          >
             <span className="dr-supply-pos">{row.position}</span>
             <span className="dr-meter-track dr-supply-track">
               <span
@@ -239,13 +268,41 @@ export const MarketPanel = ({
                 }}
               />
             </span>
-            <span className="dr-num dr-supply-count">
-              {row.total - row.gone}
-              <span style={{ color: 'var(--dr-ink-faint)' }}>/{row.total}</span>
+            <span
+              className="dr-num dr-supply-count"
+              title={
+                `${row.seatsLeft} starting ${row.position} seat${row.seatsLeft === 1 ? '' : 's'} still to fill across the room, ` +
+                `${row.startableLeft} startable ${row.position}${row.startableLeft === 1 ? '' : 's'} left to fill them, and ` +
+                (row.moneyPerSeat === null
+                  ? 'no team has one open, so no money is aimed here. '
+                  : `the teams that need one hold $${Math.round(row.moneyPerSeat)} for each of those seats. `) +
+                (row.squeeze === 'high'
+                  ? 'The seats have caught the players: somebody goes without, and that is what a run is made of.'
+                  : row.squeeze === 'some'
+                    ? 'Over half the slack this position opened with is gone.'
+                    : 'No squeeze here yet.')
+              }
+            >
+              <b>{row.seatsLeft}</b>
+              <span style={{ color: 'var(--dr-ink-faint)' }}>/{row.startableLeft}</span>
+            </span>
+            <span
+              className="dr-num dr-supply-money"
+              title="Money held by the teams that still need one here, per seat they have to fill"
+            >
+              {row.moneyPerSeat === null ? '—' : `$${Math.round(row.moneyPerSeat)}`}
             </span>
           </div>
         );
       })}
+      <p className="dr-footnote">
+        A position where the seats catch the players left to fill them is a position somebody has to
+        go without &mdash; which is what a run is made of, and the one thing here that shows before
+        it happens rather than after. It is measured against the slack the position opened with, so
+        kicker and defence, where the seats meet the players from the first frame, never light up.
+        The money is a rate because it is fungible: the same dollars are aimed at a team&rsquo;s
+        quarterback and its receivers at once, so the six figures do not add up to the room.
+      </p>
 
       {runsLow.length > 0 && (
         <p className="dr-notice dr-notice-warn" style={{ marginTop: 10 }}>

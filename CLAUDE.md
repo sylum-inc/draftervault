@@ -2175,8 +2175,10 @@ knapsack over the sheet that says which three players the hundred dollars
 should buy and what the marginal dollar is worth, replacing a "what to bid"
 that was the price times 1.15 and recommended $28 on a man worth nothing, and
 one place that answers whether the board is set up at all rather than six
-panels each holding a piece of the answer;
-747 tests.
+panels each holding a piece of the answer, and the half of scarcity that had
+never been counted — the seats the room still has to fill and the money aimed at
+them;
+758 tests.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -2352,6 +2354,69 @@ by the opening stars and stops moving). Driven on the owner's real sheet: par
 opens at $44, and after eight sales at $75-95 it reads "the room is paying $84
 against a par of $37 — the last 47 have to come down", with his share of the
 remaining money up from 8% to 12% for doing nothing.
+
+**Supply was half the reading, and the other half is what makes a run.**
+`MarketState.scarcity` counted how many are gone, how many are left, what the
+drop from the best one to the fifth costs — every one of them a fact about the
+players. None of them can say whether a position is about to go, because that
+is demand arriving: eleven teams needing a tight end with three startable ones
+left is a run that has not happened yet, and three teams needing one with twenty
+left is a position you can wait on all night. The two look identical in a supply
+count.
+
+So a row now carries the seats the whole room still has to fill there, the
+startable players left to fill them, and the money belonging to the teams doing
+the filling. **The flex is deliberately in none of them.** `unfilledSlotsFor`
+falls through to the flex allowance once a position's own seats are full, which
+is right when asking whether a player fills a hole for one team and wrong when
+summing across positions — the single flex seat would be counted once for the
+backs, once for the receivers and once for the tight ends, and the room would
+read three times as hungry as it is.
+
+**The money is a rate, and it had to be.** Money is fungible: a team's $190 sits
+in its quarterback row and its receiver row at once, so the six totals do not
+add to the room's money and must never be read as though they did. Worse, before
+anybody has bought anything every team has a seat open everywhere, so the total
+_is_ the room's whole budget in all six rows — six identical figures, which is
+the shape of a reading that is not being taken, and it collided in a test with
+the inflation basis printed four inches above it. Per seat they differ from the
+first frame because the seats do: twelve quarterback seats and thirty-six
+receiver seats against the same money is $190 a seat against $63, which is also
+directly comparable to a price. It is null rather than 0 where the room has no
+seat left at all, because "nobody needs one" and "the teams that need one are
+broke" are different facts.
+
+The rate behaves in a way worth stating because it looks wrong and is not: a
+quarterback sale takes a seat _and_ the buyer's whole remaining budget out of
+the row together, so a one-starter position holds its rate at a team's budget
+however expensively it sells. What moves it is spending _elsewhere_ — a team
+that buys a receiver is still holding money for a quarterback, and less of it.
+The rate is therefore a reading of what the teams that still need one can
+afford, not of this position's own market.
+
+**And the squeeze is measured against where the position started, which is the
+whole instrument.** The obvious test is `seats >= startable`, and it lights
+kicker and defence red on the first render and keeps them red all night: those
+two are regressed so hard that the pool holds barely one startable per club
+while the league rosters twelve, so the seats meet the players in the opening
+frame and never part. That is the permanent false alarm the advisor's own
+roster-need alert was already pulled out of once, and it is not even true in the
+sense that matters — no kicker is on the sheet, so the snake hands you one for
+nothing. What is worth saying is that a position has _become_ squeezed, so the
+slack it opened with is the denominator: `high` is the seats having caught the
+players, `some` is over half that slack gone, and a position with no slack to
+lose says nothing at all. Both halves of the baseline are recomputed rather than
+remembered — the seats are a property of the league and the startable count a
+property of the pool — so neither depends on the draft and neither has to be
+stored to survive a reload, a replay or an undo. The engine decides the level
+rather than the panel, because deciding it needs that baseline.
+
+Slack is invariant under an ordinary sale, which is the mechanism: a team that
+needs a tight end takes a seat and a player together. What spends it is a
+_backup_ — a second one to a team already covered — which is exactly what a run
+is made of, and the reason this shows before a run rather than after it. Driven
+at the home league it is silent at the open and silent after ten ordinary sales,
+which is the correct reading of an auction in which nothing has happened yet.
 
 The count of teams that can still cover par short-circuits that comparison, and
 deliberately: a team with $8 left is not a quiet bidder but a spectator, and
