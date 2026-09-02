@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import type { DraftAnalytics, Player } from '@/services/auctionDraftService';
 import {
   getIdentity,
@@ -42,6 +42,12 @@ import { modelCaveats } from '@/lib/modelTrust';
 import { pointsFor, type LeagueShape } from '@/lib/valuation';
 import { ScheduleStrip, type ScheduleGame } from './charts/ScheduleStrip';
 import { PositionSwarm, type SwarmPoint } from './charts/PositionSwarm';
+import { usePackedColumns } from './usePackedColumns';
+
+/* The children of a tab that run the full width above the columns rather than
+   being dealt into one — the same list the stylesheet spans. */
+const PACK_WIDE =
+  '.dr-profile-tiles, .dr-verdict-line, .dr-notice, .dr-empty, .dr-full, .dr-research';
 import { OutcomeCurve } from './charts/OutcomeCurve';
 import { ConsensusRange } from './charts/ConsensusRange';
 import { QuadrantScatter, type ScatterPoint } from './charts/QuadrantScatter';
@@ -252,6 +258,44 @@ export const PlayerProfile = ({
         ];
 
   const firstTabRef = useRef<HTMLButtonElement>(null);
+  /* Inline, the panel scrolls inside a band, and an edge that stops reads as
+     the end. While there is more below the fold the profile is marked, so the
+     stylesheet can fade the edge and say so. Read on scroll and on resize of
+     the panel and of what is in it, since a tab's content changes with the
+     player while the panel itself does not. */
+  const rootRef = useRef<HTMLElement>(null);
+  /* Every tab but Tonight is dealt into columns by measured height — see
+     usePackedColumns for why this is not CSS multi-column. The Tonight tab
+     packs its own grid one level down. */
+  usePackedColumns(
+    () =>
+      rootRef.current?.querySelector<HTMLElement>(':scope > .dr-tabpanel:not(.dr-tonight)') ?? null,
+    { minWidth: 420, wide: PACK_WIDE },
+    [tab, player.id, inline]
+  );
+  useEffect(() => {
+    if (!inline) return;
+    const root = rootRef.current;
+    const panel = root?.querySelector<HTMLElement>(':scope > .dr-tabpanel, :scope > .dr-notice');
+    if (!root || !panel) return;
+    const read = () => {
+      if (panel.scrollTop + panel.clientHeight < panel.scrollHeight - 2) {
+        root.setAttribute('data-more', '');
+      } else {
+        root.removeAttribute('data-more');
+      }
+    };
+    read();
+    panel.addEventListener('scroll', read, { passive: true });
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(read) : null;
+    observer?.observe(panel);
+    for (const child of Array.from(panel.children)) observer?.observe(child);
+    return () => {
+      panel.removeEventListener('scroll', read);
+      observer?.disconnect();
+      root.removeAttribute('data-more');
+    };
+  }, [inline, tab, player.id]);
   useEffect(() => {
     // The modal focuses its close button. Raised inline, nothing received focus
     // and a keyboard user landed at the top of the document behind the scrim;
@@ -498,6 +542,25 @@ export const PlayerProfile = ({
           }))
           .filter((point) => Number.isFinite(point.value)),
     [startable]
+  );
+
+  /* The value swarm is over the men actually for sale. With a sheet in force
+     every off-sheet player sits at the dollar floor by construction — he is
+     snaked, not bought — so over the startable cohort the median read $1 and
+     the field piled into one column: a picture of the sheet's length, not of
+     what he costs against the others the room will bid on. */
+  const forSale = useMemo(
+    () => (player.sheetIsStated ? startable.filter((other) => other.onSheet) : startable),
+    [startable, player.sheetIsStated]
+  );
+  const valueSwarm = useMemo<SwarmPoint[]>(
+    () =>
+      forSale.map((other) => ({
+        id: other.id,
+        name: getIdentity(other.id)?.name ?? other.name,
+        value: other.estimatedValue,
+      })),
+    [forSale]
   );
 
   const opportunityScatter = useMemo<ScatterPoint[]>(
@@ -874,13 +937,19 @@ export const PlayerProfile = ({
                   replacement != null ? { value: replacement, label: 'replacement level' } : null
                 }
               />
-              <PositionSwarm
-                points={swarmOf((p) => p.estimatedValue)}
-                highlightId={player.id}
-                label="Auction value"
-                position={player.position}
-                format={(value) => `$${Math.round(value)}`}
-              />
+              {(!player.sheetIsStated || player.onSheet) && valueSwarm.length > 4 && (
+                <PositionSwarm
+                  points={valueSwarm}
+                  highlightId={player.id}
+                  label={
+                    player.sheetIsStated
+                      ? `Auction value · ${valueSwarm.length} on the sheet`
+                      : 'Auction value'
+                  }
+                  position={player.position}
+                  format={(value) => `$${Math.round(value)}`}
+                />
+              )}
             </section>
           )}
 
@@ -2000,7 +2069,11 @@ export const PlayerProfile = ({
   // grid so the card genuinely grows rather than something appearing over it.
   if (inline) {
     return (
-      <div className="dr-profile dr-profile-inline" style={accent}>
+      <div
+        className="dr-profile dr-profile-inline"
+        style={accent}
+        ref={rootRef as RefObject<HTMLDivElement>}
+      >
         {body}
       </div>
     );
@@ -2014,7 +2087,7 @@ export const PlayerProfile = ({
         aria-label="Close profile"
         onClick={onClose}
       />
-      <article className="dr-modal-panel dr-profile" style={accent}>
+      <article className="dr-modal-panel dr-profile" style={accent} ref={rootRef}>
         {body}
       </article>
     </div>

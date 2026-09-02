@@ -3088,3 +3088,44 @@ page and logs a CSP error on every load, so the prelude shadows
 
 The app itself hotlinks the ESPN CDN and commits no images; `.cache/images/`
 holds what the artifact build has already fetched.
+
+**Safari painted every section's contents one section away, and the layout
+engine was the defect.** Found on the deployed page rather than in the driver,
+because the driver is Chromium. The Tonight tab and every dossier tab were CSS
+multi-column — `columns: 340px` and `columns: 420px` with `break-inside:
+avoid` — chosen over a grid because columns fill down and then across and so
+leave no holes. Chromium fragments that correctly. WebKit's fragmentation goes
+stale the moment something inside a column changes height after layout, and a
+bid box changes it on every keystroke: the owner's screenshot had the plan's
+three rows painted inside the "Can beat" box, the price chain inside "The
+plan", and the rival rows over the advisor, with every section's border in the
+right place and its contents a section adrift. On the Overview tab the same
+engine overflowed sideways into a horizontal scrollbar.
+
+`usePackedColumns` does the packing by arithmetic instead. The container is an
+ordinary grid of N equal columns and four-pixel rows; each child is measured
+and written a column — the shortest so far — and a run of rows tall enough to
+hold it, as two inline properties. Nothing moves in the DOM, so React never
+remounts a chart or loses a slider, and every `.dr-tabpanel > …` rule keeps
+matching. Wide children — the tiles, a verdict line, a notice, the research
+box — span every column and start a fresh band, which is what `column-span:
+all` did. Heights are re-read on mount, on any resize of the container or a
+child, and when a child comes or goes; `align-items: start` in the stylesheet
+is what keeps the reading honest, because a child stretched to the rows it was
+last given would measure as tall as them and the layout would feed on itself.
+Four tests state the sizes jsdom cannot lay out and assert where each section
+is dealt.
+
+Two smaller things from the same screenshot. What the typed bid does — its
+rate against the plan's, and what it leaves you — was two sections of the
+Tonight tab while the column the bid is typed in sat two thirds empty beneath
+the team chips; it is `BidConsequence` under SOLD now, and the tab lost the two
+sections rather than keeping a second copy. And the last `window.confirm` in
+the room, on passing over the final name of the sheet, asks inline in the
+block's own type; the server panel's rename prompt and delete confirm went the
+same way. The price chain's note moved under its bar because "59 pts ÷ 2.60
+pts/$" wrapped to two lines in a forty-six-pixel cell, the Tonight columns
+widened from 300 to 340 because "Bijan Robin…" is not a name, and the Overview's
+value swarm is drawn over the men actually for sale — with a sheet in force,
+every off-sheet man sits at the dollar floor by construction, so over the
+startable cohort the median read $1.

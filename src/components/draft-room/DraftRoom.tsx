@@ -14,6 +14,7 @@ import { PlayerCard } from './PlayerCard';
 import { PlayerTable, type TableSort } from './PlayerTable';
 import { NominationStage } from './NominationStage';
 import { SpotlightTonight } from './SpotlightTonight';
+import { BidConsequence } from './BidConsequence';
 import { SetupMenu } from './SetupMenu';
 import { RoomTooltip } from './RoomTooltip';
 import { TeamsPanel } from './TeamsPanel';
@@ -1434,7 +1435,6 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           scarcity={market.scarcity.find((row) => row.position === selected.position)}
           basis={basis}
           endgame={endgameState}
-          spend={spendSim}
           onTheClock={onTheClock}
           freePicks={freePicks}
         />
@@ -1745,6 +1745,17 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               onBidChange={setBid}
               onConfirm={confirm}
               dossier={dossier}
+              consequence={
+                selected && myTeam && phase === 'auction' ? (
+                  <BidConsequence
+                    bid={bidNumber}
+                    walkAway={walkAway}
+                    value={bidValue}
+                    plan={plan}
+                    spend={spendSim}
+                  />
+                ) : null
+              }
               folded={stageFolded || autoFolded}
               onToggleFold={() => {
                 if (stageFolded || autoFolded) {

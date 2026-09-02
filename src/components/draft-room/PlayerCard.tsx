@@ -1313,7 +1313,9 @@ const PlayerCardView = ({
               />
               <span className="dr-detail-name">{identity?.name ?? player.name}</span>
               <span className="dr-pos">{player.position}</span>
-              <span className="dr-detail-price">${player.estimatedValue}</span>
+              <span className="dr-detail-price">
+                {!player.onSheet && player.sheetIsStated ? 'snake' : `$${player.estimatedValue}`}
+              </span>
               {gainHigh != null && gainSlot !== 'bench' && (
                 <span
                   className="dr-detail-gain"

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import type {
   BidCheck,
   BidCompetition,
@@ -92,6 +92,11 @@ interface NominationStageProps {
   onToggleFold?: () => void;
   /** Put an off-sheet player onto the sheet, because the room is auctioning him after all. */
   onAddToSheet?: () => void;
+  /**
+   * What the bid typed so far does — its rate against the plan and what it
+   * leaves you — rendered under the controls, where the number is typed.
+   */
+  consequence?: ReactNode;
   /** Whether a team still has room; a full one cannot win the bidding. */
   canDraft: (team: Team) => boolean;
   /** Whose turn it is in the snake, with the round and pick it falls on. */
@@ -239,6 +244,7 @@ export const NominationStage = ({
   folded = false,
   onToggleFold,
   onAddToSheet,
+  consequence,
   canDraft,
   onTheClock,
   snakeGain,
@@ -257,6 +263,11 @@ export const NominationStage = ({
   checkTeam,
 }: NominationStageProps) => {
   const snake = mode === 'snake';
+  /* Ending the auction asks first, in the room's own type rather than the
+     browser's. Keyed on the player so a stale question cannot survive a new
+     nomination. */
+  const [endingFor, setEndingFor] = useState<string | null>(null);
+  const endingAuction = player != null && endingFor === player.id;
 
   if (!player) {
     // One line, across the width. Nothing is being decided, so the band has
@@ -810,20 +821,42 @@ export const NominationStage = ({
                   type="button"
                   className="dr-button"
                   onClick={() => {
-                    if (
-                      sheetRemaining > 1 ||
-                      window.confirm(
-                        `${player.name} is the last name on the sheet. Passing him over ends the auction and opens the snake draft.`
-                      )
-                    ) {
-                      onUnsold();
-                    }
+                    if (sheetRemaining > 1) onUnsold();
+                    else setEndingFor(player.id);
                   }}
                   style={{ justifyContent: 'center' }}
                   title={`Mark him passed over — he goes to the snake instead. ${sheetRemaining} left on the sheet.`}
                 >
                   Nobody bid
                 </button>
+              )}
+              {endingAuction && (
+                <div className="dr-stage-ask" role="alertdialog" aria-label="End the auction?">
+                  <p>
+                    <strong>{player.name}</strong> is the last name on the sheet. Passing him over
+                    ends the auction and opens the snake draft.
+                  </p>
+                  <div>
+                    <button
+                      type="button"
+                      className="dr-button dr-button-primary"
+                      onClick={() => {
+                        setEndingFor(null);
+                        onUnsold();
+                      }}
+                    >
+                      End the auction
+                    </button>
+                    <button
+                      type="button"
+                      className="dr-button"
+                      autoFocus
+                      onClick={() => setEndingFor(null)}
+                    >
+                      Keep him up
+                    </button>
+                  </div>
+                </div>
               )}
               {player.onSheet && passedOver && (
                 <button
@@ -852,6 +885,7 @@ export const NominationStage = ({
               Pick the winning team to sell.
             </p>
           )}
+          {!snake && consequence}
         </form>
       )}
     </section>

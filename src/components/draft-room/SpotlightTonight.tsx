@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import type {
   BidCompetition,
   DraftPhase,
@@ -17,6 +17,7 @@ import type { ResearchMark } from '@/services/playerResearch';
 import { getIdentity } from '@/services/nflIdentity';
 import { RunTape, Shelf, SlotFit } from './charts/micro';
 import { PriceChain, type ChainStep } from './charts/profile';
+import { usePackedColumns } from './usePackedColumns';
 
 /**
  * What one bid on this player does to *your* draft tonight, in the state the
@@ -62,14 +63,6 @@ export interface SpotlightTonightProps {
   scarcity: MarketState['scarcity'][number] | undefined;
   basis: InflationBasis;
   endgame: Endgame;
-  /** What the bid leaves you, from the engine's own reserve rules. */
-  spend: {
-    remaining: number;
-    slotsLeft: number;
-    minimumHold: number;
-    affordable: Player | null;
-    legal: boolean;
-  } | null;
   onTheClock?: SnakeSlot;
   /** The best free picks right now, snake only, gain-ranked. */
   freePicks?: Array<{ player: Player; gain: number; seat: PlayerValue['seat'] }>;
@@ -132,14 +125,17 @@ export const SpotlightTonight = ({
   scarcity,
   basis,
   endgame,
-  spend,
   onTheClock,
   freePicks = [],
 }: SpotlightTonightProps) => {
   const snake = mode === 'snake';
   const gain = snakeGain ?? snakeBounds?.high ?? null;
+  /* Sections dealt into columns by measured height — see usePackedColumns
+     for why this is not CSS multi-column. Re-read whenever the player or the
+     phase changes; every other change inside is caught by the observers. */
+  const grid = useRef<HTMLDivElement>(null);
+  usePackedColumns(() => grid.current, { minWidth: 340 }, [player.id, mode]);
   const inPlan = plan?.buy.find((entry) => entry.candidate.id === player.id) ?? null;
-  const liveBid = Number.isFinite(bid) && bid >= 1 ? bid : null;
   const mine = research && research.direction !== 'NEUTRAL' ? research : null;
 
   /*
@@ -189,7 +185,6 @@ export const SpotlightTonight = ({
   }
 
   const rate = plan && plan.perDollar > 0 ? plan.perDollar : null;
-  const bidRate = liveBid && value && value.gain > 0 ? value.gain / liveBid : null;
 
   return (
     <div className="dr-tabpanel dr-tonight" role="tabpanel" aria-label="Tonight">
@@ -200,7 +195,7 @@ export const SpotlightTonight = ({
         </p>
       )}
 
-      <div className="dr-tonight-grid">
+      <div className="dr-tonight-grid" ref={grid}>
         {/* ---- your seat -------------------------------------------------- */}
         <Section
           title="Your seat"
@@ -270,36 +265,6 @@ export const SpotlightTonight = ({
             aside={rate ? `a dollar buys ${rate.toFixed(2)} pts` : undefined}
           >
             {chain.length ? <PriceChain steps={chain} /> : null}
-            {liveBid != null && (
-              <p
-                className="dr-tonight-live"
-                data-tone={
-                  walkAway != null && liveBid > walkAway
-                    ? 'bad'
-                    : bidRate != null && rate != null && bidRate >= rate
-                      ? 'good'
-                      : 'muted'
-                }
-              >
-                At <b className="dr-num">{money(liveBid)}</b>
-                {bidRate != null && rate != null ? (
-                  <>
-                    {' '}
-                    he buys <b className="dr-num">{bidRate.toFixed(2)}</b> pts a dollar against the
-                    plan&rsquo;s <b className="dr-num">{rate.toFixed(2)}</b>
-                    {walkAway != null && liveBid > walkAway
-                      ? ` — past your walk-away of ${money(walkAway)}.`
-                      : bidRate >= rate
-                        ? ' — better than the money does elsewhere.'
-                        : ' — the money buys more elsewhere on the sheet.'}
-                  </>
-                ) : walkAway != null && liveBid > walkAway ? (
-                  <> — past your walk-away of {money(walkAway)}.</>
-                ) : value && value.gain <= 0 ? (
-                  <> — he adds nothing your lineup would start.</>
-                ) : null}
-              </p>
-            )}
           </Section>
         )}
 
@@ -554,37 +519,6 @@ export const SpotlightTonight = ({
                 </div>
               )}
             </dl>
-          </Section>
-        )}
-
-        {/* ---- if he goes to you ------------------------------------------ */}
-        {!snake && spend && liveBid != null && myTeam && (
-          <Section title="If he goes to you" aside={`at ${money(liveBid)}`}>
-            <dl className="dr-tonight-facts">
-              <div>
-                <dt>Left after</dt>
-                <dd className="dr-num" data-tone={spend.legal ? undefined : 'bad'}>
-                  {money(spend.remaining)}
-                </dd>
-              </div>
-              <div>
-                <dt>Seats to buy</dt>
-                <dd className="dr-num">{spend.slotsLeft}</dd>
-              </div>
-              {spend.minimumHold > 0 && (
-                <div>
-                  <dt>Must hold</dt>
-                  <dd className="dr-num">{money(spend.minimumHold)}</dd>
-                </div>
-              )}
-            </dl>
-            <p className="dr-footnote">
-              {!spend.legal
-                ? 'Over what the rules let you spend.'
-                : spend.affordable
-                  ? `The best player left that the change could still buy is ${getIdentity(spend.affordable.id)?.name ?? spend.affordable.name} (${spend.affordable.position}, ${money(spend.affordable.estimatedValue)}).`
-                  : 'Nothing left on the board would fit in the change.'}
-            </p>
           </Section>
         )}
 

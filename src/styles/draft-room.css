@@ -930,6 +930,119 @@
   text-align: center;
 }
 
+/* What the typed bid does, under the controls. The column was two thirds
+   empty beneath the chips while the tab had to be scrolled to find this, and a
+   reading about a number belongs where the number is typed. */
+.dr-stage-consequence {
+  margin-top: var(--dr-s2);
+  padding-top: var(--dr-s3);
+  border-top: 1px solid var(--dr-line);
+  display: grid;
+  gap: var(--dr-s2);
+}
+
+.dr-stage-consequence > .dr-tonight-live {
+  margin: 0;
+}
+
+.dr-stage-consequence > .dr-footnote {
+  margin: 0;
+}
+
+.dr-stage[data-folded] .dr-stage-consequence {
+  display: none;
+}
+
+/* Ending the auction asks first, here rather than in a browser dialog. */
+.dr-stage-ask {
+  display: grid;
+  gap: var(--dr-s2);
+  padding: var(--dr-s3);
+  border: 1px solid var(--dr-warn-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-warn-bg);
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink);
+}
+
+.dr-stage-ask > p {
+  margin: 0;
+}
+
+.dr-stage-ask > div {
+  display: flex;
+  gap: var(--dr-s2);
+}
+
+.dr-stage-ask > div > .dr-button {
+  flex: 1 1 0;
+  justify-content: center;
+  width: auto;
+}
+
+.dr-stage[data-folded] .dr-stage-ask {
+  grid-column: 1 / -1;
+}
+
+/* An edge that stops reads as the end. While the panel has more below the
+   fold the profile is marked, and the edge fades and says so. */
+.dr-stage-dossier > .dr-profile {
+  position: relative;
+}
+
+.dr-stage-dossier > .dr-profile[data-more]::after {
+  content: '▾ more below';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 46px;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-muted);
+  background: linear-gradient(to bottom, transparent, var(--dr-surface) 78%);
+}
+
+/* The server panel's rename and delete ask inline, in the row they are about. */
+.dr-server-ask {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+}
+
+.dr-server-ask[data-tone='bad'] {
+  border-color: var(--dr-bad-line);
+  background: var(--dr-bad-bg);
+}
+
+.dr-server-ask > p {
+  margin: 0;
+  flex: 1 1 200px;
+  color: var(--dr-ink);
+}
+
+.dr-server-ask > .dr-input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.dr-server-ask > .dr-button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
 @media (max-width: 1180px) {
   .dr-stage,
   .dr-stage[data-mode='snake'] {
@@ -2531,21 +2644,33 @@
  * preserve here; the sections are independent and their order is a reading
  * order, not a table.
  *
- * Multi-column flows them instead, so each section starts where the last one
- * ended and the columns balance themselves. `break-inside: avoid` is what keeps
- * a chart from being sliced down the middle by a column break.
+ * It was CSS multi-column next, and that is gone too: Safari paints a column's
+ * contents at stale positions once anything inside it changes height, and a
+ * bid box changes it on every keystroke. `usePackedColumns` measures each
+ * section and writes it a column and a run of rows on this grid instead — the
+ * same packing, done by arithmetic every browser agrees on. What the sheet
+ * has to provide is the grid, `align-items: start` (stretched to its rows a
+ * section would measure as tall as it was last given), and the fallback of
+ * ordinary auto-fill columns for the frame before the script has run.
  */
 .dr-card-detail .dr-tabpanel,
 .dr-profile .dr-tabpanel {
-  columns: 420px;
-  column-gap: var(--dr-s3);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+  gap: 0 var(--dr-s3);
+  align-items: start;
   padding: var(--dr-s3);
 }
 
 .dr-card-detail .dr-tabpanel > *,
 .dr-profile .dr-tabpanel > * {
-  break-inside: avoid;
-  margin-bottom: var(--dr-s3);
+  min-width: 0;
+  margin: 0 0 var(--dr-s3);
+}
+
+/* The Tonight tab packs its own grid, one level down. */
+.dr-profile .dr-tabpanel.dr-tonight {
+  display: block;
 }
 
 /* The readings that describe the whole player run the full width above the
@@ -2560,7 +2685,7 @@
 .dr-profile .dr-tabpanel > .dr-notice,
 .dr-profile .dr-tabpanel > .dr-empty,
 .dr-profile .dr-tabpanel > .dr-full {
-  column-span: all;
+  grid-column: 1 / -1;
 }
 
 /* In a column layout a full-width rule between sections has nothing to
@@ -5375,9 +5500,34 @@
 
 .dr-chain-step {
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr) 46px 72px;
+  grid-template-columns: 76px minmax(0, 1fr) 78px;
+  grid-template-areas:
+    'label track money'
+    'applied applied money';
   align-items: center;
-  gap: var(--dr-s2);
+  column-gap: var(--dr-s2);
+  row-gap: 1px;
+}
+
+.dr-chain-label {
+  grid-area: label;
+}
+
+.dr-chain-track {
+  grid-area: track;
+}
+
+/* What moved the price, under the bar it moved: beside it, "59 pts ÷ 2.60
+   pts/$" wrapped into two lines in a forty-six-pixel cell. */
+.dr-chain-applied {
+  grid-area: applied;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-chain-money {
+  grid-area: money;
 }
 
 .dr-chain-label {
@@ -5873,22 +6023,22 @@ li[data-level='ready'] > .dr-checklist-mark {
    order that is a reading order — your seat, then the price, then the plan —
    and a column flow would deal them wherever they fit. */
 .dr-tonight {
-  columns: auto !important;
-  column-count: auto !important;
   padding: var(--dr-s3);
 }
 
-/* Packed columns rather than a grid: a grid puts these in rows, and a short
-   section beside a tall one leaves the difference as dead space — "your seat"
-   is four lines and "who can beat it" is twelve. Columns fill down and then
-   across, so each section starts where the last one ended. */
+/* Packed columns rather than a grid of rows: a short section beside a tall
+   one would leave the difference as dead space — "your seat" is four lines
+   and "who can beat it" is twelve. `usePackedColumns` deals each section to
+   the shortest column so far; the stylesheet provides the grid it writes into
+   and the auto-fill fallback for the frame before it runs. */
 .dr-tonight-grid {
-  columns: 300px;
-  column-gap: var(--dr-s3);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+  gap: 0 var(--dr-s3);
+  align-items: start;
 }
 
 .dr-tonight-section {
-  break-inside: avoid;
   margin-bottom: var(--dr-s3);
   border: 1px solid var(--dr-line);
   border-radius: var(--dr-radius-sm);
@@ -5898,7 +6048,7 @@ li[data-level='ready'] > .dr-checklist-mark {
 }
 
 .dr-tonight-section.is-wide {
-  column-span: all;
+  grid-column: 1 / -1;
 }
 
 .dr-tonight-head {
@@ -6354,7 +6504,7 @@ li[data-level='ready'] > .dr-checklist-mark {
    sixty per cent of the tab blank. */
 .dr-profile .dr-tabpanel > .dr-research,
 .dr-card-detail .dr-tabpanel > .dr-research {
-  column-span: all;
+  grid-column: 1 / -1;
   max-width: 920px;
 }
 
