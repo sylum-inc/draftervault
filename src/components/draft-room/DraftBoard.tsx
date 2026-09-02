@@ -4,6 +4,7 @@ import { getIdentity } from '@/services/nflIdentity';
 import { DraftFlow, PositionRuns, type FlowPick } from './charts/DraftFlow';
 import { TierDepletion, type TierRow } from './charts/TierDepletion';
 import { PickEditor } from './PickEditor';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface DraftBoardProps {
   service: AuctionDraftService;
@@ -34,6 +35,10 @@ export const DraftBoard = ({ service, players, teams, onCorrected, onClose }: Dr
    * of what they were. A cell opens the pick it is showing.
    */
   const [editing, setEditing] = useState<number | null>(null);
+
+  // Escape leaves the room — but not while the pick editor is open on top of
+  // it, which the hook's stack decides rather than a flag here.
+  useDismissOnEscape(onClose);
   const board = useMemo(() => service.getDraftBoard(), [service, players]); // eslint-disable-line react-hooks/exhaustive-deps
   const league = service.getLeagueShape();
 

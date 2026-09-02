@@ -48,6 +48,24 @@ export interface EndgameInput {
    * opening stars and stops moving, which is the opposite of what a pace is for.
    */
   recentPrices: readonly number[];
+  /**
+   * What those same sales were listed at, in the same order.
+   *
+   * The thing that makes the pace mean something, and its absence was a real
+   * defect rather than a missing refinement. Comparing a raw pace with par
+   * compares the average of the *expensive* players just sold with the average
+   * of the *cheaper* ones still to come, so early in an auction it reads "the
+   * room is spending ahead of its budget" from the first sale onwards, whatever
+   * the room does — a signal that fires on the shape of an auction rather than
+   * on anything anyone did.
+   *
+   * Driven on the real sheet it contradicted the panel two inches above it: the
+   * multiplier said money left exceeded value left by 15% because the room had
+   * paid 40% *under* list, while this said the room was paying above par and to
+   * hold. Both cannot be advice. Dividing by what those same players were
+   * listed at takes the composition out and leaves what the room actually did.
+   */
+  recentList: readonly number[];
   teams: readonly EndgameTeam[];
   /** Which of them is yours, when one is marked. */
   myTeamId: string | null;
@@ -58,6 +76,13 @@ export interface Endgame {
   par: number;
   /** What the room has lately been paying, or null before anything has sold. */
   pace: number | null;
+  /**
+   * What it paid as a share of those players' list prices — 0.6 is forty per
+   * cent under. Null before anything has sold. This is the figure the verdict
+   * is taken from; `pace` is printed beside par because dollars are what
+   * somebody at the table is holding in their head.
+   */
+  paceOfList: number | null;
   /** Teams whose remaining money still covers par. */
   liveBidders: number;
   teamCount: number;
@@ -80,11 +105,20 @@ const mean = (values: readonly number[]) =>
   values.length ? values.reduce((total, value) => total + value, 0) / values.length : null;
 
 export const endgame = (input: EndgameInput): Endgame => {
-  const { moneyLeft, playersLeft, recentPrices, teams, myTeamId } = input;
+  const { moneyLeft, playersLeft, recentPrices, recentList, teams, myTeamId } = input;
 
   const par = playersLeft > 0 ? Math.round(moneyLeft / playersLeft) : 0;
-  const pace = mean(recentPrices.slice(0, PACE_WINDOW));
+  const window = recentPrices.slice(0, PACE_WINDOW);
+  const pace = mean(window);
   const paced = pace == null ? null : Math.round(pace);
+
+  // Against what those same players were listed at, so the comparison is like
+  // with like. A list total of zero means nothing on the board was priced —
+  // there is no share to take, and inventing one would divide by the wrong
+  // thing rather than say so.
+  const listed = recentList.slice(0, window.length).reduce((sum, value) => sum + value, 0);
+  const spent = window.reduce((sum, value) => sum + value, 0);
+  const paceOfList = listed > 0 ? spent / listed : null;
 
   // A team that cannot cover par is not bidding on anything that matters, so it
   // is not competition. Counting them as bidders is how a room reads as richer
@@ -101,7 +135,7 @@ export const endgame = (input: EndgameInput): Endgame => {
     verdict = 'The auction is over. Everything from here is a free pick.';
     lean = 'unknown';
   } else if (paced == null) {
-    verdict = `Nothing has sold yet. The sixty on the sheet have to average $${par}.`;
+    verdict = `Nothing has sold yet. The ${playersLeft} on the sheet have to average $${par}.`;
     lean = 'unknown';
   } else if (liveBidders <= 2) {
     // The strongest signal an auction gives, and it beats the pace comparison:
@@ -110,24 +144,34 @@ export const endgame = (input: EndgameInput): Endgame => {
       `Only ${liveBidders} team${liveBidders === 1 ? '' : 's'} can still pay $${par}. ` +
       'Whatever is left goes near the floor — stop bidding up and take them cheap.';
     lean = 'buy';
-  } else if (paced >= par * 1.25) {
+  } else if (paceOfList == null) {
+    verdict = `The room is paying $${paced} a man against a par of $${par}, off a board with no prices on it.`;
+    lean = 'unknown';
+  } else if (paceOfList >= 1.1) {
+    // The room is paying over list, so money is leaving faster than value. What
+    // is left has to come down, and the last players go near the floor.
     verdict =
-      `The room is paying $${paced} against a par of $${par}. It is spending ahead of its ` +
-      `budget, so the last ${playersLeft} have to come down. Hold.`;
+      `The room is paying ${Math.round((paceOfList - 1) * 100)}% over list. It is spending ` +
+      `ahead of itself, so the last ${playersLeft} have to come down — par is $${par}. Hold.`;
     lean = 'wait';
-  } else if (paced <= par * 0.8) {
+  } else if (paceOfList <= 0.9) {
+    // And the other way round, which is the case the raw pace got backwards.
+    // Underpaying leaves more money behind less value, so nothing from here is
+    // a bargain and the discount only shrinks. Waiting is the expensive move.
     verdict =
-      `The room is paying $${paced} against a par of $${par}. Money is piling up behind ` +
-      `${playersLeft} players, so prices have to rise. Buy now.`;
+      `The room is paying ${Math.round((1 - paceOfList) * 100)}% under list, so the money left ` +
+      `is chasing fewer players than it can afford. Prices only rise from here — buy now, ` +
+      `at a par of $${par}.`;
     lean = 'buy';
   } else {
-    verdict = `The room is paying about par — $${paced} against $${par}. No timing edge right now.`;
+    verdict = `The room is paying about list. No timing edge right now — par from here is $${par}.`;
     lean = 'even';
   }
 
   return {
     par,
     pace: paced,
+    paceOfList,
     liveBidders,
     teamCount: teams.length,
     yourMoney,
@@ -137,4 +181,45 @@ export const endgame = (input: EndgameInput): Endgame => {
     verdict,
     lean,
   };
+};
+
+/**
+ * Plain words for what the inflation number means for the next bid.
+ *
+ * `premium` is what the room has actually paid against our numbers, and it is
+ * here because without it this panel gave two answers to one question. Driven
+ * mid-auction it read "Money is chasing scraps — expect overpays" in red, two
+ * inches above "RB −44% going cheap · 4 sold" in green, above "the room is
+ * paying about par — no timing edge".
+ *
+ * They are not three findings. They are one, stated three ways and never
+ * joined up: the room *underpaid* for the players sold, which is precisely why
+ * the money left over now exceeds the value left to buy. A high multiplier
+ * with a negative premium is a forecast that the rest will run dear, and it
+ * arrives through the room having been cheap so far — the opposite of what
+ * "expect overpays" reads as while the sales beneath it say bargain.
+ *
+ * So the loud band says which of the two it is. Nothing here is a new number;
+ * both were already on the panel, a hand's width apart.
+ */
+export const readInflation = (
+  inflation: number,
+  premium: number | null
+): { label: string; tone: string } => {
+  const underpaying = premium != null && premium < 0.97;
+  if (inflation >= 1.15)
+    return underpaying
+      ? {
+          // "Hold" is the tempting word here and it is exactly wrong. More
+          // money than value left means everything from here goes over list,
+          // and the multiplier climbs as the money concentrates — so waiting
+          // buys the same players at a worse number.
+          label: 'The room underpaid early — more money left than value. Buy before it worsens.',
+          tone: 'var(--dr-caution)',
+        }
+      : { label: 'Money is chasing scraps — expect overpays', tone: 'var(--dr-danger)' };
+  if (inflation >= 1.04) return { label: 'Prices running hot', tone: 'var(--dr-caution)' };
+  if (inflation <= 0.85) return { label: 'Value on the board — bid', tone: 'var(--dr-value)' };
+  if (inflation <= 0.96) return { label: 'Slightly in your favour', tone: 'var(--dr-value)' };
+  return { label: 'Priced about right', tone: 'var(--dr-ink-muted)' };
 };

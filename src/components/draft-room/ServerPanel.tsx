@@ -24,6 +24,7 @@ import {
   type DraftSummary,
   type JobRecord,
 } from '@/lib/serverContract';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface ServerPanelProps {
   service: AuctionDraftService;
@@ -92,6 +93,10 @@ export const ServerPanel = ({
   /** Where the server said its last answer started, so the cursor cannot drift. */
   const cursorRef = useRef(0);
   const [newName, setNewName] = useState('');
+  /* Rename and delete ask in the row, in the room's own type; the browser's
+     prompt and confirm were the only two system dialogs left in the app. */
+  const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState<{ id: string; version: number; label: string } | null>(
@@ -100,12 +105,9 @@ export const ServerPanel = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   /** Report a failure once, in the panel, and never in the console. */
   const report = useCallback(<T,>(result: ServerResult<T>): T | null => {
@@ -448,8 +450,8 @@ export const ServerPanel = ({
                     type="button"
                     className="dr-linkish"
                     onClick={() => {
-                      const name = window.prompt('Rename this draft', draft.name);
-                      if (name) void renameDraft(draft.id, name).then(() => void refreshDrafts());
+                      setDeleting(null);
+                      setRenaming({ id: draft.id, name: draft.name });
                     }}
                   >
                     rename
@@ -458,16 +460,76 @@ export const ServerPanel = ({
                     type="button"
                     className="dr-linkish"
                     onClick={() => {
-                      if (!window.confirm(`Delete "${draft.name}" and all its versions?`)) return;
-                      void deleteDraft(draft.id).then(() => {
-                        if (binding?.id === draft.id) bind(null);
-                        setDetail((current) => (current?.id === draft.id ? null : current));
-                        void refreshDrafts();
-                      });
+                      setRenaming(null);
+                      setDeleting(draft.id);
                     }}
                   >
                     delete
                   </button>
+                  {renaming?.id === draft.id && (
+                    <form
+                      className="dr-server-ask"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const name = renaming.name.trim();
+                        setRenaming(null);
+                        if (name && name !== draft.name) {
+                          void renameDraft(draft.id, name).then(() => void refreshDrafts());
+                        }
+                      }}
+                    >
+                      <input
+                        className="dr-input"
+                        value={renaming.name}
+                        autoFocus
+                        aria-label="New name for this draft"
+                        onChange={(event) =>
+                          setRenaming({ id: draft.id, name: event.target.value })
+                        }
+                      />
+                      <button type="submit" className="dr-button dr-button-primary">
+                        Rename
+                      </button>
+                      <button type="button" className="dr-button" onClick={() => setRenaming(null)}>
+                        Cancel
+                      </button>
+                    </form>
+                  )}
+                  {deleting === draft.id && (
+                    <div
+                      className="dr-server-ask"
+                      data-tone="bad"
+                      role="alertdialog"
+                      aria-label={`Delete ${draft.name}?`}
+                    >
+                      <p>
+                        Delete <strong>{draft.name}</strong> and all {draft.versions} of its
+                        versions? The server keeps no copy.
+                      </p>
+                      <button
+                        type="button"
+                        className="dr-button dr-button-primary"
+                        onClick={() => {
+                          setDeleting(null);
+                          void deleteDraft(draft.id).then(() => {
+                            if (binding?.id === draft.id) bind(null);
+                            setDetail((current) => (current?.id === draft.id ? null : current));
+                            void refreshDrafts();
+                          });
+                        }}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        type="button"
+                        className="dr-button"
+                        autoFocus
+                        onClick={() => setDeleting(null)}
+                      >
+                        Keep
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

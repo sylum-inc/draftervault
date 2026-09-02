@@ -37,7 +37,7 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 const DIRECTION_COLOR: Record<Direction, string> = {
   PAY_UP: 'var(--dr-value)',
   FADE: 'var(--dr-danger)',
-  NEUTRAL: 'var(--dr-dim)',
+  NEUTRAL: 'var(--dr-ink-muted)',
 };
 
 const IMPACT_MARK: Record<string, string> = {

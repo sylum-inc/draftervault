@@ -52,15 +52,25 @@ describe('consensusBoard', () => {
     expect(out.wr2.value).toBe(40);
   });
 
-  it('leaves a player the market has no opinion about entirely alone', () => {
+  it('never prices a player the market has no opinion about, and ranks him last', () => {
+    // Two different claims, and they were once conflated into "leave him
+    // alone". Not pricing him is the one that matters and is unchanged:
+    // inventing a market opinion for somebody no market spoke about is the
+    // thing this module exists to refuse. But he still has to sit *somewhere*
+    // in the one order the board is drawn in, and the honest place is after
+    // every player the market did speak for — not interleaved with them on a
+    // rank from a different scale, which is how a $1 backup quarterback came
+    // out at #148 above two hundred and fifty players real drafts were taking.
     const out = consensusOverrides([
       player('ranked', 'TE', 20, 1),
       player('unranked', 'TE', 5, null),
       player('missing', 'TE', 4),
     ]);
-    expect(out.ranked).toBeDefined();
-    expect(out.unranked).toBeUndefined();
-    expect(out.missing).toBeUndefined();
+    expect(out.ranked.value).toBe(20);
+    expect(out.unranked.value).toBeUndefined();
+    expect(out.missing.value).toBeUndefined();
+    expect(out.ranked.rank).toBeLessThan(out.unranked.rank!);
+    expect(out.ranked.rank).toBeLessThan(out.missing.rank!);
   });
 
   it('does not let an unranked player absorb a ranked one’s price', () => {
@@ -74,7 +84,7 @@ describe('consensusBoard', () => {
     ]);
     expect(out.b.value).toBe(60);
     expect(out.a.value).toBe(10);
-    expect(out.skip).toBeUndefined();
+    expect(out.skip.value).toBeUndefined();
   });
 
   it('is deterministic when the market ties two players', () => {
@@ -91,15 +101,27 @@ describe('consensusBoard', () => {
     expect(twice().b.value).toBe(10);
   });
 
-  it('carries the market’s position rank and marks which source spoke', () => {
-    // The stored rank is the player's place among his own position on the
-    // market's ordering, not the raw ADP or the raw consensus number. With two
-    // sources feeding one ordering, a raw figure would be incomparable between
-    // rows — 41.2 from real drafts beside 55 from a panel — while a position
-    // index means the same thing whichever source produced it.
-    const out = consensusOverrides([player('a', 'QB', 15, 7), player('b', 'QB', 9, 2)]);
+  it('carries an overall rank on the merged order, and marks which source spoke', () => {
+    // Not the raw ADP and not the raw consensus number: with two sources
+    // feeding one ordering, a raw figure is incomparable between rows — 41.2
+    // from real drafts beside 55 from a panel — while an index into the merged
+    // order means the same thing whichever source produced it.
+    //
+    // It is an *overall* index rather than a per-position one, which is the
+    // correction. A position index is equally comparable and equally free of
+    // raw numbers, so it looked like the same answer; it is not, because every
+    // consumer of this field reads it as overall. The profile prints it as
+    // "#n overall" and both boards sort the whole pool by it, so one rank 1 per
+    // position made the default board round-robin them and put the TE4 at $3
+    // above Ja'Marr Chase.
+    const out = consensusOverrides([
+      player('a', 'QB', 15, 7),
+      player('b', 'QB', 9, 2),
+      player('w', 'WR', 40, 4),
+    ]);
     expect(out.b.rank).toBe(1);
-    expect(out.a.rank).toBe(2);
+    expect(out.w.rank).toBe(2);
+    expect(out.a.rank).toBe(3);
     expect(out.a.notes).toBe('consensus');
   });
 
@@ -111,6 +133,11 @@ describe('consensusBoard', () => {
 
   it('handles an empty pool and a pool nobody ranks', () => {
     expect(consensusOverrides([])).toEqual({});
-    expect(consensusOverrides([player('a', 'WR', 5), player('b', 'RB', 4)])).toEqual({});
+    // Nobody ranked means nobody repriced. They are still put in an order,
+    // because the board has to draw them in one, and it is ours: by price.
+    const none = consensusOverrides([player('a', 'WR', 5), player('b', 'RB', 4)]);
+    expect(Object.values(none).every((override) => override.value === undefined)).toBe(true);
+    expect(none.a.rank).toBe(1);
+    expect(none.b.rank).toBe(2);
   });
 });

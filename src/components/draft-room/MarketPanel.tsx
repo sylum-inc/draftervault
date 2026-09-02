@@ -6,7 +6,8 @@ import {
   type Team,
   type TierBreak,
 } from '@/services/auctionDraftService';
-import type { Endgame } from '@/lib/endgame';
+import { readInflation, type Endgame } from '@/lib/endgame';
+import { dataAges, stalest, PROJECTIONS_DO_NOT_AGE, type DataStamps } from '@/lib/dataAge';
 
 interface MarketPanelProps {
   market: MarketState;
@@ -50,17 +51,16 @@ interface MarketPanelProps {
    * auctioned, because a $1 floor price is not a price anybody would pay.
    */
   tierBreaks: TierBreak[];
+  /**
+   * When each thing the board knows was last learned.
+   *
+   * Here rather than in a panel of its own because this panel is already the
+   * one answering "what is the room doing", and how old the market is *is* a
+   * market reading — it was computed and banded already and shown in exactly
+   * one place, a setup modal nobody opens twice.
+   */
+  stamps: DataStamps;
 }
-
-/** Plain words for what the inflation number means for the next bid. */
-const readInflation = (inflation: number): { label: string; tone: string } => {
-  if (inflation >= 1.15)
-    return { label: 'Money is chasing scraps — expect overpays', tone: 'var(--dr-danger)' };
-  if (inflation >= 1.04) return { label: 'Prices running hot', tone: 'var(--dr-caution)' };
-  if (inflation <= 0.85) return { label: 'Value on the board — bid', tone: 'var(--dr-value)' };
-  if (inflation <= 0.96) return { label: 'Slightly in your favour', tone: 'var(--dr-value)' };
-  return { label: 'Priced about right', tone: 'var(--dr-ink-muted)' };
-};
 
 /**
  * What the room is doing.
@@ -77,12 +77,15 @@ export const MarketPanel = ({
   basis,
   tierBreaks,
   endgame,
+  stamps,
 }: MarketPanelProps) => {
   const snake = phase === 'snake';
   const reading = snake
     ? { label: 'The money is finished — the snake fills the rest', tone: 'var(--dr-ink-muted)' }
-    : readInflation(market.inflation);
+    : readInflation(market.inflation, market.premium ?? null);
   const premiumPct = market.premium != null ? Math.round((market.premium - 1) * 100) : null;
+  const ages = dataAges(stamps);
+  const ageWarning = stalest(ages);
 
   // Where the room is paying under our numbers — the only bargain signal that
   // is not circular, because it comes from what people actually bid rather than
@@ -214,13 +217,112 @@ export const MarketPanel = ({
         </p>
       </div>
 
+      {!snake && (
+        <>
+          <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
+            When to buy
+          </h3>
+          <p
+            className="dr-endgame-verdict"
+            data-lean={endgame.lean}
+            style={{
+              borderLeftColor:
+                endgame.lean === 'buy'
+                  ? 'var(--dr-value)'
+                  : endgame.lean === 'wait'
+                    ? 'var(--dr-caution)'
+                    : 'var(--dr-line-strong)',
+            }}
+          >
+            {endgame.verdict}
+          </p>
+          <dl className="dr-league-summary">
+            <div>
+              <dt>Par from here</dt>
+              <dd className="dr-num">${endgame.par}</dd>
+            </div>
+            <div>
+              <dt>Room is paying</dt>
+              {/* Coloured by what it paid against those players' *list* prices
+                  rather than against par. Par is the average of the players
+                  left and the pace is the average of the players sold — the
+                  dear ones go first, so pace beat par from the opening sale
+                  whatever the room did, and this tile ran amber all night. */}
+              <dd
+                className="dr-num"
+                style={{
+                  color:
+                    endgame.paceOfList == null
+                      ? undefined
+                      : endgame.paceOfList > 1
+                        ? 'var(--dr-caution)'
+                        : 'var(--dr-value)',
+                }}
+              >
+                {endgame.pace == null ? '—' : `$${endgame.pace}`}
+                {endgame.paceOfList != null && (
+                  <span className="dr-pace-share">
+                    {' '}
+                    {endgame.paceOfList >= 1 ? '+' : '−'}
+                    {Math.abs(Math.round((endgame.paceOfList - 1) * 100))}% vs list
+                  </span>
+                )}
+              </dd>
+            </div>
+            <div>
+              <dt>Can still pay par</dt>
+              <dd className="dr-num">
+                {endgame.liveBidders}/{endgame.teamCount}
+              </dd>
+            </div>
+            {endgame.yourShare != null && (
+              <div>
+                <dt>Your share of the money</dt>
+                <dd className="dr-num" style={{ color: 'var(--dr-value)' }}>
+                  {Math.round(endgame.yourShare * 100)}%
+                </dd>
+              </div>
+            )}
+          </dl>
+        </>
+      )}
+
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
-        Position supply
+        Supply against demand
       </h3>
+      {/*
+        Supply on its own cannot say whether a position is about to go.
+        Everything this panel counted was one half — how many are gone, how many
+        are left, what the drop costs — and a run is the other half arriving:
+        eleven teams needing a tight end with three startable ones left is a run
+        that has not happened yet, while three teams needing one with twenty
+        left is a position you can wait on all night. The bar is what is gone;
+        the numbers beside it are seats the room still has to fill against
+        players left to fill them, and the money that belongs to the teams doing
+        the filling.
+      */}
+      {/*
+        Two bare numeric columns are two unlabelled numbers. The footnote says
+        what they are, but a footnote is read once and a column header is read
+        every time the eye comes back to the row.
+      */}
+      <div className="dr-supply dr-supply-head" aria-hidden="true">
+        <span />
+        <span>gone</span>
+        <span>seats/left</span>
+        <span>$/seat</span>
+      </div>
       {market.scarcity.map((row) => {
         const gone = row.total ? row.gone / row.total : 0;
+        // The engine decides this, because deciding it needs the slack the
+        // position opened with — which is a fact about the league and the pool
+        // rather than about anything on screen.
         return (
-          <div className="dr-supply" key={row.position}>
+          <div
+            className="dr-supply"
+            key={row.position}
+            data-pressure={row.squeeze === 'none' ? undefined : row.squeeze}
+          >
             <span className="dr-supply-pos">{row.position}</span>
             <span className="dr-meter-track dr-supply-track">
               <span
@@ -236,13 +338,38 @@ export const MarketPanel = ({
                 }}
               />
             </span>
-            <span className="dr-num dr-supply-count">
-              {row.total - row.gone}
-              <span style={{ color: 'var(--dr-ink-faint)' }}>/{row.total}</span>
+            <span
+              className="dr-num dr-supply-count"
+              title={
+                `${row.seatsLeft} starting ${row.position} seat${row.seatsLeft === 1 ? '' : 's'} still to fill across the room, ` +
+                `${row.startableLeft} startable ${row.position}${row.startableLeft === 1 ? '' : 's'} left to fill them, and ` +
+                (row.moneyPerSeat === null
+                  ? 'no team has one open, so no money is aimed here. '
+                  : `the teams that need one hold $${Math.round(row.moneyPerSeat)} for each of those seats. `) +
+                (row.squeeze === 'high'
+                  ? 'The seats have caught the players: somebody goes without, and that is what a run is made of.'
+                  : row.squeeze === 'some'
+                    ? 'Over half the slack this position opened with is gone.'
+                    : 'No squeeze here yet.')
+              }
+            >
+              <b>{row.seatsLeft}</b>
+              <span style={{ color: 'var(--dr-ink-faint)' }}>/{row.startableLeft}</span>
+            </span>
+            <span
+              className="dr-num dr-supply-money"
+              title="Money held by the teams that still need one here, per seat they have to fill"
+            >
+              {row.moneyPerSeat === null ? '—' : `$${Math.round(row.moneyPerSeat)}`}
             </span>
           </div>
         );
       })}
+      <p className="dr-footnote">
+        Seats catching the players left to fill them is what a run is made of, measured against the
+        slack the position opened with. The money is per seat because it is fungible &mdash; the six
+        figures do not add up to the room.
+      </p>
 
       {runsLow.length > 0 && (
         <p className="dr-notice dr-notice-warn" style={{ marginTop: 10 }}>
@@ -324,64 +451,6 @@ export const MarketPanel = ({
           able to find two answers to one question in two places. Hidden in the
           snake, where no money moves and a par price would be arithmetic about
           nothing. */}
-      {!snake && (
-        <>
-          <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
-            When to buy
-          </h3>
-          <p
-            className="dr-endgame-verdict"
-            data-lean={endgame.lean}
-            style={{
-              borderLeftColor:
-                endgame.lean === 'buy'
-                  ? 'var(--dr-value)'
-                  : endgame.lean === 'wait'
-                    ? 'var(--dr-caution)'
-                    : 'var(--dr-line-strong)',
-            }}
-          >
-            {endgame.verdict}
-          </p>
-          <dl className="dr-league-summary">
-            <div>
-              <dt>Par from here</dt>
-              <dd className="dr-num">${endgame.par}</dd>
-            </div>
-            <div>
-              <dt>Room is paying</dt>
-              <dd
-                className="dr-num"
-                style={{
-                  color:
-                    endgame.pace == null
-                      ? undefined
-                      : endgame.pace > endgame.par
-                        ? 'var(--dr-caution)'
-                        : 'var(--dr-value)',
-                }}
-              >
-                {endgame.pace == null ? '—' : `$${endgame.pace}`}
-              </dd>
-            </div>
-            <div>
-              <dt>Can still pay par</dt>
-              <dd className="dr-num">
-                {endgame.liveBidders}/{endgame.teamCount}
-              </dd>
-            </div>
-            {endgame.yourShare != null && (
-              <div>
-                <dt>Your share of the money</dt>
-                <dd className="dr-num" style={{ color: 'var(--dr-value)' }}>
-                  {Math.round(endgame.yourShare * 100)}%
-                </dd>
-              </div>
-            )}
-          </dl>
-        </>
-      )}
-
       <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
         Cost of waiting
       </h3>
@@ -396,6 +465,41 @@ export const MarketPanel = ({
           </li>
         ))}
       </ul>
+
+      {/* What the board knows, and when it learned it. The app fetches nothing
+          on the night — that is what makes it work in the artifact and in a
+          basement with no wifi — so the honest mitigation is to say where its
+          knowledge stopped rather than to imply it has not. */}
+      <h3 className="dr-eyebrow" style={{ marginTop: 14 }}>
+        What this board knows
+      </h3>
+      {ageWarning && (
+        <p className="dr-notice" role="status">
+          {ageWarning.text} <code>{ageWarning.refresh}</code>
+        </p>
+      )}
+      <ul className="dr-premiums dr-ages">
+        {ages.map((source) => (
+          <li key={source.key} title={source.what}>
+            <span className="dr-supply-pos">{source.label}</span>
+            <span
+              className="dr-num"
+              style={{
+                color:
+                  source.freshness === 'stale'
+                    ? 'var(--dr-danger)'
+                    : source.freshness === 'ageing'
+                      ? 'var(--dr-caution)'
+                      : 'var(--dr-ink-muted)',
+              }}
+            >
+              {source.days == null ? '—' : source.days === 0 ? 'today' : `${source.days}d`}
+            </span>
+            <span className="dr-premium-note">{source.what}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="dr-footnote">{PROJECTIONS_DO_NOT_AGE}</p>
     </section>
   );
 };

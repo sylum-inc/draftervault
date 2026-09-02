@@ -42,6 +42,9 @@ export const PercentileBars = ({ rows, position }: PercentileBarsProps) => (
         </span>
       </div>
     ))}
-    <p className="dr-footnote">Percentile among the {position}s in this pool.</p>
+    <p className="dr-footnote">
+      Percentile among the {position}s who beat replacement level — the men he is actually competing
+      with for a roster spot, not the six hundred in the pool.
+    </p>
   </div>
 );

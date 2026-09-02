@@ -17,6 +17,16 @@
 import type { PlayerResearch, ResearchFile } from '@/lib/researchContract';
 
 export type { Finding, PlayerResearch, Direction, Impact } from '@/lib/researchContract';
+
+/**
+ * When the research file was written, if it has been loaded.
+ *
+ * Synchronous and nullable on purpose: the file is a lazy import, and the one
+ * caller that wants this — the market panel's "what this board knows" — would
+ * rather say nothing than hold a panel open on a fetch. `primeResearch` runs on
+ * mount, so by the time anybody opens that tab it has an answer.
+ */
+export const researchGeneratedAt = (): string | null => cache?.generatedAt ?? null;
 export { freshnessDays } from '@/lib/researchContract';
 
 let cache: ResearchFile | null = null;

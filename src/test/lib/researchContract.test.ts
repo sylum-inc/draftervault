@@ -279,3 +279,59 @@ describe('freshnessDays', () => {
     ).toBeNull();
   });
 });
+
+/**
+ * A page that cannot hold still cannot carry a dated claim.
+ *
+ * Found by re-fetching citations rather than by reasoning about them. Two of
+ * two hundred and thirty cited a player hub — CBS Sports' Javonte Williams
+ * page, and a rolling news index — and the CBS one carried a finding stamped
+ * 11 August about content the page itself dates to 27 April, inside a block
+ * that will be rewritten next week. Both claims happened to be true. The
+ * defect is that nothing in the pipeline could have told, because the date on
+ * the finding could only have come from the model: the page has none.
+ *
+ * It is the same objection as "the model's URL is never trusted", one level
+ * in. There the URL was checked against what the search actually returned;
+ * here the URL is real and it is the *date* that has nothing behind it.
+ */
+describe('citations that cannot be dated', () => {
+  // Built the way the pipeline builds it, so the canonicalisation is the same
+  // one the real allowlist goes through rather than a second reading of it.
+  const allow = (url: string) => citedUrls({ annotations: [{ url_citation: { url } }] });
+  const finding = (url: string) => ({
+    direction: 'PAY_UP',
+    confidence: 'MEDIUM',
+    headline: 'something happened',
+    findings: [{ claim: 'a claim about a player', url, published: '2026-08-11', impact: 'ROLE' }],
+  });
+
+  it('refuses a player hub, an injury history and a rolling news index', () => {
+    for (const url of [
+      'https://www.cbssports.com/nfl/players/2961719/javonte-williams/',
+      'https://www.draftsharks.com/fantasy/injury-history/amon-ra-st-brown/10783',
+      'https://fantasyfootballcalculator.com/players/jakobi-meyers/news',
+      'https://www.foxsports.com/nfl/some-guy-player-injuries/depth-chart/',
+    ]) {
+      const out = validateResearch(finding(url), allow(url), '2026-08-31');
+      expect(out.findings).toHaveLength(0);
+      // Counted as undated, because that is exactly what it is.
+      expect(out.dropped.undated).toBe(1);
+    }
+  });
+
+  it('still takes an ordinary dated article', () => {
+    const url = 'https://www.si.com/nfl/lions/onsi/why-detroit-lions-wont-miss-montgomery-2026';
+    const out = validateResearch(finding(url), allow(url), '2026-08-31');
+    expect(out.findings).toHaveLength(1);
+    expect(out.findings[0].source).toBe('si.com');
+  });
+
+  it('does not mistake a path that merely contains the letters', () => {
+    // `/playersunion/` and `/teams-of-the-week/` are articles, not hubs — the
+    // rule matches a path *segment* rather than a substring.
+    const url = 'https://www.nfl.com/news/playersunion-teams-of-the-week-report-2026';
+    const out = validateResearch(finding(url), allow(url), '2026-08-31');
+    expect(out.findings).toHaveLength(1);
+  });
+});

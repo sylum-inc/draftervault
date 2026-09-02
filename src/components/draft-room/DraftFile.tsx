@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AuctionDraftService } from '@/services/auctionDraftService';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface DraftFileProps {
   service: AuctionDraftService;
@@ -60,12 +61,9 @@ export const DraftFile = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   const load = (text: string) => {
     const result = service.importDraft(text);

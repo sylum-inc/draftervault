@@ -51,8 +51,20 @@ const rejects = new Set(
     .filter(Boolean)
 );
 const dryRun = args.includes('--dry-run');
+/**
+ * Re-run the contract over the file already written, with no new research.
+ *
+ * The contract gets tightened as re-fetching citations turns up new ways a
+ * claim can fail to stand up — most recently that a player hub carries no
+ * publication date of its own, so a date stamped on a finding citing one came
+ * from the model rather than from the page. Without this, tightening it would
+ * only ever apply to the *next* run, and the next run of the other door costs
+ * money and twenty minutes. The findings already on disk are their own
+ * allowlist, since they were admitted by a search that really returned them.
+ */
+const revalidate = args.includes('--revalidate');
 
-if (!input) {
+if (!input && !revalidate) {
   console.error('\n  Give me the batches file the workflow produced.\n');
   process.exit(1);
 }
@@ -64,6 +76,39 @@ const existing = existsSync(out)
   ? JSON.parse(readFileSync(out, 'utf8'))
   : { generatedAt: null, model: null, players: {} };
 const players = { ...(existing.players ?? {}) };
+
+if (revalidate) {
+  let kept = 0;
+  let dropped = 0;
+  let cleared = 0;
+  for (const [gsis, record] of Object.entries(players)) {
+    const allowed = citedUrls({
+      annotations: (record.findings ?? []).map((finding) => ({ url_citation: { url: finding.url } })),
+    });
+    const checked = validateResearch(record, allowed);
+    const surviving = checked.findings.filter((finding) => !rejects.has(finding.url));
+    dropped += (record.findings ?? []).length - surviving.length;
+    kept += surviving.length;
+    if (!surviving.length) {
+      // The headline goes with the findings. It is the line most likely to be
+      // read and least likely to be checked, so it may not outlive what it
+      // summarised — the same rule the audit's refusals already live by.
+      cleared += 1;
+      players[gsis] = { ...record, direction: 'NEUTRAL', confidence: 'LOW', headline: '', findings: [] };
+    } else {
+      players[gsis] = { ...record, ...checked, findings: surviving };
+    }
+  }
+  console.log(`\n  revalidated: ${kept} findings kept, ${dropped} dropped, ${cleared} players left with nothing\n`);
+  if (!dryRun) {
+    mkdirSync(dirname(out), { recursive: true });
+    const tmp = `${out}.tmp`;
+    writeFileSync(tmp, JSON.stringify({ ...existing, players }, null, 2));
+    renameSync(tmp, out);
+    console.log(`  wrote ${out}\n`);
+  }
+  process.exit(0);
+}
 
 const batches = JSON.parse(readFileSync(input, 'utf8'));
 const tally = { players: 0, kept: 0, dropped: 0, silent: 0, unknown: 0, mismatched: 0, refuted: 0 };

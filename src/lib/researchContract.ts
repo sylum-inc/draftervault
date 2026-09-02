@@ -150,6 +150,36 @@ const isoToday = (): string => new Date().toISOString().slice(0, 10);
  * `allowed` is the citation list from the same response — a finding is kept
  * only if its URL is on it and it carries a usable publication date.
  */
+/**
+ * Pages that cannot carry a dated claim, however true the claim is today.
+ *
+ * A player hub, an injury history, a depth chart or a rolling news index is
+ * rewritten continuously and carries no publication date of its own — so a
+ * finding resting on one is a dated assertion about an undated page, and the
+ * date can only have come from the model rather than from the source. It is
+ * the same objection as "the model's URL is never trusted", one level in: the
+ * URL was real and the *date* was not checkable.
+ *
+ * Found by re-fetching citations rather than by reasoning: two of two hundred
+ * and thirty cited a profile page, and the CBS Sports one carried a claim
+ * stamped 11 August that the page itself dates to 27 April, inside content
+ * that will be replaced again next week. Both claims happened to be true. The
+ * defect is that nothing could have told.
+ *
+ * Matched on the shape of the path, which is all this needs: it does not have
+ * to read the page to know a hub cannot hold still.
+ */
+const MUTABLE_PAGE =
+  /\/(?:players?|player-injuries|injury-history|depth-charts?|stats|roster|team)\//i;
+
+export const isDatelessPage = (url: string): boolean => {
+  try {
+    return MUTABLE_PAGE.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+};
+
 export const validateResearch = (
   answer: unknown,
   allowed: Map<string, string>,
@@ -188,6 +218,14 @@ export const validateResearch = (
 
     const published = typeof raw.published === 'string' ? raw.published.trim() : '';
     if (!/^\d{4}-\d{2}-\d{2}$/.test(published) || published > now || published < OLDEST_USEFUL) {
+      dropped.undated += 1;
+      continue;
+    }
+
+    // A hub page carries no date of its own, so whatever is stamped on this
+    // finding came from the model. Counted as undated because that is exactly
+    // what it is.
+    if (isDatelessPage(url)) {
       dropped.undated += 1;
       continue;
     }

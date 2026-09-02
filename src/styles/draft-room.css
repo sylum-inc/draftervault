@@ -15,7 +15,11 @@
 
   --dr-ink: #edf1f7;
   --dr-ink-muted: #8996ac;
-  --dr-ink-faint: #5b6880;
+  /* 4.6:1 on --dr-surface. It was #5b6880, which is 3.2:1 — and it was the
+     colour of every caption on every card at ten pixels, the second most used
+     colour in the room. A caption that fails contrast at the smallest size on
+     the screen is not a quiet caption, it is an absent one. */
+  --dr-ink-faint: #728299;
 
   /* Semantic signals, kept separate from the team accent. */
   --dr-value: #3dd68c;
@@ -26,9 +30,69 @@
   --dr-accent: #4d7cff;
   --dr-accent-ink: #ffffff;
 
+  /* Surfaces, as a real stack rather than three ad-hoc greys. Panels sit on
+     the ground, controls sit on panels, and a hovered control lifts once more —
+     so depth carries meaning instead of being decoration. */
+  --dr-surface-2: #161d2b;
+  --dr-hover: #232c3e;
+
+  /* One type scale, because eight components inventing their own is what made
+     a stat label and a section heading the same size. Steps are ~1.2x and
+     named for the job, not the pixels. */
+  --dr-t-micro: 10px;
+  --dr-t-tiny: 11px;
+  --dr-t-small: 12px;
+  --dr-t-body: 13px;
+  --dr-t-lead: 15px;
+  --dr-t-title: 19px;
+  --dr-t-hero: 26px;
+  --dr-t-mega: 34px;
+
+  /* One spacing scale. `--dr-gap` stays as the layout gutter it already was. */
+  --dr-s1: 4px;
+  --dr-s2: 8px;
+  --dr-s3: 12px;
+  --dr-s4: 16px;
+  --dr-s5: 24px;
+  --dr-s6: 32px;
+
   --dr-radius: 10px;
   --dr-radius-sm: 6px;
+  --dr-radius-lg: 14px;
+  --dr-radius-pill: 999px;
   --dr-gap: 16px;
+
+  /* Elevation and motion, so a lift and a transition mean the same thing
+     everywhere they appear. */
+  --dr-e1: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --dr-e2: 0 8px 22px -10px rgba(0, 0, 0, 0.72);
+  --dr-e3: 0 20px 48px -18px rgba(0, 0, 0, 0.85);
+  --dr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dr-fast: 120ms var(--dr-ease);
+  --dr-med: 220ms var(--dr-ease);
+
+  /* The verdict language. A bid is good, fair, or a mistake, and that judgement
+     appears on the card, the stage, the market panel and the bargain board —
+     four places that were each picking their own green. Backgrounds are paired
+     with the ink so a token can be filled rather than only coloured. */
+  --dr-good: #3dd68c;
+  /* What an instrument draws with when it is drawing "above the bar" — the
+     game log's columns, the shelf, the outcome curve's upper mass. Deliberately
+     not --dr-good: twelve elements on one card in the verdict green meant the
+     price and the gain, which are the two things a bid is decided on, had
+     nothing left to stand out against. Instruments carry information in their
+     shape; the colour only has to be legible. */
+  --dr-mark: #4f8c74;
+  --dr-good-bg: rgba(61, 214, 140, 0.12);
+  --dr-good-line: rgba(61, 214, 140, 0.36);
+  --dr-warn: #f0a93b;
+  --dr-warn-bg: rgba(240, 169, 59, 0.12);
+  --dr-warn-line: rgba(240, 169, 59, 0.36);
+  --dr-bad: #f0616d;
+  --dr-bad-bg: rgba(240, 97, 109, 0.12);
+  --dr-bad-line: rgba(240, 97, 109, 0.38);
+  --dr-info: #6ea8ff;
+  --dr-info-bg: rgba(110, 168, 255, 0.12);
 
   --dr-display: 'Barlow Condensed', 'Oswald', 'Arial Narrow', sans-serif;
   --dr-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
@@ -91,20 +155,55 @@
    top bar
    -------------------------------------------------------------------------- */
 
-.dr-topbar {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  /* Wraps at any width: the bar carries a wordmark, three readouts, a clock and
-     three buttons, which stop fitting long before a phone. */
-  flex-wrap: wrap;
-  row-gap: 10px;
-  padding: 10px 18px;
-  background: linear-gradient(180deg, #0d121b 0%, var(--dr-ground) 100%);
-  border-bottom: 1px solid var(--dr-line);
+.dr-chrome {
   position: sticky;
   top: 0;
   z-index: 30;
+  background: var(--dr-ground);
+}
+
+.dr-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s4);
+  /* Still wraps — a phone is a phone — but at a desk it now fits on one row,
+     because the progress bar left the flex flow and the setup controls stopped
+     asking for the same weight as the live ones. */
+  flex-wrap: wrap;
+  row-gap: var(--dr-s2);
+  padding: 9px 16px;
+  background: linear-gradient(180deg, #0d121b 0%, var(--dr-ground) 100%);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* The three groups. `dr-topbar-live` is pushed to the far side of the readouts
+   so the clock and the state sit together on the left and everything that is
+   pressed sits together on the right. */
+.dr-topbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dr-topbar-live {
+  margin-left: auto;
+}
+
+.dr-topbar-setup {
+  gap: 4px;
+  padding-left: var(--dr-s3);
+  border-left: 1px solid var(--dr-line);
+}
+
+.dr-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: transparent;
+  overflow: hidden;
 }
 
 .dr-wordmark {
@@ -119,15 +218,6 @@
 
 .dr-wordmark span {
   color: var(--dr-value);
-}
-
-.dr-progress {
-  flex: 1;
-  min-width: 120px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--dr-raised);
-  overflow: hidden;
 }
 
 .dr-progress-fill {
@@ -169,8 +259,44 @@
 }
 
 .dr-button:hover:not(:disabled) {
-  background: #232c3e;
+  background: var(--dr-hover);
   border-color: var(--dr-line-strong);
+}
+
+/* Set up once, then never touched again while the auction runs. Quiet by
+   default and full strength on hover, so the row reads as "these four things
+   are live, those six are settings" without anything being hidden. */
+.dr-button-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--dr-ink-muted);
+  font-weight: 500;
+}
+
+.dr-button-ghost:hover:not(:disabled) {
+  background: var(--dr-raised);
+  border-color: var(--dr-line);
+  color: var(--dr-ink);
+}
+
+.dr-button-ghost[aria-pressed='true'] {
+  color: var(--dr-ink);
+  background: var(--dr-raised);
+  border-color: var(--dr-line);
+}
+
+/* Reset deletes the afternoon. It is not a navigation button and it should not
+   look like one, and it should not sit in the same group as one either. */
+.dr-button-danger {
+  background: transparent;
+  border-color: transparent;
+  color: var(--dr-bad);
+  font-weight: 500;
+}
+
+.dr-button-danger:hover:not(:disabled) {
+  background: var(--dr-bad-bg);
+  border-color: var(--dr-bad-line);
 }
 
 .dr-button:active:not(:disabled) {
@@ -217,7 +343,17 @@
   flex-direction: column;
   gap: var(--dr-gap);
   position: sticky;
-  top: 74px;
+  /* Under the chrome, wherever the chrome ends. The offset was a fixed 74px
+     while the sticky block above it is the header *and* the band — up to seven
+     hundred pixels with a player on the block — so the top half of this column
+     sat under the bid box on any scroll. The room measures the chrome and
+     writes its height here. */
+  top: calc(var(--dr-chrome-h, 74px) + var(--dr-gap));
+  /* A definite height, not a maximum: the advisor's cap is a percentage of
+     this, and a percentage of `max-height` resolves to nothing — so the box
+     was as tall as its text and the tab row jumped between panels. */
+  height: calc(100vh - var(--dr-chrome-h, 74px) - 2 * var(--dr-gap));
+  min-height: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -277,8 +413,8 @@
 
 .dr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: 10px;
 }
 
 /* --------------------------------------------------------------------------
@@ -302,84 +438,181 @@
 }
 
 .dr-card:hover {
-  border-color: var(--dr-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 26px -14px var(--dr-accent);
+  border-color: color-mix(in srgb, var(--dr-accent-lift) 45%, var(--dr-line-strong));
+  background: var(--dr-surface-2);
+  transform: translateY(-1px);
+  box-shadow: var(--dr-e2);
 }
 
+/* On the block. The loudest state on the board, because it is the only card
+   anybody is deciding about — a ring in the club's own colour and a glow, so it
+   is findable from across the room without reading a word of it. */
 .dr-card[aria-selected='true'] {
-  border-color: var(--dr-accent);
-  box-shadow: inset 0 0 0 1px var(--dr-accent);
+  border-color: var(--dr-accent-lift);
+  background: var(--dr-surface-2);
+  box-shadow:
+    inset 0 0 0 1px var(--dr-accent-lift),
+    0 0 0 3px color-mix(in srgb, var(--dr-accent-lift) 18%, transparent),
+    var(--dr-e2);
+}
+
+/* The club, as a tint rather than an edge.
+   It was a 42% gradient across the whole head first, which meant a bright club
+   fought the name for attention. Then a 3px spine down the left, which was
+   worse in a different way: too saturated to ignore, too thin to read as
+   deliberate, invisible for the third of the league whose colour is nearly
+   black, and a second hard edge a few pixels outside the one the content is
+   aligned to. A colour that has to be normalised before it is legible is not
+   carrying identity, it is carrying itself.
+   A faint wash from the top-left corner does the job. It is the same hue, it
+   never crosses a number, and `--dr-accent-lift` has already moved it into a
+   band that reads — so the Raiders get one too. */
+.dr-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 0% 0%,
+    color-mix(in srgb, var(--dr-accent-lift) 14%, transparent) 0%,
+    transparent 62%
+  );
+  opacity: 0.85;
+  transition: opacity var(--dr-med);
+}
+
+.dr-card:hover::before,
+.dr-card[aria-selected='true']::before {
+  opacity: 1;
 }
 
 .dr-card-head {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  padding: 8px 12px 0;
-  min-height: 84px;
-  /* The team color is the card's ground, faded so names stay legible. */
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--dr-accent) 42%, transparent) 0%,
-      transparent 100%
-    ),
-    var(--dr-surface);
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--dr-s2);
+  padding: 10px 11px 8px 13px;
+  /* Two name lines plus the meta line, whether or not the name wraps. Without
+     it a one-line name and a two-line name put every reading below them
+     nineteen pixels apart across a row, and a column of prices stopped being
+     a column. */
+  min-height: 74px;
 }
 
 .dr-card-photo {
-  width: 88px;
-  height: 64px;
+  --dr-face-size: 36px;
+  width: 36px;
+  height: 36px;
   flex: none;
-  /* Pushed to the trailing edge so the team mark and tier badge get the left
-     half — the same anchoring a broadcast lower-third uses. */
-  margin-left: auto;
   object-fit: cover;
   object-position: top center;
-  border-radius: var(--dr-radius-sm);
+  border-radius: 50%;
+  background: var(--dr-raised);
+  /* The club's ring. Small, on the one element that is already about identity,
+     and lifted so it is there for a dark club as well as a bright one. */
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--dr-accent-lift) 70%, transparent);
+}
+
+/*
+ * A face is a layer over a monogram, never a branch between them.
+ *
+ * The sizing class (`.dr-card-photo`, `.dr-stage-photo`, ...) sets the box and
+ * the ring; this makes that box a stack. The initials are always painted; the
+ * image sits over them and covers them the moment it arrives. An image that
+ * never arrives — blocked, offline, or held by a service worker whose fetch
+ * never settles and so fires no event — leaves the letters showing, which is
+ * the whole reason this is a stack and not an `onError` swap.
+ */
+.dr-face {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.dr-face-mono {
+  font-family: var(--dr-display);
+  font-weight: 700;
+  font-size: calc(var(--dr-face-size, 36px) * 0.36);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--dr-ink-muted);
+  user-select: none;
+}
+
+.dr-face-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
   background: var(--dr-raised);
 }
 
-.dr-card-monogram {
+.dr-card-id {
   display: flex;
-  margin-left: auto;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--dr-display);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--dr-ink-muted);
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.dr-card-logo {
-  position: absolute;
-  top: 58%;
-  left: 14px;
-  transform: translateY(-50%);
-  width: 46px;
-  height: 46px;
-  opacity: 0.32;
-  pointer-events: none;
-}
-
+/* Two lines rather than an ellipsis.
+   At one line the price squeezed the column and the board read "Jaxon
+   Smith-…", "Christian Mc…", "Saquon Bark…" — four of the sixteen most
+   expensive players on the board unreadable, which is the one thing a name on
+   a card has to do. Condensed display type at 18px fits most full names on one
+   line and wraps the rest. */
 .dr-card-name {
   font-family: var(--dr-display);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 600;
-  line-height: 1.05;
-  margin: 8px 12px 0;
+  line-height: 1.06;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .dr-card-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 3px 12px 0;
-  font-size: 11px;
+  gap: 5px;
+  font-size: var(--dr-t-tiny);
   color: var(--dr-ink-muted);
   letter-spacing: 0.03em;
+  min-width: 0;
+}
+
+/* The number the auction is about, sized like it.
+   It was a cell in a three-up grid, the same weight as "Rank", below the
+   photo. A price is what a card is *for* in an auction: one glance has to
+   answer "who" and "how much", and nothing else on the card competes now. */
+.dr-card-price {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--dr-good);
+  align-self: center;
+  flex: none;
+}
+
+/* Deliberately not marked.
+   The dashed underline said "this number is somebody else's ranking, not
+   ours", which was information while an import was the exception. The market
+   board is the default now, so it was on every card on the board — a mark
+   every player carries marks nothing, and sixty dashed underlines under sixty
+   prices is just noise. Whose number it is still lives on the hover title and,
+   in full, on the nomination stage. */
+.dr-card-price.is-custom {
+  color: var(--dr-good);
 }
 
 .dr-pos {
@@ -393,73 +626,459 @@
   letter-spacing: 0.06em;
 }
 
+/* Supporting numbers, deliberately quiet.
+   These are three cells on one line rather than a bordered grid: the borders
+   were drawing six boxes per card and sixty cards on screen turned the board
+   into graph paper. Labels sit inline with their values so the row is one
+   band of text the eye can skip when it is only looking for a price. */
 .dr-card-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  margin-top: 10px;
-  background: var(--dr-line);
-  border-top: 1px solid var(--dr-line);
+  gap: var(--dr-s2);
+  margin: 0 11px 0 13px;
+  padding: 6px 0 5px;
 }
 
 .dr-card-stat {
-  background: var(--dr-surface);
-  padding: 7px 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
 }
 
 .dr-card-stat dt {
-  font-size: 9px;
-  letter-spacing: 0.1em;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
 }
 
 .dr-card-stat dd {
-  margin: 2px 0 0;
+  margin: 0;
   font-family: var(--dr-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: var(--dr-t-small);
   font-weight: 600;
+  color: var(--dr-ink-muted);
 }
 
+/* The tier rides in the meta line with the position and club, because that is
+   what it is: another fact about who this player is. As an absolutely
+   positioned corner badge it had to be given a corner, and both corners are
+   spoken for — the price on one side, the controls on the other. */
+/* The tier is a scarcity statement, so it is allowed a colour where the club
+   abbreviation beside it is not. Top tier reads; the rest recede. */
 .dr-tier {
-  position: absolute;
-  z-index: 2;
-  top: 6px;
-  left: 10px;
   font-family: var(--dr-mono);
-  font-size: 10px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--dr-ink);
-  background: rgb(8 10 15 / 0.65);
+  letter-spacing: 0.06em;
+  color: var(--dr-ink-faint);
+  background: var(--dr-raised);
+  border: 1px solid var(--dr-line);
   border-radius: 3px;
-  padding: 1px 5px;
+  padding: 0 4px;
+  flex: none;
+}
+
+.dr-tier[data-tier='1'] {
+  color: var(--dr-good);
+  border-color: var(--dr-good-line);
+  background: var(--dr-good-bg);
+}
+
+.dr-tier[data-tier='2'] {
+  color: var(--dr-ink-muted);
+  border-color: var(--dr-line-strong);
 }
 
 .dr-flag {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  flex: none;
 }
 
 /* --------------------------------------------------------------------------
    nomination stage
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   the block, as a full-width band
+   -------------------------------------------------------------------------- */
+
+.dr-band {
+  padding: var(--dr-gap) var(--dr-gap) 0;
+  background: var(--dr-ground);
+}
+
+/* With nobody on the block there is nothing to decide, so the band is a line
+   saying so rather than a two-hundred-pixel slab of empty panel across the top
+   of the board. */
+.dr-stage.dr-stage-empty,
+.dr-stage.dr-stage-done {
+  display: flex;
+  grid-template-columns: none;
+  height: auto;
+  box-shadow: none;
+}
+
+.dr-stage-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dr-s2);
+  padding: 10px var(--dr-s4);
+  color: var(--dr-ink-faint);
+  font-size: var(--dr-t-small);
+  text-align: center;
+}
+
+/*
+ * The spotlight.
+ *
+ * A strip across the top — who he is, the numbers a bid is decided on, the
+ * sentence that decides it — then the dossier down the left and the controls
+ * down the right. The band has a fixed height and the dossier scrolls inside
+ * it, so nothing a tab does can move the bid box: the controls not moving is
+ * the whole point of a band, and it is kept without the dead space that
+ * keeping it cost before, when the middle column was a 172px window onto prose
+ * over two hundred pixels of nothing.
+ */
 .dr-stage {
   overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 326px);
+  grid-template-rows: auto minmax(0, 1fr);
+  /* As tall as its tab needs, up to the window under the bar: the live tab
+     was being cut at a fixed 58vh and its second row scrolled. What gives the
+     board back is the fold on scroll, not a shorter band. */
+  height: auto;
+  max-height: calc(100vh - var(--dr-topbar-h, 53px) - 28px);
+  box-shadow: var(--dr-e2);
+}
+
+/* Folded, or with no dossier to show: the strip, and the controls in one row
+   beneath it rather than a column beside it — a 494px column of controls next
+   to a 230px strip is a band that is two thirds empty. */
+.dr-stage[data-folded] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  height: auto;
+}
+
+.dr-stage[data-folded] .dr-stage-form,
+.dr-stage-form.is-row {
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) auto auto auto;
+  grid-template-areas: 'bid teams verdict sold pass' 'hint hint hint hint hint';
+  align-items: center;
+  gap: var(--dr-s2) var(--dr-s3);
+  padding: var(--dr-s2) var(--dr-s4);
+  border-left: 0;
+  overflow: visible;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field:has(#dr-bid) {
+  grid-area: bid;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field:has(.dr-teamrow) {
+  grid-area: teams;
+}
+
+.dr-stage[data-folded] .dr-teamrow {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-verdict {
+  grid-area: verdict;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-button-primary {
+  grid-area: sold;
+  min-width: 150px;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-button:not(.dr-button-primary) {
+  grid-area: pass;
+  flex: none;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-notice,
+.dr-stage[data-folded] .dr-stage-form > .dr-stage-hint {
+  grid-area: hint;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field {
+  gap: 3px;
+}
+
+.dr-stage[data-folded] .dr-stage-form > .dr-field > .dr-eyebrow {
+  display: none;
+}
+
+.dr-stage-top {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-bottom: 1px solid var(--dr-line);
+  background: var(--dr-surface-2);
+}
+
+.dr-stage[data-folded] .dr-stage-top {
+  border-bottom: 0;
+}
+
+.dr-stage-dossier {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* The profile inside the band is a column: tabs fixed, panel scrolling. */
+.dr-stage-dossier > .dr-profile {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.dr-stage-dossier > .dr-profile > .dr-tabs {
+  flex: none;
+  background: var(--dr-surface);
+}
+
+.dr-stage-dossier > .dr-profile > .dr-tabpanel,
+.dr-stage-dossier > .dr-profile > .dr-notice {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.dr-stage-form {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* The snake has no bid box; the form column is the one line saying who the
+   pick goes to, so it can be narrower. */
+.dr-stage[data-mode='snake'] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 260px);
+}
+
+.dr-stage-idblock {
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-stage-fold {
+  flex: none;
+  align-self: flex-start;
+  margin-left: auto;
+  padding: 4px 9px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-pill);
+  background: transparent;
+  color: var(--dr-ink-muted);
+  font-size: var(--dr-t-tiny);
+  white-space: nowrap;
+}
+
+.dr-stage-fold:hover {
+  color: var(--dr-ink);
+  border-color: var(--dr-line-strong);
+}
+
+/* The sentence under the tiles. It is the one line of prose in the strip and
+   it is what the six numbers abbreviate. */
+.dr-stage-line {
+  padding: 6px var(--dr-s4) 8px;
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-stage-line:empty {
+  display: none;
+}
+
+.dr-stage-line > p {
+  margin: 0;
+}
+
+.dr-stage-hint {
+  margin: 0;
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  text-align: center;
+}
+
+/* What the typed bid does, under the controls. The column was two thirds
+   empty beneath the chips while the tab had to be scrolled to find this, and a
+   reading about a number belongs where the number is typed. */
+.dr-stage-consequence {
+  margin-top: var(--dr-s2);
+  padding-top: var(--dr-s3);
+  border-top: 1px solid var(--dr-line);
+  display: grid;
+  gap: var(--dr-s2);
+}
+
+.dr-stage-consequence > .dr-tonight-live {
+  margin: 0;
+}
+
+.dr-stage-consequence > .dr-footnote {
+  margin: 0;
+}
+
+.dr-stage[data-folded] .dr-stage-consequence {
+  display: none;
+}
+
+/* Ending the auction asks first, here rather than in a browser dialog. */
+.dr-stage-ask {
+  display: grid;
+  gap: var(--dr-s2);
+  padding: var(--dr-s3);
+  border: 1px solid var(--dr-warn-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-warn-bg);
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink);
+}
+
+.dr-stage-ask > p {
+  margin: 0;
+}
+
+.dr-stage-ask > div {
+  display: flex;
+  gap: var(--dr-s2);
+}
+
+.dr-stage-ask > div > .dr-button {
+  flex: 1 1 0;
+  justify-content: center;
+  width: auto;
+}
+
+.dr-stage[data-folded] .dr-stage-ask {
+  grid-column: 1 / -1;
+}
+
+/* An edge that stops reads as the end. While the panel has more below the
+   fold the profile is marked, and the edge fades and says so. */
+.dr-stage-dossier > .dr-profile {
+  position: relative;
+}
+
+.dr-stage-dossier > .dr-profile[data-more]::after {
+  content: '▾ more below';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 46px;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-muted);
+  background: linear-gradient(to bottom, transparent, var(--dr-surface) 78%);
+}
+
+/* The server panel's rename and delete ask inline, in the row they are about. */
+.dr-server-ask {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+}
+
+.dr-server-ask[data-tone='bad'] {
+  border-color: var(--dr-bad-line);
+  background: var(--dr-bad-bg);
+}
+
+.dr-server-ask > p {
+  margin: 0;
+  flex: 1 1 200px;
+  color: var(--dr-ink);
+}
+
+.dr-server-ask > .dr-input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.dr-server-ask > .dr-button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1180px) {
+  .dr-stage,
+  .dr-stage[data-mode='snake'] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+  }
+
+  /* No room for a dossier under a strip and a form on one narrow column, so
+     the band folds to the strip and the controls. The tabs are still a click
+     away on the card. */
+  .dr-stage-dossier,
+  .dr-stage-fold {
+    display: none;
+  }
+
+  .dr-stage-form {
+    grid-column: 1;
+    grid-row: 2;
+    border-left: 0;
+    border-top: 1px solid var(--dr-line);
+  }
+
+  .dr-stage[data-folded] .dr-stage-form,
+  .dr-stage:not([data-folded]) .dr-stage-form {
+    grid-template-columns: 160px minmax(0, 1fr);
+    grid-template-areas: 'bid teams' 'verdict sold' 'pass pass' 'hint hint';
+  }
 }
 
 .dr-stage-hero {
   position: relative;
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  padding: 16px 16px 14px;
+  align-items: center;
+  gap: var(--dr-s3);
+  padding: var(--dr-s3) var(--dr-s4) var(--dr-s2);
   background:
     radial-gradient(
       120% 140% at 100% 0%,
@@ -470,23 +1089,31 @@
   border-bottom: 1px solid var(--dr-line);
 }
 
+/* A 126x92 portrait beside a 30px name filled the left column and still left
+   a hundred and fifty pixels of nothing under it. A face is worth having —
+   recognising who was just called is faster than reading — but it is worth a
+   circle, not a quarter of the band. */
 .dr-stage-photo {
-  width: 126px;
-  height: 92px;
+  --dr-face-size: 62px;
+  width: 62px;
+  height: 62px;
   flex: none;
   object-fit: cover;
   object-position: top center;
-  border-radius: var(--dr-radius-sm);
+  border-radius: 50%;
   background: var(--dr-raised);
-  box-shadow: 0 8px 22px -12px #000;
+  box-shadow:
+    0 0 0 1px var(--dr-line),
+    0 6px 16px -10px #000;
 }
 
 .dr-stage-name {
   font-family: var(--dr-display);
-  font-size: 30px;
+  font-size: 25px;
   font-weight: 700;
-  line-height: 0.98;
+  line-height: 1;
   letter-spacing: 0.005em;
+  overflow-wrap: anywhere;
 }
 
 .dr-stage-sub {
@@ -509,19 +1136,40 @@
 
 .dr-stage-tiles {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 1px;
   background: var(--dr-line);
+  border-top: 1px solid var(--dr-line);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* The tone is a live reading, not a property of the player: a walk-away is
+   amber only once the bid on the table has gone past it, and the gain is
+   coloured by which seat it fills. */
+.dr-tile dd[data-tone='good'] {
+  color: var(--dr-good);
+}
+
+.dr-tile dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-tile dd[data-tone='bad'] {
+  color: var(--dr-bad);
+}
+
+.dr-tile dd.is-price {
+  color: var(--dr-good);
 }
 
 .dr-tile {
   background: var(--dr-surface);
-  padding: 9px 10px;
+  padding: 8px var(--dr-s4);
 }
 
 .dr-tile dt {
-  font-size: 9px;
-  letter-spacing: 0.1em;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
 }
@@ -536,9 +1184,28 @@
 
 .dr-stage-form {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 7px;
+  padding: var(--dr-s3) var(--dr-s4);
+  border-left: 1px solid var(--dr-line);
+  min-width: 0;
+}
+
+/* Everything that decides a bid takes the whole column. */
+.dr-stage-form > * {
+  flex: 1 1 100%;
+}
+
+/* The two secondary actions share a row instead.
+   Full width each, stacked under a full-width SOLD, they added a hundred
+   pixels to the tallest column — and the tallest column sets the height of the
+   whole band, which the board underneath pays for. Neither is pressed under
+   time pressure; both are one click either way. */
+.dr-stage-form > .dr-button:not(.dr-button-primary) {
+  flex: 1 1 132px;
+  min-width: 0;
+  justify-content: center;
 }
 
 .dr-field {
@@ -594,6 +1261,7 @@
 
 .dr-verdict {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   font-size: 12px;
@@ -603,6 +1271,56 @@
 .dr-verdict strong {
   font-family: var(--dr-mono);
   font-size: 13px;
+}
+
+/* Says which question the comparison is answering, when the answer is not
+   about your lineup. Deliberately quieter than the label it qualifies. */
+/* What the web said about the man the snake would hand you instead. Quiet,
+   because it qualifies the number above rather than competing with it. */
+.dr-stage-freeflag {
+  display: block;
+  margin-top: 6px;
+  padding-left: 8px;
+  border-left: 2px solid var(--dr-line);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--dr-ink-faint);
+}
+
+.dr-stage-freeflag[data-direction='FADE'] {
+  border-left-color: var(--dr-caution);
+}
+
+.dr-stage-freeflag[data-direction='PAY_UP'] {
+  border-left-color: var(--dr-value);
+}
+
+.dr-stage-freeflag b {
+  color: var(--dr-ink-muted);
+  font-weight: 600;
+}
+
+.dr-stage-freeflag em {
+  font-style: normal;
+  opacity: 0.85;
+}
+
+/* The share the "room is paying" figure is actually judged on, beside the
+   dollars somebody at the table is holding in their head. */
+.dr-pace-share {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.dr-verdict-note {
+  flex: 1 0 100%;
+  font-family: var(--dr-sans);
+  font-style: normal;
+  font-size: 11px;
+  color: var(--dr-ink-faint);
+  text-align: right;
 }
 
 .dr-empty {
@@ -744,7 +1462,9 @@
   }
 
   .dr-grid {
-    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+    /* One card across. Two 180px columns shattered every card into
+       overlapping text. */
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dr-stage-tiles {
@@ -980,7 +1700,7 @@
    marked, because a $1 price tag on a player nobody is bidding on and a $1
    price tag on a scrub look identical otherwise. */
 .dr-snake {
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -1031,39 +1751,55 @@
   color: var(--dr-ground);
 }
 
-.dr-card-star {
+/* Watch and pin live in the bottom-right and only appear on hover, focus or
+   when they are already on.
+   They used to sit in the top-right corner, which is where the price is now —
+   two 20px glyphs overlapping a 26px number on every one of sixty cards. They
+   are also not auction controls: nobody stars a player while money is on the
+   table, so they have no claim on the corner the eye goes to first. */
+.dr-card-star,
+.dr-card-pin,
+.dr-card-open,
+.dr-card-spot {
   position: absolute;
   z-index: 2;
-  top: 5px;
-  right: 8px;
+  bottom: 6px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 14px;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink-muted);
+  background: var(--dr-surface-2);
+  box-shadow: 0 0 0 1px var(--dr-line);
+  opacity: 0;
+  transition: opacity var(--dr-fast);
+}
+
+.dr-card-star {
+  right: 8px;
+}
+
+.dr-card:hover .dr-card-star,
+.dr-card:hover .dr-card-pin,
+.dr-card:hover .dr-card-open,
+.dr-card-open:focus-visible,
+.dr-card-star:focus-visible,
+.dr-card-pin:focus-visible,
+.dr-card-star[aria-pressed='true'],
+.dr-card-pin.is-pinned {
+  opacity: 1;
+}
+
+.dr-card-star[aria-pressed='true'] {
+  color: var(--dr-warn);
 }
 
 /* --------------------------------------------------------------------------
    profile: season shape, defensive personnel
    -------------------------------------------------------------------------- */
-
-.dr-spark {
-  margin: 10px 0 0;
-}
-
-.dr-spark svg {
-  display: block;
-  overflow: visible;
-}
-
-.dr-spark-caption {
-  margin-top: 5px;
-  font-size: 11px;
-  color: var(--dr-ink-faint);
-}
-
-.dr-spark-caption strong {
-  color: var(--dr-ink);
-  font-weight: 600;
-}
 
 .dr-table-compact td,
 .dr-table-compact th {
@@ -1102,7 +1838,7 @@
 
 .dr-unit-pos {
   min-width: 22px;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.08em;
   color: var(--dr-accent);
 }
@@ -1195,7 +1931,7 @@
 
 .dr-supply {
   display: grid;
-  grid-template-columns: 30px 1fr 52px;
+  grid-template-columns: 28px minmax(0, 1fr) 56px 44px;
   align-items: center;
   gap: 8px;
   padding: 4px 0;
@@ -1304,7 +2040,7 @@
   padding: 1px 4px;
   border: 1px solid var(--dr-line-strong);
   border-radius: 3px;
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--dr-ink-faint);
@@ -1335,13 +2071,56 @@
   color: var(--dr-value);
 }
 
+/*
+ * Six panels in a 380px column, so this is a grid rather than a pill.
+ *
+ * It was `.dr-segmented`, which is an `inline-flex` with `overflow: hidden` —
+ * and `flex: 1` cannot shrink a button below its own text, so 443px of tabs
+ * were clipped to 378 and the last two ran off the end. `plan`, the whole
+ * nomination-plan panel, was never reachable at any window width, because the
+ * aside is a fixed column and the clipping had nothing to do with the viewport.
+ *
+ * A grid is the fix rather than a wrap because it cannot come back: three
+ * columns hold any number of tabs by adding rows, so nothing is ever off the
+ * end. A seventh panel makes this three rows and stays clickable, which is
+ * what a control row you use at speed has to do.
+ */
 .dr-aside-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   width: 100%;
+  overflow: visible;
+  border-radius: 10px;
+  /* Never squeezed: the way to the panels has to stay the same size whatever
+     is above or below it. */
+  flex: none;
+}
+
+/* The panel itself takes what is left and scrolls in it, so switching to a
+   tab always shows that tab rather than scrolling the whole column to find it. */
+.dr-aside > :last-child:not(.dr-aside-tabs):not(.dr-advisor) {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .dr-aside-tabs button {
-  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
   text-transform: capitalize;
+  border-right: 1px solid var(--dr-line);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+/* The right-hand column and the last row close the box off. */
+.dr-aside-tabs button:nth-child(3n),
+.dr-aside-tabs button:last-child {
+  border-right: none;
+}
+
+.dr-aside-tabs button:nth-last-child(-n + 3) {
+  border-bottom: none;
 }
 
 .dr-premiums {
@@ -1436,8 +2215,495 @@
    profile: tabs and the charts inside them
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   the hinge: two faces on one card
+   -------------------------------------------------------------------------- */
+
+/* The front stays in the document flow and sets the cell's height; the back is
+   absolutely positioned over it. That is the load-bearing half of this: a back
+   face that reflowed would make studying one player rearrange the board you
+   were studying him against, and the fifty-nine cards around it would move
+   under the cursor. */
+.dr-flip {
+  perspective: 1400px;
+  min-width: 0;
+}
+
+.dr-flip-inner {
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 460ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.dr-flip[data-flipped='true'] .dr-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.dr-flip-face {
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.dr-flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+/* The hover lift is a `transform`, and a transform on the back face would
+   replace the half-turn that puts it there — the card would show its own back
+   the right way round on the front of the board. Restated rather than
+   inherited, for both states that set it. */
+.dr-flip-back:hover,
+.dr-flip-back[aria-selected='true'] {
+  transform: rotateY(180deg);
+}
+
+/* Nothing on the hidden face may be reached by a cursor or by tab. */
+.dr-flip:not([data-flipped='true']) .dr-flip-back,
+.dr-flip[data-flipped='true'] .dr-flip-front {
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   the back of the card: the second page
+   -------------------------------------------------------------------------- */
+
+.dr-card-backface {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* `min-height` and not `height`: the second page is deliberately taller than
+     a card and has to be allowed to overflow into the scroll, while still
+     filling the face when a player carries less of it. */
+  min-height: 100%;
+}
+
+.dr-back-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s2);
+  padding: 8px 10px;
+  background: var(--dr-surface-2);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+.dr-back-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-back-id b {
+  font-size: var(--dr-t-body);
+  font-weight: 600;
+  color: var(--dr-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-back-id em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.02em;
+}
+
+.dr-back-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--dr-line);
+  border-radius: 4px;
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  font-size: var(--dr-t-small);
+  cursor: pointer;
+  transition:
+    color var(--dr-fast),
+    border-color var(--dr-fast);
+}
+
+.dr-back-btn:hover {
+  color: var(--dr-ink);
+  border-color: var(--dr-accent-lift);
+}
+
+.dr-back-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-back-block {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--dr-line);
+  min-width: 0;
+}
+
+.dr-back-block:last-child {
+  border-bottom: 0;
+}
+
+/* An instrument tall enough to need the words beside it rather than under it. */
+.dr-back-block-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dr-s3);
+}
+
+.dr-back-block-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-back-block h4 {
+  margin: 0 0 5px;
+  font-size: var(--dr-t-micro);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+/* The numerals under an instrument. Wrapping rather than a fixed count,
+   because how many of them exist is a property of the position — a back has no
+   average depth of target and a quarterback has no target share. */
+.dr-back-reads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  margin: 5px 0 0;
+}
+
+.dr-back-reads > div {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dr-back-reads dt {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.02em;
+}
+
+.dr-back-reads dd {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-back-reads dd[data-tone='good'] {
+  color: var(--dr-good);
+}
+
+.dr-back-reads dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-back-say {
+  margin: 4px 0 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.35;
+  color: var(--dr-ink-muted);
+}
+
+.dr-back-say[data-direction='PAY_UP'] {
+  color: var(--dr-good);
+}
+
+.dr-back-say[data-direction='FADE'] {
+  color: var(--dr-bad);
+}
+
+.dr-back-say-quiet {
+  color: var(--dr-ink-faint);
+  font-size: var(--dr-t-micro);
+}
+
+.dr-back-parts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+
+.dr-back-parts li {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-muted);
+}
+
+.dr-back-parts b {
+  color: var(--dr-warn);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sticky at the foot of the view rather than at the foot of the content, so it
+   is under whatever is currently visible and the way out is never itself below
+   the fold. The gradient above it is what says there is more — an edge that
+   fades is read as continuing, an edge that stops is read as the end. */
+.dr-back-more {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: auto;
+  padding: 14px 10px 8px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--dr-surface) 80%, transparent) 45%,
+    var(--dr-surface) 100%
+  );
+}
+
+.dr-back-more button {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color var(--dr-fast),
+    border-color var(--dr-fast);
+}
+
+.dr-back-more button:hover {
+  color: var(--dr-ink);
+  border-color: var(--dr-accent-lift);
+}
+
+/* --------------------------------------------------------------------------
+   the raised card
+   -------------------------------------------------------------------------- */
+
+/* The board recedes; it is not replaced.
+   What closing has to restore is the board that was there, in the place it
+   was, which a layout that reflowed around the open card could not do — three
+   empty cells in the row it came from read as a rendering fault, and
+   everything below jumps down the page. */
+.dr-lift {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--dr-s4);
+  background: color-mix(in srgb, var(--dr-ground) 72%, transparent);
+  backdrop-filter: blur(3px);
+  animation: dr-scrim-in 180ms var(--dr-ease);
+}
+
+.dr-grid.is-receded {
+  transform: scale(0.988);
+  filter: brightness(0.72) saturate(0.75);
+  transition:
+    transform var(--dr-med),
+    filter var(--dr-med);
+}
+
+@keyframes dr-scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.dr-card.is-expanded {
+  position: relative;
+  /* The screen it was raised to use. At 1180 it left six hundred pixels of an
+     1800px window dark on either side, and the two-column cap on the panel
+     below meant the width bought nothing anyway. A fixed height, not a
+     maximum: with `max-height` the card resized to each tab's content and the
+     tab bar moved under the cursor on every click. */
+  width: min(1600px, 94vw);
+  height: min(92vh, 1080px);
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  align-items: stretch;
+  cursor: default;
+  border-color: var(--dr-accent-lift);
+  background: var(--dr-surface-2);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--dr-accent-lift) 40%, transparent),
+    var(--dr-e3);
+  /* Out of the cell it came from rather than in from nowhere. The custom
+     properties are written by the card and are the measured offset of that
+     cell from the centre of the screen; with none set the fallbacks make it a
+     small grow in place, which is the right behaviour for a keyboard open
+     that never had a rectangle to measure. */
+  animation: dr-lift-in 300ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.dr-card.is-expanded:hover {
+  transform: none;
+}
+
+@keyframes dr-lift-in {
+  from {
+    opacity: 0.35;
+    transform: translate(var(--dr-lift-dx, 0px), var(--dr-lift-dy, 0px))
+      scale(var(--dr-lift-scale, 0.94));
+  }
+}
+
+/* Each half scrolls on its own. One scroll for both would put the tabs off the
+   bottom of a long back face, and the tabs are the reason it was raised. */
+.dr-card-back {
+  min-width: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--dr-line);
+  scrollbar-width: thin;
+}
+
+.dr-card-detail {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.dr-card-detail-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s3);
+  padding: 10px var(--dr-s4);
+  background: var(--dr-surface-2);
+  border-bottom: 1px solid var(--dr-line);
+}
+
+@media (max-width: 900px) {
+  .dr-card.is-expanded {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .dr-card-back {
+    border-right: 0;
+    border-bottom: 1px solid var(--dr-line);
+    max-height: 34vh;
+  }
+}
+
+/* The profile is the one screen in the app whose job is *study*, and it was a
+   760px column in a 1512px window — half the screen empty either side while
+   eight tabs of charts stacked into a scroll nobody reaches the end of. It is
+   as wide as the window sensibly allows now, and the panel below lays out in
+   columns, which turns most tabs from a scroll into a page. */
 .dr-profile {
-  width: min(760px, 100%);
+  width: min(1140px, 96vw);
+}
+
+/* Inside a raised card the width is the card's, not the window's. Inheriting
+   the modal's `min(1140px, 96vw)` made the dossier 1140 wide in an 878-pixel
+   column, and the card's `overflow: hidden` then quietly cut the right-hand
+   quarter off every tab — the value swarm, the fourth headline tile, the right
+   column of every two-column panel. A panel that is silently clipped is worse
+   than one that scrolls, because nothing on screen says there is more. */
+.dr-profile-inline {
+  width: 100%;
+  min-width: 0;
+}
+
+/*
+ * Columns that pack, rather than a grid that leaves holes.
+ *
+ * This was `grid-template-columns: repeat(auto-fit, minmax(420px, 1fr))`, and a
+ * grid puts its items in *rows*: a short section beside a tall one leaves the
+ * height difference as dead space, and every tab had one — a four-line panel
+ * next to a swarm plot left three hundred empty pixels in the middle of a
+ * screen whose whole complaint was sparseness. There is no row structure to
+ * preserve here; the sections are independent and their order is a reading
+ * order, not a table.
+ *
+ * It was CSS multi-column next, and that is gone too: Safari paints a column's
+ * contents at stale positions once anything inside it changes height, and a
+ * bid box changes it on every keystroke. `usePackedColumns` measures each
+ * section and writes it a column and a run of rows on this grid instead — the
+ * same packing, done by arithmetic every browser agrees on. What the sheet
+ * has to provide is the grid, `align-items: start` (stretched to its rows a
+ * section would measure as tall as it was last given), and the fallback of
+ * ordinary auto-fill columns for the frame before the script has run.
+ */
+.dr-card-detail .dr-tabpanel,
+.dr-profile .dr-tabpanel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+  gap: 0 var(--dr-s3);
+  align-items: start;
+  padding: var(--dr-s3);
+}
+
+.dr-card-detail .dr-tabpanel > *,
+.dr-profile .dr-tabpanel > * {
+  min-width: 0;
+  margin: 0 0 var(--dr-s3);
+}
+
+/* The Tonight tab packs its own grid, one level down. */
+.dr-profile .dr-tabpanel.dr-tonight {
+  display: block;
+}
+
+/* The readings that describe the whole player run the full width above the
+   columns rather than being dealt into one of them. */
+.dr-card-detail .dr-tabpanel > .dr-profile-tiles,
+.dr-card-detail .dr-tabpanel > .dr-verdict-line,
+.dr-card-detail .dr-tabpanel > .dr-notice,
+.dr-card-detail .dr-tabpanel > .dr-empty,
+.dr-card-detail .dr-tabpanel > .dr-full,
+.dr-profile .dr-tabpanel > .dr-profile-tiles,
+.dr-profile .dr-tabpanel > .dr-verdict-line,
+.dr-profile .dr-tabpanel > .dr-notice,
+.dr-profile .dr-tabpanel > .dr-empty,
+.dr-profile .dr-tabpanel > .dr-full {
+  grid-column: 1 / -1;
+}
+
+/* In a column layout a full-width rule between sections has nothing to
+   separate, so each section becomes its own surface instead. */
+.dr-card-detail .dr-tabpanel > .dr-modal-section,
+.dr-profile .dr-tabpanel > .dr-modal-section {
+  border-top: 0;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+  padding: var(--dr-s3);
+  min-width: 0;
+}
+
+.dr-card-detail .dr-tabpanel > .dr-modal-section > h3,
+.dr-profile .dr-tabpanel > .dr-modal-section > h3 {
+  display: block;
+  margin-bottom: var(--dr-s2);
 }
 
 .dr-tabs {
@@ -1454,7 +2720,7 @@
   border: none;
   border-bottom: 2px solid transparent;
   background: none;
-  color: var(--dr-ink-faint);
+  color: var(--dr-ink-muted);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1471,7 +2737,7 @@
 
 .dr-tab[aria-selected='true'] {
   color: var(--dr-ink);
-  border-bottom-color: var(--dr-accent);
+  border-bottom-color: var(--dr-accent-lift, var(--dr-accent));
 }
 
 .dr-tabpanel {
@@ -1484,102 +2750,25 @@
   }
 }
 
+/* Four readings on one line. The band's tiles are a 2x2 because a 252px column
+   cannot hold four; a profile has eleven hundred pixels and stacking them into
+   two rows of huge cells was a hundred and forty pixels to say four numbers. */
 .dr-profile-tiles {
-  border-bottom: 1px solid var(--dr-line);
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  overflow: hidden;
 }
 
 .dr-verdict-line {
   margin: 0;
-  padding: 12px 16px;
-  font-size: 13px;
+  padding: 0 2px;
+  font-size: var(--dr-t-body);
   line-height: 1.55;
-  color: var(--dr-ink);
-  border-bottom: 1px solid var(--dr-line);
-}
-
-/* --- likely season ------------------------------------------------------- */
-
-.dr-range {
-  margin-top: 10px;
-}
-
-.dr-range-track {
-  position: relative;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--dr-raised);
-}
-
-.dr-range-span {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--dr-value) 25%, transparent),
-    color-mix(in srgb, var(--dr-value) 70%, transparent)
-  );
-}
-
-.dr-range-point {
-  position: absolute;
-  top: 50%;
-  width: 3px;
-  height: 20px;
-  margin-left: -1.5px;
-  transform: translateY(-50%);
-  border-radius: 2px;
-  background: var(--dr-ink);
-}
-
-.dr-range-replacement {
-  position: absolute;
-  top: -3px;
-  width: 1px;
-  height: 16px;
-  background: var(--dr-ink-faint);
-}
-
-.dr-range-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-  font-size: 11px;
-}
-
-.dr-range-labels span {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dr-range-labels em {
-  font-style: normal;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 9px;
-  color: var(--dr-ink-faint);
-}
-
-.dr-range-labels strong {
-  font-size: 14px;
   color: var(--dr-ink-muted);
 }
 
-.dr-range-mid {
-  align-items: center;
-}
-
-.dr-range-mid strong {
-  color: var(--dr-ink);
-}
-
-.dr-range-end {
-  align-items: flex-end;
-}
-
-/* --- percentiles --------------------------------------------------------- */
+/* --- likely season ------------------------------------------------------- */
 
 .dr-percentiles {
   margin-top: 8px;
@@ -1637,7 +2826,7 @@
 
 .dr-percentile-rank em {
   font-style: normal;
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
 }
 
 /* --- season small multiples ---------------------------------------------- */
@@ -1673,7 +2862,7 @@
 
 .dr-multiple figcaption em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   color: var(--dr-ink-faint);
 }
 
@@ -1681,7 +2870,9 @@
 
 .dr-schedule-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  /* Two rows of nine. `auto-fit` at 44px fitted seventeen and orphaned week
+     eighteen on a row of its own. */
+  grid-template-columns: repeat(9, minmax(0, 1fr));
   gap: 3px;
   margin-top: 8px;
 }
@@ -1698,7 +2889,7 @@
 }
 
 .dr-week-number {
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
   /* Sits on a tinted fill, so it needs more than the faint ink. */
   color: var(--dr-ink-muted);
   mix-blend-mode: screen;
@@ -1775,7 +2966,7 @@
 
 .dr-split-part em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.85;
@@ -1786,130 +2977,6 @@
 }
 
 /* --- bid ladder ---------------------------------------------------------- */
-
-.dr-ladder {
-  margin-top: 16px;
-}
-
-.dr-ladder-track {
-  position: relative;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--dr-raised);
-}
-
-.dr-ladder-band {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  background: color-mix(in srgb, var(--dr-value) 45%, transparent);
-}
-
-.dr-ladder-band.is-premium {
-  background: color-mix(in srgb, var(--dr-caution) 45%, transparent);
-}
-
-.dr-ladder-tick {
-  position: absolute;
-  top: -4px;
-  width: 2px;
-  height: 18px;
-  background: var(--dr-ink-muted);
-}
-
-.dr-ladder-tick.is-limit {
-  background: var(--dr-danger);
-}
-
-.dr-ladder-live {
-  position: absolute;
-  top: -26px;
-  transform: translateX(-50%);
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--dr-ink);
-  color: var(--dr-ground);
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.dr-ladder-live::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -9px;
-  width: 2px;
-  height: 9px;
-  margin-left: -1px;
-  background: var(--dr-ink);
-}
-
-.dr-ladder-live.is-over {
-  background: var(--dr-danger);
-  color: #fff;
-}
-
-.dr-ladder-live.is-over::after {
-  background: var(--dr-danger);
-}
-
-.dr-ladder-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
-  font-size: 11px;
-}
-
-.dr-ladder-labels span {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dr-ladder-labels em {
-  font-style: normal;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--dr-ink-faint);
-}
-
-.dr-ladder-labels strong {
-  font-size: 14px;
-  color: var(--dr-ink);
-}
-
-.dr-stage-range {
-  padding: 12px 14px 0;
-  border-bottom: 1px solid var(--dr-line);
-}
-
-.dr-stage-signals {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.dr-stage-signals span {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dr-stage-signals em {
-  font-style: normal;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--dr-ink-faint);
-}
-
-.dr-stage-signals strong {
-  font-size: 13px;
-  color: var(--dr-ink);
-}
 
 /* --------------------------------------------------------------------------
    position palette
@@ -1937,14 +3004,14 @@
 .dr-quadrant,
 .dr-consensus-tick {
   font-family: var(--dr-mono);
-  font-size: 8px;
+  font-size: var(--dr-t-micro);
   fill: var(--dr-ink-faint);
   letter-spacing: 0.04em;
 }
 
 .dr-quadrant {
   font-family: var(--dr-sans);
-  font-size: 8.5px;
+  font-size: var(--dr-t-micro);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   fill: var(--dr-ink-faint);
@@ -2039,7 +3106,7 @@
 .dr-consensus-key em,
 .dr-arc-key em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -2077,7 +3144,7 @@
 
 .dr-pos-chip {
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   padding: 1px 5px;
   border-radius: 3px;
   background: var(--dr-raised);
@@ -2114,7 +3181,7 @@
   display: grid;
   place-items: center;
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-weight: 600;
   color: #fff;
   /* A 2px ground gap so adjacent cells never merge into one block. */
@@ -2436,7 +3503,7 @@
 .dr-gridboard-pick em {
   font-style: normal;
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   color: var(--dr-ink-faint);
 }
 
@@ -2489,7 +3556,7 @@
 }
 
 .dr-planner-grid dt {
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -2555,7 +3622,7 @@
   padding: 6px 8px;
   border-left: 2px solid var(--dr-caution);
   background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   font-size: 10px;
   line-height: 1.45;
 }
@@ -2566,7 +3633,7 @@
   border: 1px solid color-mix(in srgb, var(--dr-caution) 45%, transparent);
   border-radius: 2px;
   color: var(--dr-caution);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-style: normal;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -2638,7 +3705,7 @@
 
 .dr-bargain-numbers em {
   font-style: normal;
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   color: var(--dr-ink-faint);
 }
 
@@ -2664,6 +3731,26 @@
   border-radius: var(--dr-radius);
   background: color-mix(in srgb, var(--dr-caution) 6%, var(--dr-surface));
   padding: 10px 12px;
+  flex: 0 0 auto;
+  /*
+   * The opinion box may not push the measurements off the screen.
+   *
+   * Turning the advisor on by default was right — the panel answering "what do
+   * I do now" was sitting behind a button nobody had pressed — but it made a
+   * second thing true that nobody looked at: at a 1050px window it is about
+   * 880px tall, so the six panels underneath it started below the fold and
+   * clicking a tab appeared to do nothing. Found by screenshotting the tabs
+   * rather than by reasoning about them.
+   *
+   * It keeps at most two fifths of the column and scrolls inside that, because
+   * an opinion is worth less than the numbers under it and it is the part that
+   * varies most in length — three "do not put these up yet" entries are three
+   * paragraphs.
+   */
+  flex: 0 1 auto;
+  max-height: 40%;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .dr-advisor-head {
@@ -2675,7 +3762,7 @@
 
 .dr-advisor-badge {
   font-family: var(--dr-sans);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2780,18 +3867,17 @@
    -------------------------------------------------------------------------- */
 
 .dr-card-pin {
-  position: absolute;
-  top: 6px;
-  right: 28px;
-  width: 20px;
-  height: 20px;
-  display: grid;
-  place-items: center;
-  border-radius: 4px;
-  font-size: 12px;
-  color: var(--dr-ink-faint);
-  cursor: pointer;
-  z-index: 2;
+  right: 36px;
+}
+
+.dr-card-open {
+  right: 64px;
+  font-size: var(--dr-t-small);
+}
+
+.dr-card-open:hover {
+  color: var(--dr-ink);
+  background: var(--dr-raised);
 }
 
 .dr-card-pin:hover,
@@ -2800,55 +3886,320 @@
   background: color-mix(in srgb, var(--dr-value) 14%, transparent);
 }
 
-.dr-card-signals {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 5px;
-  margin-top: 6px;
+/* --------------------------------------------------------------------------
+   card: the dossier rows
+   The card had a name, a price and six numbers, and everything that decides a
+   bid — the range, the disagreement with the room, the gain over the free man,
+   what happened last week — was two clicks away in a panel nobody opens with
+   money on the table. These rows put it on the face of the card.
+   -------------------------------------------------------------------------- */
+
+/* Floor to ceiling, with the projection's position showing the skew. */
+.dr-card-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 11px 0 13px;
+  padding-bottom: 7px;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
 }
 
-.dr-card-signal {
-  position: relative;
+.dr-card-range-end {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   micro-instruments
+   Small enough to sit inside a card, dense enough to earn the room. What makes
+   one an instrument rather than a bar is that it carries its own reference
+   marks — the distribution the value sits in, the baseline it has to beat, or
+   the series it came from.
+   -------------------------------------------------------------------------- */
+
+.dr-micro {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.dr-micro-whisker,
+.dr-card-range > .dr-micro-outcome {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.dr-micro-bullet {
+  width: 100%;
+  min-width: 0;
+}
+
+/* The season's shape, beside the price. Small, and the only thing on the card
+   that shows a series rather than a summary of one. */
+/* The live band.
+   Marked off with a rule and a slightly lifted ground because the distinction
+   it draws is the one a drafter has to keep straight: everything outside it is
+   what the player *is* and does not move all night; everything inside it is
+   what the room has *done*, and it changes under your hand. */
+.dr-card-live {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 2px 11px 0 13px;
+  padding: 6px 8px;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+  border: 1px solid var(--dr-line);
+}
+
+.dr-card-live-row {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s2);
+  min-width: 0;
+}
+
+.dr-card-live-glyphs {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dr-card-live-glyphs svg {
+  width: 100%;
+}
+
+.dr-card-live-read {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex: none;
+  min-width: 54px;
+}
+
+.dr-card-live-read b {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-lead);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.dr-card-live-read em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+  white-space: nowrap;
+}
+
+/* The seat pips keep their intrinsic width — they are counted, not scaled. */
+.dr-card-live-read .dr-micro-slotfit {
+  width: auto;
+}
+
+.dr-card-gamelog {
+  display: block;
+  margin: 2px 11px 0 13px;
+  padding-bottom: 6px;
+  opacity: 0.9;
+  transition: opacity var(--dr-fast);
+}
+
+.dr-profile .dr-micro-gamelog {
+  width: 100%;
+  height: 64px;
+}
+
+.dr-card-gamelog svg {
+  width: 100%;
+  height: 30px;
+}
+
+.dr-card:hover .dr-card-gamelog {
+  opacity: 1;
+}
+
+/* The role field with its three readings beside it. The field carries the
+   shape; the numbers carry the precision, which is the division of labour that
+   makes a small glyph honest. */
+.dr-card-role {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s3);
+  margin: 8px 11px 4px 13px;
+}
+
+.dr-card-role-read {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.dr-card-role-read div {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 3px 5px 5px;
-  border-radius: var(--dr-radius-sm);
-  background: var(--dr-raised);
-  overflow: hidden;
+  min-width: 0;
 }
 
-.dr-card-signal em {
-  font-style: normal;
-  font-size: 8px;
-  letter-spacing: 0.09em;
+.dr-card-role-read dt {
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
 }
 
-.dr-card-signal span {
-  font-size: 12px;
+.dr-card-role-read dd {
+  margin: 0;
+  font-size: var(--dr-t-small);
   font-weight: 600;
 }
 
-/* The bar is the percentile within the position; the number above is the raw
-   figure, so neither is ever the only evidence. */
-.dr-card-signal-bar {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 2px;
-  background: var(--dr-value);
-  opacity: 0.75;
+.dr-card:hover .dr-card-spark {
+  opacity: 1;
 }
 
-.dr-card-edge {
-  display: block;
-  margin-top: 5px;
-  font-size: 10px;
-  line-height: 1.3;
+/* Ours, theirs, and the two risk readings, on one line. */
+/* One hairline in the whole body, and it is here: above it is what he is worth,
+   below it is what he is made of. Every other divider went, because a card with
+   five rules on it reads as a form rather than as a card. */
+.dr-card-ranks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin: 2px 11px 0 13px;
+  padding: 7px 0 2px;
+  border-top: 1px solid var(--dr-line);
 }
+
+.dr-card-ranks span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.dr-card-ranks em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-card-ranks b {
+  font-size: var(--dr-t-small);
+  font-weight: 600;
+}
+
+.dr-card-ranks .dr-micro-seasons {
+  margin-top: 1px;
+}
+
+/* The format edge, given the weight it earns: it is the only number here the
+   other eleven managers are not also looking at. */
+.dr-card-gain {
+  display: block;
+  margin: 7px 11px 0 13px;
+  padding: 4px 7px;
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-good-bg);
+  border-left: 2px solid var(--dr-good);
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  line-height: 1.25;
+}
+
+.dr-card-gain b {
+  color: var(--dr-good);
+  font-size: var(--dr-t-body);
+}
+
+.dr-card-gain[data-negative],
+.dr-card-gain[data-slot='bench'] {
+  background: var(--dr-warn-bg);
+  border-left-color: var(--dr-warn);
+  color: var(--dr-warn);
+}
+
+.dr-card-gain[data-negative] b {
+  color: var(--dr-warn);
+}
+
+/* What happened last Tuesday, which no projection knows. Two lines at most —
+   the rest is on the research tab, and the direction arrow beside the name
+   already says which way it cuts. */
+.dr-card-news {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 6px 11px 0 13px;
+  padding-left: 7px;
+  border-left: 2px solid var(--dr-line-strong);
+  font-size: var(--dr-t-tiny);
+  line-height: 1.35;
+  color: var(--dr-ink-muted);
+}
+
+.dr-card-news[data-direction='FADE'] {
+  border-left-color: var(--dr-bad);
+}
+
+.dr-card-news[data-direction='PAY_UP'] {
+  border-left-color: var(--dr-good);
+}
+
+.dr-card-risks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 11px 0 13px;
+}
+
+.dr-card-risks span {
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.02em;
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  border: 1px solid var(--dr-line);
+}
+
+.dr-card-risks span[data-tone='warn'] {
+  color: var(--dr-warn);
+  border-color: var(--dr-warn-line);
+  background: var(--dr-warn-bg);
+}
+
+.dr-card-risks span[data-tone='bad'] {
+  color: var(--dr-bad);
+  border-color: var(--dr-bad-line);
+  background: var(--dr-bad-bg);
+}
+
+.dr-card-risks span[data-tone='good'] {
+  color: var(--dr-good);
+  border-color: var(--dr-good-line);
+  background: var(--dr-good-bg);
+}
+
+/* Percentile bars, labelled and readable.
+   They were 8px labels over a 2px hairline at the foot of a tile — present,
+   and unreadable, which is the same as absent. The bar is the standing within
+   the position and the number beside it is the raw figure, so neither is ever
+   the only evidence. */
 
 .dr-table-sets {
   display: flex;
@@ -2932,12 +4283,6 @@
   .dr-tray {
     padding: 6px 10px;
   }
-
-  .dr-card-signals {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -2981,7 +4326,7 @@
 }
 
 .dr-league-summary dt {
-  font: 600 10px/1.2 var(--dr-font-mono, monospace);
+  font: 600 10px/1.2 var(--dr-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -2989,7 +4334,7 @@
 
 .dr-league-summary dd {
   margin: 3px 0 0;
-  font: 600 18px/1.1 var(--dr-font-mono, monospace);
+  font: 600 18px/1.1 var(--dr-mono);
   color: var(--dr-ink);
 }
 
@@ -3282,7 +4627,7 @@
   background: var(--dr-accent);
   color: var(--dr-accent-ink);
   font-family: var(--dr-mono);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -3337,7 +4682,7 @@
    point: the panel is asking to be checked, not believed. */
 .dr-research {
   border: 1px solid var(--dr-line);
-  border-left: 3px solid var(--dr-dim);
+  border-left: 3px solid var(--dr-ink-muted);
   border-radius: 4px;
   padding: 14px 16px;
   background: var(--dr-surface);
@@ -3376,7 +4721,7 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-research-stale {
@@ -3405,7 +4750,7 @@
 .dr-research-impact {
   font-size: 14px;
   line-height: 1.35;
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   width: 12px;
   flex: none;
 }
@@ -3420,11 +4765,11 @@
 .dr-research-source {
   margin: 3px 0 0;
   font-size: 11px;
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
 }
 
 .dr-research-source a {
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -3436,9 +4781,17 @@
 /* The board's one-glyph version of the same thing: enough to say "there is
    something to read here", never enough to act on without opening it. */
 .dr-research-mark {
-  font-size: 11px;
+  font-size: var(--dr-t-tiny);
   font-weight: 700;
   line-height: 1;
+}
+
+/* On a card it is one more fact about the player, so it rides in the meta line
+   with the club and the tier. Loose in the card it had no rule at all and
+   landed above the head as a stray arrow in the top-left corner. */
+.dr-card-research {
+  flex: none;
+  margin-left: 1px;
 }
 
 /* ---------------------------------------------------------------------------
@@ -3451,6 +4804,11 @@
 
 /* Who is on the clock, above the player. The auction has a nomination clock in
    the top bar; the snake's turn is the whole of what the stage is asking. */
+.dr-stage-hero > .dr-stage-clock {
+  flex: none;
+  margin: 0 var(--dr-s3);
+}
+
 .dr-stage-clock {
   display: flex;
   align-items: baseline;
@@ -3518,66 +4876,6 @@
   color: var(--dr-ink-faint);
 }
 
-.dr-outbid {
-  padding: 10px 14px 0;
-}
-
-.dr-outbid-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.dr-outbid-caveat {
-  font-size: 10px;
-  color: var(--dr-ink-faint);
-}
-
-.dr-outbid-list {
-  list-style: none;
-  margin: 4px 0 0;
-  padding: 0;
-}
-
-.dr-outbid-list li {
-  display: grid;
-  grid-template-columns: 1fr 46px auto;
-  align-items: baseline;
-  gap: 8px;
-  padding: 3px 0;
-  border-top: 1px solid var(--dr-line);
-  font-size: 12px;
-}
-
-.dr-outbid-list li:first-child {
-  border-top: none;
-}
-
-.dr-outbid-team {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dr-outbid-ceiling {
-  text-align: right;
-  font-weight: 600;
-}
-
-.dr-outbid-note,
-.dr-outbid-empty {
-  font-size: 11px;
-  color: var(--dr-ink-faint);
-}
-
-.dr-outbid-empty {
-  margin: 4px 0 0;
-}
-
-.dr-outbid .dr-footnote {
-  margin-top: 6px;
-}
-
 .dr-drivers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -3586,7 +4884,7 @@
 }
 
 .dr-drivers dt {
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dr-ink-faint);
@@ -3677,7 +4975,7 @@
   padding: 1px 5px;
   border-radius: 3px;
   font-family: var(--dr-sans);
-  font-size: 9px;
+  font-size: var(--dr-t-micro);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -3847,17 +5145,20 @@
   color: var(--dr-ink-muted);
 }
 
-/* A player the market drafts and the pool has never heard of. Marked rather
-   than quietly shown, because every headline number on his card is a
-   placeholder the type demanded and not a measurement anybody made. */
-.dr-card-marketonly {
-  margin: 4px 0 0;
-  padding: 4px 6px;
-  border-left: 2px solid var(--dr-caution);
-  background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
-  color: var(--dr-dim);
-  font-size: 9px;
-  line-height: 1.4;
+/* A player the market drafts and the pool has never heard of. One word beside
+   the position, matching the "snake" marker it sits next to — the explanation
+   is on hover and in full on the nomination stage. It was a paragraph on every
+   card, which made the players we know least about the loudest on the board. */
+.dr-nodata {
+  margin-left: 5px;
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--dr-caution) 40%, transparent);
+  border-radius: 2px;
+  color: var(--dr-caution);
+  font-size: var(--dr-t-micro);
+  font-style: normal;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 /* Said on the stage, where money is decided, and not only on the card. */
@@ -3866,7 +5167,7 @@
   padding: 6px 8px;
   border-left: 2px solid var(--dr-caution);
   background: color-mix(in srgb, var(--dr-caution) 8%, transparent);
-  color: var(--dr-dim);
+  color: var(--dr-ink-muted);
   font-size: 10px;
   line-height: 1.45;
 }
@@ -3977,4 +5278,1674 @@
   color: var(--dr-ink-muted);
   font-size: 10px;
   line-height: 1.45;
+}
+
+/* The slot verdict beside the gain. A bench verdict is the one that stops a
+   budget going on a fourth running back, so it gets the danger border. */
+.dr-stage-slot {
+  color: var(--dr-ink-faint);
+}
+
+.dr-stage-snakegain[data-slot='bench'] {
+  border-left-color: var(--dr-danger);
+  background: color-mix(in srgb, var(--dr-danger) 7%, transparent);
+}
+
+.dr-stage-snakegain[data-slot='flex'] {
+  border-left-color: var(--dr-caution);
+}
+
+/* --------------------------------------------------------------------------
+   the dossier's instruments
+   -------------------------------------------------------------------------- */
+
+/* A metric against its whole cohort. The label and the readout are fixed
+   columns so eight of these stack into a table the eye can run down — the
+   strips line up, which is the entire argument for small multiples and the
+   thing eight self-scaled charts could never give. */
+.dr-strip {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 92px;
+  align-items: center;
+  gap: var(--dr-s2);
+  min-width: 0;
+}
+
+.dr-strip-label {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-strip-plot {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  cursor: crosshair;
+}
+
+/* Fixed width and right-aligned, so the numbers form a column and swapping in
+   a hovered player's name cannot shove the strip about under the cursor. */
+.dr-strip-read {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+}
+
+.dr-strip-read em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-strip-read b {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dr-mix,
+.dr-weeks {
+  min-width: 0;
+}
+
+.dr-mix svg,
+.dr-weeks svg {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.dr-mix-tick {
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.04em;
+  fill: var(--dr-ink-faint);
+}
+
+/* The readout under an instrument. Fixed to two lines' worth of space so a
+   hover cannot reflow the panel it lives in — a chart that moves when you
+   point at it is a chart you cannot point at twice. */
+.dr-mix-read {
+  margin: 4px 0 0;
+  min-height: 2.4em;
+  font-size: var(--dr-t-small);
+  line-height: 1.3;
+  color: var(--dr-ink-muted);
+}
+
+.dr-mix-read b {
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-threshold {
+  margin-top: var(--dr-s2);
+}
+
+.dr-threshold-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dr-threshold-say {
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink-muted);
+}
+
+.dr-threshold-say b {
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-threshold input[type='range'],
+.dr-scrub input[type='range'] {
+  width: 100%;
+  accent-color: var(--dr-accent-lift);
+  /* Without this the browser paints its light-theme track — a bright white bar
+     across a near-black panel, which is the loudest thing on the screen and is
+     a control, not a reading. */
+  color-scheme: dark;
+  cursor: ew-resize;
+}
+
+.dr-role-corners {
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* A word that acts. Deliberately not a `.dr-button`: it sets a value in a
+   sentence rather than performing an action, so it should read as part of the
+   sentence. */
+.dr-linkish {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--dr-ink-muted);
+  font: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.dr-linkish:hover {
+  color: var(--dr-ink);
+}
+
+.dr-scrub-head {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--dr-s2);
+}
+
+.dr-scrub-head b {
+  font-size: var(--dr-t-title);
+  color: var(--dr-value);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-scrub-reads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: var(--dr-s2) 0 var(--dr-s2);
+}
+
+.dr-scrub-reads > div {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.dr-scrub-reads dt {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-scrub-reads dd {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.dr-scrub-reads dd[data-tone='good'] {
+  color: var(--dr-good);
+}
+
+.dr-scrub-reads dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+/* The price, as the chain of multipliers it actually is. */
+.dr-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dr-chain-step {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 78px;
+  grid-template-areas:
+    'label track money'
+    'applied applied money';
+  align-items: center;
+  column-gap: var(--dr-s2);
+  row-gap: 1px;
+}
+
+.dr-chain-label {
+  grid-area: label;
+}
+
+.dr-chain-track {
+  grid-area: track;
+}
+
+/* What moved the price, under the bar it moved: beside it, "59 pts ÷ 2.60
+   pts/$" wrapped into two lines in a forty-six-pixel cell. */
+.dr-chain-applied {
+  grid-area: applied;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-chain-money {
+  grid-area: money;
+}
+
+.dr-chain-label {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-chain-track {
+  height: 9px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-chain-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.dr-chain-applied {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.dr-chain-money {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+}
+
+.dr-chain-money em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+}
+
+.dr-chain-money em[data-move='up'] {
+  color: var(--dr-warn);
+}
+
+.dr-chain-money em[data-move='down'] {
+  color: var(--dr-good);
+}
+
+/* An instrument tall enough that its words belong beside it, not under it. */
+.dr-role-wide {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dr-s3);
+  min-width: 0;
+}
+
+.dr-role-wide > .dr-facts {
+  /* `flex: 1` sets a base of zero, and `auto-fit` resolves its track count
+     against that base rather than against the width the item grows to — so the
+     five readings beside the role field came out as one tall column. Stated
+     explicitly instead, with a real basis to grow from. */
+  flex: 1 1 220px;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  min-width: 0;
+  margin-top: 0;
+}
+
+.dr-risks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-s2);
+}
+
+.dr-risk {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s3);
+}
+
+.dr-risk > span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-risk b {
+  font-size: var(--dr-t-small);
+  font-weight: 600;
+  color: var(--dr-ink);
+}
+
+.dr-risk em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+/* The three weeks a fantasy season is decided in, named rather than averaged. */
+.dr-weeklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dr-weeklist li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 96px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--dr-s2);
+}
+
+.dr-weeklist-week {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-weeklist-opp {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-weeklist-track {
+  height: 9px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-weeklist-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  opacity: 0.85;
+}
+
+/* --------------------------------------------------------------------------
+   the winning team, as a row rather than a dropdown
+   -------------------------------------------------------------------------- */
+
+/* Twelve is a row, not a list. A dropdown is the control for options too many
+   to show, and its cost here was nine arrow presses to reach team nine, sixty
+   times a night, while somebody shouts a price across a room. */
+.dr-teamrow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.dr-teamchip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 4px 6px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  cursor: pointer;
+  min-width: 0;
+  transition:
+    border-color var(--dr-fast),
+    background var(--dr-fast),
+    color var(--dr-fast);
+}
+
+.dr-teamchip em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.dr-teamchip b {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+}
+
+.dr-teamchip:hover:not(:disabled) {
+  border-color: var(--dr-accent-lift);
+  color: var(--dr-ink);
+}
+
+/* Who won. The loudest state in the row, because it is the thing being
+   recorded and a mis-recorded sale is the expensive kind of mistake. */
+.dr-teamchip[aria-pressed='true'] {
+  border-color: var(--dr-good);
+  background: color-mix(in srgb, var(--dr-good) 16%, transparent);
+  color: var(--dr-ink);
+}
+
+.dr-teamchip[aria-pressed='true'] b {
+  color: var(--dr-good);
+}
+
+/* Yours. A quiet permanent mark, deliberately a different channel from the
+   pressed state — `teamId` names whoever just bought a player and sits on an
+   opponent most of the night, and four panels have already been caught
+   presenting that as the owner's own roster. */
+.dr-teamchip[data-mine]::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--dr-accent-lift);
+}
+
+.dr-teamchip[data-mine] {
+  position: relative;
+}
+
+/* Money that cannot reach the number on the table. Not disabled — they are
+   legally able to bid, just not this much — so it dims rather than blocks, and
+   the row becomes the answer to "who can still take him off me". */
+.dr-teamchip[data-short] {
+  opacity: 0.45;
+}
+
+.dr-teamchip:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   the plan
+   -------------------------------------------------------------------------- */
+
+.dr-planlist {
+  list-style: none;
+  margin: var(--dr-s2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* The plan's own picks, marked inside the board rather than listed apart —
+   they are the same thing read at a different threshold, and two lists would
+   invite reading the second as leftovers. */
+.dr-planlist-row[data-planned] {
+  border-color: color-mix(in srgb, var(--dr-good) 45%, var(--dr-line));
+  background: color-mix(in srgb, var(--dr-good) 8%, var(--dr-raised));
+}
+
+/* Asking more than he is worth. Not a warning about the player — a warning
+   about the price, and the most common state on a commissioner's sheet. */
+.dr-planlist-price[data-over] {
+  color: var(--dr-warn);
+}
+
+.dr-covered {
+  margin: 4px 0 0;
+  font-size: var(--dr-t-micro);
+  line-height: 1.45;
+  color: var(--dr-ink-faint);
+}
+
+.dr-planlist-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: var(--dr-s2);
+  width: 100%;
+  padding: 5px 7px;
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-raised);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--dr-fast),
+    background var(--dr-fast);
+}
+
+.dr-planlist-row:hover:not(:disabled) {
+  border-color: var(--dr-accent-lift);
+  background: var(--dr-surface-2);
+}
+
+.dr-planlist-name {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The seat, when it is the one this format is really contested over. */
+.dr-planlist-seat {
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+  border: 1px solid var(--dr-line);
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+.dr-planlist-gain {
+  font-size: var(--dr-t-small);
+  color: var(--dr-good);
+}
+
+.dr-planlist-price {
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink);
+  min-width: 34px;
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   is this board set up?
+   -------------------------------------------------------------------------- */
+
+/* In the live group, in the colour of what it is: a blocking problem is the
+   same red as Reset because both destroy an afternoon, one loudly and one
+   silently. It is absent entirely when there is nothing to say. */
+.dr-ready {
+  padding: 6px 10px;
+  border-radius: var(--dr-radius-sm);
+  border: 1px solid var(--dr-warn);
+  background: color-mix(in srgb, var(--dr-warn) 14%, transparent);
+  color: var(--dr-warn);
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dr-ready[data-level='blocking'] {
+  border-color: var(--dr-danger);
+  background: color-mix(in srgb, var(--dr-danger) 16%, transparent);
+  color: var(--dr-danger);
+}
+
+.dr-ready-panel {
+  width: min(660px, 94vw);
+  padding: var(--dr-s4);
+}
+
+.dr-checklist {
+  list-style: none;
+  margin: var(--dr-s3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-s2);
+}
+
+.dr-checklist li {
+  display: flex;
+  gap: var(--dr-s3);
+  padding: var(--dr-s3);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+}
+
+.dr-checklist li[data-level='blocking'] {
+  border-color: color-mix(in srgb, var(--dr-danger) 45%, var(--dr-line));
+}
+
+.dr-checklist li[data-level='warn'] {
+  border-color: color-mix(in srgb, var(--dr-warn) 40%, var(--dr-line));
+}
+
+.dr-checklist-mark {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: var(--dr-t-micro);
+  background: var(--dr-raised);
+  color: var(--dr-ink-faint);
+}
+
+li[data-level='blocking'] > .dr-checklist-mark {
+  background: color-mix(in srgb, var(--dr-danger) 20%, transparent);
+  color: var(--dr-danger);
+}
+
+li[data-level='warn'] > .dr-checklist-mark {
+  background: color-mix(in srgb, var(--dr-warn) 20%, transparent);
+  color: var(--dr-warn);
+}
+
+li[data-level='ready'] > .dr-checklist-mark {
+  background: color-mix(in srgb, var(--dr-good) 18%, transparent);
+  color: var(--dr-good);
+}
+
+.dr-checklist-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.dr-checklist-body b {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dr-s2);
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink);
+}
+
+.dr-checklist-body em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dr-ink-faint);
+}
+
+.dr-checklist-body > span {
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+/* Supply and demand on one row: what is gone, the seats still chasing what is
+   left, and the money behind them. */
+.dr-supply-money {
+  min-width: 44px;
+  text-align: right;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-supply[data-pressure='some'] .dr-supply-count b {
+  color: var(--dr-warn);
+}
+
+.dr-supply[data-pressure='high'] .dr-supply-count b {
+  color: var(--dr-danger);
+}
+
+.dr-supply[data-pressure='high'] .dr-supply-money {
+  color: var(--dr-ink-muted);
+}
+
+/*
+  The header for the supply rows. Two bare numeric columns are two unlabelled
+  numbers, and the footnote under them is read once where a column header is
+  read every time the eye comes back to a row.
+*/
+.dr-supply-head {
+  padding-bottom: 2px;
+  font-size: var(--dr-t-micro);
+  /*
+    Lower case and no tracking, unlike every other label on this panel: at 10px
+    uppercase with letter-spacing, `seats/left` is sixty-five pixels wide in a
+    fifty-six pixel column and runs into the money header beside it. A header
+    that collides with its neighbour is worse than no header.
+  */
+  color: var(--dr-ink-faint);
+}
+
+.dr-supply-head span:nth-child(2) {
+  text-align: left;
+}
+
+.dr-supply-head span:nth-child(3),
+.dr-supply-head span:nth-child(4) {
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   the spotlight's live tab
+   -------------------------------------------------------------------------- */
+
+/* Its own grid rather than the dossier's column flow: these sections have an
+   order that is a reading order — your seat, then the price, then the plan —
+   and a column flow would deal them wherever they fit. */
+.dr-tonight {
+  padding: var(--dr-s3);
+}
+
+/* Packed columns rather than a grid of rows: a short section beside a tall
+   one would leave the difference as dead space — "your seat" is four lines
+   and "who can beat it" is twelve. `usePackedColumns` deals each section to
+   the shortest column so far; the stylesheet provides the grid it writes into
+   and the auto-fill fallback for the frame before it runs. */
+.dr-tonight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+  gap: 0 var(--dr-s3);
+  align-items: start;
+}
+
+.dr-tonight-section {
+  margin-bottom: var(--dr-s3);
+  border: 1px solid var(--dr-line);
+  border-radius: var(--dr-radius-sm);
+  background: var(--dr-surface-2);
+  padding: var(--dr-s3);
+  min-width: 0;
+}
+
+.dr-tonight-section.is-wide {
+  grid-column: 1 / -1;
+}
+
+.dr-tonight-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--dr-s2);
+  margin-bottom: var(--dr-s2);
+}
+
+.dr-tonight-head > h3 {
+  margin: 0;
+}
+
+.dr-tonight-aside {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  white-space: nowrap;
+}
+
+.dr-tonight-verdict {
+  margin: 0 0 var(--dr-s3);
+  font-size: var(--dr-t-body);
+  line-height: 1.5;
+  color: var(--dr-ink);
+}
+
+.dr-tonight-note {
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-seat {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s3);
+  margin-bottom: var(--dr-s2);
+}
+
+.dr-tonight-seat > p {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-seat strong {
+  color: var(--dr-ink);
+}
+
+.dr-tonight-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dr-tonight-list > li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 52px 44px;
+  align-items: center;
+  gap: var(--dr-s2);
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: var(--dr-t-small);
+}
+
+.dr-tonight-list > li.is-him {
+  background: color-mix(in srgb, var(--dr-accent-lift) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dr-accent-lift) 45%, transparent);
+}
+
+.dr-tonight-rivals > li {
+  grid-template-columns: minmax(0, 120px) 52px minmax(0, 1fr);
+}
+
+.dr-tonight-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-tonight-right {
+  text-align: right;
+}
+
+.dr-tonight-why,
+.dr-tonight-seatword {
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-tonight-live {
+  margin: var(--dr-s2) 0 0;
+  padding: 6px 8px;
+  border-radius: var(--dr-radius-sm);
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+  background: var(--dr-surface);
+  border: 1px solid var(--dr-line);
+}
+
+.dr-tonight-live[data-tone='good'] {
+  border-color: var(--dr-good-line);
+  background: var(--dr-good-bg);
+  color: var(--dr-ink);
+}
+
+.dr-tonight-live[data-tone='bad'] {
+  border-color: var(--dr-bad-line);
+  background: var(--dr-bad-bg);
+  color: var(--dr-ink);
+}
+
+.dr-tonight-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--dr-s2);
+}
+
+.dr-tonight-shelf svg {
+  width: 100%;
+}
+
+.dr-tonight-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: var(--dr-s2) var(--dr-s3);
+  margin: 0;
+}
+
+.dr-tonight-facts dt {
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-facts dd {
+  margin: 2px 0 0;
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-lead);
+  font-weight: 600;
+}
+
+.dr-tonight-facts dd > span {
+  font-size: var(--dr-t-small);
+  font-weight: 500;
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-facts dd[data-squeeze='some'] {
+  color: var(--dr-warn);
+}
+
+.dr-tonight-facts dd[data-squeeze='high'],
+.dr-tonight-facts dd[data-tone='bad'] {
+  color: var(--dr-bad);
+}
+
+.dr-tonight-facts dd[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-tonight-line {
+  margin: 0 0 var(--dr-s2);
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-tonight-line b {
+  color: var(--dr-ink);
+}
+
+.dr-tonight-line[data-lean='buy'] {
+  color: var(--dr-good);
+}
+
+.dr-tonight-line[data-lean='wait'] {
+  color: var(--dr-warn);
+}
+
+.dr-tonight-research {
+  color: var(--dr-ink);
+  padding-left: 8px;
+  border-left: 2px solid var(--dr-line-strong);
+}
+
+.dr-tonight-research[data-direction='PAY_UP'] {
+  border-left-color: var(--dr-good);
+}
+
+.dr-tonight-research[data-direction='FADE'] {
+  border-left-color: var(--dr-bad);
+}
+
+.is-good {
+  color: var(--dr-good);
+}
+
+.is-warn {
+  color: var(--dr-warn);
+}
+
+.is-bad {
+  color: var(--dr-bad);
+}
+
+/* An opinion inside a facts tab wears the advisor's own dashed box, so the
+   register is read off the border before the words are read at all. */
+.dr-opinion {
+  margin-top: var(--dr-s2);
+  padding: 8px 10px;
+  border: 1px dashed var(--dr-caution);
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-caution) 6%, var(--dr-surface));
+}
+
+.dr-opinion-line {
+  margin: 4px 0 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+.dr-opinion-line strong,
+.dr-opinion-line b {
+  color: var(--dr-ink);
+}
+
+/* The spotlight glyph on a card: first in the cluster, and the cluster itself
+   is bigger and sits on its own ground — twenty-pixel glyphs with nothing
+   behind them were landing on the card's last line of text. */
+.dr-card-spot {
+  right: 92px;
+  font-size: var(--dr-t-lead);
+}
+
+.dr-card:hover .dr-card-spot,
+.dr-card-spot:focus-visible {
+  opacity: 1;
+}
+
+.dr-card-spot:hover {
+  color: var(--dr-ink);
+}
+
+.dr-star.dr-spot {
+  font-size: 14px;
+}
+
+.dr-star.dr-spot:hover {
+  color: var(--dr-ink);
+}
+
+/* The confirm button was painted in the raw club colour, which for eight clubs
+   is within 1.4:1 of the panel behind it — a SOLD button you cannot see on
+   Raiders night. The club stays in the hero gradient; the action that records
+   money is in the one pairing that reads on every night. */
+.dr-stage-form > .dr-button-primary {
+  background: var(--dr-ink);
+  color: var(--dr-ground);
+  border-color: transparent;
+  letter-spacing: 0.04em;
+}
+
+.dr-stage-form > .dr-button-primary:hover:not(:disabled) {
+  background: #fff;
+}
+
+.dr-stage-form > .dr-button-primary:disabled {
+  background: var(--dr-raised);
+  color: var(--dr-ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   the setup menu
+   -------------------------------------------------------------------------- */
+
+.dr-menu {
+  position: relative;
+  flex: none;
+}
+
+.dr-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dr-menu-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--dr-radius-pill);
+  background: var(--dr-raised);
+  color: var(--dr-ink-muted);
+  font-family: var(--dr-mono);
+  font-size: var(--dr-t-micro);
+  font-weight: 600;
+}
+
+.dr-menu-caret {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 45;
+  min-width: 220px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--dr-surface-2);
+  border: 1px solid var(--dr-line-strong);
+  border-radius: var(--dr-radius);
+  box-shadow: var(--dr-e3);
+  animation: dr-fade-in var(--dr-fast);
+}
+
+.dr-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dr-s3);
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--dr-radius-sm);
+  background: transparent;
+  color: var(--dr-ink);
+  font-size: var(--dr-t-small);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dr-menu-item:hover,
+.dr-menu-item:focus-visible {
+  background: var(--dr-hover);
+}
+
+.dr-menu-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dr-good);
+  flex: none;
+}
+
+/* The bar no longer needs to wrap at a desk: eleven controls became five and a
+   menu. It still may on a phone, where a phone is a phone. */
+@media (min-width: 1400px) {
+  .dr-topbar {
+    flex-wrap: nowrap;
+  }
+}
+
+/* A phone is a phone: the groups themselves wrap rather than running off the
+   right edge, which was a 94px horizontal scroll on a 390px screen. */
+@media (max-width: 560px) {
+  .dr-topbar-group {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .dr-topbar-live {
+    margin-left: 0;
+  }
+}
+
+/* ---- aside polish ---- */
+
+/* The one panel with no padding class of its own: its header and rows sat
+   flush against the border while every sibling kept ten to fourteen pixels. */
+.dr-plan-panel {
+  padding: var(--dr-s3) var(--dr-s3) var(--dr-s4);
+}
+
+/* Money left, under the name it belongs to, so the rosters panel carries what
+   the budgets panel used to say on its own tab. */
+.dr-team-block > .dr-team-bar {
+  display: block;
+  margin: 4px 0 6px;
+}
+
+/* The bargain rows share one axis: a fixed numbers column, so the bar starts
+   at the same x on every row instead of wherever that row's figures ended. */
+.dr-bargain {
+  grid-template-columns: minmax(0, 1fr) 42px 118px;
+}
+
+.dr-bargain-numbers {
+  justify-content: flex-end;
+}
+
+.dr-planlist-row {
+  grid-template-columns: 30px minmax(0, 1fr) 44px 40px;
+}
+
+.dr-planlist-gain {
+  text-align: right;
+}
+
+/* A refusal keeps its header, so you can tell which tab you are on. */
+.dr-rail > .dr-empty {
+  text-align: left;
+  padding: 6px 0 0;
+}
+
+/* ---- card polish ---- */
+
+.dr-card-live-read-quiet {
+  justify-content: flex-end;
+}
+
+.dr-card-live-read-quiet em {
+  font-size: var(--dr-t-micro);
+}
+
+/* The seat pips sit at the end of the gain line, which is the sentence they
+   qualify: "+44 over the free man" and "into which of your seats" are one
+   reading. */
+.dr-card-gain {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s2);
+}
+
+.dr-card-gain > .dr-micro-slotfit {
+  margin-left: auto;
+  width: auto;
+  flex: none;
+}
+
+/* ---- dossier polish ---- */
+
+/* The research section is one box; dealt into a column it left the other
+   sixty per cent of the tab blank. */
+.dr-profile .dr-tabpanel > .dr-research,
+.dr-card-detail .dr-tabpanel > .dr-research {
+  grid-column: 1 / -1;
+  max-width: 920px;
+}
+
+/* One elevation step between a section and the panel it sits on. Both were
+   --dr-surface-2, so the "own surface" was a one-pixel line. */
+.dr-card-detail,
+.dr-stage-dossier {
+  background: var(--dr-surface);
+}
+
+/* A quadrant label that runs through the highlighted dot is unreadable both
+   ways; a halo in the ground colour separates them. */
+.dr-quadrant {
+  paint-order: stroke;
+  stroke: var(--dr-surface-2);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* The identity strip across the top of the raised dossier: who, how much,
+   and over whom — on every tab, not only the first. */
+.dr-detail-id {
+  display: flex;
+  align-items: center;
+  gap: var(--dr-s2);
+  min-width: 0;
+  flex: 1;
+}
+
+.dr-detail-id .dr-face {
+  --dr-face-size: 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--dr-raised);
+  flex: none;
+}
+
+.dr-detail-name {
+  font-family: var(--dr-display);
+  font-size: var(--dr-t-lead);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-detail-price {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-title);
+  font-weight: 600;
+  color: var(--dr-good);
+  margin-left: var(--dr-s2);
+}
+
+.dr-detail-gain {
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-small);
+  color: var(--dr-good);
+}
+
+.dr-detail-gain[data-tone='warn'] {
+  color: var(--dr-warn);
+}
+
+.dr-detail-close {
+  margin-left: auto;
+}
+
+/* Cards size to their own content. Stretched to the tallest in the row, a card
+   with a one-line headline carried sixty pixels of bordered nothing under it
+   to match a neighbour with three lines and two chips. */
+.dr-grid {
+  align-items: start;
+}
+
+/* One line, with the pips at its end. The sentence wrapped under the pips and
+   the chip grew by a line on half the board. */
+.dr-card-gain > b,
+.dr-card-gain > span {
+  white-space: nowrap;
+}
+
+.dr-card-gain {
+  overflow: hidden;
+}
+
+/* ---- narrow polish ---- */
+
+/* On a phone the sheet's controls stack: the bid box, then the team chips in
+   rows of four, then the verdict and the button. Twelve chips on one 370px row
+   were nineteen pixels wide each, and every name in them overflowed its chip. */
+@media (max-width: 700px) {
+  .dr-stage[data-folded] .dr-stage-form,
+  .dr-stage:not([data-folded]) .dr-stage-form {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'bid' 'teams' 'verdict' 'sold' 'pass' 'hint';
+  }
+
+  .dr-stage .dr-teamrow {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dr-stage-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dr-stage-hero {
+    flex-wrap: wrap;
+  }
+
+  /* The bar's groups wrap too, instead of running off the right edge. */
+  .dr-topbar-group {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+}
+
+/* Under 1400px the bar gives up two readouts it can spare — the committed
+   dollars are on the market panel, and "on the block" is the band under it —
+   and stays one row down to 1200. */
+@media (max-width: 1400px) {
+  .dr-stat-committed,
+  .dr-clock > .dr-eyebrow {
+    display: none;
+  }
+}
+
+/* Twelve rosters in two columns rather than one long scroll. */
+.dr-rail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--dr-s3);
+}
+
+.dr-rail-grid > .dr-team-block {
+  min-width: 0;
+}
+
+.dr-rail-grid > .dr-team-block:nth-of-type(2) {
+  border-top: none;
+}
+
+.dr-rail-grid .dr-team-roster li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-rail-grid .dr-slot {
+  padding: 1px 3px;
+  letter-spacing: 0;
+}
+
+/* ---- card hover readout ---- */
+
+/* A strip along the card's foot naming what the cursor is on. Absolutely
+   placed so a card that is pointed at does not reflow, which would move the
+   thing being pointed at. */
+.dr-card-readout {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 34px;
+  z-index: 3;
+  padding: 5px 8px;
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-raised) 92%, transparent);
+  box-shadow:
+    0 0 0 1px var(--dr-line-strong),
+    var(--dr-e2);
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-tiny);
+  line-height: 1.35;
+  color: var(--dr-ink);
+  pointer-events: none;
+  white-space: normal;
+}
+
+[data-tip] {
+  cursor: help;
+}
+
+/* ---- kicking chart ---- */
+
+.dr-kick {
+  max-width: 640px;
+}
+
+.dr-kick-spray {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+}
+
+.dr-kick-week,
+.dr-kick-axis,
+.dr-kick-pat,
+.dr-depth-mark {
+  font-family: var(--dr-mono);
+  font-size: 9.5px;
+  fill: var(--dr-ink-faint);
+}
+
+.dr-kick-pat {
+  fill: var(--dr-ink-muted);
+}
+
+.dr-kick-pat[data-short] {
+  fill: var(--dr-warn);
+}
+
+.dr-kick-read {
+  min-height: 2.6em;
+  margin: 4px 0 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-kick-read b {
+  color: var(--dr-ink);
+}
+
+.dr-kick-read b[data-result='made'] {
+  color: var(--dr-good);
+}
+
+.dr-kick-read b[data-result='missed'] {
+  color: var(--dr-bad);
+}
+
+.dr-kick-read b[data-result='blocked'] {
+  color: var(--dr-warn);
+}
+
+.dr-kick-buckets {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(0, 1.4fr);
+  gap: var(--dr-s2);
+  margin-top: var(--dr-s3);
+  align-items: end;
+}
+
+.dr-kick-bucket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+}
+
+.dr-kick-bucket b {
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink);
+}
+
+.dr-kick-bucket em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dr-kick-bucket small {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-kick-bucket-bar {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-kick-bucket-bar > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 3px 3px 0 0;
+  opacity: 0.85;
+}
+
+.dr-kick-bucket-bar > i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--dr-ink);
+  opacity: 0.8;
+}
+
+.dr-kick-bucket-key {
+  align-items: flex-start;
+  gap: 4px;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-kick-bucket-key span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dr-kick-bucket-key i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dr-kick-bucket-key i.is-made {
+  background: var(--dr-mark);
+}
+
+.dr-kick-bucket-key i.is-missed {
+  border-radius: 0;
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--dr-bad);
+  transform: rotate(45deg);
+}
+
+.dr-kick-bucket-key i.is-blocked {
+  border-radius: 1px;
+  background: none;
+  box-shadow: inset 0 0 0 1.25px var(--dr-warn);
+  transform: rotate(45deg);
+}
+
+.dr-kick-bucket-key i.is-ref {
+  width: 10px;
+  height: 2px;
+  border-radius: 0;
+}
+
+/* ---- depth chart ---- */
+
+.dr-depth-field {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dr-depth-num {
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dr-depth-num.is-small {
+  font-size: 8.5px;
+}
+
+.dr-depth-name {
+  font-size: 9.5px;
+  fill: var(--dr-ink-muted);
+}
+
+/* ---- off the sheet ---- */
+
+/* The slot where a price goes, saying there is none. */
+.dr-card-price.is-snake,
+.dr-tile dd.is-snake {
+  font-family: var(--dr-sans);
+  font-size: var(--dr-t-tiny);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dr-ink-muted);
+}
+
+.dr-stage-offsheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-s2);
+  padding: var(--dr-s3) var(--dr-s4);
+  border-left: 1px solid var(--dr-line);
+}
+
+.dr-stage-offsheet-note {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+/* ---- the room's tooltip ---- */
+
+.dr-tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  max-width: 320px;
+  padding: 7px 10px;
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-raised) 96%, transparent);
+  box-shadow:
+    0 0 0 1px var(--dr-line-strong),
+    var(--dr-e3);
+  color: var(--dr-ink);
+  font-family: var(--dr-sans);
+  font-size: var(--dr-t-small);
+  line-height: 1.4;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* The live tab, packed tighter so a full night fits without a scroll. The
+   gap is the grid's own; `usePackedColumns` reads it back to place by. */
+.dr-tonight {
+  padding: var(--dr-s2) var(--dr-s3) var(--dr-s3);
+}
+
+.dr-tonight-grid {
+  gap: 0 var(--dr-s2);
+}
+
+.dr-tonight-section {
+  margin-bottom: var(--dr-s2);
+  padding: var(--dr-s2) var(--dr-s3);
+}
+
+.dr-tonight-list > li {
+  padding: 2px 6px;
+}
+
+.dr-tonight-facts {
+  gap: var(--dr-s1) var(--dr-s3);
+}
+
+.dr-tonight-facts dd {
+  font-size: var(--dr-t-body);
 }

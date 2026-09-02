@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player, PlayerPosition, Team } from '@/services/auctionDraftService';
 import { saveTextFile } from '@/lib/saveFile';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface DraftResultsProps {
   players: Player[];
@@ -113,12 +114,9 @@ export const DraftResults = ({ players, teams, onClose }: DraftResultsProps) => 
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   const results = useMemo<TeamResult[]>(() => {
     const drafted = players.filter((player) => player.isDrafted);
