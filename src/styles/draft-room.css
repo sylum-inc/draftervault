@@ -751,7 +751,11 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 326px);
   grid-template-rows: auto minmax(0, 1fr);
-  height: clamp(440px, 58vh, 760px);
+  /* As tall as its tab needs, up to the window under the bar: the live tab
+     was being cut at a fixed 58vh and its second row scrolled. What gives the
+     board back is the fold on scroll, not a shorter band. */
+  height: auto;
+  max-height: calc(100vh - var(--dr-topbar-h, 53px) - 28px);
   box-shadow: var(--dr-e2);
 }
 
@@ -6481,13 +6485,6 @@ li[data-level='ready'] > .dr-checklist-mark {
   }
 }
 
-/* In the snake the live tab is short — no price, no plan, no rivals — so the
-   band sizes to it rather than holding the auction's height over empty space. */
-.dr-stage[data-mode='snake']:not([data-folded]) {
-  height: auto;
-  max-height: clamp(440px, 58vh, 720px);
-}
-
 /* Twelve rosters in two columns rather than one long scroll. */
 .dr-rail-grid {
   display: grid;
@@ -6724,4 +6721,81 @@ li[data-level='ready'] > .dr-checklist-mark {
 .dr-depth-name {
   font-size: 9.5px;
   fill: var(--dr-ink-muted);
+}
+
+/* ---- off the sheet ---- */
+
+/* The slot where a price goes, saying there is none. */
+.dr-card-price.is-snake,
+.dr-tile dd.is-snake {
+  font-family: var(--dr-sans);
+  font-size: var(--dr-t-tiny);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dr-ink-muted);
+}
+
+.dr-stage-offsheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dr-s2);
+  padding: var(--dr-s3) var(--dr-s4);
+  border-left: 1px solid var(--dr-line);
+}
+
+.dr-stage-offsheet-note {
+  margin: 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.45;
+  color: var(--dr-ink-muted);
+}
+
+/* ---- the room's tooltip ---- */
+
+.dr-tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  max-width: 320px;
+  padding: 7px 10px;
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-raised) 96%, transparent);
+  box-shadow:
+    0 0 0 1px var(--dr-line-strong),
+    var(--dr-e3);
+  color: var(--dr-ink);
+  font-family: var(--dr-sans);
+  font-size: var(--dr-t-small);
+  line-height: 1.4;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* The live tab, packed tighter so a full night fits without a scroll. */
+.dr-tonight {
+  padding: var(--dr-s2) var(--dr-s3) var(--dr-s3);
+}
+
+.dr-tonight-grid {
+  columns: 270px;
+  column-gap: var(--dr-s2);
+}
+
+.dr-tonight-section {
+  margin-bottom: var(--dr-s2);
+  padding: var(--dr-s2) var(--dr-s3);
+}
+
+.dr-tonight-list > li {
+  padding: 2px 6px;
+}
+
+.dr-tonight-facts {
+  gap: var(--dr-s1) var(--dr-s3);
+}
+
+.dr-tonight-facts dd {
+  font-size: var(--dr-t-body);
 }

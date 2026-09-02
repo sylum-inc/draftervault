@@ -27,7 +27,8 @@ interface KickChartProps {
 const MIN = 17;
 const MAX = 66;
 const ROW = 11;
-const PAD_LEFT = 34;
+/* Room on the left for the week number and the goalposts the kicks fly toward. */
+const PAD_LEFT = 58;
 const PAD_RIGHT = 54;
 const WEEKS = 18;
 
@@ -74,7 +75,75 @@ export const KickChart = ({ kicker, league, label, width = 440 }: KickChartProps
         aria-label={`${label}: ${resting}`}
         onMouseLeave={() => setHover(null)}
       >
-        {/* The two distances where a kick stops being routine. */}
+        {/* The field. Kicks fly leftward toward the posts; every ten yards a
+            faint line, and the two distances where a kick stops being routine
+            drawn darker. Alternate weeks carry a wash so a row can be followed
+            across without a ruler. */}
+        {Array.from({ length: WEEKS }, (_, index) =>
+          index % 2 === 0 ? (
+            <rect
+              key={`turf-${index}`}
+              x={PAD_LEFT - 10}
+              y={y(index + 1) - ROW / 2}
+              width={plot + 10}
+              height={ROW}
+              fill="var(--dr-mark)"
+              opacity={0.045}
+            />
+          ) : null
+        )}
+        {[20, 30, 60].map((distance) => (
+          <line
+            key={`yd-${distance}`}
+            x1={x(distance)}
+            x2={x(distance)}
+            y1={8}
+            y2={height - 16}
+            stroke={FAINT}
+            strokeWidth={0.5}
+            opacity={0.45}
+          />
+        ))}
+        {/* The goalposts: crossbar and two uprights, at the end the kicks are
+            aimed at. */}
+        <g className="dr-kick-posts" aria-hidden="true">
+          <line
+            x1={PAD_LEFT - 26}
+            x2={PAD_LEFT - 26}
+            y1={10}
+            y2={height - 16}
+            stroke={INK}
+            strokeWidth={2.25}
+            opacity={0.55}
+          />
+          <line
+            x1={PAD_LEFT - 34}
+            x2={PAD_LEFT - 18}
+            y1={10}
+            y2={10}
+            stroke={INK}
+            strokeWidth={2.25}
+            opacity={0.55}
+          />
+          <line
+            x1={PAD_LEFT - 34}
+            x2={PAD_LEFT - 34}
+            y1={4}
+            y2={10}
+            stroke={INK}
+            strokeWidth={2}
+            opacity={0.55}
+          />
+          <line
+            x1={PAD_LEFT - 18}
+            x2={PAD_LEFT - 18}
+            y1={4}
+            y2={10}
+            stroke={INK}
+            strokeWidth={2}
+            opacity={0.55}
+          />
+        </g>
         {[40, 50].map((distance) => (
           <line
             key={distance}
@@ -103,7 +172,7 @@ export const KickChart = ({ kicker, league, label, width = 440 }: KickChartProps
                 strokeWidth={1}
                 opacity={game ? 1 : 0.5}
               />
-              <text x={PAD_LEFT - 8} y={y(week) + 3} className="dr-kick-week" textAnchor="end">
+              <text x={PAD_LEFT - 44} y={y(week) + 3} className="dr-kick-week" textAnchor="end">
                 {week}
               </text>
               {game && (

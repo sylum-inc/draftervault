@@ -90,6 +90,8 @@ interface NominationStageProps {
   /** Fold the dossier away to a single strip, for a small window or a quiet moment. */
   folded?: boolean;
   onToggleFold?: () => void;
+  /** Put an off-sheet player onto the sheet, because the room is auctioning him after all. */
+  onAddToSheet?: () => void;
   /** Whether a team still has room; a full one cannot win the bidding. */
   canDraft: (team: Team) => boolean;
   /** Whose turn it is in the snake, with the round and pick it falls on. */
@@ -236,6 +238,7 @@ export const NominationStage = ({
   dossier,
   folded = false,
   onToggleFold,
+  onAddToSheet,
   canDraft,
   onTheClock,
   snakeGain,
@@ -299,6 +302,10 @@ export const NominationStage = ({
 
   const gain = snakeGain ?? snakeBounds?.high ?? null;
   const gainLow = snakeBounds && !snakeGain ? snakeBounds.low : null;
+  /* Off the sheet during the auction: nobody is bidding on him, so there is no
+     price to print and no bid to take. The pool's dollar floor is where every
+     unauctioned player sits and it is not a claim about him. */
+  const offSheet = !snake && !player.onSheet && player.sheetIsStated;
 
   return (
     <section
@@ -390,6 +397,11 @@ export const NominationStage = ({
                 <dd>{player.byeWeek || '—'}</dd>
               </div>
             </>
+          ) : offSheet ? (
+            <div className="dr-tile" title="Not on the auction sheet — he comes up in the snake">
+              <dt>Price</dt>
+              <dd className="is-snake">snake</dd>
+            </div>
           ) : (
             <>
               <div className="dr-tile">
@@ -618,209 +630,230 @@ export const NominationStage = ({
 
       {dossier && !folded && <div className="dr-stage-dossier">{dossier}</div>}
 
-      <form
-        className="dr-stage-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onConfirm();
-        }}
-      >
-        {!snake && (
-          <div className="dr-field">
-            <label className="dr-eyebrow" htmlFor="dr-bid">
-              Winning bid
-            </label>
-            <div className="dr-bid">
-              <button
-                type="button"
-                className="dr-step"
-                onClick={() => step(-1)}
-                aria-label="Lower bid by one dollar"
-              >
-                −
-              </button>
-              <input
-                id="dr-bid"
-                className="dr-input"
-                inputMode="numeric"
-                value={bid}
-                onChange={(event) => onBidChange(event.target.value.replace(/[^0-9]/g, ''))}
-              />
-              <button
-                type="button"
-                className="dr-step"
-                onClick={() => step(1)}
-                aria-label="Raise bid by one dollar"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        )}
-
-        {snake ? (
-          // Nobody chooses a team in the snake: the order chose it, and offering
-          // a select here would be offering a choice the engine will refuse.
-          <p className="dr-verdict">
-            <span>Goes to</span>
-            <strong>{onTheClock?.team.name ?? '—'}</strong>
+      {offSheet ? (
+        <div className="dr-stage-form dr-stage-offsheet">
+          <p className="dr-eyebrow">Not on the sheet</p>
+          <p className="dr-stage-offsheet-note">
+            He comes up in the snake, for nothing. The gain above is what he adds if you take him
+            there.
           </p>
-        ) : (
-          <div className="dr-field">
-            <label className="dr-eyebrow" id="dr-team-label">
-              Winning team
-            </label>
-            {/*
-             * Twelve buttons, not a dropdown.
-             *
-             * This is the highest-frequency act of the night — sixty times,
-             * while somebody shouts a number across a room — and it was a
-             * `<select>` of twelve options all beginning with the word "Team".
-             * Typeahead is therefore useless (every option matches the same
-             * letter), so reaching team nine was nine arrow presses or a mouse
-             * trip into a dropdown that covers the board. Measured: nine.
-             *
-             * A dropdown is the control for a list too long to show. Twelve is
-             * a row. Showing them costs one line of the band and buys three
-             * things: the choice is one click, the budgets are legible without
-             * opening anything, and the row doubles as the readout for who can
-             * still bid — which is the question being asked at exactly this
-             * moment and was previously a sentence underneath.
-             *
-             * A team with no room stays in place rather than disappearing,
-             * because a row that reorders under the cursor mid-auction is worse
-             * than a disabled button; it says why instead.
-             */}
-            <div className="dr-teamrow" role="group" aria-labelledby="dr-team-label">
-              {teams.map((t) => {
-                const verdict = checkTeam?.(t.id, amount) ?? null;
-                const blocked =
-                  verdict && !verdict.ok
-                    ? verdict.code === 'roster-full' || verdict.code === 'position-full'
-                    : null;
-                // Falls back to the roster question alone where no checker was
-                // handed down, which is what the control asked before.
-                const full = blocked ?? !canDraft(t);
-                const short = !full && verdict != null && !verdict.ok;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    className="dr-teamchip"
-                    aria-pressed={teamId === t.id}
-                    disabled={full}
-                    data-short={short ? '' : undefined}
-                    data-mine={t.id === myTeamId ? '' : undefined}
-                    title={
-                      verdict && !verdict.ok
-                        ? `${t.name} — ${verdict.message}`
-                        : `${t.name} — $${t.remaining} left`
-                    }
-                    onClick={() => onTeamChange(teamId === t.id ? '' : t.id)}
-                  >
-                    <em>{t.name}</em>
-                    <b className="dr-num">{full ? 'full' : `$${t.remaining}`}</b>
-                  </button>
-                );
-              })}
+          {onAddToSheet && (
+            <>
+              <button type="button" className="dr-button" onClick={onAddToSheet}>
+                The room is auctioning him — add to the sheet
+              </button>
+              <p className="dr-footnote">
+                Adding a name re-prices the board for a sheet one player longer, which is what a
+                paste does; the draft already made stays exactly as legal.
+              </p>
+            </>
+          )}
+        </div>
+      ) : (
+        <form
+          className="dr-stage-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onConfirm();
+          }}
+        >
+          {!snake && (
+            <div className="dr-field">
+              <label className="dr-eyebrow" htmlFor="dr-bid">
+                Winning bid
+              </label>
+              <div className="dr-bid">
+                <button
+                  type="button"
+                  className="dr-step"
+                  onClick={() => step(-1)}
+                  aria-label="Lower bid by one dollar"
+                >
+                  −
+                </button>
+                <input
+                  id="dr-bid"
+                  className="dr-input"
+                  inputMode="numeric"
+                  value={bid}
+                  onChange={(event) => onBidChange(event.target.value.replace(/[^0-9]/g, ''))}
+                />
+                <button
+                  type="button"
+                  className="dr-step"
+                  onClick={() => step(1)}
+                  aria-label="Raise bid by one dollar"
+                >
+                  +
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* A verdict against our number is a statement about a price. There is
+          {snake ? (
+            // Nobody chooses a team in the snake: the order chose it, and offering
+            // a select here would be offering a choice the engine will refuse.
+            <p className="dr-verdict">
+              <span>Goes to</span>
+              <strong>{onTheClock?.team.name ?? '—'}</strong>
+            </p>
+          ) : (
+            <div className="dr-field">
+              <label className="dr-eyebrow" id="dr-team-label">
+                Winning team
+              </label>
+              {/*
+               * Twelve buttons, not a dropdown.
+               *
+               * This is the highest-frequency act of the night — sixty times,
+               * while somebody shouts a number across a room — and it was a
+               * `<select>` of twelve options all beginning with the word "Team".
+               * Typeahead is therefore useless (every option matches the same
+               * letter), so reaching team nine was nine arrow presses or a mouse
+               * trip into a dropdown that covers the board. Measured: nine.
+               *
+               * A dropdown is the control for a list too long to show. Twelve is
+               * a row. Showing them costs one line of the band and buys three
+               * things: the choice is one click, the budgets are legible without
+               * opening anything, and the row doubles as the readout for who can
+               * still bid — which is the question being asked at exactly this
+               * moment and was previously a sentence underneath.
+               *
+               * A team with no room stays in place rather than disappearing,
+               * because a row that reorders under the cursor mid-auction is worse
+               * than a disabled button; it says why instead.
+               */}
+              <div className="dr-teamrow" role="group" aria-labelledby="dr-team-label">
+                {teams.map((t) => {
+                  const verdict = checkTeam?.(t.id, amount) ?? null;
+                  const blocked =
+                    verdict && !verdict.ok
+                      ? verdict.code === 'roster-full' || verdict.code === 'position-full'
+                      : null;
+                  // Falls back to the roster question alone where no checker was
+                  // handed down, which is what the control asked before.
+                  const full = blocked ?? !canDraft(t);
+                  const short = !full && verdict != null && !verdict.ok;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className="dr-teamchip"
+                      aria-pressed={teamId === t.id}
+                      disabled={full}
+                      data-short={short ? '' : undefined}
+                      data-mine={t.id === myTeamId ? '' : undefined}
+                      title={
+                        verdict && !verdict.ok
+                          ? `${t.name} — ${verdict.message}`
+                          : `${t.name} — $${t.remaining} left`
+                      }
+                      onClick={() => onTeamChange(teamId === t.id ? '' : t.id)}
+                    >
+                      <em>{t.name}</em>
+                      <b className="dr-num">{full ? 'full' : `$${t.remaining}`}</b>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* A verdict against our number is a statement about a price. There is
             no price in the snake, so there is nothing to be above or below. */}
-        {!snake && (
-          <p className="dr-verdict">
-            <span>Against our number</span>
-            <strong style={{ color: verdict.tone }}>{verdict.label}</strong>
-            {verdict.note && <em className="dr-verdict-note">{verdict.note}</em>}
-          </p>
-        )}
+          {!snake && (
+            <p className="dr-verdict">
+              <span>Against our number</span>
+              <strong style={{ color: verdict.tone }}>{verdict.label}</strong>
+              {verdict.note && <em className="dr-verdict-note">{verdict.note}</em>}
+            </p>
+          )}
 
-        {snake ? (
-          <button
-            // The auction hands focus to the winning-team select after a
-            // nomination; the snake has no select, so the confirm button is
-            // what the keyboard lands on and Enter still records the pick.
-            id="dr-snake-draft"
-            type="submit"
-            className="dr-button dr-button-primary"
-            disabled={!!rejection || !onTheClock}
-          >
-            Draft to {onTheClock?.team.name ?? 'nobody'}
-          </button>
-        ) : (
-          <>
+          {snake ? (
             <button
+              // The auction hands focus to the winning-team select after a
+              // nomination; the snake has no select, so the confirm button is
+              // what the keyboard lands on and Enter still records the pick.
+              id="dr-snake-draft"
               type="submit"
               className="dr-button dr-button-primary"
-              disabled={!!rejection || !teamId}
+              disabled={!!rejection || !onTheClock}
             >
-              Sold — ${Number.isFinite(amount) ? amount : 0}
+              Draft to {onTheClock?.team.name ?? 'nobody'}
             </button>
+          ) : (
+            <>
+              <button
+                type="submit"
+                className="dr-button dr-button-primary"
+                disabled={!!rejection || !teamId}
+              >
+                Sold — ${Number.isFinite(amount) ? amount : 0}
+              </button>
 
-            {/* The auction cannot end while one player nobody called is still
+              {/* The auction cannot end while one player nobody called is still
                 waiting to be sold, and somebody has to be able to say so. It
                 marks him passed over rather than striking him off, because the
                 sheet's length is the league's auctioned count and shortening it
                 would re-price the room mid-auction. Only for a player who is on
                 the sheet: nobody bids on the other five hundred either, and
                 there is nothing to pass over. */}
-            {/* Passing a player over is the only control in the room that can
+              {/* Passing a player over is the only control in the room that can
                 end the auction, and it used to be one unconfirmed click with no
                 way back: undo pops the pick log, so it takes back an unrelated
                 sale instead, and a reset keeps the mark. A mis-click on the last
                 unsold name ended the auction and left a $54 player to be taken
                 for nothing. So the inverse is offered in the same slot, and the
                 click that ends the auction asks first. */}
-            {sheetRemaining != null && player.onSheet && !passedOver && (
-              <button
-                type="button"
-                className="dr-button"
-                onClick={() => {
-                  if (
-                    sheetRemaining > 1 ||
-                    window.confirm(
-                      `${player.name} is the last name on the sheet. Passing him over ends the auction and opens the snake draft.`
-                    )
-                  ) {
-                    onUnsold();
-                  }
-                }}
-                style={{ justifyContent: 'center' }}
-                title={`Mark him passed over — he goes to the snake instead. ${sheetRemaining} left on the sheet.`}
-              >
-                Nobody bid
-              </button>
-            )}
-            {player.onSheet && passedOver && (
-              <button
-                type="button"
-                className="dr-button"
-                onClick={onReturnToSheet}
-                style={{ justifyContent: 'center' }}
-                title="The room came back to him — put him up for bidding again"
-              >
-                Put him back up
-              </button>
-            )}
-          </>
-        )}
+              {sheetRemaining != null && player.onSheet && !passedOver && (
+                <button
+                  type="button"
+                  className="dr-button"
+                  onClick={() => {
+                    if (
+                      sheetRemaining > 1 ||
+                      window.confirm(
+                        `${player.name} is the last name on the sheet. Passing him over ends the auction and opens the snake draft.`
+                      )
+                    ) {
+                      onUnsold();
+                    }
+                  }}
+                  style={{ justifyContent: 'center' }}
+                  title={`Mark him passed over — he goes to the snake instead. ${sheetRemaining} left on the sheet.`}
+                >
+                  Nobody bid
+                </button>
+              )}
+              {player.onSheet && passedOver && (
+                <button
+                  type="button"
+                  className="dr-button"
+                  onClick={onReturnToSheet}
+                  style={{ justifyContent: 'center' }}
+                  title="The room came back to him — put him up for bidding again"
+                >
+                  Put him back up
+                </button>
+              )}
+            </>
+          )}
 
-        {/* Under the button rather than above it: a notice that appeared between
+          {/* Under the button rather than above it: a notice that appeared between
             the verdict and SOLD pushed the button thirty pixels at the exact
             moment of a mis-press, which is the moment a hand is already moving. */}
-        {rejection && (
-          <p className="dr-notice" role="status">
-            {rejection.message}
-          </p>
-        )}
-        {!snake && !rejection && !teamId && (
-          <p className="dr-stage-hint" role="status">
-            Pick the winning team to sell.
-          </p>
-        )}
-      </form>
+          {rejection && (
+            <p className="dr-notice" role="status">
+              {rejection.message}
+            </p>
+          )}
+          {!snake && !rejection && !teamId && (
+            <p className="dr-stage-hint" role="status">
+              Pick the winning team to sell.
+            </p>
+          )}
+        </form>
+      )}
     </section>
   );
 };

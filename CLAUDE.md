@@ -2982,6 +2982,50 @@ publishes no depth chart; the footnote says so.
 **Rosters are two columns.** Twelve teams in one column of a 380px aside was a
 scroll; two columns of six is a page.
 
+**Off the sheet there is no price, and the board printed one.** Every player
+not on the commissioner's sixty — every kicker, every defence, the four hundred
+depth men — carried "$1" on his card, in the table and across the spotlight's
+tiles, with a bid box beside it. The dollar is the pool's floor, where
+`pricePool` parks whatever the mask excludes, and it is not a claim about the
+player: nobody is bidding on him, he is taken in the snake for nothing. The slot
+where a price goes now says `snake` on the card and in the table, the
+spotlight's three money tiles collapse to one reading the same, and the form
+column carries no bid box for him — a note instead, and one button for the case
+that is actually possible on the night: the room _is_ auctioning him after all,
+so add him to the sheet, which is the same `setAuctionSheet` a paste comes
+through and leaves every pick already made exactly as legal.
+
+**The spotlight fits its tab, and steps back when you go to the board.** A
+fixed 58vh cut the live tab's second row off at every window size and made the
+one screen built to avoid scrolling scroll. The band is as tall as its tab
+needs now, up to the window under the bar — and because it is sticky, a
+full-height band would then cover the board it sits over. So scrolling past
+the top folds it to the strip and one row of controls: the bid box stays
+pinned, the board is browsable, and scrolling back up or pressing Dossier opens
+it again. Measured at 1440×900: 806px tall, nothing inside it scrolls.
+
+**One tooltip for the whole room.** Every `title` attribute in the app was a
+browser tooltip — half a second late, in the operating system's face, gone the
+moment the cursor twitched. `RoomTooltip` listens once on the room for the
+cursor arriving on anything titled, lifts the text off the element so the
+browser has nothing to show, draws it beside the cursor in the room's own type,
+and puts the attribute back when the cursor leaves. Nothing at a call site
+changed, which is what makes it complete: a caption written as a `title` is a
+custom tip everywhere, including the ones written next week. The card's
+instruments are deliberately not routed through it — they read into the strip
+at the card's foot, which sits still while the cursor moves over the thing it
+describes.
+
+**The kick spray is kicked on a field.** Goalposts at the end the marks fly
+toward, a yard line every ten, alternate weeks washed so a row can be followed
+across. The tab it sits on carries two more instruments built from the same
+kicks: the week-by-week game log every other position has, at the pool's own
+scoring for a kicker (three, four and five by distance, one for the extra
+point), and five strips against the kickers who held a job — points and
+attempts a game, accuracy, makes from fifty, longest — because attempts a game
+is the offence's doing and carries over least, while accuracy from fifty is his
+and is the part that separates him from the next man on the wire.
+
 ## The night, driven end to end
 
 The whole thing has been driven in a browser at the league actually being

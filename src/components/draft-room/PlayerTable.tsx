@@ -98,8 +98,8 @@ const SETS: Record<ColumnSet, Column[]> = {
       label: '$',
       numeric: true,
       title: 'Our auction value',
-      read: (p) => `$${p.estimatedValue}`,
-      bar: (p) => p.estimatedValue,
+      read: (p) => (!p.onSheet && p.sheetIsStated ? 'snake' : `$${p.estimatedValue}`),
+      bar: (p) => (!p.onSheet && p.sheetIsStated ? 0 : p.estimatedValue),
       tone: 'var(--dr-value)',
     },
     {
@@ -250,7 +250,7 @@ const SETS: Record<ColumnSet, Column[]> = {
       key: 'value',
       label: '$',
       numeric: true,
-      read: (p) => `$${p.estimatedValue}`,
+      read: (p) => (!p.onSheet && p.sheetIsStated ? 'snake' : `$${p.estimatedValue}`),
       tone: 'var(--dr-value)',
     },
     {

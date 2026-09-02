@@ -49,7 +49,13 @@ import { CareerArc } from './charts/CareerArc';
 import { ResearchPanel } from './ResearchPanel';
 import { KickChart } from './charts/KickChart';
 import { DepthChart } from './charts/DepthChart';
-import { loadKicking, leagueBuckets, type KickingFile } from '@/services/kicking';
+import {
+  loadKicking,
+  leagueBuckets,
+  kickPoints,
+  kickerSummaries,
+  type KickingFile,
+} from '@/services/kicking';
 import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface PlayerProfileProps {
@@ -623,13 +629,88 @@ export const PlayerProfile = ({
               />
             )}
             <p className="dr-footnote">
-              Each row is a week and each mark an attempt at its distance: a dot made it, a cross
-              missed, a diamond was blocked. The rules at forty and fifty are where a kick stops
-              being routine. Under it, his make rate by distance against the league&rsquo;s kickers
-              as a whole &mdash; a made fifty-five is not the same fact as a made twenty-five, and
-              one rate over everything hides the only thing that separates kickers.
+              Each row is a week and each mark an attempt at its distance, flying toward the posts:
+              a dot made it, a cross missed, a diamond was blocked. Under it, his make rate by
+              distance against the league&rsquo;s kickers as a whole &mdash; a made fifty-five is
+              not the same fact as a made twenty-five.
             </p>
           </section>
+
+          {kicking?.kickers[player.id] && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Week by week</h3>
+              {/* The same instrument every other position gets, built from the
+                  kicks: three, four and five by distance plus the extra points,
+                  which is the table the pool scores kickers on. */}
+              <GameLog
+                weeks={kicking.kickers[player.id].games.map((game) => kickPoints(game))}
+                replacement={(replacement ?? replacementPoints ?? 0) / 17}
+                strongWeek={16}
+                label={`${player.name}: points from kicks in each ${kicking.season} game`}
+                width={420}
+                height={64}
+              />
+              <p className="dr-footnote">
+                A kicker&rsquo;s week is his offence&rsquo;s week: drives that stall inside the
+                forty are attempts, touchdowns are extra points. The dashed rule is what a free
+                kicker scores per game.
+              </p>
+            </section>
+          )}
+
+          {kicking && (
+            <section className="dr-modal-section">
+              <h3 className="dr-eyebrow">Against the kickers who held a job</h3>
+              {(() => {
+                const cohort = kickerSummaries(kicking);
+                const strip = (
+                  read: (row: (typeof cohort)[number]) => number | null
+                ): StripPoint[] =>
+                  cohort
+                    .map((row) => ({ id: row.id, name: row.name, value: read(row) ?? Number.NaN }))
+                    .filter((point) => Number.isFinite(point.value));
+                return (
+                  <>
+                    <MetricStrip
+                      label="Points a game"
+                      points={strip((row) => row.pointsPerGame)}
+                      mineId={player.id}
+                      format={(value) => value.toFixed(1)}
+                    />
+                    <MetricStrip
+                      label="Attempts a game"
+                      points={strip((row) => row.attemptsPerGame)}
+                      mineId={player.id}
+                      format={(value) => value.toFixed(1)}
+                    />
+                    <MetricStrip
+                      label="Accuracy"
+                      points={strip((row) => (row.accuracy == null ? null : row.accuracy * 100))}
+                      mineId={player.id}
+                      format={(value) => `${Math.round(value)}%`}
+                    />
+                    <MetricStrip
+                      label="Made from 50+"
+                      points={strip((row) => row.fiftyPlusMade)}
+                      mineId={player.id}
+                      format={(value) => `${Math.round(value)}`}
+                    />
+                    <MetricStrip
+                      label="Longest"
+                      points={strip((row) => row.long)}
+                      mineId={player.id}
+                      format={(value) => `${Math.round(value)}`}
+                    />
+                  </>
+                );
+              })()}
+              <p className="dr-footnote">
+                Every tick is a kicker with eight or more games last season. Attempts a game is the
+                offence&rsquo;s doing and the part that carries over least; accuracy from fifty is
+                his, and the part that separates him from the next man on the wire.
+              </p>
+            </section>
+          )}
         </div>
       )}
 

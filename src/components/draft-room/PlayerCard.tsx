@@ -441,14 +441,6 @@ const PlayerCardView = ({
             nobody is bidding on reads as a $1 scrub otherwise, when what he
             actually is is somebody you take in the snake for nothing. The flag
             rides on the player object, so the memo above still holds. */}
-            {!player.onSheet && player.sheetIsStated && (
-              <span
-                className="dr-snake"
-                title="Not on the auction sheet — he comes up in the snake"
-              >
-                snake
-              </span>
-            )}
             {/* Was a four-line paragraph on every card, which turned the fourteen
             players we know least about into the loudest thing on the board.
             The fact is worth one word; the explanation belongs on hover, and
@@ -464,14 +456,27 @@ const PlayerCardView = ({
           </span>
         </span>
 
-        <span
-          className={`dr-card-price${player.customRanking ? ' is-custom' : ''}`}
-          title={
-            player.customRanking ? `Your ranking. Ours says $${player.modelValue}.` : undefined
-          }
-        >
-          ${player.estimatedValue}
-        </span>
+        {/* Off the commissioner's sheet there is no price, and printing the
+            pool's dollar floor said there was one. Only the sixty are bought;
+            everybody else is taken in the snake for nothing, and the slot where
+            a price would go says so. */}
+        {!player.onSheet && player.sheetIsStated ? (
+          <span
+            className="dr-card-price is-snake"
+            title="Not on the auction sheet — he comes up in the snake, for nothing"
+          >
+            snake
+          </span>
+        ) : (
+          <span
+            className={`dr-card-price${player.customRanking ? ' is-custom' : ''}`}
+            title={
+              player.customRanking ? `Your ranking. Ours says $${player.modelValue}.` : undefined
+            }
+          >
+            ${player.estimatedValue}
+          </span>
+        )}
       </div>
 
       {/* The season's shape, on its own line and at the card's own width.
@@ -577,7 +582,11 @@ const PlayerCardView = ({
         </div>
         <div className="dr-card-stat" title="Projected points per dollar of list price">
           <dt>Pt/$</dt>
-          <dd>{player.marketOnly || !perDollar ? '—' : perDollar.toFixed(1)}</dd>
+          <dd>
+            {player.marketOnly || !perDollar || (!player.onSheet && player.sheetIsStated)
+              ? '—'
+              : perDollar.toFixed(1)}
+          </dd>
         </div>
       </dl>
 

@@ -15,6 +15,7 @@ import { PlayerTable, type TableSort } from './PlayerTable';
 import { NominationStage } from './NominationStage';
 import { SpotlightTonight } from './SpotlightTonight';
 import { SetupMenu } from './SetupMenu';
+import { RoomTooltip } from './RoomTooltip';
 import { TeamsPanel } from './TeamsPanel';
 import { MarketPanel } from './MarketPanel';
 import { NominationClock } from './NominationClock';
@@ -130,11 +131,35 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     const chrome = chromeRef.current;
     const root = rootRef.current;
     if (!chrome || !root || typeof ResizeObserver === 'undefined') return;
-    const write = () => root.style.setProperty('--dr-chrome-h', `${chrome.offsetHeight}px`);
+    const bar = chrome.querySelector<HTMLElement>('.dr-topbar');
+    const write = () => {
+      root.style.setProperty('--dr-chrome-h', `${chrome.offsetHeight}px`);
+      if (bar) root.style.setProperty('--dr-topbar-h', `${bar.offsetHeight}px`);
+    };
     write();
     const observer = new ResizeObserver(write);
     observer.observe(chrome);
+    if (bar) observer.observe(bar);
     return () => observer.disconnect();
+  }, []);
+
+  /*
+   * The spotlight steps back when you go to the board.
+   *
+   * Unfolded it is as tall as its tab needs, up to the window, so nothing in it
+   * has to scroll — which means the board under it is not visible until you
+   * scroll the page. It is sticky, so a full-height band would then cover the
+   * board it sits over. So scrolling past the top folds it to the strip and one
+   * row of controls: the bid box stays pinned, the board is browsable, and
+   * scrolling back up — or pressing Dossier — opens it again. The manual fold
+   * still holds wherever the page is.
+   */
+  const [autoFolded, setAutoFolded] = useState(false);
+  useEffect(() => {
+    const read = () => setAutoFolded(window.scrollY > 140);
+    read();
+    window.addEventListener('scroll', read, { passive: true });
+    return () => window.removeEventListener('scroll', read);
   }, []);
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
@@ -1422,6 +1447,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
 
   return (
     <div className="draft-room" ref={rootRef}>
+      <RoomTooltip />
       {/* Header and block stick together.
           The band was sticky at a fixed offset under a header that wraps —
           so at any width where the setup row wrapped, the block tucked itself
@@ -1719,10 +1745,28 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               onBidChange={setBid}
               onConfirm={confirm}
               dossier={dossier}
-              folded={stageFolded}
-              onToggleFold={() => setStageFolded((folded) => !folded)}
+              folded={stageFolded || autoFolded}
+              onToggleFold={() => {
+                if (stageFolded || autoFolded) {
+                  setStageFolded(false);
+                  window.scrollTo({ top: 0 });
+                } else {
+                  setStageFolded(true);
+                }
+              }}
               canDraft={(team) => draftService.canDraft(team)}
               onTheClock={onTheClock}
+              onAddToSheet={
+                selected
+                  ? () => {
+                      draftService.setAuctionSheet(
+                        [...sheet.ids, selected.id],
+                        sheet.loss ?? undefined
+                      );
+                      sync();
+                    }
+                  : undefined
+              }
               snakeGain={snakeGain}
               snakeBounds={snakeBounds}
               freeManResearch={freeManResearch}

@@ -85,3 +85,50 @@ export const leagueBuckets = (data: KickingFile) => {
     rate: bucket.attempts > 0 ? bucket.made / bucket.attempts : null,
   }));
 };
+
+/**
+ * What a game of kicks scored, at the scoring the pool uses for kickers: three
+ * for a field goal under forty, four from the forties, five from fifty and
+ * beyond, one for an extra point. The same table `kickerPoints` in
+ * scripts/nflverse.mjs applies when the pool is built, so the two agree.
+ */
+export const kickPoints = (game: KickGame): number =>
+  game.made.reduce((sum, d) => sum + (d >= 50 ? 5 : d >= 40 ? 4 : 3), 0) + game.patMade;
+
+export interface KickerSummary {
+  id: string;
+  name: string;
+  games: number;
+  points: number;
+  pointsPerGame: number;
+  attemptsPerGame: number;
+  accuracy: number | null;
+  fiftyPlusMade: number;
+  fiftyPlusAttempts: number;
+  long: number;
+}
+
+/** One row per kicker who held a job — eight games or more — for the strips. */
+export const kickerSummaries = (data: KickingFile, minimumGames = 8): KickerSummary[] =>
+  Object.entries(data.kickers)
+    .filter(([, kicker]) => kicker.games.length >= minimumGames)
+    .map(([id, kicker]) => {
+      const points = kicker.games.reduce((sum, game) => sum + kickPoints(game), 0);
+      const fifty = kicker.games.flatMap((game) => [
+        ...game.made.filter((d) => d >= 50).map(() => 'made'),
+        ...game.missed.filter((d) => d >= 50).map(() => 'missed'),
+        ...game.blocked.filter((d) => d >= 50).map(() => 'blocked'),
+      ]);
+      return {
+        id,
+        name: kicker.name,
+        games: kicker.games.length,
+        points,
+        pointsPerGame: points / kicker.games.length,
+        attemptsPerGame: kicker.attempts / kicker.games.length,
+        accuracy: kicker.attempts > 0 ? kicker.made / kicker.attempts : null,
+        fiftyPlusMade: fifty.filter((r) => r === 'made').length,
+        fiftyPlusAttempts: fifty.length,
+        long: kicker.long,
+      };
+    });
