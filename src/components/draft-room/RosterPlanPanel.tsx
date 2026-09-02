@@ -85,6 +85,8 @@ export const RosterPlanPanel = ({ service, players, onSelect }: RosterPlanPanelP
         <span className="dr-eyebrow">The plan</span>
         <span className="dr-footnote" style={{ margin: 0 }}>
           at tonight&rsquo;s prices
+          {' · '}
+          re-solved after pick {players.filter((entry) => entry.isDrafted).length}
         </span>
       </header>
 

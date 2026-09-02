@@ -21,6 +21,7 @@ npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 628-player pool from nflverse production data
 npm run fetch:adp    # refresh the draft market alone, in seconds, before draft day
+npm run build:kicking  # every kick of last season, from the cached weekly stats
 npm run refresh      # the day-of ritual: market + research, and what moved
 npm run refresh -- --check   # the same report, changing nothing
 npm run backtest     # score the projection model against 2023-25, and the baselines
@@ -59,10 +60,10 @@ src/pages/Index.tsx
         ├── AuctionSheetImport.tsx  the sheet the commissioner circulated
         ├── ServerPanel.tsx       the optional server: saved drafts and rebuilds
         ├── SnakeOrder.tsx        the order the snake is called in
-        ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
-        │                         ScheduleStrip, BidLadder, PositionSwarm,
-        │                         OutcomeCurve, ConsensusRange, QuadrantScatter,
-        │                         DraftFlow, TierDepletion, CareerArc
+        ├── charts/               micro (the card's instruments), profile (the
+        │                         dossier's), KickChart, DepthChart, ScheduleStrip,
+        │                         PositionSwarm, OutcomeCurve, ConsensusRange,
+        │                         QuadrantScatter, DraftFlow, TierDepletion, CareerArc
         ├── DraftResults.tsx      grades and export
         ├── Sparkline.tsx         one season, game by game
         └── Headshot.tsx          photo with monogram fallback
@@ -93,6 +94,9 @@ src/services/nflIdentity.ts           team colors, crests, headshots
 src/services/draftSync.ts             tells other windows the draft moved
 src/services/draftServer.ts           talking to the optional server, or not at all
 src/services/playerResearch.ts        the researched findings, lazily
+src/services/kicking.ts               every kick of last season, lazily
+src/data/nfl/kicking.json             per-kicker attempts by week and distance (generated)
+scripts/build-kicking.mjs             folds the weekly kicking columns into that file
 src/data/nfl/research.json            per-player sourced findings (generated)
 src/data/nfl/pool.json                628 players: projections, values (generated)
 src/data/nfl/player-history.json      per-player season and weekly scoring (lazy)
@@ -2930,6 +2934,53 @@ back sat below replacement and the value swarm piled at a dollar; they are over
 the startable cohort like every other instrument. "Season on season" was the
 sparkline the codebase had already retired, drawn under the game log that
 replaced it; it is three game logs at the same bar.
+
+**Pointing at an instrument names what is under the cursor.** The card's
+instruments carried `aria-label`s, which a screen reader gets and a mouse does
+not, so hovering a shelf column or a game-log bar produced nothing. Every mark
+carries a `data-tip` now — the man a shelf column is, what a game scored
+against the free man's number, who owns the seat a pip represents, which team
+a money tick belongs to and how far it can go, the chance of clearing the
+points under the cursor on the outcome curve — and the card reads it by
+delegation into one strip along its foot. The strip is a DOM node written
+through a ref rather than state, because sixty memoised cards and a re-render
+per mouse move on any of them is the cost the board was measured and fixed for
+once; and it is absolutely placed, because a card that reflows when pointed at
+moves the thing being pointed at. `PositionPulse` grew `shelfNames`,
+`rivalNames` and `mySeats` for the three tips that need a name — six objects
+for sixty cards, compared by contents as before.
+
+**The plan says when it last re-solved.** It always re-solved on every pick —
+the knapsack runs off `players` as its change signal — but nothing on the panel
+said so, and a number that does not visibly move is a number nobody trusts to
+have moved. The header carries "re-solved after pick N".
+
+**A kicker's dossier is every kick he took.** The pool prices a kicker off his
+points and knows nothing about how he got them; the two things a drafter wants
+to know — does his offence give him chances, and do the fifties go in — are
+not in it. nflverse's 2025 weekly asset carries both, as the distance of every
+made, missed and blocked attempt per game beside the extra points, and
+`scripts/build-kicking.mjs` folds them into `kicking.json` from the cached file
+the pool builder already downloaded. `KickChart` draws it as a spray: one row a
+week, one mark an attempt at its distance — a dot made it, a cross missed, a
+diamond was blocked — with rules at forty and fifty and the extra points down
+the right. Under it, his make rate per distance bucket against the league's
+kickers as a whole, which is the only sensible reference: a made fifty-five is
+not the same fact as a made twenty-five, and one rate over everything hides the
+only thing that separates kickers. The tab replaces Production, Usage, Offence
+and Career for a kicker, all four of which were empty for him.
+
+**A defence's personnel is a picture before it is a table.** The Unit tab
+listed the line, the linebackers and the secondary as three columns of names
+ordered by jersey. `DepthChart` puts the same men on the field — four down,
+three behind, two wide, two deep, the rest in a depth row under a dashed rule —
+and pointing at one names him with his age, his years, his size and his
+school. Amber rings are first- and second-year players, so how green the back
+seven is reads without a number. The order is still jersey, because the feed
+publishes no depth chart; the footnote says so.
+
+**Rosters are two columns.** Twelve teams in one column of a 380px aside was a
+scroll; two columns of six is a page.
 
 ## The night, driven end to end
 

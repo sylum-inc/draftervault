@@ -47,6 +47,9 @@ import { ConsensusRange } from './charts/ConsensusRange';
 import { QuadrantScatter, type ScatterPoint } from './charts/QuadrantScatter';
 import { CareerArc } from './charts/CareerArc';
 import { ResearchPanel } from './ResearchPanel';
+import { KickChart } from './charts/KickChart';
+import { DepthChart } from './charts/DepthChart';
+import { loadKicking, leagueBuckets, type KickingFile } from '@/services/kicking';
 import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface PlayerProfileProps {
@@ -111,6 +114,7 @@ interface PlayerProfileProps {
 
 type Tab =
   | 'tonight'
+  | 'kicking'
   | 'overview'
   | 'production'
   | 'usage'
@@ -201,12 +205,14 @@ export const PlayerProfile = ({
   const [defense, setDefense] = useState<DefenseUnits | null>(null);
   const [schedule, setSchedule] = useState<ScheduleGame[] | null>(null);
   const [career, setCareer] = useState<CareerSeason[] | null>(null);
+  const [kicking, setKicking] = useState<KickingFile | null>(null);
 
   const identity = getIdentity(player.id);
   const team = identity?.team ?? player.team;
   const { primary } = teamColors(team);
   const logo = teamLogo(team);
   const isDefense = player.position === 'DST';
+  const isKicker = player.position === 'K';
 
   const live: Array<[Tab, string]> = tonight ? [['tonight', 'Tonight']] : [];
   const tabs: Array<[Tab, string]> = isDefense
@@ -218,17 +224,26 @@ export const PlayerProfile = ({
         ['value', 'Value'],
         ['research', 'Research'],
       ]
-    : [
-        ...live,
-        ['overview', 'Overview'],
-        ['production', 'Production'],
-        ['usage', 'Usage'],
-        ['context', 'Offence'],
-        ['career', 'Career'],
-        ['schedule', 'Schedule'],
-        ['value', 'Value'],
-        ['research', 'Research'],
-      ];
+    : isKicker
+      ? [
+          ...live,
+          ['overview', 'Overview'],
+          ['kicking', 'Kicking'],
+          ['schedule', 'Schedule'],
+          ['value', 'Value'],
+          ['research', 'Research'],
+        ]
+      : [
+          ...live,
+          ['overview', 'Overview'],
+          ['production', 'Production'],
+          ['usage', 'Usage'],
+          ['context', 'Offence'],
+          ['career', 'Career'],
+          ['schedule', 'Schedule'],
+          ['value', 'Value'],
+          ['research', 'Research'],
+        ];
 
   const firstTabRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -252,10 +267,11 @@ export const PlayerProfile = ({
       void loadCareer(player.id).then((seasons) => live && setCareer(seasons));
     }
     void loadSchedule(team).then((games) => live && setSchedule(games));
+    if (isKicker) void loadKicking().then((file) => live && setKicking(file));
     return () => {
       live = false;
     };
-  }, [player.id, team, isDefense]);
+  }, [player.id, team, isDefense, isKicker]);
 
   const latest = history?.[history.length - 1];
   const columns = statColumns(player.position);
@@ -587,6 +603,35 @@ export const PlayerProfile = ({
       )}
 
       {tab === 'tonight' && tonight}
+
+      {tab === 'kicking' && (
+        <div className="dr-tabpanel" role="tabpanel">
+          <section className="dr-modal-section">
+            <h3 className="dr-eyebrow">Every kick, {kicking?.season ?? 'last season'}</h3>
+            {kicking === null && <p className="dr-empty">Loading the kicks…</p>}
+            {kicking && !kicking.kickers[player.id] && (
+              <p className="dr-empty">
+                No regular-season kicks on record for him in {kicking.season} — a rookie, or a man
+                who did not have the job.
+              </p>
+            )}
+            {kicking?.kickers[player.id] && (
+              <KickChart
+                kicker={kicking.kickers[player.id]}
+                league={leagueBuckets(kicking)}
+                label={`${player.name}: every field-goal attempt by week and distance`}
+              />
+            )}
+            <p className="dr-footnote">
+              Each row is a week and each mark an attempt at its distance: a dot made it, a cross
+              missed, a diamond was blocked. The rules at forty and fifty are where a kick stops
+              being routine. Under it, his make rate by distance against the league&rsquo;s kickers
+              as a whole &mdash; a made fifty-five is not the same fact as a made twenty-five, and
+              one rate over everything hides the only thing that separates kickers.
+            </p>
+          </section>
+        </div>
+      )}
 
       {tab === 'overview' && (
         <div className="dr-tabpanel" role="tabpanel">
@@ -1696,34 +1741,16 @@ export const PlayerProfile = ({
             <h3 className="dr-eyebrow">Defensive personnel</h3>
             {defense === null && <p className="dr-empty">Loading the unit…</p>}
             {defense && (
-              <div className="dr-units">
-                {(
-                  [
-                    ['Line', defense.dl],
-                    ['Linebackers', defense.lb],
-                    ['Secondary', defense.db],
-                  ] as const
-                ).map(([label, unit]) => (
-                  <div className="dr-unit" key={label}>
-                    <h4 className="dr-eyebrow">{label}</h4>
-                    <ul>
-                      {unit.map((person) => (
-                        <li key={person.espnId}>
-                          <span className="dr-unit-pos dr-num">{person.position}</span>
-                          {person.name}
-                          {person.jersey && (
-                            <span className="dr-unit-jersey dr-num">#{person.jersey}</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+              <DepthChart
+                units={defense}
+                label={`${player.name}: the unit on the field, with the depth behind it`}
+              />
             )}
             <p className="dr-footnote">
-              Personnel come from the current ESPN roster, ordered by jersey number — which stands
-              in for a depth chart the feed does not publish.
+              Four down, three behind, two wide, two deep, from the current ESPN roster in the order
+              it publishes &mdash; jersey, which stands in for a depth chart the feed does not have.
+              The row under the field is the depth. Point at a man for his age, his years and his
+              size; amber rings are first- and second-year players.
             </p>
           </section>
         </div>

@@ -93,6 +93,12 @@ export interface PositionPulse {
   myCeiling: number;
   /** What every opponent with room here could still go to, highest first. */
   rivals: number[];
+  /** The team behind each of those ceilings, in the same order — so a tick can say who. */
+  rivalNames: string[];
+  /** The men on the shelf, in the shelf's order — so a column can say who. */
+  shelfNames: string[];
+  /** Your own players at this position, in pick order — so a filled seat can say who sits in it. */
+  mySeats: string[];
 }
 
 export interface SnakeGain {
@@ -3664,7 +3670,7 @@ export class AuctionDraftService {
        * room reads off a card and the engine then refuses is worse than no
        * number at all.
        */
-      const rivals: number[] = [];
+      const rivalPairs: Array<[number, string]> = [];
       let myCeiling = 0;
       let myOpenings = 0;
       for (const team of this.teams) {
@@ -3675,15 +3681,24 @@ export class AuctionDraftService {
           continue;
         }
         const capped = (team.roster[position] ?? 0) >= (this.league.positionLimits[position] ?? 0);
-        if (!capped) rivals.push(money);
+        if (!capped) rivalPairs.push([money, team.name]);
       }
-      rivals.sort((a, b) => b - a);
+      rivalPairs.sort((a, b) => b[0] - a[0]);
+      const rivals = rivalPairs.map(([money]) => money);
+      const rivalNames = rivalPairs.map(([, name]) => name);
+      const mySeats = mine
+        ? this.players
+            .filter((player) => player.draftedBy === mine.id && player.position === position)
+            .sort((a, b) => (a.pickNumber ?? 0) - (b.pickNumber ?? 0))
+            .map((player) => player.name)
+        : [];
 
       out.set(position, {
         position,
         // Capped, because a shelf of two hundred receivers is a texture rather
         // than a reading. The count beside it is the honest total.
         shelf: live.slice(0, SHELF_DEPTH).map((player) => Math.round(player.projectedPoints)),
+        shelfNames: live.slice(0, SHELF_DEPTH).map((player) => player.name),
         left: live.length,
         startable: live.filter((player) => player.projectedPoints > replacement).length,
         replacement: Math.round(replacement),
@@ -3702,6 +3717,8 @@ export class AuctionDraftService {
             Math.max(0, (this.league.startingLineup[position] ?? 0) - (mine.roster[position] ?? 0)),
         myCeiling,
         rivals,
+        rivalNames,
+        mySeats,
       });
     }
     return out;

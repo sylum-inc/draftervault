@@ -173,6 +173,7 @@ const GameLogView = ({
               strokeWidth={0.75}
               strokeDasharray="1.5 1.5"
               opacity={0.55}
+              data-tip={`Game ${index + 1}: did not play`}
             />
           );
         }
@@ -188,6 +189,7 @@ const GameLogView = ({
             rx={1}
             fill={beat ? GOOD : 'var(--dr-ink-faint)'}
             opacity={beat ? 0.9 : 0.8}
+            data-tip={`Game ${index + 1}: ${points.toFixed(1)} pts — ${beat ? 'beat' : 'under'} the free man's ${replacement.toFixed(1)}`}
           />
         );
       })}
@@ -278,6 +280,32 @@ const OutcomeView = ({
         <polygon points={area} fill={WARN} opacity={0.5} clipPath={`url(#${clip})`} />
       )}
       <polyline points={curve} fill="none" stroke={GOOD} strokeWidth={1} opacity={0.7} />
+      {/* Ten silent slices across the range: pointing anywhere on the bell
+          reads the chance he clears that many points, which is the question
+          the curve exists to answer and could not until now. */}
+      {Array.from({ length: 10 }, (_, index) => {
+        const lo = min + (span * index) / 10;
+        const hi = min + (span * (index + 1)) / 10;
+        const z = ((lo + hi) / 2 - projection) / sigma;
+        const t = 1 / (1 + 0.2316419 * Math.abs(z));
+        const poly =
+          t *
+          (0.31938153 +
+            t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+        const tail = Math.exp(-0.5 * z * z) * 0.3989422804 * poly;
+        const chance = Math.round((z >= 0 ? tail : 1 - tail) * 100);
+        return (
+          <rect
+            key={index}
+            x={at(lo)}
+            y={0}
+            width={Math.max(0, at(hi) - at(lo))}
+            height={height}
+            fill="transparent"
+            data-tip={`${chance}% chance he clears ${Math.round((lo + hi) / 2)} pts${replacement != null && (lo + hi) / 2 < replacement ? ' — under a free player' : ''}`}
+          />
+        );
+      })}
       {cut != null && (
         <line x1={cut} x2={cut} y1={1} y2={base} stroke={WARN} strokeWidth={1} opacity={0.9} />
       )}
@@ -435,7 +463,7 @@ const RoleFieldView = ({
         </g>
       )}
       <circle cx={px} cy={py} r={r + 1.8} fill={strong ? GOOD : WARN} opacity={0.18} />
-      <circle cx={px} cy={py} r={r} fill={strong ? GOOD : WARN} opacity={0.95} />
+      <circle cx={px} cy={py} r={r} fill={strong ? GOOD : WARN} opacity={0.95} data-tip={label} />
     </svg>
   );
 };
@@ -451,6 +479,8 @@ const RoleFieldView = ({
    ========================================================================== */
 
 interface ShelfProps {
+  /** Who each column is, in the shelf's order, so a hover can say. */
+  names?: string[];
   /** Projected points of the best undrafted men here, best first. */
   shelf: readonly number[];
   /** Where in that list he is, or -1 when he is already gone. */
@@ -486,7 +516,15 @@ interface ShelfProps {
  * part anybody is bidding on, and a two-man position with a chasm behind them
  * looks like a two-man position with a chasm behind them.
  */
-const ShelfView = ({ shelf, mine, replacement, label, width = 150, height = 22 }: ShelfProps) => {
+const ShelfView = ({
+  shelf,
+  mine,
+  replacement,
+  label,
+  width = 150,
+  height = 22,
+  names = [],
+}: ShelfProps) => {
   if (!shelf.length) return null;
   const surplus = (points: number) => Math.max(0, points - replacement);
   const scale = Math.max(surplus(shelf[0]), 1);
@@ -528,6 +566,7 @@ const ShelfView = ({ shelf, mine, replacement, label, width = 150, height = 22 }
               stroke={FAINT}
               strokeWidth={0.6}
               opacity={0.5}
+              data-tip="Gone — a socket the room has emptied"
             />
           );
         }
@@ -544,6 +583,7 @@ const ShelfView = ({ shelf, mine, replacement, label, width = 150, height = 22 }
             rx={1}
             fill={isHim ? INK : above ? GOOD : FAINT}
             opacity={isHim ? 1 : above ? 0.55 : 0.4}
+            data-tip={`${names[index] ?? `#${index + 1} left`}: ${points} pts, ${Math.round(surplus(points))} over replacement${isHim ? ' — him' : ''}`}
           />
         );
       })}
@@ -613,6 +653,7 @@ const RunTapeView = ({
           rx={1}
           fill={index < gone ? (hot ? WARN : GOOD) : 'var(--dr-line)'}
           opacity={index < gone ? 0.9 : 0.9}
+          data-tip={`${gone} of the last ${window} picks were at this position${hot ? ' — a run' : ''}`}
         />
       ))}
     </svg>
@@ -620,6 +661,8 @@ const RunTapeView = ({
 };
 
 interface SlotFitProps {
+  /** Who fills each seat already, in the order they were bought. */
+  who?: string[];
   /** Starting slots the league fields at his position. */
   total: number;
   /** How many of them you have already filled. */
@@ -644,7 +687,7 @@ interface SlotFitProps {
  * A count in words — "2 of 2 filled" — needs reading. Seats are countable at a
  * glance, and the outlined one is the answer to the only question being asked.
  */
-const SlotFitView = ({ total, filled, flexOpen, label, size = 9 }: SlotFitProps) => {
+const SlotFitView = ({ total, filled, flexOpen, label, size = 9, who = [] }: SlotFitProps) => {
   const seats = Math.max(0, total);
   const takes = filled < seats ? filled : flexOpen ? seats : -1;
   const gap = 4;
@@ -673,6 +716,13 @@ const SlotFitView = ({ total, filled, flexOpen, label, size = 9 }: SlotFitProps)
             stroke={next ? GOOD : taken ? GOOD : FAINT}
             strokeWidth={next ? 1.75 : 1}
             opacity={taken ? 0.85 : 1}
+            data-tip={
+              taken
+                ? `Seat ${index + 1}: ${who[index] ?? 'filled'}`
+                : next
+                  ? `Seat ${index + 1}: open — his`
+                  : `Seat ${index + 1}: open`
+            }
           />
         );
       })}
@@ -691,6 +741,13 @@ const SlotFitView = ({ total, filled, flexOpen, label, size = 9 }: SlotFitProps)
           stroke={takes === seats ? WARN : FAINT}
           strokeWidth={takes === seats ? 1.75 : 1}
           opacity={flexOpen ? 1 : 0.35}
+          data-tip={
+            flexOpen
+              ? takes === seats
+                ? 'Flex: open — his'
+                : 'Flex: open'
+              : 'Flex: taken or not his to fill'
+          }
         />
       )}
     </svg>
@@ -698,6 +755,8 @@ const SlotFitView = ({ total, filled, flexOpen, label, size = 9 }: SlotFitProps)
 };
 
 interface MoneyBiteProps {
+  /** Whose ceiling each tick is, in the rivals' order. */
+  names?: string[];
   /** What the board says he costs. */
   price: number;
   /** The most you may legally bid, from the engine's own ceiling. */
@@ -734,6 +793,7 @@ const MoneyBiteView = ({
   label,
   width = 150,
   height = 12,
+  names = [],
 }: MoneyBiteProps) => {
   const scale = Math.max(mine, rivals[0] ?? 0, price, 1);
   const at = (value: number) => (value / scale) * width;
@@ -761,6 +821,7 @@ const MoneyBiteView = ({
         height={4}
         rx={2}
         fill={price > mine ? WARN : GOOD}
+        data-tip={`Lists at $${price}; ${beat} team${beat === 1 ? '' : 's'} with room can beat that`}
         opacity={0.85}
       />
       {/* Every opponent who can still outbid you, at the dollar they stop. */}
@@ -772,8 +833,9 @@ const MoneyBiteView = ({
           y1={0}
           y2={trackY - 1.5}
           stroke={ceiling > price ? WARN : FAINT}
-          strokeWidth={1}
+          strokeWidth={ceiling > price ? 1.5 : 1}
           opacity={ceiling > price ? 0.7 : 0.35}
+          data-tip={`${names[index] ?? 'A rival'} can go to $${ceiling}${ceiling > price ? ' — past his price' : ''}`}
         />
       ))}
       {/* Where your own money runs out, drawn over the ticks so it is never
@@ -786,6 +848,7 @@ const MoneyBiteView = ({
         stroke={INK}
         strokeWidth={1.25}
         opacity={0.8}
+        data-tip={`Your ceiling: $${mine} — the most the rules let you bid`}
       />
       {beat === 0 && <circle cx={at(price)} cy={trackY + 2} r={2} fill={GOOD} />}
     </svg>
@@ -829,7 +892,10 @@ const SeasonsView = ({ seasons, label, width = 26, height = 14 }: SeasonsProps) 
         const x = index * (barWidth + gap);
         const tone = missed >= 6 ? 'var(--dr-bad)' : missed >= 3 ? WARN : GOOD;
         return (
-          <g key={entry.season}>
+          <g
+            key={entry.season}
+            data-tip={`${entry.season}: missed ${missed} game${missed === 1 ? '' : 's'}`}
+          >
             <rect x={x} y={0} width={barWidth} height={height} rx={1} fill={TRACK} />
             <rect
               x={x}
@@ -871,9 +937,17 @@ const SeasonsView = ({ seasons, label, width = 26, height = 14 }: SeasonsProps) 
 const sameNumbers = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((value, index) => value === b[index]);
 
+const sameStrings = (a: readonly string[] | undefined, b: readonly string[] | undefined) =>
+  (a ?? []).length === (b ?? []).length &&
+  (a ?? []).every((value, index) => value === (b ?? [])[index]);
+
 export const Shelf = memo(
   ShelfView,
-  (a, b) => a.mine === b.mine && a.replacement === b.replacement && sameNumbers(a.shelf, b.shelf)
+  (a, b) =>
+    a.mine === b.mine &&
+    a.replacement === b.replacement &&
+    sameNumbers(a.shelf, b.shelf) &&
+    sameStrings(a.names, b.names)
 );
 export const RunTape = memo(RunTapeView);
 export const SlotFit = memo(SlotFitView);
@@ -882,7 +956,11 @@ export const SlotFit = memo(SlotFitView);
    that is the reading being correct rather than the instrument being wasteful. */
 export const MoneyBite = memo(
   MoneyBiteView,
-  (a, b) => a.price === b.price && a.mine === b.mine && sameNumbers(a.rivals, b.rivals)
+  (a, b) =>
+    a.price === b.price &&
+    a.mine === b.mine &&
+    sameNumbers(a.rivals, b.rivals) &&
+    sameStrings(a.names, b.names)
 );
 export const GameLog = memo(GameLogView);
 export const Outcome = memo(OutcomeView);

@@ -74,85 +74,87 @@ export const TeamsPanel = ({
         </span>
       </header>
 
-      {teams.map((team) => {
-        // Dearest first, and the free ones last: a snake pick has no cost at
-        // all, so it sorts below a $1 buy rather than tying with one.
-        const roster = (byTeam.get(team.id) ?? []).sort(
-          (a, b) => (b.draftCost ?? -1) - (a.draftCost ?? -1)
-        );
-        const active = team.id === activeTeamId;
-        const share = team.budget > 0 ? team.remaining / team.budget : 0;
-        const flexUsed = flexTaken(team, league);
+      <div className="dr-rail-grid">
+        {teams.map((team) => {
+          // Dearest first, and the free ones last: a snake pick has no cost at
+          // all, so it sorts below a $1 buy rather than tying with one.
+          const roster = (byTeam.get(team.id) ?? []).sort(
+            (a, b) => (b.draftCost ?? -1) - (a.draftCost ?? -1)
+          );
+          const active = team.id === activeTeamId;
+          const share = team.budget > 0 ? team.remaining / team.budget : 0;
+          const flexUsed = flexTaken(team, league);
 
-        return (
-          <div
-            className={`dr-team-block${active ? ' is-active' : ''}${team.id === myTeamId ? ' is-mine' : ''}`}
-            key={team.id}
-          >
-            <button type="button" className="dr-team-head" onClick={() => onSelectTeam(team.id)}>
-              <span className="dr-team-name">
-                {team.name}
-                {team.id === myTeamId && (
-                  <span className="dr-mine-tag" title="Your team">
-                    you
-                  </span>
-                )}
-              </span>
-              <span
-                className="dr-num"
-                style={{ color: team.remaining <= 5 ? 'var(--dr-danger)' : 'var(--dr-ink)' }}
-              >
-                ${team.remaining}
-              </span>
-            </button>
-
-            {/* Money left, as the bar the budgets tab used to be. */}
-            <span
-              className={`dr-team-bar${share <= 0.05 ? ' is-broke' : share <= 0.2 ? ' is-low' : ''}`}
-              title={`$${team.remaining} of $${team.budget} left`}
+          return (
+            <div
+              className={`dr-team-block${active ? ' is-active' : ''}${team.id === myTeamId ? ' is-mine' : ''}`}
+              key={team.id}
             >
-              <span style={{ width: `${Math.max(0, Math.min(100, share * 100))}%` }} />
-            </span>
-
-            <div className="dr-slots">
-              {STARTERS.flatMap(([position, required]) =>
-                Array.from({ length: required }, (_, index) => {
-                  const filled =
-                    position === 'FLEX' ? flexUsed > index : (team.roster[position] ?? 0) > index;
-                  return (
-                    <span
-                      key={`${position}-${index}`}
-                      className="dr-slot"
-                      data-filled={filled || undefined}
-                      title={`${position}${required > 1 ? ` ${index + 1}` : ''}: ${filled ? 'filled' : 'open'}`}
-                    >
-                      {position}
+              <button type="button" className="dr-team-head" onClick={() => onSelectTeam(team.id)}>
+                <span className="dr-team-name">
+                  {team.name}
+                  {team.id === myTeamId && (
+                    <span className="dr-mine-tag" title="Your team">
+                      you
                     </span>
-                  );
-                })
+                  )}
+                </span>
+                <span
+                  className="dr-num"
+                  style={{ color: team.remaining <= 5 ? 'var(--dr-danger)' : 'var(--dr-ink)' }}
+                >
+                  ${team.remaining}
+                </span>
+              </button>
+
+              {/* Money left, as the bar the budgets tab used to be. */}
+              <span
+                className={`dr-team-bar${share <= 0.05 ? ' is-broke' : share <= 0.2 ? ' is-low' : ''}`}
+                title={`$${team.remaining} of $${team.budget} left`}
+              >
+                <span style={{ width: `${Math.max(0, Math.min(100, share * 100))}%` }} />
+              </span>
+
+              <div className="dr-slots">
+                {STARTERS.flatMap(([position, required]) =>
+                  Array.from({ length: required }, (_, index) => {
+                    const filled =
+                      position === 'FLEX' ? flexUsed > index : (team.roster[position] ?? 0) > index;
+                    return (
+                      <span
+                        key={`${position}-${index}`}
+                        className="dr-slot"
+                        data-filled={filled || undefined}
+                        title={`${position}${required > 1 ? ` ${index + 1}` : ''}: ${filled ? 'filled' : 'open'}`}
+                      >
+                        {position}
+                      </span>
+                    );
+                  })
+                )}
+              </div>
+
+              {roster.length > 0 && (
+                <ul className="dr-team-roster">
+                  {roster.slice(0, 5).map((player) => (
+                    <li key={player.id}>
+                      {/* A snake pick was not bought for $0; nobody bought him at
+                        all. The column says which of the two happened. */}
+                      <span className="dr-num dr-team-cost" title={cost(player)}>
+                        {player.draftCost != null ? `$${player.draftCost}` : '—'}
+                      </span>
+                      {player.name}
+                    </li>
+                  ))}
+                  {roster.length > 5 && (
+                    <li style={{ color: 'var(--dr-ink-faint)' }}>+{roster.length - 5} more</li>
+                  )}
+                </ul>
               )}
             </div>
-
-            {roster.length > 0 && (
-              <ul className="dr-team-roster">
-                {roster.slice(0, 5).map((player) => (
-                  <li key={player.id}>
-                    {/* A snake pick was not bought for $0; nobody bought him at
-                        all. The column says which of the two happened. */}
-                    <span className="dr-num dr-team-cost" title={cost(player)}>
-                      {player.draftCost != null ? `$${player.draftCost}` : '—'}
-                    </span>
-                    {player.name}
-                  </li>
-                ))}
-                {roster.length > 5 && (
-                  <li style={{ color: 'var(--dr-ink-faint)' }}>+{roster.length - 5} more</li>
-                )}
-              </ul>
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </section>
   );
 };

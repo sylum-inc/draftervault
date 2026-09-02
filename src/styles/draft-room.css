@@ -6487,3 +6487,241 @@ li[data-level='ready'] > .dr-checklist-mark {
   height: auto;
   max-height: clamp(440px, 58vh, 720px);
 }
+
+/* Twelve rosters in two columns rather than one long scroll. */
+.dr-rail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--dr-s3);
+}
+
+.dr-rail-grid > .dr-team-block {
+  min-width: 0;
+}
+
+.dr-rail-grid > .dr-team-block:nth-of-type(2) {
+  border-top: none;
+}
+
+.dr-rail-grid .dr-team-roster li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-rail-grid .dr-slot {
+  padding: 1px 3px;
+  letter-spacing: 0;
+}
+
+/* ---- card hover readout ---- */
+
+/* A strip along the card's foot naming what the cursor is on. Absolutely
+   placed so a card that is pointed at does not reflow, which would move the
+   thing being pointed at. */
+.dr-card-readout {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 34px;
+  z-index: 3;
+  padding: 5px 8px;
+  border-radius: var(--dr-radius-sm);
+  background: color-mix(in srgb, var(--dr-raised) 92%, transparent);
+  box-shadow:
+    0 0 0 1px var(--dr-line-strong),
+    var(--dr-e2);
+  font-family: var(--dr-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dr-t-tiny);
+  line-height: 1.35;
+  color: var(--dr-ink);
+  pointer-events: none;
+  white-space: normal;
+}
+
+[data-tip] {
+  cursor: help;
+}
+
+/* ---- kicking chart ---- */
+
+.dr-kick {
+  max-width: 640px;
+}
+
+.dr-kick-spray {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+}
+
+.dr-kick-week,
+.dr-kick-axis,
+.dr-kick-pat,
+.dr-depth-mark {
+  font-family: var(--dr-mono);
+  font-size: 9.5px;
+  fill: var(--dr-ink-faint);
+}
+
+.dr-kick-pat {
+  fill: var(--dr-ink-muted);
+}
+
+.dr-kick-pat[data-short] {
+  fill: var(--dr-warn);
+}
+
+.dr-kick-read {
+  min-height: 2.6em;
+  margin: 4px 0 0;
+  font-size: var(--dr-t-small);
+  line-height: 1.4;
+  color: var(--dr-ink-muted);
+}
+
+.dr-kick-read b {
+  color: var(--dr-ink);
+}
+
+.dr-kick-read b[data-result='made'] {
+  color: var(--dr-good);
+}
+
+.dr-kick-read b[data-result='missed'] {
+  color: var(--dr-bad);
+}
+
+.dr-kick-read b[data-result='blocked'] {
+  color: var(--dr-warn);
+}
+
+.dr-kick-buckets {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(0, 1.4fr);
+  gap: var(--dr-s2);
+  margin-top: var(--dr-s3);
+  align-items: end;
+}
+
+.dr-kick-bucket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--dr-t-tiny);
+  color: var(--dr-ink-muted);
+}
+
+.dr-kick-bucket b {
+  font-size: var(--dr-t-body);
+  color: var(--dr-ink);
+}
+
+.dr-kick-bucket em {
+  font-style: normal;
+  font-size: var(--dr-t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dr-kick-bucket small {
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-kick-bucket-bar {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  border-radius: 3px;
+  background: var(--dr-raised);
+  overflow: hidden;
+}
+
+.dr-kick-bucket-bar > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 3px 3px 0 0;
+  opacity: 0.85;
+}
+
+.dr-kick-bucket-bar > i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--dr-ink);
+  opacity: 0.8;
+}
+
+.dr-kick-bucket-key {
+  align-items: flex-start;
+  gap: 4px;
+  font-size: var(--dr-t-micro);
+  color: var(--dr-ink-faint);
+}
+
+.dr-kick-bucket-key span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dr-kick-bucket-key i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dr-kick-bucket-key i.is-made {
+  background: var(--dr-mark);
+}
+
+.dr-kick-bucket-key i.is-missed {
+  border-radius: 0;
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--dr-bad);
+  transform: rotate(45deg);
+}
+
+.dr-kick-bucket-key i.is-blocked {
+  border-radius: 1px;
+  background: none;
+  box-shadow: inset 0 0 0 1.25px var(--dr-warn);
+  transform: rotate(45deg);
+}
+
+.dr-kick-bucket-key i.is-ref {
+  width: 10px;
+  height: 2px;
+  border-radius: 0;
+}
+
+/* ---- depth chart ---- */
+
+.dr-depth-field {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dr-depth-num {
+  font-family: var(--dr-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dr-depth-num.is-small {
+  font-size: 8.5px;
+}
+
+.dr-depth-name {
+  font-size: 9.5px;
+  fill: var(--dr-ink-muted);
+}

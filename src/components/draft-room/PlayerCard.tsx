@@ -1,4 +1,5 @@
-import { memo } from 'react';
+import type React from 'react';
+import { memo, useCallback, useRef } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { Player, PositionPulse } from '@/services/auctionDraftService';
 import { researchMark } from '@/services/playerResearch';
@@ -179,6 +180,23 @@ const PlayerCardView = ({
 }: PlayerCardProps) => {
   const identity = getIdentity(player.id);
   const mark = researchReady ? researchMark(player.id) : null;
+
+  const readoutRef = useRef<HTMLSpanElement>(null);
+  const onReadout = useCallback((event: React.MouseEvent<HTMLElement>) => {
+    const node = readoutRef.current;
+    if (!node) return;
+    const target = event.target as Element | null;
+    const tip = target?.closest?.('[data-tip]')?.getAttribute('data-tip') ?? null;
+    if (tip) {
+      node.textContent = tip;
+      node.hidden = false;
+    } else if (!node.hidden) {
+      node.hidden = true;
+    }
+  }, []);
+  const clearReadout = useCallback(() => {
+    if (readoutRef.current) readoutRef.current.hidden = true;
+  }, []);
   const weekly = historyReady ? weeklyShape(player.id) : null;
   const weeklyYear = historyReady ? weeklySeason(player.id) : null;
   const team = identity?.team ?? player.team;
@@ -473,6 +491,7 @@ const PlayerCardView = ({
             <span className="dr-card-live-glyphs">
               <Shelf
                 shelf={pulse.shelf}
+                names={pulse.shelfNames}
                 mine={shelfIndex}
                 replacement={pulse.replacement}
                 label={`${pulse.startable} ${player.position}s left above replacement of ${pulse.left} undrafted. He is the ${shelfIndex >= 0 ? `number ${shelfIndex + 1}` : 'not among the'} best left.`}
@@ -500,6 +519,7 @@ const PlayerCardView = ({
                 price={player.estimatedValue}
                 mine={pulse.myCeiling}
                 rivals={pulse.rivals}
+                names={pulse.rivalNames}
                 label={`He lists at $${player.estimatedValue}; you can go to $${pulse.myCeiling}; ${pulse.rivals.filter((ceiling) => ceiling > player.estimatedValue).length} teams with room here can beat that price.`}
               />
             </span>
@@ -544,7 +564,10 @@ const PlayerCardView = ({
           measurement nobody made — "projected 0" reads identically to a
           projection of zero. The dash is what we actually know. */}
       <dl className="dr-card-stats">
-        <div className="dr-card-stat">
+        <div
+          className="dr-card-stat"
+          data-tip="Projected points this season at this league's scoring"
+        >
           <dt>Proj</dt>
           <dd>{player.marketOnly ? '—' : player.projectedPoints}</dd>
         </div>
@@ -713,6 +736,7 @@ const PlayerCardView = ({
               total={pulse.slotsTotal}
               filled={pulse.slotsFilled}
               flexOpen={pulse.flexOpen}
+              who={pulse.mySeats}
               label={`${pulse.slotsFilled} of ${pulse.slotsTotal} starting ${player.position} seats filled${pulse.flexOpen ? ', flex still open' : ''}`}
             />
           )}
@@ -1333,12 +1357,20 @@ const PlayerCardView = ({
         <button
           type="button"
           className="dr-card dr-flip-face dr-flip-front"
+          /* Hovering an instrument names the thing under the cursor in a strip
+             along the card's foot. Read off `data-tip` by delegation and written
+             straight into a DOM node rather than through state: sixty memoised
+             cards, and a re-render per mouse move on any of them is the cost the
+             board was measured and fixed for once. */
+          onMouseMove={onReadout}
+          onMouseLeave={clearReadout}
           style={style}
           aria-selected={selected}
           aria-hidden={flipped || undefined}
           tabIndex={flipped ? -1 : undefined}
           onClick={() => onSelect(player)}
         >
+          <span className="dr-card-readout" ref={readoutRef} aria-live="polite" hidden />
           {face}
         </button>
         <div
