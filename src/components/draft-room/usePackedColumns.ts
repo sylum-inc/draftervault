@@ -50,6 +50,11 @@ const px = (value: string) => {
 export const packColumns = (container: HTMLElement, options: PackOptions) => {
   const unit = options.unit ?? 4;
   const wide = options.wide ?? '.is-wide';
+  /* Not rendered — the band is display: none under 1180px while the stage
+     still mounts it. Every child would measure zero and be dealt one row in
+     column one, and the reveal would paint that stack for a frame before the
+     observers caught up. Leave whatever was placed last in place instead. */
+  if (container.clientWidth === 0) return 0;
   const style = getComputedStyle(container);
   const gap = px(style.columnGap) || 12;
   const inner = container.clientWidth - px(style.paddingLeft) - px(style.paddingRight);

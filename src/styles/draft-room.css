@@ -6923,14 +6923,14 @@ li[data-level='ready'] > .dr-checklist-mark {
   will-change: transform;
 }
 
-/* The live tab, packed tighter so a full night fits without a scroll. */
+/* The live tab, packed tighter so a full night fits without a scroll. The
+   gap is the grid's own; `usePackedColumns` reads it back to place by. */
 .dr-tonight {
   padding: var(--dr-s2) var(--dr-s3) var(--dr-s3);
 }
 
 .dr-tonight-grid {
-  columns: 270px;
-  column-gap: var(--dr-s2);
+  gap: 0 var(--dr-s2);
 }
 
 .dr-tonight-section {

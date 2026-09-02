@@ -55,6 +55,17 @@ describe('packColumns', () => {
     expect(children.map((c) => c.style.gridColumn)).toEqual(['1', '1']);
   });
 
+  it('leaves a container that is not rendered exactly as it was', () => {
+    const { container, children } = box(0, [100, 100]);
+    children[0].style.gridColumn = '2';
+    children[0].style.gridRow = '9 / span 25';
+    expect(packColumns(container, { minWidth: 340, unit: 4 })).toBe(0);
+    expect(container.hasAttribute('data-packed')).toBe(false);
+    expect(children[0].style.gridColumn).toBe('2');
+    expect(children[0].style.gridRow).toBe('9 / span 25');
+    expect(children[1].style.gridColumn).toBe('');
+  });
+
   it('leaves a hidden child out of the packing', () => {
     const { container, children } = box(900, [100, 100, 100]);
     children[1].style.display = 'none';
