@@ -338,32 +338,36 @@ export const SpotlightTonight = ({
         )}
 
         {/* ---- the snake's own board ------------------------------------- */}
-        {snake && freePicks.length > 0 && (
-          <Section
-            title="Best free picks now"
-            aside={onTheClock ? `${onTheClock.team.name} on the clock` : undefined}
-          >
-            <ul className="dr-tonight-list">
-              {freePicks.slice(0, 6).map((pick) => (
-                <li
-                  key={pick.player.id}
-                  className={pick.player.id === player.id ? 'is-him' : undefined}
-                >
-                  <span className="dr-pos">{pick.player.position}</span>
-                  <span className="dr-tonight-name">
-                    {getIdentity(pick.player.id)?.name ?? pick.player.name}
-                  </span>
-                  <span className="dr-tonight-seatword">{pick.seat}</span>
-                  <span className="dr-num dr-tonight-right is-good">{signed(pick.gain)}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="dr-footnote">
-              Ranked by what each adds to the lineup on the clock, not by projection — with both
-              back seats gone the pick is whoever has the widest gap to the next man for the flex.
-            </p>
-          </Section>
-        )}
+        {/* The pick board is *your* lineup's, so it is shown when the pick is
+            yours. With another team on the clock the gains would be about
+            your seats under their name. */}
+        {snake &&
+          freePicks.length > 0 &&
+          onTheClock &&
+          myTeam &&
+          onTheClock.team.id === myTeam.id && (
+            <Section title="Best free picks now" aside="your pick">
+              <ul className="dr-tonight-list">
+                {freePicks.slice(0, 6).map((pick) => (
+                  <li
+                    key={pick.player.id}
+                    className={pick.player.id === player.id ? 'is-him' : undefined}
+                  >
+                    <span className="dr-pos">{pick.player.position}</span>
+                    <span className="dr-tonight-name">
+                      {getIdentity(pick.player.id)?.name ?? pick.player.name}
+                    </span>
+                    <span className="dr-tonight-seatword">{pick.seat}</span>
+                    <span className="dr-num dr-tonight-right is-good">{signed(pick.gain)}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="dr-footnote">
+                Ranked by what each adds to the lineup on the clock, not by projection — with both
+                back seats gone the pick is whoever has the widest gap to the next man for the flex.
+              </p>
+            </Section>
+          )}
 
         {/* ---- who can take him ------------------------------------------- */}
         {!snake && competition && (
