@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Team } from '@/services/auctionDraftService';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface SnakeOrderProps {
   /** The order in force, first pick first. */
@@ -35,12 +36,9 @@ export const SnakeOrder = ({ order, myTeamId, pickCount, onApply, onClose }: Sna
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   const move = (index: number, delta: number) => {
     const target = index + delta;

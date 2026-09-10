@@ -58,7 +58,10 @@ describe('the room with no server, which is how it ships', () => {
     render(<DraftRoom draftService={service} />);
 
     // The label carries no state when there is nothing to be in a state about.
-    const button = screen.getByRole('button', { name: 'Server' });
+    // The server lives behind the setup menu now, with the other things that
+    // are set up once a night.
+    fireEvent.click(screen.getByRole('button', { name: /^Setup/ }));
+    const button = screen.getByRole('menuitem', { name: 'Server' });
     fireEvent.click(button);
 
     expect(screen.getByRole('dialog', { name: 'Server' })).toBeInTheDocument();

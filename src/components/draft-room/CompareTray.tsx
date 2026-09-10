@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { Player } from '@/services/auctionDraftService';
 import { getIdentity } from '@/services/nflIdentity';
 import { Headshot } from './Headshot';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface CompareTrayProps {
   players: Player[];
@@ -217,6 +218,8 @@ const ROWS: Row[] = [
  * decoration. Rows where nobody has data disappear rather than showing dashes.
  */
 export const CompareView = ({ players, pinned, onClose, onUnpin }: CompareViewProps) => {
+  useDismissOnEscape(onClose);
+
   const chosen = useMemo(
     () =>
       pinned

@@ -1,10 +1,10 @@
 {
   "source": "nflverse + Sleeper + ESPN + FantasyPros",
   "replacement": {
-    "QB": 241,
-    "RB": 114,
-    "WR": 117,
-    "TE": 128,
+    "QB": 207,
+    "RB": 99,
+    "WR": 106,
+    "TE": 118,
     "K": 111,
     "DST": 87
   },
@@ -42,7 +42,7 @@
   },
   "seasons": [2023, 2024, 2025],
   "projectionModel": "recency-weighted PPR points per game, shrunk toward positional baseline, age-adjusted",
-  "generatedAt": "2026-08-30T14:49:42.571Z",
+  "generatedAt": "2026-08-31T20:14:42.574Z",
   "season": 2025,
   "teams": {
     "ARI": {

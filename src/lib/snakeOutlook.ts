@@ -54,6 +54,16 @@ export interface PositionOutlook {
   position: string;
   /** The best player expected to survive to your next snake pick. */
   free: OutlookSubject | null;
+  /**
+   * Every free man at this position, best first, as projected points.
+   *
+   * The headline number only ever needs the first of these, but a *plan* needs
+   * the run of them: a league starting two backs that buys one has still to
+   * fill the other seat from the snake, and which free man that is depends on
+   * how many you bought. One is a reading; the list is what makes the
+   * counterfactual computable.
+   */
+  freeRanked: number[];
   /** How many at this position are gone before you pick, on this estimate. */
   goneBefore: number;
   /** The best player still for sale at auction here. */
@@ -150,12 +160,17 @@ export const snakeOutlook = (input: OutlookInput): SnakeOutlook => {
      * budget should not be spent on.
      */
     const free = best(surviving, position);
+    const freeRanked = surviving
+      .filter((player) => player.position === position)
+      .map((player) => player.points)
+      .sort((a, b) => b - a);
     const forSaleHere = best(forSale, position);
     const gain = forSaleHere ? forSaleHere.points - (free?.points ?? 0) : 0;
     const price = forSaleHere?.price ?? 0;
     return {
       position,
       free,
+      freeRanked,
       goneBefore: takenBefore.filter((player) => player.position === position).length,
       forSale: forSaleHere,
       gain: Math.round(gain),
@@ -167,6 +182,90 @@ export const snakeOutlook = (input: OutlookInput): SnakeOutlook => {
   });
 
   return { positions: out, reason: null, atOverall: yourNextSnakePick };
+};
+
+/** One position's gain, bounded across every draw it could be measured at. */
+export interface PositionSpread {
+  position: string;
+  /** The gain at the draw that helps least, and at the draw that helps most. */
+  low: number;
+  high: number;
+  /** Per dollar at each end, so a cheap position is not buried by a dear one. */
+  perDollarLow: number;
+  perDollarHigh: number;
+  /** The free man at each end — the same man when the draw changes nothing. */
+  bestFree: OutlookSubject | null;
+  worstFree: OutlookSubject | null;
+  /** The player the gain is measured for, which no draw changes. */
+  forSale: OutlookSubject | null;
+  /** No draw moves this one, so it can be decided now. */
+  settled: boolean;
+}
+
+export interface SnakeSpread {
+  positions: PositionSpread[] | null;
+  reason: string | null;
+}
+
+/**
+ * What a bid buys before the order has been drawn.
+ *
+ * `snakeOutlook` refuses without a snake slot, and that refusal is right: a
+ * number computed at somebody else's pick looks exactly as authoritative as one
+ * computed at yours. But refusing is not the same as having nothing to say, and
+ * what it was withholding turns out to be the most useful thing on the board a
+ * month before the draft — because **the answer is a bound, not a guess.** Run
+ * the same arithmetic at every draw you could be handed and report the range.
+ * Nothing is assumed; every number in it is one the outlook would print.
+ *
+ * On the shipped board that lands somewhere worth stating plainly, and it is
+ * not where it would be guessed. **Quarterback and tight end have width zero**:
+ * Jalen Hurts and George Kittle survive all twelve draws, because a one-starter
+ * position is not what a room reaches for in the first round of a snake — so
+ * those two rows can be committed to a month early. **Running back is what the
+ * draw decides**: the free back falls from Josh Jacobs at 196 to RJ Harvey at
+ * 154 between the first seat and the last, so a bid at the position moves from
+ * buying 82 points to buying 124. Receiver moves a little (89 to 96) and the
+ * rest not at all.
+ *
+ * That is the shape of the thing worth knowing before draft night: the
+ * positions where a plan can be fixed now, and the one where it cannot.
+ *
+ * `settled` is therefore the load-bearing field rather than the numbers: it
+ * says which rows the draw cannot touch, and those are the rows to plan on.
+ */
+export const snakeOutlookSpread = (
+  input: Omit<OutlookInput, 'yourNextSnakePick'>,
+  /** Every overall pick you could hold — one through the number of teams. */
+  draws: readonly number[]
+): SnakeSpread => {
+  if (!draws.length) return { positions: null, reason: 'No draws to measure over.' };
+  const runs = draws.map((draw) => snakeOutlook({ ...input, yourNextSnakePick: draw }));
+  const first = runs[0];
+  if (!first.positions) return { positions: null, reason: first.reason };
+
+  const positions = input.positions.map((position, index) => {
+    const at = runs.map((run) => run.positions![index]);
+    const gains = at.map((row) => row.gain);
+    const low = Math.min(...gains);
+    const high = Math.max(...gains);
+    const perDollar = at.map((row) => row.gainPerDollar);
+    return {
+      position,
+      low,
+      high,
+      perDollarLow: Math.min(...perDollar),
+      perDollarHigh: Math.max(...perDollar),
+      // The best free man is the one you get on the smallest gain, because the
+      // gain is a difference against him: a better free man is a worse bid.
+      bestFree: at[gains.indexOf(low)]?.free ?? null,
+      worstFree: at[gains.indexOf(high)]?.free ?? null,
+      forSale: first.positions![index].forSale,
+      settled: low === high,
+    };
+  });
+
+  return { positions, reason: null };
 };
 
 /**

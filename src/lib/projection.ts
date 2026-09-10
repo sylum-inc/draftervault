@@ -249,6 +249,68 @@ export const MIN_EXPECTED_GAMES = 10;
 export const expectedGames = (gamesMissed: number): number =>
   Math.max(MIN_EXPECTED_GAMES, FULL_SEASON_GAMES - Math.min(MAX_MISSED_DISCOUNT, gamesMissed));
 
+/**
+ * How much a full season is believed in before the player's own record speaks.
+ *
+ * In seasons of tape, and it is a *prior* rather than a weight: at 0.5 a player
+ * with all three seasons on record has his own availability counted twice as
+ * heavily as the assumption, and a player with one season is a coin flip
+ * between them.
+ */
+export const AVAILABILITY_PRIOR_SEASONS = 0.5;
+
+/**
+ * Volume, taking the player's own record of turning up into account.
+ *
+ * `expectedGames` above discounts for *injury* alone, so a healthy player who
+ * was active for six games — a backup, a rotational body, a rookie who did not
+ * win the job — is projected for a full seventeen. That is the single worst
+ * input this model takes and the backtest says so in the plainest terms it
+ * has: at one to sixteen games of tape the model scores 0.21, 0.13 and 0.04
+ * against last season's points at 0.52 to 0.58 on the same players, and it
+ * over-projects them by 62, 58 and 72 points where it over-projects the field
+ * by 43 to 48.
+ *
+ * The mechanism is visible in the arithmetic rather than inferred: six games at
+ * a good rate shrink to a respectable rate against an eight-game prior, and are
+ * then multiplied by seventeen games nobody has any reason to expect.
+ *
+ * So availability is estimated the same way the rate is — the player's own
+ * recency-weighted record, shrunk toward the assumption in proportion to how
+ * little of it there is. A three-season starter lands on seventeen either way.
+ * Somebody with one six-game season does not.
+ *
+ * Games are capped at a full season before averaging, because a seventeen-game
+ * season plus a playoff week is not eighteen games of availability next year.
+ */
+export const expectedGamesFrom = (
+  gamesMissed: number,
+  seasons: ReadonlyMap<number, SeasonProduction> | null | undefined,
+  target: number
+): number => {
+  const assumed = FULL_SEASON_GAMES - Math.min(MAX_MISSED_DISCOUNT, gamesMissed);
+
+  let weighted = 0;
+  let weight = 0;
+  for (const season of projectionSeasons(target)) {
+    const totals = seasons?.get(season);
+    if (!totals || !totals.games) continue;
+    const w = seasonWeight(season, target);
+    weighted += Math.min(FULL_SEASON_GAMES, totals.games) * w;
+    weight += w;
+  }
+
+  // No tape at all is the rookie path, where there is no record to read and the
+  // assumption is the only thing there is.
+  if (weight <= 0) return Math.max(MIN_EXPECTED_GAMES, assumed);
+
+  const observed = weighted / weight;
+  const blended =
+    (weight * observed + AVAILABILITY_PRIOR_SEASONS * assumed) /
+    (weight + AVAILABILITY_PRIOR_SEASONS);
+  return Math.max(MIN_EXPECTED_GAMES, Math.min(FULL_SEASON_GAMES, blended));
+};
+
 export interface ProjectionInput {
   position: string;
   /** Age in the season being projected; null when the birth date is unknown. */
@@ -331,7 +393,7 @@ export const projectPlayer = (
   }
 
   const multiplier = ageMultiplier(input.position, input.age);
-  const played = expectedGames(input.gamesMissed ?? 0);
+  const played = expectedGamesFrom(input.gamesMissed ?? 0, input.seasons, target);
 
   return {
     ppg,

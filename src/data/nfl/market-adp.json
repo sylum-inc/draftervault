@@ -3,23 +3,23 @@
   "source": "Fantasy Football Calculator Half-PPR",
   "scoring": "Half-PPR",
   "teams": 12,
-  "drafts": 3257,
-  "from": "2026-08-25",
-  "to": "2026-08-30",
-  "fetchedAt": "2026-08-30T15:26:06.533Z",
+  "drafts": 3208,
+  "from": "2026-08-26",
+  "to": "2026-08-31",
+  "fetchedAt": "2026-08-31T21:55:05.615Z",
   "entries": [
     {
       "gsis": "00-0039139",
       "adp": 1.5,
-      "timesDrafted": 579,
+      "timesDrafted": 577,
       "high": 1,
       "low": 4,
       "stdev": 0.7
     },
     {
       "gsis": "00-0038542",
-      "adp": 2.3,
-      "timesDrafted": 260,
+      "adp": 2.4,
+      "timesDrafted": 276,
       "high": 1,
       "low": 4,
       "stdev": 0.6
@@ -27,15 +27,15 @@
     {
       "gsis": "00-0039075",
       "adp": 2.9,
-      "timesDrafted": 60,
+      "timesDrafted": 61,
       "high": 1,
       "low": 5,
-      "stdev": 0.7
+      "stdev": 0.8
     },
     {
       "gsis": "00-0036900",
       "adp": 4,
-      "timesDrafted": 491,
+      "timesDrafted": 496,
       "high": 1,
       "low": 8,
       "stdev": 1
@@ -43,23 +43,23 @@
     {
       "gsis": "00-0038543",
       "adp": 5.1,
-      "timesDrafted": 250,
+      "timesDrafted": 251,
       "high": 1,
       "low": 9,
       "stdev": 1.3
     },
     {
       "gsis": "00-0036223",
-      "adp": 5.9,
-      "timesDrafted": 480,
+      "adp": 5.8,
+      "timesDrafted": 475,
       "high": 3,
       "low": 10,
       "stdev": 1.6
     },
     {
       "gsis": "00-0033280",
-      "adp": 6.9,
-      "timesDrafted": 427,
+      "adp": 7,
+      "timesDrafted": 417,
       "high": 3,
       "low": 12,
       "stdev": 1.9
@@ -67,191 +67,191 @@
     {
       "gsis": "00-0036963",
       "adp": 7.7,
-      "timesDrafted": 337,
+      "timesDrafted": 322,
       "high": 3,
-      "low": 14,
+      "low": 12,
       "stdev": 1.6
     },
     {
       "gsis": "00-0037248",
-      "adp": 9.3,
-      "timesDrafted": 623,
+      "adp": 9.1,
+      "timesDrafted": 583,
       "high": 4,
       "low": 15,
-      "stdev": 1.7
+      "stdev": 1.8
     },
     {
       "gsis": "00-0032764",
-      "adp": 9.8,
-      "timesDrafted": 196,
+      "adp": 10.1,
+      "timesDrafted": 221,
       "high": 6,
       "low": 15,
       "stdev": 1.4
     },
     {
       "gsis": "00-0039040",
-      "adp": 11.5,
-      "timesDrafted": 174,
+      "adp": 11.4,
+      "timesDrafted": 170,
       "high": 7,
       "low": 16,
-      "stdev": 1.6
+      "stdev": 1.5
     },
     {
       "gsis": "00-0036358",
-      "adp": 12.5,
-      "timesDrafted": 313,
+      "adp": 12.4,
+      "timesDrafted": 332,
       "high": 8,
-      "low": 20,
-      "stdev": 2.2
+      "low": 18,
+      "stdev": 2.1
     },
     {
       "gsis": "00-0037238",
-      "adp": 12.5,
-      "timesDrafted": 80,
-      "high": 9,
+      "adp": 12.9,
+      "timesDrafted": 76,
+      "high": 10,
       "low": 18,
-      "stdev": 1.7
+      "stdev": 1.8
     },
     {
       "gsis": "00-0036322",
-      "adp": 13.9,
-      "timesDrafted": 348,
+      "adp": 13.6,
+      "timesDrafted": 349,
       "high": 7,
       "low": 21,
       "stdev": 2.5
     },
     {
       "gsis": "00-0038597",
-      "adp": 14.7,
-      "timesDrafted": 660,
-      "high": 8,
-      "low": 21,
+      "adp": 14.5,
+      "timesDrafted": 645,
+      "high": 7,
+      "low": 22,
       "stdev": 2.6
     },
     {
       "gsis": "00-0039067",
-      "adp": 16.6,
-      "timesDrafted": 59,
-      "high": 10,
+      "adp": 17.3,
+      "timesDrafted": 55,
+      "high": 13,
       "low": 29,
-      "stdev": 3.1
+      "stdev": 3
     },
     {
       "gsis": "00-0034844",
-      "adp": 17.1,
-      "timesDrafted": 807,
+      "adp": 17.3,
+      "timesDrafted": 806,
       "high": 8,
       "low": 26,
       "stdev": 3.2
     },
     {
       "gsis": "00-0035676",
-      "adp": 18,
-      "timesDrafted": 363,
+      "adp": 17.5,
+      "timesDrafted": 355,
       "high": 10,
       "low": 25,
-      "stdev": 2.7
+      "stdev": 2.5
     },
     {
       "gsis": "00-0037247",
-      "adp": 19.1,
-      "timesDrafted": 118,
+      "adp": 19,
+      "timesDrafted": 123,
       "high": 13,
       "low": 26,
-      "stdev": 2.2
+      "stdev": 2.4
     },
     {
       "gsis": "00-0038134",
-      "adp": 20.4,
-      "timesDrafted": 754,
+      "adp": 20.5,
+      "timesDrafted": 745,
       "high": 10,
       "low": 32,
-      "stdev": 3.8
+      "stdev": 3.7
     },
     {
       "gsis": "00-0036554",
-      "adp": 21.1,
-      "timesDrafted": 209,
-      "high": 13,
+      "adp": 21.4,
+      "timesDrafted": 236,
+      "high": 14,
       "low": 35,
-      "stdev": 3.2
+      "stdev": 2.9
     },
     {
       "gsis": "00-0037239",
       "adp": 22.3,
-      "timesDrafted": 147,
+      "timesDrafted": 139,
       "high": 15,
       "low": 50,
-      "stdev": 4.1
-    },
-    {
-      "gsis": "00-0040666",
-      "adp": 23.3,
-      "timesDrafted": 674,
-      "high": 12,
-      "low": 34,
-      "stdev": 4.2
+      "stdev": 4.3
     },
     {
       "gsis": "00-0040122",
-      "adp": 24.3,
-      "timesDrafted": 280,
-      "high": 11,
-      "low": 40,
-      "stdev": 5
+      "adp": 22.8,
+      "timesDrafted": 253,
+      "high": 12,
+      "low": 37,
+      "stdev": 4
+    },
+    {
+      "gsis": "00-0040666",
+      "adp": 23.1,
+      "timesDrafted": 666,
+      "high": 12,
+      "low": 34,
+      "stdev": 4.3
     },
     {
       "gsis": "00-0039064",
-      "adp": 24.5,
-      "timesDrafted": 105,
-      "high": 17,
+      "adp": 24,
+      "timesDrafted": 103,
+      "high": 16,
       "low": 34,
-      "stdev": 2.5
+      "stdev": 2.8
     },
     {
       "gsis": "00-0039337",
       "adp": 25.5,
-      "timesDrafted": 390,
+      "timesDrafted": 393,
       "high": 16,
       "low": 37,
-      "stdev": 3.4
-    },
-    {
-      "gsis": "00-0035700",
-      "adp": 26.9,
-      "timesDrafted": 118,
-      "high": 21,
-      "low": 43,
       "stdev": 3.5
     },
     {
       "gsis": "00-0037840",
       "adp": 27.7,
-      "timesDrafted": 304,
+      "timesDrafted": 294,
       "high": 19,
       "low": 36,
-      "stdev": 3
+      "stdev": 3.1
     },
     {
-      "gsis": "00-0040124",
-      "adp": 30,
-      "timesDrafted": 139,
-      "high": 19,
-      "low": 57,
-      "stdev": 4.7
+      "gsis": "00-0035700",
+      "adp": 28.1,
+      "timesDrafted": 115,
+      "high": 21,
+      "low": 43,
+      "stdev": 3.5
     },
     {
       "gsis": "00-0041027",
-      "adp": 30.2,
-      "timesDrafted": 188,
+      "adp": 30.1,
+      "timesDrafted": 199,
       "high": 21,
       "low": 41,
-      "stdev": 3.3
+      "stdev": 3.4
+    },
+    {
+      "gsis": "00-0040124",
+      "adp": 30.1,
+      "timesDrafted": 145,
+      "high": 19,
+      "low": 57,
+      "stdev": 4.6
     },
     {
       "gsis": "00-0036912",
-      "adp": 31,
-      "timesDrafted": 447,
+      "adp": 30.9,
+      "timesDrafted": 439,
       "high": 22,
       "low": 42,
       "stdev": 3.4
@@ -259,1098 +259,1162 @@
     {
       "gsis": "00-0037740",
       "adp": 31.2,
-      "timesDrafted": 189,
+      "timesDrafted": 191,
       "high": 20,
       "low": 58,
-      "stdev": 4.2
+      "stdev": 4.3
+    },
+    {
+      "gsis": "00-0034857",
+      "adp": 32.8,
+      "timesDrafted": 372,
+      "high": 12,
+      "low": 45,
+      "stdev": 7.7
     },
     {
       "gsis": "00-0038120",
-      "adp": 33.1,
-      "timesDrafted": 209,
+      "adp": 33.2,
+      "timesDrafted": 212,
       "high": 23,
       "low": 44,
       "stdev": 3.7
     },
     {
-      "gsis": "00-0034857",
-      "adp": 33.3,
-      "timesDrafted": 378,
-      "high": 13,
-      "low": 45,
-      "stdev": 7.6
-    },
-    {
       "gsis": "00-0036997",
       "adp": 33.8,
-      "timesDrafted": 531,
+      "timesDrafted": 545,
       "high": 23,
       "low": 45,
       "stdev": 4.1
     },
     {
       "gsis": "00-0040129",
-      "adp": 33.9,
-      "timesDrafted": 352,
-      "high": 23,
+      "adp": 34.4,
+      "timesDrafted": 366,
+      "high": 22,
       "low": 59,
-      "stdev": 4.1
+      "stdev": 4.4
     },
     {
       "gsis": "00-0036410",
-      "adp": 35.8,
-      "timesDrafted": 229,
+      "adp": 35.5,
+      "timesDrafted": 205,
       "high": 25,
       "low": 49,
-      "stdev": 3.9
+      "stdev": 3.8
     },
     {
       "gsis": "00-0036973",
-      "adp": 37,
-      "timesDrafted": 257,
+      "adp": 37.1,
+      "timesDrafted": 263,
       "high": 24,
       "low": 53,
-      "stdev": 4.7
+      "stdev": 4.9
     },
     {
       "gsis": "00-0031381",
-      "adp": 37.2,
-      "timesDrafted": 219,
+      "adp": 37.4,
+      "timesDrafted": 225,
       "high": 25,
       "low": 48,
       "stdev": 4.5
     },
     {
       "gsis": "00-0037744",
-      "adp": 38.4,
-      "timesDrafted": 327,
-      "high": 20,
+      "adp": 38.3,
+      "timesDrafted": 311,
+      "high": 19,
       "low": 53,
-      "stdev": 6.9
+      "stdev": 7.1
     },
     {
       "gsis": "00-0040715",
-      "adp": 39.7,
-      "timesDrafted": 138,
-      "high": 28,
-      "low": 51,
-      "stdev": 5
-    },
-    {
-      "gsis": "00-0037240",
-      "adp": 39.9,
-      "timesDrafted": 118,
+      "adp": 39.6,
+      "timesDrafted": 151,
       "high": 26,
-      "low": 61,
+      "low": 51,
       "stdev": 5.2
     },
     {
+      "gsis": "00-0037240",
+      "adp": 40.4,
+      "timesDrafted": 112,
+      "high": 30,
+      "low": 61,
+      "stdev": 4.8
+    },
+    {
       "gsis": "00-0039915",
-      "adp": 40.7,
-      "timesDrafted": 615,
+      "adp": 40.8,
+      "timesDrafted": 662,
       "high": 28,
       "low": 67,
       "stdev": 4.6
     },
     {
       "gsis": "00-0039338",
-      "adp": 42.9,
-      "timesDrafted": 736,
-      "high": 19,
+      "adp": 41.7,
+      "timesDrafted": 715,
+      "high": 17,
       "low": 62,
-      "stdev": 9.1
+      "stdev": 9.4
     },
     {
       "gsis": "00-0036275",
-      "adp": 43.4,
-      "timesDrafted": 379,
-      "high": 30,
+      "adp": 43.3,
+      "timesDrafted": 361,
+      "high": 29,
       "low": 56,
-      "stdev": 5
+      "stdev": 5.3
     },
     {
       "gsis": "00-0035659",
       "adp": 45.9,
-      "timesDrafted": 198,
+      "timesDrafted": 200,
       "high": 35,
       "low": 69,
-      "stdev": 5.5
-    },
-    {
-      "gsis": "00-0034827",
-      "adp": 46.3,
-      "timesDrafted": 536,
-      "high": 31,
-      "low": 65,
-      "stdev": 5.8
+      "stdev": 5.2
     },
     {
       "gsis": "00-0036613",
-      "adp": 47.5,
-      "timesDrafted": 659,
-      "high": 30,
+      "adp": 46.9,
+      "timesDrafted": 622,
+      "high": 29,
       "low": 73,
       "stdev": 6.6
     },
     {
+      "gsis": "00-0034827",
+      "adp": 47.2,
+      "timesDrafted": 558,
+      "high": 31,
+      "low": 66,
+      "stdev": 5.8
+    },
+    {
       "gsis": "00-0039361",
-      "adp": 47.7,
-      "timesDrafted": 147,
-      "high": 34,
+      "adp": 48.3,
+      "timesDrafted": 164,
+      "high": 36,
       "low": 63,
-      "stdev": 5.1
+      "stdev": 4.7
     },
     {
       "gsis": "00-0039919",
-      "adp": 50,
-      "timesDrafted": 246,
+      "adp": 50.3,
+      "timesDrafted": 239,
       "high": 34,
       "low": 78,
-      "stdev": 6.2
-    },
-    {
-      "gsis": "00-0039851",
-      "adp": 51.3,
-      "timesDrafted": 170,
-      "high": 27,
-      "low": 70,
-      "stdev": 9.3
+      "stdev": 6.4
     },
     {
       "gsis": "00-0040784",
-      "adp": 51.4,
+      "adp": 51,
       "timesDrafted": 234,
-      "high": 37,
+      "high": 36,
       "low": 67,
-      "stdev": 5.2
+      "stdev": 5.5
+    },
+    {
+      "gsis": "00-0039851",
+      "adp": 51.5,
+      "timesDrafted": 183,
+      "high": 26,
+      "low": 70,
+      "stdev": 9.7
+    },
+    {
+      "gsis": "00-0040198",
+      "adp": 52,
+      "timesDrafted": 6,
+      "high": 52,
+      "low": 52,
+      "stdev": 0
+    },
+    {
+      "gsis": "00-0031408",
+      "adp": 53.1,
+      "timesDrafted": 198,
+      "high": 41,
+      "low": 71,
+      "stdev": 5.4
     },
     {
       "gsis": "00-0040719",
-      "adp": 53,
-      "timesDrafted": 287,
-      "high": 36,
+      "adp": 53.7,
+      "timesDrafted": 309,
+      "high": 37,
       "low": 68,
       "stdev": 6.3
     },
     {
-      "gsis": "00-0031408",
-      "adp": 53.6,
-      "timesDrafted": 197,
-      "high": 41,
-      "low": 71,
-      "stdev": 5.3
+      "gsis": "00-0038124",
+      "adp": 55.7,
+      "timesDrafted": 333,
+      "high": 39,
+      "low": 83,
+      "stdev": 6.3
     },
     {
       "gsis": "00-0034796",
-      "adp": 55.7,
-      "timesDrafted": 202,
-      "high": 33,
+      "adp": 55.8,
+      "timesDrafted": 201,
+      "high": 34,
       "low": 71,
-      "stdev": 8.4
-    },
-    {
-      "gsis": "00-0038124",
-      "adp": 55.9,
-      "timesDrafted": 345,
-      "high": 39,
-      "low": 83,
-      "stdev": 6.1
-    },
-    {
-      "gsis": "00-0035685",
-      "adp": 56.4,
-      "timesDrafted": 406,
-      "high": 42,
-      "low": 68,
-      "stdev": 5.4
+      "stdev": 8.3
     },
     {
       "gsis": "00-0036442",
-      "adp": 57.4,
-      "timesDrafted": 124,
-      "high": 36,
+      "adp": 56.5,
+      "timesDrafted": 130,
+      "high": 35,
       "low": 75,
       "stdev": 8
     },
     {
-      "gsis": "00-0040735",
-      "adp": 57.4,
-      "timesDrafted": 390,
-      "high": 41,
-      "low": 88,
-      "stdev": 6.1
+      "gsis": "00-0035685",
+      "adp": 56.5,
+      "timesDrafted": 398,
+      "high": 42,
+      "low": 69,
+      "stdev": 5.4
     },
     {
-      "gsis": "00-0034348",
-      "adp": 60.3,
-      "timesDrafted": 159,
-      "high": 48,
-      "low": 87,
-      "stdev": 7.1
+      "gsis": "00-0040735",
+      "adp": 57.2,
+      "timesDrafted": 384,
+      "high": 41,
+      "low": 88,
+      "stdev": 6
     },
     {
       "gsis": "00-0040126",
-      "adp": 60.8,
-      "timesDrafted": 562,
-      "high": 37,
-      "low": 84,
-      "stdev": 8.9
+      "adp": 59.8,
+      "timesDrafted": 556,
+      "high": 35,
+      "low": 82,
+      "stdev": 9.2
     },
     {
-      "gsis": "00-0040734",
-      "adp": 62.6,
-      "timesDrafted": 140,
-      "high": 45,
-      "low": 79,
-      "stdev": 6.7
-    },
-    {
-      "gsis": "00-0037664",
-      "adp": 62.7,
-      "timesDrafted": 147,
+      "gsis": "00-0034348",
+      "adp": 61,
+      "timesDrafted": 178,
       "high": 48,
-      "low": 84,
-      "stdev": 7.3
+      "low": 87,
+      "stdev": 7
     },
     {
       "gsis": "00-0036875",
       "adp": 62.8,
-      "timesDrafted": 113,
-      "high": 48,
+      "timesDrafted": 118,
+      "high": 47,
       "low": 77,
-      "stdev": 5.6
+      "stdev": 5.8
+    },
+    {
+      "gsis": "00-0040734",
+      "adp": 62.8,
+      "timesDrafted": 141,
+      "high": 44,
+      "low": 83,
+      "stdev": 6.9
+    },
+    {
+      "gsis": "00-0037664",
+      "adp": 63.3,
+      "timesDrafted": 166,
+      "high": 48,
+      "low": 84,
+      "stdev": 7.4
     },
     {
       "gsis": "00-0037228",
       "adp": 63.7,
-      "timesDrafted": 89,
-      "high": 52,
+      "timesDrafted": 85,
+      "high": 50,
       "low": 80,
-      "stdev": 4.8
-    },
-    {
-      "gsis": "00-0033077",
-      "adp": 64,
-      "timesDrafted": 124,
-      "high": 44,
-      "low": 76,
-      "stdev": 7.6
+      "stdev": 5.1
     },
     {
       "gsis": "00-0035640",
-      "adp": 64.6,
-      "timesDrafted": 268,
+      "adp": 64.5,
+      "timesDrafted": 259,
       "high": 46,
       "low": 83,
-      "stdev": 7
+      "stdev": 6.8
+    },
+    {
+      "gsis": "00-0033077",
+      "adp": 64.6,
+      "timesDrafted": 125,
+      "high": 44,
+      "low": 78,
+      "stdev": 7.5
     },
     {
       "gsis": "00-0038606",
-      "adp": 64.9,
-      "timesDrafted": 703,
-      "high": 46,
+      "adp": 64.7,
+      "timesDrafted": 690,
+      "high": 47,
       "low": 93,
       "stdev": 7.2
     },
     {
       "gsis": "00-0035261",
-      "adp": 66.8,
-      "timesDrafted": 84,
-      "high": 56,
+      "adp": 66.5,
+      "timesDrafted": 87,
+      "high": 52,
       "low": 84,
-      "stdev": 5.4
+      "stdev": 5.6
     },
     {
       "gsis": "00-0039849",
       "adp": 66.8,
-      "timesDrafted": 339,
-      "high": 46,
+      "timesDrafted": 331,
+      "high": 47,
       "low": 90,
-      "stdev": 7.7
-    },
-    {
-      "gsis": "00-0039893",
-      "adp": 70.9,
-      "timesDrafted": 254,
-      "high": 51,
-      "low": 102,
-      "stdev": 7.6
+      "stdev": 7.4
     },
     {
       "gsis": "00-0040128",
-      "adp": 71.6,
-      "timesDrafted": 291,
+      "adp": 71.4,
+      "timesDrafted": 302,
       "high": 47,
       "low": 93,
-      "stdev": 9.5
+      "stdev": 9.2
+    },
+    {
+      "gsis": "00-0039893",
+      "adp": 71.5,
+      "timesDrafted": 242,
+      "high": 51,
+      "low": 102,
+      "stdev": 7.7
     },
     {
       "gsis": "00-0039910",
-      "adp": 72.2,
-      "timesDrafted": 131,
-      "high": 38,
+      "adp": 72.4,
+      "timesDrafted": 136,
+      "high": 37,
       "low": 107,
-      "stdev": 13.1
-    },
-    {
-      "gsis": "00-0026498",
-      "adp": 73,
-      "timesDrafted": 120,
-      "high": 35,
-      "low": 118,
-      "stdev": 14.3
+      "stdev": 13.3
     },
     {
       "gsis": "00-0041512",
-      "adp": 73.1,
-      "timesDrafted": 886,
+      "adp": 72.8,
+      "timesDrafted": 916,
       "high": 47,
       "low": 114,
       "stdev": 9.9
     },
     {
-      "gsis": "00-0038559",
-      "adp": 74.6,
-      "timesDrafted": 236,
-      "high": 57,
-      "low": 107,
-      "stdev": 7.6
+      "gsis": "00-0026498",
+      "adp": 73.7,
+      "timesDrafted": 141,
+      "high": 36,
+      "low": 118,
+      "stdev": 14.4
     },
     {
       "gsis": "00-0036139",
-      "adp": 75.3,
-      "timesDrafted": 105,
+      "adp": 74.5,
+      "timesDrafted": 95,
       "high": 63,
-      "low": 92,
+      "low": 91,
       "stdev": 6.4
     },
     {
+      "gsis": "00-0038559",
+      "adp": 74.6,
+      "timesDrafted": 226,
+      "high": 57,
+      "low": 107,
+      "stdev": 7.3
+    },
+    {
       "gsis": "00-0033921",
-      "adp": 76.6,
-      "timesDrafted": 453,
+      "adp": 77,
+      "timesDrafted": 457,
       "high": 55,
       "low": 109,
       "stdev": 8.2
     },
     {
       "gsis": "00-0036158",
-      "adp": 78.4,
-      "timesDrafted": 168,
+      "adp": 79.5,
+      "timesDrafted": 160,
       "high": 58,
       "low": 105,
-      "stdev": 8.6
-    },
-    {
-      "gsis": "00-0036389",
-      "adp": 80.4,
-      "timesDrafted": 254,
-      "high": 47,
-      "low": 116,
-      "stdev": 12.8
-    },
-    {
-      "gsis": "DST-SEA",
-      "adp": 80.5,
-      "timesDrafted": 94,
-      "high": 60,
-      "low": 100,
-      "stdev": 7.6
-    },
-    {
-      "gsis": "00-0036252",
-      "adp": 81.1,
-      "timesDrafted": 315,
-      "high": 61,
-      "low": 97,
-      "stdev": 7.5
-    },
-    {
-      "gsis": "00-0040663",
-      "adp": 81.5,
-      "timesDrafted": 37,
-      "high": 53,
-      "low": 116,
-      "stdev": 10.9
-    },
-    {
-      "gsis": "00-0038994",
-      "adp": 85.8,
-      "timesDrafted": 187,
-      "high": 61,
-      "low": 116,
-      "stdev": 9.4
-    },
-    {
-      "gsis": "00-0036555",
-      "adp": 86.6,
-      "timesDrafted": 88,
-      "high": 62,
-      "low": 105,
-      "stdev": 9.2
-    },
-    {
-      "gsis": "00-0037834",
-      "adp": 86.9,
-      "timesDrafted": 93,
-      "high": 60,
-      "low": 114,
-      "stdev": 13.9
-    },
-    {
-      "gsis": "00-0034960",
-      "adp": 87.4,
-      "timesDrafted": 128,
-      "high": 70,
-      "low": 112,
-      "stdev": 6.9
-    },
-    {
-      "gsis": "00-0038544",
-      "adp": 87.5,
-      "timesDrafted": 327,
-      "high": 65,
-      "low": 126,
-      "stdev": 8.5
-    },
-    {
-      "gsis": "00-0036970",
-      "adp": 87.6,
-      "timesDrafted": 79,
-      "high": 57,
-      "low": 137,
-      "stdev": 12.2
-    },
-    {
-      "gsis": "00-0039146",
-      "adp": 88.2,
-      "timesDrafted": 145,
-      "high": 63,
-      "low": 128,
-      "stdev": 9.6
-    },
-    {
-      "gsis": "00-0036971",
-      "adp": 90.1,
-      "timesDrafted": 338,
-      "high": 57,
-      "low": 121,
-      "stdev": 12.7
-    },
-    {
-      "gsis": "00-0039344",
-      "adp": 90.5,
-      "timesDrafted": 628,
-      "high": 63,
-      "low": 123,
-      "stdev": 10.3
-    },
-    {
-      "gsis": "00-0039918",
-      "adp": 92.1,
-      "timesDrafted": 382,
-      "high": 61,
-      "low": 127,
-      "stdev": 12.3
-    },
-    {
-      "gsis": "00-0038117",
-      "adp": 93.2,
-      "timesDrafted": 200,
-      "high": 69,
-      "low": 131,
-      "stdev": 9
-    },
-    {
-      "gsis": "00-0038997",
-      "adp": 94.1,
-      "timesDrafted": 253,
-      "high": 66,
-      "low": 146,
-      "stdev": 10.5
-    },
-    {
-      "gsis": "DST-DEN",
-      "adp": 94.6,
-      "timesDrafted": 125,
-      "high": 70,
-      "low": 111,
-      "stdev": 9.1
-    },
-    {
-      "gsis": "00-0038996",
-      "adp": 95.4,
-      "timesDrafted": 218,
-      "high": 54,
-      "low": 148,
-      "stdev": 15.6
-    },
-    {
-      "gsis": "00-0034351",
-      "adp": 96.4,
-      "timesDrafted": 88,
-      "high": 48,
-      "low": 148,
-      "stdev": 21.6
-    },
-    {
-      "gsis": "DST-HOU",
-      "adp": 98.3,
-      "timesDrafted": 235,
-      "high": 71,
-      "low": 119,
-      "stdev": 10.3
-    },
-    {
-      "gsis": "00-0033288",
-      "adp": 98.4,
-      "timesDrafted": 178,
-      "high": 50,
-      "low": 149,
-      "stdev": 18.4
-    },
-    {
-      "gsis": "00-0033106",
-      "adp": 99.4,
-      "timesDrafted": 131,
-      "high": 72,
-      "low": 123,
-      "stdev": 13.4
-    },
-    {
-      "gsis": "00-0039894",
-      "adp": 100.2,
-      "timesDrafted": 138,
-      "high": 74,
-      "low": 143,
-      "stdev": 10
-    },
-    {
-      "gsis": "00-0036919",
-      "adp": 100.5,
-      "timesDrafted": 172,
-      "high": 66,
-      "low": 128,
-      "stdev": 13.1
-    },
-    {
-      "gsis": "00-0040236",
-      "adp": 101.7,
-      "timesDrafted": 134,
-      "high": 72,
-      "low": 136,
-      "stdev": 13.1
-    },
-    {
-      "gsis": "00-0040667",
-      "adp": 102.1,
-      "timesDrafted": 254,
-      "high": 76,
-      "low": 132,
-      "stdev": 9.8
-    },
-    {
-      "gsis": "00-0040242",
-      "adp": 103,
-      "timesDrafted": 281,
-      "high": 69,
-      "low": 142,
-      "stdev": 13
-    },
-    {
-      "gsis": "00-0033873",
-      "adp": 103.6,
-      "timesDrafted": 215,
-      "high": 67,
-      "low": 129,
-      "stdev": 13.9
-    },
-    {
-      "gsis": "00-0040730",
-      "adp": 104.1,
-      "timesDrafted": 185,
-      "high": 67,
-      "low": 134,
-      "stdev": 14.2
-    },
-    {
-      "gsis": "00-0037816",
-      "adp": 105.2,
-      "timesDrafted": 128,
-      "high": 82,
-      "low": 135,
       "stdev": 8.8
     },
     {
-      "gsis": "DST-MIN",
-      "adp": 106.4,
-      "timesDrafted": 41,
-      "high": 83,
-      "low": 132,
-      "stdev": 9.7
+      "gsis": "DST-SEA",
+      "adp": 80.1,
+      "timesDrafted": 78,
+      "high": 59,
+      "low": 100,
+      "stdev": 8
     },
     {
-      "gsis": "00-0036355",
-      "adp": 108.1,
-      "timesDrafted": 478,
-      "high": 74,
-      "low": 132,
-      "stdev": 13.1
+      "gsis": "00-0036389",
+      "adp": 81,
+      "timesDrafted": 257,
+      "high": 46,
+      "low": 116,
+      "stdev": 13.3
     },
     {
-      "gsis": "00-0037261",
-      "adp": 110.1,
-      "timesDrafted": 79,
-      "high": 89,
-      "low": 148,
+      "gsis": "00-0036252",
+      "adp": 81.2,
+      "timesDrafted": 317,
+      "high": 62,
+      "low": 99,
+      "stdev": 7.4
+    },
+    {
+      "gsis": "00-0040663",
+      "adp": 82.2,
+      "timesDrafted": 42,
+      "high": 55,
+      "low": 116,
+      "stdev": 10.2
+    },
+    {
+      "gsis": "00-0037834",
+      "adp": 85.1,
+      "timesDrafted": 92,
+      "high": 60,
+      "low": 114,
+      "stdev": 13
+    },
+    {
+      "gsis": "00-0038994",
+      "adp": 86.8,
+      "timesDrafted": 180,
+      "high": 61,
+      "low": 116,
+      "stdev": 9.8
+    },
+    {
+      "gsis": "00-0038544",
+      "adp": 86.9,
+      "timesDrafted": 343,
+      "high": 63,
+      "low": 126,
+      "stdev": 8.9
+    },
+    {
+      "gsis": "00-0036555",
+      "adp": 87.1,
+      "timesDrafted": 92,
+      "high": 62,
+      "low": 105,
+      "stdev": 9.4
+    },
+    {
+      "gsis": "00-0034960",
+      "adp": 87.1,
+      "timesDrafted": 127,
+      "high": 70,
+      "low": 112,
+      "stdev": 6.6
+    },
+    {
+      "gsis": "00-0039146",
+      "adp": 87.8,
+      "timesDrafted": 147,
+      "high": 63,
+      "low": 128,
       "stdev": 9.3
     },
     {
+      "gsis": "00-0036970",
+      "adp": 89,
+      "timesDrafted": 87,
+      "high": 57,
+      "low": 137,
+      "stdev": 12.5
+    },
+    {
+      "gsis": "00-0039344",
+      "adp": 90.3,
+      "timesDrafted": 614,
+      "high": 63,
+      "low": 123,
+      "stdev": 10.3
+    },
+    {
+      "gsis": "00-0036971",
+      "adp": 90.9,
+      "timesDrafted": 335,
+      "high": 56,
+      "low": 126,
+      "stdev": 13.3
+    },
+    {
+      "gsis": "00-0039918",
+      "adp": 91.2,
+      "timesDrafted": 354,
+      "high": 62,
+      "low": 122,
+      "stdev": 12.3
+    },
+    {
+      "gsis": "00-0038996",
+      "adp": 91.3,
+      "timesDrafted": 219,
+      "high": 52,
+      "low": 148,
+      "stdev": 14.9
+    },
+    {
+      "gsis": "DST-DEN",
+      "adp": 93.7,
+      "timesDrafted": 125,
+      "high": 69,
+      "low": 111,
+      "stdev": 9.2
+    },
+    {
+      "gsis": "00-0038997",
+      "adp": 94.2,
+      "timesDrafted": 264,
+      "high": 66,
+      "low": 146,
+      "stdev": 10.7
+    },
+    {
+      "gsis": "00-0038117",
+      "adp": 94.4,
+      "timesDrafted": 197,
+      "high": 71,
+      "low": 131,
+      "stdev": 8.8
+    },
+    {
+      "gsis": "00-0033288",
+      "adp": 94.5,
+      "timesDrafted": 171,
+      "high": 51,
+      "low": 149,
+      "stdev": 16.7
+    },
+    {
+      "gsis": "DST-HOU",
+      "adp": 97.6,
+      "timesDrafted": 243,
+      "high": 69,
+      "low": 122,
+      "stdev": 10.8
+    },
+    {
+      "gsis": "00-0036919",
+      "adp": 99.9,
+      "timesDrafted": 179,
+      "high": 66,
+      "low": 128,
+      "stdev": 12.6
+    },
+    {
+      "gsis": "00-0039894",
+      "adp": 99.9,
+      "timesDrafted": 130,
+      "high": 72,
+      "low": 143,
+      "stdev": 10.6
+    },
+    {
+      "gsis": "00-0033106",
+      "adp": 100.5,
+      "timesDrafted": 147,
+      "high": 77,
+      "low": 127,
+      "stdev": 13
+    },
+    {
+      "gsis": "00-0040667",
+      "adp": 101.3,
+      "timesDrafted": 239,
+      "high": 73,
+      "low": 132,
+      "stdev": 10.6
+    },
+    {
+      "gsis": "00-0034351",
+      "adp": 101.3,
+      "timesDrafted": 104,
+      "high": 48,
+      "low": 148,
+      "stdev": 23.8
+    },
+    {
+      "gsis": "00-0040242",
+      "adp": 102.6,
+      "timesDrafted": 256,
+      "high": 70,
+      "low": 134,
+      "stdev": 12.3
+    },
+    {
+      "gsis": "00-0040236",
+      "adp": 103,
+      "timesDrafted": 134,
+      "high": 72,
+      "low": 129,
+      "stdev": 13.3
+    },
+    {
+      "gsis": "00-0033873",
+      "adp": 103.9,
+      "timesDrafted": 219,
+      "high": 69,
+      "low": 129,
+      "stdev": 13.6
+    },
+    {
+      "gsis": "00-0037816",
+      "adp": 103.9,
+      "timesDrafted": 120,
+      "high": 80,
+      "low": 135,
+      "stdev": 9
+    },
+    {
+      "gsis": "00-0040730",
+      "adp": 105.7,
+      "timesDrafted": 178,
+      "high": 68,
+      "low": 134,
+      "stdev": 14.4
+    },
+    {
+      "gsis": "DST-MIN",
+      "adp": 106.2,
+      "timesDrafted": 41,
+      "high": 83,
+      "low": 123,
+      "stdev": 9
+    },
+    {
+      "gsis": "00-0036355",
+      "adp": 107.5,
+      "timesDrafted": 460,
+      "high": 72,
+      "low": 132,
+      "stdev": 13.6
+    },
+    {
+      "gsis": "00-0037261",
+      "adp": 110.3,
+      "timesDrafted": 78,
+      "high": 89,
+      "low": 148,
+      "stdev": 9.2
+    },
+    {
       "gsis": "00-0033293",
-      "adp": 111.6,
-      "timesDrafted": 141,
-      "high": 78,
-      "low": 142,
-      "stdev": 13.8
+      "adp": 110.7,
+      "timesDrafted": 124,
+      "high": 74,
+      "low": 141,
+      "stdev": 14.1
     },
     {
       "gsis": "DST-LAR",
-      "adp": 113.1,
-      "timesDrafted": 219,
-      "high": 84,
+      "adp": 111,
+      "timesDrafted": 215,
+      "high": 81,
       "low": 153,
-      "stdev": 11
+      "stdev": 11.5
     },
     {
       "gsis": "00-0037525",
       "adp": 113.8,
-      "timesDrafted": 476,
+      "timesDrafted": 461,
       "high": 77,
       "low": 147,
       "stdev": 14
     },
     {
       "gsis": "00-0039732",
-      "adp": 114.2,
-      "timesDrafted": 255,
-      "high": 83,
-      "low": 140,
-      "stdev": 11.7
+      "adp": 114,
+      "timesDrafted": 233,
+      "high": 82,
+      "low": 139,
+      "stdev": 12
     },
     {
       "gsis": "00-0039491",
-      "adp": 117.8,
-      "timesDrafted": 113,
+      "adp": 116.6,
+      "timesDrafted": 119,
       "high": 99,
       "low": 150,
-      "stdev": 8.1
+      "stdev": 7.5
     },
     {
       "gsis": "00-0040691",
-      "adp": 118.3,
-      "timesDrafted": 140,
-      "high": 73,
+      "adp": 117.7,
+      "timesDrafted": 158,
+      "high": 72,
       "low": 144,
-      "stdev": 17.3
+      "stdev": 17.5
     },
     {
       "gsis": "00-0037545",
-      "adp": 118.6,
-      "timesDrafted": 127,
+      "adp": 119,
+      "timesDrafted": 130,
       "high": 88,
       "low": 163,
-      "stdev": 11.6
-    },
-    {
-      "gsis": "00-0037256",
-      "adp": 119.4,
-      "timesDrafted": 116,
-      "high": 82,
-      "low": 150,
-      "stdev": 14.9
-    },
-    {
-      "gsis": "00-0039738",
-      "adp": 120.7,
-      "timesDrafted": 475,
-      "high": 79,
-      "low": 150,
-      "stdev": 15.8
-    },
-    {
-      "gsis": "00-0030506",
-      "adp": 121.5,
-      "timesDrafted": 138,
-      "high": 73,
-      "low": 168,
-      "stdev": 18.4
-    },
-    {
-      "gsis": "00-0036407",
-      "adp": 123.3,
-      "timesDrafted": 80,
-      "high": 100,
-      "low": 149,
-      "stdev": 10.2
+      "stdev": 11.9
     },
     {
       "gsis": "00-0039065",
-      "adp": 124,
-      "timesDrafted": 345,
-      "high": 74,
-      "low": 174,
-      "stdev": 19.2
-    },
-    {
-      "gsis": "00-0034753",
-      "adp": 125.5,
-      "timesDrafted": 77,
-      "high": 73,
-      "low": 158,
-      "stdev": 20
-    },
-    {
-      "gsis": "DST-DET",
-      "adp": 128.7,
-      "timesDrafted": 29,
-      "high": 111,
-      "low": 154,
-      "stdev": 12.2
-    },
-    {
-      "gsis": "00-0038563",
-      "adp": 129.2,
-      "timesDrafted": 106,
-      "high": 107,
-      "low": 167,
-      "stdev": 11
-    },
-    {
-      "gsis": "00-0031492",
-      "adp": 131.5,
-      "timesDrafted": 44,
-      "high": 82,
-      "low": 180,
-      "stdev": 23.4
-    },
-    {
-      "gsis": "DST-NE",
-      "adp": 132.7,
-      "timesDrafted": 110,
-      "high": 97,
-      "low": 169,
-      "stdev": 13.6
-    },
-    {
-      "gsis": "00-0037692",
-      "adp": 133.3,
-      "timesDrafted": 587,
-      "high": 75,
-      "low": 183,
-      "stdev": 22.4
-    },
-    {
-      "gsis": "00-0039165",
-      "adp": 133.3,
-      "timesDrafted": 209,
-      "high": 97,
-      "low": 165,
-      "stdev": 14
-    },
-    {
-      "gsis": "00-0039855",
-      "adp": 134.5,
-      "timesDrafted": 110,
-      "high": 114,
-      "low": 150,
-      "stdev": 7.6
-    },
-    {
-      "gsis": "DST-PIT",
-      "adp": 134.6,
-      "timesDrafted": 90,
-      "high": 102,
-      "low": 174,
-      "stdev": 12.5
-    },
-    {
-      "gsis": "00-0034855",
-      "adp": 135.7,
-      "timesDrafted": 133,
-      "high": 112,
-      "low": 154,
-      "stdev": 9.1
-    },
-    {
-      "gsis": "00-0035228",
-      "adp": 135.8,
-      "timesDrafted": 199,
-      "high": 103,
-      "low": 166,
-      "stdev": 12.4
-    },
-    {
-      "gsis": "00-0037838",
-      "adp": 136,
-      "timesDrafted": 329,
-      "high": 84,
-      "low": 173,
-      "stdev": 19.8
-    },
-    {
-      "gsis": "00-0036550",
-      "adp": 136.6,
-      "timesDrafted": 27,
-      "high": 102,
-      "low": 149,
-      "stdev": 13
-    },
-    {
-      "gsis": "00-0038041",
-      "adp": 137.2,
-      "timesDrafted": 117,
-      "high": 80,
-      "low": 178,
-      "stdev": 21.7
-    },
-    {
-      "gsis": "00-0032726",
-      "adp": 137.6,
-      "timesDrafted": 31,
-      "high": 100,
-      "low": 160,
-      "stdev": 21
-    },
-    {
-      "gsis": "DST-PHI",
-      "adp": 137.9,
-      "timesDrafted": 113,
-      "high": 99,
-      "low": 176,
-      "stdev": 14.9
-    },
-    {
-      "gsis": "00-0040743",
-      "adp": 139.2,
-      "timesDrafted": 75,
-      "high": 116,
-      "low": 169,
-      "stdev": 10.1
-    },
-    {
-      "gsis": "00-0034837",
-      "adp": 140.2,
-      "timesDrafted": 77,
-      "high": 119,
-      "low": 166,
-      "stdev": 7.9
-    },
-    {
-      "gsis": "00-0039032",
-      "adp": 140.3,
-      "timesDrafted": 26,
-      "high": 100,
-      "low": 169,
-      "stdev": 18.4
-    },
-    {
-      "gsis": "00-0036259",
-      "adp": 140.4,
-      "timesDrafted": 33,
-      "high": 116,
-      "low": 151,
-      "stdev": 9.3
-    },
-    {
-      "gsis": "00-0036162",
-      "adp": 140.6,
-      "timesDrafted": 7,
-      "high": 106,
-      "low": 172,
-      "stdev": 24.5
-    },
-    {
-      "gsis": "00-0037224",
-      "adp": 141.2,
-      "timesDrafted": 61,
-      "high": 98,
-      "low": 172,
-      "stdev": 20.2
-    },
-    {
-      "gsis": "00-0040583",
-      "adp": 141.6,
-      "timesDrafted": 119,
-      "high": 99,
-      "low": 172,
-      "stdev": 16.1
-    },
-    {
-      "gsis": "DST-LAC",
-      "adp": 141.7,
-      "timesDrafted": 100,
-      "high": 112,
-      "low": 176,
-      "stdev": 11.1
-    },
-    {
-      "gsis": "00-0039880",
-      "adp": 143.3,
-      "timesDrafted": 57,
-      "high": 108,
-      "low": 177,
-      "stdev": 13.3
-    },
-    {
-      "gsis": "DST-DAL",
-      "adp": 144.8,
-      "timesDrafted": 8,
-      "high": 65,
-      "low": 174,
-      "stdev": 36.9
-    },
-    {
-      "gsis": "00-0039172",
-      "adp": 145,
-      "timesDrafted": 50,
-      "high": 115,
-      "low": 189,
-      "stdev": 17.2
-    },
-    {
-      "gsis": "00-0034869",
-      "adp": 145.6,
-      "timesDrafted": 42,
-      "high": 95,
+      "adp": 119.1,
+      "timesDrafted": 341,
+      "high": 68,
       "low": 174,
       "stdev": 19.4
     },
     {
-      "gsis": "00-0035358",
-      "adp": 146.6,
-      "timesDrafted": 24,
-      "high": 119,
-      "low": 177,
-      "stdev": 12.9
+      "gsis": "00-0037256",
+      "adp": 120.9,
+      "timesDrafted": 98,
+      "high": 83,
+      "low": 150,
+      "stdev": 14.5
     },
     {
-      "gsis": "00-0038933",
-      "adp": 147.1,
-      "timesDrafted": 111,
+      "gsis": "00-0039738",
+      "adp": 121,
+      "timesDrafted": 442,
+      "high": 79,
+      "low": 150,
+      "stdev": 16
+    },
+    {
+      "gsis": "00-0030506",
+      "adp": 122.6,
+      "timesDrafted": 129,
+      "high": 73,
+      "low": 168,
+      "stdev": 19.1
+    },
+    {
+      "gsis": "00-0036407",
+      "adp": 124.2,
+      "timesDrafted": 87,
+      "high": 100,
+      "low": 149,
+      "stdev": 9.7
+    },
+    {
+      "gsis": "00-0041035",
+      "adp": 126.6,
+      "timesDrafted": 586,
+      "high": 88,
+      "low": 168,
+      "stdev": 14.6
+    },
+    {
+      "gsis": "00-0034753",
+      "adp": 128.1,
+      "timesDrafted": 69,
+      "high": 74,
+      "low": 158,
+      "stdev": 20.8
+    },
+    {
+      "gsis": "00-0031492",
+      "adp": 128.4,
+      "timesDrafted": 45,
+      "high": 82,
+      "low": 171,
+      "stdev": 23.4
+    },
+    {
+      "gsis": "00-0038563",
+      "adp": 129.7,
+      "timesDrafted": 101,
+      "high": 109,
+      "low": 167,
+      "stdev": 10.6
+    },
+    {
+      "gsis": "DST-DET",
+      "adp": 130.4,
+      "timesDrafted": 35,
+      "high": 110,
+      "low": 163,
+      "stdev": 13.8
+    },
+    {
+      "gsis": "DST-NE",
+      "adp": 130.6,
+      "timesDrafted": 100,
+      "high": 95,
+      "low": 169,
+      "stdev": 14.9
+    },
+    {
+      "gsis": "00-0037692",
+      "adp": 133,
+      "timesDrafted": 580,
+      "high": 75,
+      "low": 183,
+      "stdev": 22.1
+    },
+    {
+      "gsis": "00-0039165",
+      "adp": 133.1,
+      "timesDrafted": 210,
       "high": 94,
+      "low": 165,
+      "stdev": 14.9
+    },
+    {
+      "gsis": "DST-PHI",
+      "adp": 134.1,
+      "timesDrafted": 109,
+      "high": 93,
+      "low": 176,
+      "stdev": 15.6
+    },
+    {
+      "gsis": "00-0034855",
+      "adp": 135,
+      "timesDrafted": 132,
+      "high": 107,
+      "low": 154,
+      "stdev": 10.4
+    },
+    {
+      "gsis": "00-0038041",
+      "adp": 135.5,
+      "timesDrafted": 117,
+      "high": 80,
       "low": 178,
-      "stdev": 20.3
+      "stdev": 21.3
     },
     {
-      "gsis": "00-0039409",
-      "adp": 149,
-      "timesDrafted": 113,
-      "high": 111,
-      "low": 205,
-      "stdev": 19.6
-    },
-    {
-      "gsis": "00-0039498",
-      "adp": 149.3,
-      "timesDrafted": 43,
+      "gsis": "00-0039855",
+      "adp": 135.9,
+      "timesDrafted": 101,
       "high": 117,
-      "low": 170,
-      "stdev": 13.2
+      "low": 150,
+      "stdev": 7.3
     },
     {
-      "gsis": "00-0040074",
-      "adp": 150,
-      "timesDrafted": 63,
-      "high": 119,
-      "low": 192,
-      "stdev": 15.5
+      "gsis": "00-0037838",
+      "adp": 135.9,
+      "timesDrafted": 328,
+      "high": 83,
+      "low": 173,
+      "stdev": 20.1
     },
     {
-      "gsis": "00-0033908",
-      "adp": 150.4,
-      "timesDrafted": 41,
-      "high": 116,
+      "gsis": "DST-PIT",
+      "adp": 136.7,
+      "timesDrafted": 96,
+      "high": 103,
       "low": 174,
       "stdev": 12.9
     },
     {
-      "gsis": "00-0037291",
-      "adp": 150.7,
-      "timesDrafted": 32,
-      "high": 109,
-      "low": 177,
+      "gsis": "00-0032726",
+      "adp": 136.9,
+      "timesDrafted": 31,
+      "high": 100,
+      "low": 162,
+      "stdev": 21.7
+    },
+    {
+      "gsis": "00-0035228",
+      "adp": 137,
+      "timesDrafted": 183,
+      "high": 106,
+      "low": 166,
+      "stdev": 11.9
+    },
+    {
+      "gsis": "00-0036550",
+      "adp": 138,
+      "timesDrafted": 27,
+      "high": 103,
+      "low": 153,
+      "stdev": 13.2
+    },
+    {
+      "gsis": "00-0040743",
+      "adp": 138.1,
+      "timesDrafted": 74,
+      "high": 111,
+      "low": 169,
+      "stdev": 10.5
+    },
+    {
+      "gsis": "00-0041037",
+      "adp": 139.4,
+      "timesDrafted": 40,
+      "high": 108,
+      "low": 169,
+      "stdev": 11.9
+    },
+    {
+      "gsis": "DST-DAL",
+      "adp": 140.6,
+      "timesDrafted": 7,
+      "high": 65,
+      "low": 171,
+      "stdev": 37.7
+    },
+    {
+      "gsis": "00-0034837",
+      "adp": 140.6,
+      "timesDrafted": 72,
+      "high": 120,
+      "low": 166,
+      "stdev": 7.8
+    },
+    {
+      "gsis": "00-0039032",
+      "adp": 141.1,
+      "timesDrafted": 22,
+      "high": 100,
+      "low": 164,
+      "stdev": 16.7
+    },
+    {
+      "gsis": "00-0037224",
+      "adp": 141.1,
+      "timesDrafted": 68,
+      "high": 98,
+      "low": 172,
+      "stdev": 21
+    },
+    {
+      "gsis": "00-0036259",
+      "adp": 141.2,
+      "timesDrafted": 26,
+      "high": 123,
+      "low": 151,
+      "stdev": 8.6
+    },
+    {
+      "gsis": "00-0040583",
+      "adp": 142.2,
+      "timesDrafted": 120,
+      "high": 101,
+      "low": 172,
       "stdev": 15.7
     },
     {
-      "gsis": "00-0035535",
-      "adp": 151.8,
-      "timesDrafted": 5,
-      "high": 109,
-      "low": 173,
-      "stdev": 25.2
+      "gsis": "00-0039172",
+      "adp": 142.5,
+      "timesDrafted": 44,
+      "high": 111,
+      "low": 189,
+      "stdev": 18.6
     },
     {
-      "gsis": "00-0040878",
-      "adp": 152.4,
-      "timesDrafted": 120,
-      "high": 89,
-      "low": 210,
-      "stdev": 24.3
-    },
-    {
-      "gsis": "00-0038611",
-      "adp": 152.7,
-      "timesDrafted": 72,
-      "high": 105,
-      "low": 199,
-      "stdev": 18.4
-    },
-    {
-      "gsis": "00-0036264",
-      "adp": 153,
-      "timesDrafted": 100,
-      "high": 114,
+      "gsis": "DST-LAC",
+      "adp": 143,
+      "timesDrafted": 112,
+      "high": 112,
       "low": 176,
-      "stdev": 15
+      "stdev": 11.8
     },
     {
-      "gsis": "00-0037263",
-      "adp": 153.8,
-      "timesDrafted": 98,
-      "high": 105,
-      "low": 204,
-      "stdev": 18.7
+      "gsis": "00-0034869",
+      "adp": 143.6,
+      "timesDrafted": 40,
+      "high": 85,
+      "low": 172,
+      "stdev": 22.4
     },
     {
-      "gsis": "00-0037197",
-      "adp": 153.9,
-      "timesDrafted": 82,
-      "high": 104,
-      "low": 192,
-      "stdev": 19.1
+      "gsis": "00-0039880",
+      "adp": 144.3,
+      "timesDrafted": 57,
+      "high": 108,
+      "low": 177,
+      "stdev": 13.7
+    },
+    {
+      "gsis": "00-0038933",
+      "adp": 145,
+      "timesDrafted": 109,
+      "high": 91,
+      "low": 178,
+      "stdev": 20.7
+    },
+    {
+      "gsis": "00-0035358",
+      "adp": 145.5,
+      "timesDrafted": 23,
+      "high": 119,
+      "low": 177,
+      "stdev": 14.1
+    },
+    {
+      "gsis": "00-0036162",
+      "adp": 145.7,
+      "timesDrafted": 7,
+      "high": 106,
+      "low": 172,
+      "stdev": 26.1
     },
     {
       "gsis": "00-0039811",
-      "adp": 154.1,
-      "timesDrafted": 84,
-      "high": 98,
+      "adp": 146,
+      "timesDrafted": 132,
+      "high": 72,
       "low": 203,
-      "stdev": 24.8
+      "stdev": 28.2
     },
     {
-      "gsis": "00-0038555",
-      "adp": 154.3,
-      "timesDrafted": 33,
-      "high": 113,
-      "low": 187,
-      "stdev": 19.8
+      "gsis": "00-0039409",
+      "adp": 146.8,
+      "timesDrafted": 107,
+      "high": 111,
+      "low": 195,
+      "stdev": 18.4
+    },
+    {
+      "gsis": "00-0039498",
+      "adp": 147.5,
+      "timesDrafted": 37,
+      "high": 111,
+      "low": 164,
+      "stdev": 15.8
+    },
+    {
+      "gsis": "00-0040890",
+      "adp": 148.1,
+      "timesDrafted": 14,
+      "high": 81,
+      "low": 178,
+      "stdev": 28.2
     },
     {
       "gsis": "00-0039794",
-      "adp": 154.5,
-      "timesDrafted": 13,
-      "high": 107,
+      "adp": 148.1,
+      "timesDrafted": 11,
+      "high": 42,
       "low": 192,
-      "stdev": 24.9
+      "stdev": 42
+    },
+    {
+      "gsis": "00-0040586",
+      "adp": 148.7,
+      "timesDrafted": 7,
+      "high": 80,
+      "low": 178,
+      "stdev": 41.6
+    },
+    {
+      "gsis": "00-0033908",
+      "adp": 150.1,
+      "timesDrafted": 38,
+      "high": 113,
+      "low": 174,
+      "stdev": 14
+    },
+    {
+      "gsis": "00-0036264",
+      "adp": 150.2,
+      "timesDrafted": 84,
+      "high": 109,
+      "low": 176,
+      "stdev": 15.6
+    },
+    {
+      "gsis": "00-0040074",
+      "adp": 150.7,
+      "timesDrafted": 60,
+      "high": 119,
+      "low": 177,
+      "stdev": 14.4
+    },
+    {
+      "gsis": "00-0038611",
+      "adp": 151.4,
+      "timesDrafted": 79,
+      "high": 106,
+      "low": 199,
+      "stdev": 17.3
+    },
+    {
+      "gsis": "00-0037291",
+      "adp": 151.5,
+      "timesDrafted": 42,
+      "high": 129,
+      "low": 177,
+      "stdev": 12.8
+    },
+    {
+      "gsis": "00-0040878",
+      "adp": 154.5,
+      "timesDrafted": 110,
+      "high": 92,
+      "low": 210,
+      "stdev": 25.6
+    },
+    {
+      "gsis": "00-0037197",
+      "adp": 154.6,
+      "timesDrafted": 74,
+      "high": 98,
+      "low": 197,
+      "stdev": 21.4
+    },
+    {
+      "gsis": "00-0038555",
+      "adp": 154.9,
+      "timesDrafted": 39,
+      "high": 113,
+      "low": 187,
+      "stdev": 20.4
+    },
+    {
+      "gsis": "00-0041042",
+      "adp": 155.4,
+      "timesDrafted": 8,
+      "high": 99,
+      "low": 182,
+      "stdev": 24.8
+    },
+    {
+      "gsis": "00-0037263",
+      "adp": 155.5,
+      "timesDrafted": 77,
+      "high": 108,
+      "low": 204,
+      "stdev": 18.1
+    },
+    {
+      "gsis": "00-0036040",
+      "adp": 155.5,
+      "timesDrafted": 53,
+      "high": 102,
+      "low": 180,
+      "stdev": 20.4
+    },
+    {
+      "gsis": "00-0039384",
+      "adp": 155.6,
+      "timesDrafted": 28,
+      "high": 120,
+      "low": 191,
+      "stdev": 20.5
+    },
+    {
+      "gsis": "00-0039404",
+      "adp": 156.2,
+      "timesDrafted": 44,
+      "high": 114,
+      "low": 200,
+      "stdev": 22.4
     },
     {
       "gsis": "00-0040189",
@@ -1361,6 +1425,14 @@
       "stdev": 21.7
     },
     {
+      "gsis": "00-0035535",
+      "adp": 156.5,
+      "timesDrafted": 6,
+      "high": 109,
+      "low": 180,
+      "stdev": 25.3
+    },
+    {
       "gsis": "00-0041013",
       "adp": 157,
       "timesDrafted": 6,
@@ -1369,388 +1441,348 @@
       "stdev": 22.3
     },
     {
-      "gsis": "00-0038977",
-      "adp": 157.2,
-      "timesDrafted": 52,
-      "high": 116,
-      "low": 180,
-      "stdev": 15.6
-    },
-    {
-      "gsis": "00-0039410",
-      "adp": 157.4,
-      "timesDrafted": 24,
-      "high": 131,
-      "low": 178,
-      "stdev": 11.9
-    },
-    {
-      "gsis": "00-0039384",
-      "adp": 157.4,
-      "timesDrafted": 30,
-      "high": 120,
-      "low": 191,
-      "stdev": 20.2
+      "gsis": "00-0038393",
+      "adp": 157.8,
+      "timesDrafted": 16,
+      "high": 125,
+      "low": 194,
+      "stdev": 17.8
     },
     {
       "gsis": "00-0033906",
-      "adp": 157.7,
-      "timesDrafted": 73,
-      "high": 107,
+      "adp": 157.8,
+      "timesDrafted": 70,
+      "high": 106,
       "low": 188,
-      "stdev": 19.5
-    },
-    {
-      "gsis": "00-0039404",
-      "adp": 158.1,
-      "timesDrafted": 44,
-      "high": 114,
-      "low": 200,
-      "stdev": 21.8
+      "stdev": 19.6
     },
     {
       "gsis": "00-0039163",
       "adp": 158.3,
-      "timesDrafted": 29,
+      "timesDrafted": 26,
       "high": 113,
       "low": 191,
-      "stdev": 18.4
+      "stdev": 17.5
     },
     {
-      "gsis": "00-0036040",
-      "adp": 158.7,
-      "timesDrafted": 45,
-      "high": 111,
-      "low": 179,
-      "stdev": 18
+      "gsis": "00-0038977",
+      "adp": 158.4,
+      "timesDrafted": 38,
+      "high": 114,
+      "low": 180,
+      "stdev": 16.7
     },
     {
-      "gsis": "00-0038905",
+      "gsis": "00-0041052",
       "adp": 159,
-      "timesDrafted": 13,
-      "high": 112,
-      "low": 205,
-      "stdev": 23.7
-    },
-    {
-      "gsis": "00-0038393",
-      "adp": 159.7,
-      "timesDrafted": 15,
+      "timesDrafted": 12,
       "high": 125,
-      "low": 194,
-      "stdev": 20.1
+      "low": 201,
+      "stdev": 21
     },
     {
-      "gsis": "00-0034173",
-      "adp": 160.4,
-      "timesDrafted": 25,
-      "high": 113,
-      "low": 209,
-      "stdev": 24.8
-    },
-    {
-      "gsis": "00-0039890",
-      "adp": 160.9,
-      "timesDrafted": 30,
+      "gsis": "00-0039410",
+      "adp": 160,
+      "timesDrafted": 26,
       "high": 136,
-      "low": 177,
-      "stdev": 11.2
-    },
-    {
-      "gsis": "00-0040586",
-      "adp": 161.8,
-      "timesDrafted": 6,
-      "high": 80,
-      "low": 187,
-      "stdev": 40.4
-    },
-    {
-      "gsis": "00-0033090",
-      "adp": 161.9,
-      "timesDrafted": 34,
-      "high": 117,
-      "low": 192,
-      "stdev": 17
+      "low": 178,
+      "stdev": 11.5
     },
     {
       "gsis": "DST-JAX",
-      "adp": 161.9,
-      "timesDrafted": 247,
-      "high": 120,
+      "adp": 160.4,
+      "timesDrafted": 236,
+      "high": 116,
       "low": 206,
-      "stdev": 16
+      "stdev": 16.8
     },
     {
       "gsis": "00-0037746",
-      "adp": 162.3,
-      "timesDrafted": 11,
+      "adp": 160.6,
+      "timesDrafted": 10,
       "high": 123,
       "low": 189,
-      "stdev": 20.8
+      "stdev": 21.1
     },
     {
-      "gsis": "DST-CLE",
-      "adp": 162.5,
-      "timesDrafted": 94,
-      "high": 135,
-      "low": 192,
-      "stdev": 11.2
-    },
-    {
-      "gsis": "00-0039868",
-      "adp": 162.8,
+      "gsis": "00-0040676",
+      "adp": 161.2,
       "timesDrafted": 5,
-      "high": 138,
-      "low": 204,
-      "stdev": 27.4
+      "high": 140,
+      "low": 198,
+      "stdev": 22.6
+    },
+    {
+      "gsis": "00-0039890",
+      "adp": 161.5,
+      "timesDrafted": 24,
+      "high": 136,
+      "low": 177,
+      "stdev": 12
+    },
+    {
+      "gsis": "00-0035710",
+      "adp": 162.4,
+      "timesDrafted": 25,
+      "high": 120,
+      "low": 180,
+      "stdev": 17.2
+    },
+    {
+      "gsis": "00-0033090",
+      "adp": 162.4,
+      "timesDrafted": 36,
+      "high": 119,
+      "low": 192,
+      "stdev": 16.5
+    },
+    {
+      "gsis": "00-0038905",
+      "adp": 162.5,
+      "timesDrafted": 13,
+      "high": 112,
+      "low": 205,
+      "stdev": 24.9
+    },
+    {
+      "gsis": "00-0038608",
+      "adp": 162.6,
+      "timesDrafted": 54,
+      "high": 128,
+      "low": 180,
+      "stdev": 13.9
+    },
+    {
+      "gsis": "00-0034173",
+      "adp": 162.7,
+      "timesDrafted": 21,
+      "high": 113,
+      "low": 209,
+      "stdev": 28
+    },
+    {
+      "gsis": "00-0041496",
+      "adp": 162.8,
+      "timesDrafted": 29,
+      "high": 98,
+      "low": 205,
+      "stdev": 24.8
     },
     {
       "gsis": "00-0039424",
       "adp": 162.8,
-      "timesDrafted": 6,
+      "timesDrafted": 5,
       "high": 157,
       "low": 175,
-      "stdev": 6.5
-    },
-    {
-      "gsis": "00-0041052",
-      "adp": 162.8,
-      "timesDrafted": 13,
-      "high": 125,
-      "low": 201,
-      "stdev": 20.4
-    },
-    {
-      "gsis": "DST-NYG",
-      "adp": 163,
-      "timesDrafted": 6,
-      "high": 144,
-      "low": 184,
-      "stdev": 15.9
+      "stdev": 7.3
     },
     {
       "gsis": "DST-ATL",
-      "adp": 163.4,
-      "timesDrafted": 60,
+      "adp": 163.2,
+      "timesDrafted": 79,
       "high": 130,
       "low": 204,
-      "stdev": 15.9
+      "stdev": 13.5
+    },
+    {
+      "gsis": "00-0037809",
+      "adp": 164.3,
+      "timesDrafted": 6,
+      "high": 134,
+      "low": 178,
+      "stdev": 18.3
+    },
+    {
+      "gsis": "DST-CLE",
+      "adp": 164.4,
+      "timesDrafted": 73,
+      "high": 135,
+      "low": 200,
+      "stdev": 12.1
+    },
+    {
+      "gsis": "DST-NYG",
+      "adp": 164.8,
+      "timesDrafted": 6,
+      "high": 144,
+      "low": 184,
+      "stdev": 16.5
+    },
+    {
+      "gsis": "00-0038935",
+      "adp": 164.9,
+      "timesDrafted": 25,
+      "high": 122,
+      "low": 199,
+      "stdev": 20.5
+    },
+    {
+      "gsis": "00-0039868",
+      "adp": 165,
+      "timesDrafted": 7,
+      "high": 138,
+      "low": 204,
+      "stdev": 25.4
     },
     {
       "gsis": "00-0032569",
-      "adp": 163.6,
+      "adp": 165.7,
       "timesDrafted": 69,
       "high": 116,
       "low": 206,
-      "stdev": 20.3
-    },
-    {
-      "gsis": "00-0040676",
-      "adp": 163.6,
-      "timesDrafted": 5,
-      "high": 140,
-      "low": 210,
-      "stdev": 27.6
-    },
-    {
-      "gsis": "00-0038608",
-      "adp": 163.7,
-      "timesDrafted": 67,
-      "high": 128,
-      "low": 196,
-      "stdev": 14
-    },
-    {
-      "gsis": "00-0038128",
-      "adp": 164.4,
-      "timesDrafted": 56,
-      "high": 125,
-      "low": 200,
-      "stdev": 16.7
-    },
-    {
-      "gsis": "00-0038454",
-      "adp": 164.5,
-      "timesDrafted": 23,
-      "high": 127,
-      "low": 210,
-      "stdev": 25
-    },
-    {
-      "gsis": "00-0035710",
-      "adp": 164.5,
-      "timesDrafted": 28,
-      "high": 120,
-      "low": 188,
-      "stdev": 17.1
+      "stdev": 20.2
     },
     {
       "gsis": "00-0040718",
-      "adp": 165.6,
-      "timesDrafted": 24,
+      "adp": 165.8,
+      "timesDrafted": 20,
       "high": 152,
       "low": 180,
-      "stdev": 9.1
+      "stdev": 8.6
     },
     {
-      "gsis": "00-0041496",
-      "adp": 165.9,
-      "timesDrafted": 29,
-      "high": 132,
+      "gsis": "DST-BAL",
+      "adp": 166.6,
+      "timesDrafted": 135,
+      "high": 112,
+      "low": 207,
+      "stdev": 20.7
+    },
+    {
+      "gsis": "00-0038454",
+      "adp": 166.9,
+      "timesDrafted": 17,
+      "high": 127,
+      "low": 210,
+      "stdev": 22.4
+    },
+    {
+      "gsis": "00-0033303",
+      "adp": 167.4,
+      "timesDrafted": 71,
+      "high": 136,
       "low": 205,
+      "stdev": 18
+    },
+    {
+      "gsis": "00-0040162",
+      "adp": 167.4,
+      "timesDrafted": 18,
+      "high": 114,
+      "low": 200,
       "stdev": 20.5
     },
     {
       "gsis": "DST-BUF",
-      "adp": 166.4,
-      "timesDrafted": 162,
-      "high": 125,
+      "adp": 167.5,
+      "timesDrafted": 147,
+      "high": 134,
       "low": 209,
-      "stdev": 15.6
-    },
-    {
-      "gsis": "DST-BAL",
-      "adp": 166.9,
-      "timesDrafted": 119,
-      "high": 114,
-      "low": 207,
-      "stdev": 20.3
-    },
-    {
-      "gsis": "00-0037809",
-      "adp": 167.2,
-      "timesDrafted": 5,
-      "high": 134,
-      "low": 178,
-      "stdev": 18.9
-    },
-    {
-      "gsis": "00-0038935",
-      "adp": 168.1,
-      "timesDrafted": 27,
-      "high": 127,
-      "low": 199,
-      "stdev": 19.3
-    },
-    {
-      "gsis": "DST-CHI",
-      "adp": 168.9,
-      "timesDrafted": 7,
-      "high": 134,
-      "low": 196,
-      "stdev": 21.6
-    },
-    {
-      "gsis": "00-0040162",
-      "adp": 169.2,
-      "timesDrafted": 15,
-      "high": 112,
-      "low": 200,
-      "stdev": 21.7
-    },
-    {
-      "gsis": "00-0033303",
-      "adp": 169.4,
-      "timesDrafted": 73,
-      "high": 136,
-      "low": 205,
-      "stdev": 16.2
-    },
-    {
-      "gsis": "00-0040727",
-      "adp": 169.6,
-      "timesDrafted": 5,
-      "high": 159,
-      "low": 195,
-      "stdev": 14.9
-    },
-    {
-      "gsis": "00-0036854",
-      "adp": 173,
-      "timesDrafted": 24,
-      "high": 128,
-      "low": 210,
-      "stdev": 17.3
+      "stdev": 14.6
     },
     {
       "gsis": "00-0040669",
-      "adp": 173.1,
-      "timesDrafted": 8,
+      "adp": 168.7,
+      "timesDrafted": 7,
       "high": 93,
-      "low": 204,
-      "stdev": 46.1
+      "low": 203,
+      "stdev": 47.9
+    },
+    {
+      "gsis": "DST-CHI",
+      "adp": 169.4,
+      "timesDrafted": 7,
+      "high": 134,
+      "low": 196,
+      "stdev": 21.7
+    },
+    {
+      "gsis": "00-0036854",
+      "adp": 169.9,
+      "timesDrafted": 22,
+      "high": 122,
+      "low": 210,
+      "stdev": 18.3
+    },
+    {
+      "gsis": "00-0035229",
+      "adp": 173.1,
+      "timesDrafted": 13,
+      "high": 135,
+      "low": 199,
+      "stdev": 14.6
     },
     {
       "gsis": "00-0039150",
-      "adp": 174,
-      "timesDrafted": 7,
+      "adp": 173.1,
+      "timesDrafted": 9,
       "high": 139,
       "low": 201,
-      "stdev": 25.7
+      "stdev": 22.4
     },
     {
-      "gsis": "00-0040200",
-      "adp": 175.4,
+      "gsis": "00-0040727",
+      "adp": 174.8,
       "timesDrafted": 5,
+      "high": 159,
+      "low": 196,
+      "stdev": 19.1
+    },
+    {
+      "gsis": "00-0040737",
+      "adp": 176.8,
+      "timesDrafted": 15,
+      "high": 138,
+      "low": 210,
+      "stdev": 18.7
+    },
+    {
+      "gsis": "00-0034383",
+      "adp": 176.9,
+      "timesDrafted": 14,
+      "high": 137,
+      "low": 200,
+      "stdev": 21.5
+    },
+    {
+      "gsis": "DST-TEN",
+      "adp": 179.7,
+      "timesDrafted": 26,
+      "high": 137,
+      "low": 207,
+      "stdev": 16.1
+    },
+    {
+      "gsis": "DST-NO",
+      "adp": 182.9,
+      "timesDrafted": 19,
       "high": 144,
+      "low": 205,
+      "stdev": 17.1
+    },
+    {
+      "gsis": "DST-CIN",
+      "adp": 183.3,
+      "timesDrafted": 6,
+      "high": 158,
+      "low": 208,
+      "stdev": 21.4
+    },
+    {
+      "gsis": "00-0031203",
+      "adp": 183.5,
+      "timesDrafted": 24,
+      "high": 140,
       "low": 209,
       "stdev": 23.4
     },
     {
-      "gsis": "00-0035229",
-      "adp": 176.6,
-      "timesDrafted": 13,
-      "high": 164,
-      "low": 199,
-      "stdev": 7.9
-    },
-    {
-      "gsis": "00-0034383",
-      "adp": 178.5,
-      "timesDrafted": 14,
-      "high": 137,
-      "low": 204,
-      "stdev": 22.7
-    },
-    {
-      "gsis": "DST-TEN",
-      "adp": 178.6,
-      "timesDrafted": 32,
-      "high": 140,
-      "low": 207,
-      "stdev": 14.5
-    },
-    {
-      "gsis": "00-0040737",
-      "adp": 181.8,
-      "timesDrafted": 16,
-      "high": 159,
-      "low": 210,
-      "stdev": 16
-    },
-    {
-      "gsis": "DST-NO",
-      "adp": 182.4,
-      "timesDrafted": 25,
-      "high": 144,
-      "low": 205,
-      "stdev": 16
-    },
-    {
-      "gsis": "00-0031203",
-      "adp": 184.6,
-      "timesDrafted": 23,
-      "high": 140,
+      "gsis": "00-0040200",
+      "adp": 186.6,
+      "timesDrafted": 5,
+      "high": 168,
       "low": 209,
-      "stdev": 24.5
-    },
-    {
-      "gsis": "DST-CIN",
-      "adp": 186,
-      "timesDrafted": 7,
-      "high": 158,
-      "low": 208,
-      "stdev": 19.7
+      "stdev": 17.2
     }
   ],
   "absent": [
@@ -1758,85 +1790,67 @@
       "name": "Carnell Tate",
       "position": "WR",
       "team": "TEN",
-      "adp": 76
+      "adp": 76.3
     },
     {
       "name": "Stefon Diggs",
       "position": "WR",
       "team": "WAS",
-      "adp": 94.4
+      "adp": 95.3
     },
     {
       "name": "Deebo Samuel Sr.",
       "position": "WR",
       "team": "SF",
-      "adp": 102.3
+      "adp": 103.1
     },
     {
       "name": "KC Concepcion",
       "position": "WR",
       "team": "CLE",
-      "adp": 117.3
+      "adp": 115.8
     },
     {
       "name": "Makai Lemon",
       "position": "WR",
       "team": "PHI",
-      "adp": 119.2
-    },
-    {
-      "name": "De'Zhaun Stribling",
-      "position": "WR",
-      "team": "SF",
-      "adp": 127.6
+      "adp": 122.6
     },
     {
       "name": "Keenan Allen",
       "position": "WR",
       "team": "IND",
-      "adp": 135.6
-    },
-    {
-      "name": "Denzel Boston",
-      "position": "WR",
-      "team": "CLE",
-      "adp": 139
-    },
-    {
-      "name": "Cyrus Allen",
-      "position": "WR",
-      "team": "KC",
-      "adp": 143.3
-    },
-    {
-      "name": "Malachi Fields",
-      "position": "WR",
-      "team": "NYG",
-      "adp": 150.8
+      "adp": 133.1
     },
     {
       "name": "Jordyn Tyson",
       "position": "WR",
       "team": "NO",
-      "adp": 156.3
+      "adp": 156
     },
     {
       "name": "Trey Smack",
       "position": "K",
       "team": "GB",
-      "adp": 162.5
+      "adp": 159.9
     },
     {
       "name": "Ja'Kobi Lane",
       "position": "WR",
       "team": "BAL",
-      "adp": 162.9
+      "adp": 163.2
+    },
+    {
+      "name": "Malik Willis",
+      "position": "QB",
+      "team": "MIA",
+      "adp": 163.4
     },
     {
       "name": "Caleb Douglas",
       "position": "WR",
       "team": "MIA",
-      "adp": 167.3
+      "adp": 173.5
     }
   ]
 }

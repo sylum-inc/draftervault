@@ -5,6 +5,7 @@ import {
   type DraftAnalytics,
   type Player,
   type Team,
+  type PositionPulse,
 } from '@/services/auctionDraftService';
 import { getIdentity, refreshIdentity, snapshotMeta } from '@/services/nflIdentity';
 import { useDraftPreferences } from '@/hooks/use-draft-preferences';
@@ -12,7 +13,10 @@ import { useDraftServer } from '@/hooks/use-draft-server';
 import { PlayerCard } from './PlayerCard';
 import { PlayerTable, type TableSort } from './PlayerTable';
 import { NominationStage } from './NominationStage';
-import { BudgetRail } from './BudgetRail';
+import { SpotlightTonight } from './SpotlightTonight';
+import { BidConsequence } from './BidConsequence';
+import { SetupMenu } from './SetupMenu';
+import { RoomTooltip } from './RoomTooltip';
 import { TeamsPanel } from './TeamsPanel';
 import { MarketPanel } from './MarketPanel';
 import { NominationClock } from './NominationClock';
@@ -21,6 +25,8 @@ import { PlayerProfile } from './PlayerProfile';
 import { CompareTray, CompareView } from './CompareTray';
 import { DraftBoard } from './DraftBoard';
 import { BudgetPlanner } from './BudgetPlanner';
+import { RosterPlanPanel } from './RosterPlanPanel';
+import { ReadinessPanel } from './ReadinessPanel';
 import { SpendOutlook } from './SpendOutlook';
 import { BargainBoard } from './BargainBoard';
 import { AdvisorPanel } from './AdvisorPanel';
@@ -42,7 +48,13 @@ import type { LeagueShape } from '@/lib/valuation';
 import type { RankingOverride } from '@/lib/rankingsCsv';
 import { matchesSearch, searchable } from '@/lib/playerSearch';
 import { copyTextToClipboard, saveTextFile } from '@/lib/saveFile';
-import { primeResearch } from '@/services/playerResearch';
+import { primeResearch, researchGeneratedAt, researchMark } from '@/services/playerResearch';
+import { primeHistory } from '@/services/playerHistory';
+import { primeSchedule } from '@/services/nflSchedule';
+import { readiness, worstOf } from '@/lib/readiness';
+import { sameLeague } from '@/lib/valuation';
+import { dataAges } from '@/lib/dataAge';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 import '@/styles/draft-room.css';
 
 interface DraftRoomProps {
@@ -85,15 +97,71 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const [query, setQuery] = useState('');
   const [position, setPosition] = useState<(typeof POSITIONS)[number]>('ALL');
   const [sort, setSort] = useState<SortKey>('rank');
-  const [profileOpen, setProfileOpen] = useState(false);
+  /* The spotlight's dossier can be folded away to the strip and the controls —
+     a small window, or a quiet moment when the board matters more. Per window,
+     not per person: it is a layout, not a preference. */
+  const [stageFolded, setStageFolded] = useState(false);
   const [resumed, setResumed] = useState(0);
   const [tableSort, setTableSort] = useState<TableSort>('rank');
   const [tableDescending, setTableDescending] = useState(false);
   const [watchedOnly, setWatchedOnly] = useState(false);
+  /* `plan` is the roster plan and opens by default: it is the only panel that
+     answers what to do with the whole budget, and every other reading in the
+     room is a fragment of it. The budget *planner* — what one bid leaves
+     behind — is `budget`, renamed out of its way. */
   const [asidePanel, setAsidePanel] = useState<
-    'budgets' | 'rosters' | 'market' | 'bargains' | 'plan' | 'spend'
-  >('budgets');
+    'plan' | 'spend' | 'bid' | 'rosters' | 'market' | 'bargains'
+  >('plan');
   const [resultsOpen, setResultsOpen] = useState(false);
+  const [readyOpen, setReadyOpen] = useState(false);
+
+  /*
+   * How tall the sticky chrome is, written where the CSS can read it.
+   *
+   * The header and the band share one sticky block, and the band is now the
+   * whole dossier — up to seven hundred pixels with a player up, forty with
+   * nobody. The aside is sticky too and used to sit at a fixed 74px, which
+   * put its top half under the bid box on any scroll. A ResizeObserver on the
+   * chrome writes `--dr-chrome-h` on the room, and the aside's offset and
+   * height are calc()s of it. Measured rather than assumed, because the band
+   * folds, the header wraps on a phone, and a ticker line comes and goes.
+   */
+  const rootRef = useRef<HTMLDivElement>(null);
+  const chromeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const chrome = chromeRef.current;
+    const root = rootRef.current;
+    if (!chrome || !root || typeof ResizeObserver === 'undefined') return;
+    const bar = chrome.querySelector<HTMLElement>('.dr-topbar');
+    const write = () => {
+      root.style.setProperty('--dr-chrome-h', `${chrome.offsetHeight}px`);
+      if (bar) root.style.setProperty('--dr-topbar-h', `${bar.offsetHeight}px`);
+    };
+    write();
+    const observer = new ResizeObserver(write);
+    observer.observe(chrome);
+    if (bar) observer.observe(bar);
+    return () => observer.disconnect();
+  }, []);
+
+  /*
+   * The spotlight steps back when you go to the board.
+   *
+   * Unfolded it is as tall as its tab needs, up to the window, so nothing in it
+   * has to scroll — which means the board under it is not visible until you
+   * scroll the page. It is sticky, so a full-height band would then cover the
+   * board it sits over. So scrolling past the top folds it to the strip and one
+   * row of controls: the bid box stays pinned, the board is browsable, and
+   * scrolling back up — or pressing Dossier — opens it again. The manual fold
+   * still holds wherever the page is.
+   */
+  const [autoFolded, setAutoFolded] = useState(false);
+  useEffect(() => {
+    const read = () => setAutoFolded(window.scrollY > 140);
+    read();
+    window.addEventListener('scroll', read, { passive: true });
+    return () => window.removeEventListener('scroll', read);
+  }, []);
   const [boardOpen, setBoardOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [leagueOpen, setLeagueOpen] = useState(false);
@@ -172,6 +240,11 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
       setResumed(restored);
       if (restored) sync();
     }
+    // Strictly after the resume: an empty browser gets the sheet and the market
+    // board this build is for, and a browser holding an afternoon's work gets
+    // nothing done to it. `seedHomeDefaults` refuses on its own if anything is
+    // stored, but the order is what makes that refusal reachable.
+    if (draftService.seedHomeDefaults()) sync();
     void refreshIdentity().then((count) => {
       if (count) sync();
     });
@@ -226,6 +299,136 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // The research marks are read straight out of a module-level map by each
   // card, so this flag is the only thing that tells the memoised board the map
   // has arrived. It flips once, which costs exactly one re-render of the list.
+  /**
+   * The card that is turned over, and whether it has been raised.
+   *
+   * One at a time on purpose, and one state rather than two, because the two
+   * are a sequence: a card is expanded only from its own back, and closing the
+   * expansion has to land back on the card rather than on the board. Two
+   * independent flags would let the pair reach states the interaction does not
+   * have — expanded but not flipped, flipped somewhere the expansion is not.
+   *
+   * `from` is the cell the card occupied when it was raised, measured at the
+   * click, so the lift animates out of the board rather than fading in at the
+   * centre. Fading in at the centre is a modal, which is the thing this is
+   * deliberately not.
+   */
+  const [open, setOpen] = useState<{
+    id: string;
+    expanded: boolean;
+    from: { dx: number; dy: number; scale: number } | null;
+  } | null>(null);
+  const flippedId = open?.id ?? null;
+  const expandedId = open?.expanded ? open.id : null;
+
+  /**
+   * Where a card sits on the board, as the transform that would put a centred
+   * overlay back on top of it.
+   *
+   * Composed here rather than in the card, because the target is the overlay's
+   * width — a thing the room decides and the card cannot know.
+   */
+  const originOf = (rect: DOMRect | undefined) => {
+    if (!rect || typeof window === 'undefined') return null;
+    const width = Math.min(1600, window.innerWidth * 0.94);
+    return {
+      dx: rect.left + rect.width / 2 - window.innerWidth / 2,
+      dy: rect.top + rect.height / 2 - window.innerHeight / 2,
+      // Never below a tenth: a lift that starts from nothing reads as a fade,
+      // which is the one thing it must not read as.
+      scale: Math.max(0.1, rect.width / width),
+    };
+  };
+
+  const toggleFlip = useCallback((playerId: string) => {
+    setOpen((current) =>
+      current?.id === playerId ? null : { id: playerId, expanded: false, from: null }
+    );
+  }, []);
+
+  const expandCard = useCallback((playerId: string, origin?: DOMRect) => {
+    const from = originOf(origin);
+    setOpen({ id: playerId, expanded: true, from });
+  }, []);
+
+  /* Closing the expansion lands on the back of the card it came from, which is
+     where it was opened from. Two escapes to the board, and each one undoes
+     exactly the step that was taken. */
+  const closeExpanded = useCallback(() => {
+    setOpen((current) => (current ? { ...current, expanded: false, from: null } : null));
+  }, []);
+
+  /* Escape closes the raised card and lands on its back, which is where it was
+     opened from — through the shared stack, so nesting works by construction
+     and a keystroke is answered by whichever dialog registered last. */
+  useDismissOnEscape(closeExpanded, Boolean(expandedId));
+
+  /* Off the whole pool rather than off the filtered board, so a raised card
+     survives the search box being typed in behind it. Closing on a filter
+     change would throw away what somebody was reading because they reached for
+     the keyboard. */
+  /*
+   * The most the man on the block is worth, solved rather than guessed.
+   *
+   * Memoised on the player and the pick count because it is a knapsack over the
+   * whole sheet — about forty milliseconds — and the answer only moves when the
+   * board does. Deliberately *not* computed for every card: sixty of these
+   * would be two and a half seconds, and the number is only ever needed for the
+   * player money is actually being decided about.
+   */
+  /*
+   * The most the man on the block is worth, solved rather than guessed.
+   *
+   * Memoised on the player and the board because it is a knapsack over the
+   * whole sheet — about forty milliseconds — and the answer only moves when the
+   * board does. Deliberately *not* computed for every card: sixty of these
+   * would be two and a half seconds, and the number is only ever needed for the
+   * player money is actually being decided about.
+   */
+  const walkAway = useMemo(
+    () => (selected ? draftService.maxPriceFor(selected.id) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selected?.id, players, draftService]
+  );
+
+  /* What the money is already promised to, so a low ceiling says why. A
+     walk-away of nothing is almost never "he is worthless" — it is "every
+     dollar is already committed to somebody better", and those are different
+     instructions the moment one of those players goes to somebody else. */
+  /* The plan itself — one knapsack per pick, about forty milliseconds — read
+     here once and handed to everything that quotes it, so the strip's tile and
+     the live tab cannot come to disagree about what the money is promised to. */
+  const plan = useMemo(
+    () => draftService.getRosterPlan(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [players, draftService]
+  );
+  const planNames = useMemo(
+    () =>
+      plan.buy
+        .filter((entry) => entry.candidate.id !== selected?.id)
+        .map((entry) => entry.candidate.name),
+    [plan, selected?.id]
+  );
+
+  /* Off the whole pool rather than off the filtered board, so a raised card
+     survives the search box being typed in behind it. Closing on a filter
+     change would throw away what somebody was reading because they reached for
+     the keyboard. */
+  /*
+   * The most the man on the block is worth, solved rather than guessed.
+   *
+   * Memoised on the player and the pick count because it is a knapsack over the
+   * whole sheet — about forty milliseconds — and the answer only moves when the
+   * board does. Deliberately *not* computed for every card: sixty of these
+   * would be two and a half seconds, and the number is only ever needed for the
+   * player money is actually being decided about.
+   */
+  const expandedPlayer = useMemo(
+    () => (expandedId ? (players.find((entry) => entry.id === expandedId) ?? null) : null),
+    [expandedId, players]
+  );
+
   const [researchReady, setResearchReady] = useState(false);
   useEffect(() => {
     let live = true;
@@ -233,6 +436,38 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     return () => {
       live = false;
     };
+  }, []);
+
+  /*
+   * The same bargain for the three-season history, which the cards draw a
+   * season's shape from.
+   *
+   * It is 750 KB and it is deliberately not paid for on first paint — the board
+   * is usable the moment it renders and the sparklines arrive a beat later.
+   * Read synchronously out of a module cache by each card for the reason the
+   * research marks are: an array prop per card would be a new reference on
+   * every render and would defeat the memo the board's performance rests on.
+   */
+  const [historyReady, setHistoryReady] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void primeHistory().then(() => live && setHistoryReady(true));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  /*
+   * And the season, which the back of a card draws the eighteen weeks from.
+   *
+   * One file for all thirty-two clubs, so priming it costs exactly what opening
+   * one profile already cost — and the flag is deliberately not wired into a
+   * re-render: nothing on the *front* of a card reads it, so a repaint on
+   * arrival would re-render sixty cards to change nothing. The back is built
+   * fresh whenever a card is turned over, which is always after this lands.
+   */
+  useEffect(() => {
+    void primeSchedule();
   }, []);
 
   // Any change to what is being shown starts the list again from the top.
@@ -286,6 +521,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     // `players` is a dependency because a reprice replaces the whole array
     // without the selection changing identity, and the analytics behind it move
     // with the prices.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
   }, [selected, teamId, draftService, players]);
 
   /**
@@ -338,16 +574,25 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const nominate = useCallback(
     (player: Player) => {
       setSelected(player);
-      // In the auction the next thing anyone types is who won; in the snake
-      // the order has already said, so the confirm button is what Enter needs
-      // to reach. Either way the mouse is never required.
-      window.setTimeout(
-        () =>
-          (
-            document.getElementById('dr-team') ?? document.getElementById('dr-snake-draft')
-          )?.focus(),
-        0
-      );
+      /*
+       * The bid box in the auction, the confirm button in the snake.
+       *
+       * It used to hand focus to the winning-team select, which is the wrong
+       * end of the transaction: the price is shouted *during* the bidding and
+       * the winner is only known when it stops, so the information arrives in
+       * the opposite order to the one the controls asked for. Typing the
+       * running number as it climbs is also what keeps the competition readout
+       * — who can still beat this — honest while the decision is live.
+       *
+       * Who won is now a click on the team row rather than a dropdown, so it
+       * costs nothing to leave until the end.
+       */
+      window.setTimeout(() => {
+        const target = (document.getElementById('dr-bid') ??
+          document.getElementById('dr-snake-draft')) as HTMLElement | null;
+        target?.focus();
+        if (target instanceof HTMLInputElement) target.select();
+      }, 0);
       // A snake pick has no price, so loading an opening bid for one puts a
       // number into `bid` that nothing on screen should be reading. The stage
       // hides the bid box, but the budget planner is handed the same value and
@@ -394,7 +639,6 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
     sync();
     setSelected(null);
     setBid('');
-    setProfileOpen(false);
   }, [selected, teamId, bid, draftService, sync, snake, onTheClock]);
 
   /**
@@ -547,10 +791,96 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * Recomputed on every pick because both halves of it move: the auction takes
    * players off the sheet and the snake pool shrinks behind them.
    */
+  /**
+   * Bounded across every draw when the order has not been drawn yet.
+   *
+   * The stage is where a bid is decided, so a gain only the plan panel can show
+   * is a gain nobody has at the moment a name is called. Null once an order
+   * exists, because then there is one true number and a range beside it would
+   * be noise.
+   */
+  /**
+   * The live half of every card, recomputed on a pick and *stabilised*.
+   *
+   * Six objects serve sixty cards, because every reading in them is about a
+   * position rather than a player. The stabilising is the part that matters:
+   * `getPositionPulse` returns fresh objects each call, and handing a fresh
+   * object to a memoised card defeats the memo — which would re-render the
+   * whole board on every pick, the exact cost the board was measured and fixed
+   * for once.
+   *
+   * So the previous map is kept and an entry is replaced only when its contents
+   * actually differ. Buying a running back re-renders the running backs and
+   * leaves the receivers alone.
+   *
+   * Compared by serialising rather than field by field: the shape is small,
+   * flat and entirely numbers, a hand-written comparison would be one `&&` away
+   * from silently pinning a stale shelf on screen for the rest of the night,
+   * and the failure would look like the instrument simply not working.
+   */
+  const pulseRef = useRef(new Map<string, PositionPulse>());
+  const pulse = useMemo(() => {
+    const next = draftService.getPositionPulse();
+    const held = pulseRef.current;
+    const stable = new Map<string, PositionPulse>();
+    for (const [position, reading] of next) {
+      const previous = held.get(position);
+      stable.set(
+        position,
+        previous && JSON.stringify(previous) === JSON.stringify(reading) ? previous : reading
+      );
+    }
+    pulseRef.current = stable;
+    return stable;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+  }, [draftService, players]);
+
+  /**
+   * What every player on the board buys over the snake, computed once.
+   *
+   * Per card this would be a market sort apiece — sixty of them on every
+   * render, which is the cost the board was measured and fixed for once. The
+   * outlook is the same for all of them, so the engine builds it a single time
+   * and each card is handed three primitives off the result. Primitives are
+   * what keeps the card memo intact: an object would be a new reference every
+   * render and would re-render the whole board on every pick.
+   */
+  const boardGains = useMemo(
+    () => draftService.getBoardGains(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, players]
+  );
+
+  const snakeBounds = useMemo(
+    () =>
+      selected && !draftService.hasSnakeOrder()
+        ? draftService.gainOverSnakeBounds(selected.id)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, selected, players]
+  );
+
   const snakeGain = useMemo(
     () => (selected ? draftService.gainOverSnake(selected.id) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
     [draftService, selected, players]
+  );
+
+  /**
+   * What the web said about the man the snake would hand you instead.
+   *
+   * The join the room was missing. `snakeGain` is a difference against one
+   * named player and the model knows only what he has done; the research file
+   * knew that the free back was under an NFL review and that the free tight
+   * end tore an Achilles in January, and neither reached the number they move.
+   */
+  const freeManResearch = useMemo(
+    () => {
+      const id = snakeGain?.freeId ?? snakeBounds?.high.freeId ?? null;
+      return id ? researchMark(id) : null;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- researchReady is when the file lands
+    [snakeGain, snakeBounds, researchReady]
   );
 
   /** When to buy. Recomputed on every pick, since both terms move with one. */
@@ -665,7 +995,6 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   const complete = useMemo(() => draftService.isComplete(), [draftService, players, teams]);
 
   const anyModalOpen =
-    profileOpen ||
     resultsOpen ||
     boardOpen ||
     compareOpen ||
@@ -775,8 +1104,8 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
    * and not a league change.
    */
   const applySheet = useCallback(
-    (ids: string[]) => {
-      draftService.setAuctionSheet(ids);
+    (ids: string[], loss = 0) => {
+      draftService.setAuctionSheet(ids, loss);
       setSheetOpen(false);
       resync();
     },
@@ -954,215 +1283,515 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- a tier empties on a pick
   const tierBreaks = useMemo(() => draftService.getTierBreaks(), [draftService, players]);
 
+  /**
+   * When each thing the board knows was last learned.
+   *
+   * None of these move during a draft, so this exists mainly to be computed
+   * once. `researchReady` is in the dependencies and has to be: the research
+   * file is a lazy import, nothing else here changes when it lands, and
+   * without it this panel read "—" for the research row until the first pick
+   * was made — which is a claim ("we have no research") rather than a gap.
+   */
+  const stamps = useMemo(
+    () => ({
+      market: draftService.getMarketSnapshot(),
+      research: researchGeneratedAt(),
+      pool: draftService.getPoolGeneratedAt(),
+      identity: snapshotMeta().generatedAt || null,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [draftService, players, researchReady]
+  );
+
+  /*
+   * Whether the board somebody is about to draft off is actually set up.
+   *
+   * Every catastrophic failure this app has is silent — a league left at the
+   * pool's defaults, a sheet that lost eight names to a spelling, no team
+   * marked as yours — and each of the individual warnings is only seen by
+   * whoever opens the panel it lives in. This is the one place that answers
+   * "is this ready", and it is in the top bar because a checklist nobody opens
+   * is a checklist nobody has.
+   */
+  const checks = useMemo(() => {
+    const shape = draftService.getLeagueShape();
+    const depth = draftService.getPoolDepth();
+    const sheet = draftService.getAuctionSheet();
+    const mine = teams.find((team) => team.id === myTeamId) ?? null;
+    const ages = dataAges(stamps);
+    const dayOf = (key: string) => ages.find((age) => age.key === key)?.days ?? null;
+
+    return readiness({
+      leagueConfirmed,
+      leagueIsPoolDefault: sameLeague(shape, draftService.getPoolLeagueShape()),
+      poolShortfall: Object.entries(shape.rostered)
+        .filter(([position, need]) => (depth[position] ?? 0) < need)
+        .map(([position]) => position),
+      sheetSize: sheet.ids.length || null,
+      sheetLoss: sheet.loss ?? 0,
+      sheetIsGuess: !sheet.ids.length && shape.auctionSheetSize != null,
+      myTeam: mine?.name ?? null,
+      unnamedTeams: teams.filter((team) => /^Team \d+$/.test(team.name)).length,
+      totalTeams: teams.length,
+      snakeOrderDrawn: draftService.hasSnakeOrder(),
+      marketDays: dayOf('market'),
+      researchDays: dayOf('research'),
+      drafted: drafted.length,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+  }, [draftService, players, teams, myTeamId, leagueConfirmed, stamps, drafted.length]);
+
+  const readyLevel = worstOf(checks);
+
   const spent = teams.reduce((total, team) => total + team.spent, 0);
+  /*
+   * Everything the live tab reads, gathered once per render of the block.
+   *
+   * None of it is new arithmetic: the plan, the bid board, the position pulse,
+   * the scarcity row, the inflation basis and the endgame are all computed
+   * above for the panels that print them for the room as a whole. This points
+   * the same readings at the one player on the block, which is where they are
+   * needed while a name is being called.
+   */
+  const bidValue = useMemo(
+    () =>
+      selected
+        ? ((snake ? draftService.getPickBoard() : draftService.getBidBoard()).get(selected.id) ??
+          null)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [selected?.id, snake, players, draftService]
+  );
+  const myAtPosition = useMemo(
+    () =>
+      selected && myTeamId
+        ? players
+            .filter((entry) => entry.draftedBy === myTeamId && entry.position === selected.position)
+            .sort((a, b) => (a.pickNumber ?? 0) - (b.pickNumber ?? 0))
+        : [],
+    [players, selected, myTeamId]
+  );
+  const bidNumber = Number.parseInt(bid, 10);
+  const spendSim = useMemo(
+    () =>
+      selected && myTeam && !snake && Number.isFinite(bidNumber) && bidNumber >= 1
+        ? draftService.simulateSpend(myTeam.id, bidNumber)
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- players is the change signal
+    [selected, myTeam, snake, bidNumber, players, draftService]
+  );
+  const selectedResearch = useMemo(
+    () => (selected ? researchMark(selected.id) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- researchReady is when the file lands
+    [selected?.id, researchReady]
+  );
+  /* In the snake, the best free picks by what they add to the lineup on the
+     clock — the pick board, which is the bid board pointed at the snake. */
+  const freePicks = useMemo(() => {
+    if (!snake) return [];
+    const byId = new Map(players.map((entry) => [entry.id, entry]));
+    return [...draftService.getPickBoard()]
+      .map(([id, entry]) => ({ player: byId.get(id)!, gain: entry.gain, seat: entry.seat }))
+      .filter((entry) => entry.player && !entry.player.isDrafted && entry.gain > 0)
+      .sort((a, b) => b.gain - a.gain)
+      .slice(0, 8);
+  }, [snake, players, draftService]);
+
+  const dossier = selected ? (
+    <PlayerProfile
+      inline
+      escapable={false}
+      player={selected}
+      analytics={analytics}
+      currentBid={Number.isFinite(bidNumber) ? bidNumber : 0}
+      players={players}
+      replacement={draftService.getReplacementLevel(selected.position)}
+      league={draftService.getLeagueShape()}
+      gain={snakeGain?.gain ?? snakeBounds?.high.gain ?? null}
+      gainFree={snakeGain?.free ?? snakeBounds?.high.free ?? null}
+      ceiling={pulse.get(selected.position)?.myCeiling ?? null}
+      walkAway={walkAway}
+      pinned={preferences.pinned.includes(selected.id)}
+      onTogglePin={() => togglePin(selected.id)}
+      onClose={() => setSelected(null)}
+      tonight={
+        <SpotlightTonight
+          player={selected}
+          mode={phase}
+          bid={bidNumber}
+          myTeam={myTeam}
+          myAtPosition={myAtPosition}
+          snakeGain={snakeGain}
+          snakeBounds={snakeBounds}
+          research={selectedResearch}
+          walkAway={walkAway}
+          value={bidValue}
+          plan={plan}
+          adjusted={selected && !snake ? adjust.price(selected) : null}
+          inflation={adjust.inflation}
+          competition={competition}
+          room={roomRead}
+          pulse={pulse.get(selected.position)}
+          scarcity={market.scarcity.find((row) => row.position === selected.position)}
+          basis={basis}
+          endgame={endgameState}
+          onTheClock={onTheClock}
+          freePicks={freePicks}
+        />
+      }
+    />
+  ) : null;
+
   const progress = players.length ? (drafted.length / players.length) * 100 : 0;
   const { season } = snapshotMeta();
 
   return (
-    <div className="draft-room">
-      <header className="dr-topbar">
-        <h1 className="dr-wordmark">
-          Draft<span>Vault</span>
-        </h1>
+    <div className="draft-room" ref={rootRef}>
+      <RoomTooltip />
+      {/* Header and block stick together.
+          The band was sticky at a fixed offset under a header that wraps —
+          so at any width where the setup row wrapped, the block tucked itself
+          underneath the header and the bid box was hidden by the thing meant
+          to be above it. One sticky context has no offset to get wrong. */}
+      <div className="dr-chrome" ref={chromeRef}>
+        <header className="dr-topbar">
+          {/* The progress bar is the bar's own bottom edge now.
+            As a flex item it took `flex: 1` — three hundred-odd pixels of the
+            one row every control has to fit on, to say something the "0/639"
+            beside it already says exactly. As a hairline under the header it
+            says the same thing, continuously, for two pixels. */}
+          <div
+            className="dr-progress"
+            role="progressbar"
+            aria-valuenow={Math.round(progress)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div className="dr-progress-fill" style={{ width: `${progress}%` }} />
+          </div>
 
-        <div className="dr-stat">
-          <span className="dr-eyebrow">Picks</span>
-          <span className="dr-stat-value">
-            {drafted.length}
-            <span style={{ color: 'var(--dr-ink-faint)' }}>/{players.length}</span>
-          </span>
-        </div>
+          <h1 className="dr-wordmark">
+            Draft<span>Vault</span>
+          </h1>
 
-        <div
-          className="dr-progress"
-          role="progressbar"
-          aria-valuenow={Math.round(progress)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="dr-progress-fill" style={{ width: `${progress}%` }} />
-        </div>
+          <div className="dr-stat">
+            <span className="dr-eyebrow">Picks</span>
+            <span className="dr-stat-value">
+              {drafted.length}
+              <span style={{ color: 'var(--dr-ink-faint)' }}>/{players.length}</span>
+            </span>
+          </div>
 
-        <div className="dr-stat">
-          <span className="dr-eyebrow">Committed</span>
-          <span className="dr-stat-value" style={{ color: 'var(--dr-value)' }}>
-            ${spent}
-          </span>
-        </div>
+          <div className="dr-stat dr-stat-committed">
+            <span className="dr-eyebrow">Committed</span>
+            <span className="dr-stat-value" style={{ color: 'var(--dr-value)' }}>
+              ${spent}
+            </span>
+          </div>
 
-        {/* Which half of the draft is running, and how far the auction has left
+          {/* Which half of the draft is running, and how far the auction has left
             to go. The count is the reason the unsold control exists: without a
             visible number, one player nobody called leaves the room wondering
             why the bid box will not go away. */}
-        {sheetRemaining != null && (
-          <div className="dr-stat">
-            <span className="dr-eyebrow">{snake ? 'Snake' : 'Sheet left'}</span>
-            <span className="dr-stat-value">
-              {snake && onTheClock ? `#${onTheClock.overall}` : sheetRemaining}
+          {sheetRemaining != null && (
+            <div className="dr-stat">
+              <span className="dr-eyebrow">{snake ? 'Snake' : 'Sheet left'}</span>
+              <span className="dr-stat-value">
+                {snake && onTheClock ? `#${onTheClock.overall}` : sheetRemaining}
+              </span>
+            </div>
+          )}
+
+          {followedAt > 0 && (
+            <span
+              className="dr-synced"
+              key={followedAt}
+              title="Another window of this draft made that change"
+            >
+              synced
             </span>
-          </div>
-        )}
+          )}
 
-        {followedAt > 0 && (
-          <span
-            className="dr-synced"
-            key={followedAt}
-            title="Another window of this draft made that change"
-          >
-            synced
-          </span>
-        )}
-
-        {/* Nobody nominates in the snake — the order does it — so the clock
+          {/* Nobody nominates in the snake — the order does it — so the clock
             would be naming a team for a turn that does not exist. The stage
             carries whose pick it is instead. */}
-        {!snake && (
-          <NominationClock
-            nominator={nominator}
-            player={selected}
-            seconds={preferences.clockSeconds}
-          />
-        )}
+          {!snake && (
+            <NominationClock
+              nominator={nominator}
+              player={selected}
+              seconds={preferences.clockSeconds}
+            />
+          )}
 
-        <button
-          className="dr-button"
-          onClick={undo}
-          disabled={!draftService.canUndo()}
-          title="Undo the last pick — or press u"
-        >
-          Undo pick
-        </button>
-        {/* Only while there is something to put back. An always-present Redo is
+          {/* Three groups, because fifteen identical pills in one wrapping row is
+            a menu with the labels rubbed off. What the auction touches is
+            solid; what is set up once is quiet; what destroys work sits alone
+            at the end in the colour of the thing it does. */}
+          <div className="dr-topbar-group dr-topbar-live">
+            {/* Whether the board is actually set up.
+                Every catastrophic failure this app has is silent — a league at
+                the pool's defaults, a sheet that lost eight names, no team
+                marked as yours — and each of the individual warnings is only
+                seen by whoever opens the panel it lives in. This is in the top
+                bar because a checklist nobody opens is a checklist nobody has,
+                and it disappears entirely once there is nothing to say. */}
+            {readyLevel !== 'ready' && (
+              <button
+                type="button"
+                className="dr-ready"
+                data-level={readyLevel}
+                onClick={() => setReadyOpen(true)}
+                title="Something about this board is not set up. Open the checklist."
+              >
+                {checks.filter((check) => check.level !== 'ready').length} to fix
+              </button>
+            )}
+            <button
+              className="dr-button"
+              onClick={undo}
+              disabled={!draftService.canUndo()}
+              title="Undo the last pick — or press u"
+            >
+              Undo pick
+            </button>
+            {/* Only while there is something to put back. An always-present Redo is
             a button that does nothing most of the night, and one that appears
             the moment a pick is taken back says what it is for. */}
-        {draftService.canRedo() && (
-          <button
-            className="dr-button"
-            onClick={redo}
-            title="Put back the pick that was just undone — or press r"
-          >
-            Redo ({draftService.undoneCount()})
-          </button>
-        )}
+            {draftService.canRedo() && (
+              <button
+                className="dr-button"
+                onClick={redo}
+                title="Put back the pick that was just undone — or press r"
+              >
+                Redo ({draftService.undoneCount()})
+              </button>
+            )}
 
-        {/* How exposed the record is, where the picks are counted rather than
+            {/* How exposed the record is, where the picks are counted rather than
             inside a panel nobody opens mid-auction. It opens the file panel,
             because the fix for the thing it is warning about is in there. */}
-        {drafted.length > 0 && (
+            {drafted.length > 0 && (
+              <button
+                className="dr-exposure"
+                data-level={exposureLevel(unsaved)}
+                onClick={() => setFileOpen(true)}
+                title={
+                  unsaved === 0
+                    ? `The whole draft has been ${exportMark?.kind === 'clipboard' ? 'copied' : 'saved'} since the last pick. Press s to save a file, c to copy it.`
+                    : `${unsaved} pick${unsaved === 1 ? '' : 's'} since the draft last left this browser${exportMark ? '' : ' — no copy has ever been made'}. Press s to save a file, c to copy it.`
+                }
+              >
+                {unsaved === 0 ? 'Copy kept' : `${unsaved} unsaved`}
+              </button>
+            )}
+            <button
+              className="dr-button"
+              onClick={() => setBoardOpen(true)}
+              disabled={!drafted.length}
+            >
+              The room
+            </button>
+            <button
+              className="dr-button"
+              aria-pressed={preferences.advisor}
+              onClick={() => setAdvisor(!preferences.advisor)}
+              title="An opinion layer, kept separate from the numbers"
+            >
+              Advisor {preferences.advisor ? 'on' : 'off'}
+            </button>
+            <button
+              className="dr-button"
+              onClick={() => setResultsOpen(true)}
+              disabled={!drafted.length}
+            >
+              Results
+            </button>
+          </div>
+
+          {/* What is set up once, behind one button — see `SetupMenu` for why.
+              The count on it is how many of these have something in force. */}
+          <SetupMenu
+            items={[
+              {
+                label: customCount > 0 ? `Your ranks (${customCount})` : 'Import ranks',
+                title: 'Use your own rankings instead of ours',
+                onSelect: () => setImportOpen(true),
+                active: customCount > 0,
+              },
+              {
+                label: sheet.ids.length > 0 ? `Sheet (${sheet.ids.length})` : 'Auction sheet',
+                title: "The commissioner's sheet — the players money actually buys",
+                onSelect: () => setSheetOpen(true),
+                active: sheet.ids.length > 0,
+              },
+              {
+                label: `League · ${league.teams} × $${league.budget}`,
+                title: 'Teams, budget and roster shape — every price is computed from them',
+                onSelect: () => setLeagueOpen(true),
+              },
+              {
+                label: 'Snake order',
+                title: 'The order the snake is called in — the commissioner sets it',
+                onSelect: () => setOrderOpen(true),
+                active: draftService.hasSnakeOrder(),
+              },
+              {
+                label: 'Draft file',
+                title: 'Save the draft to a file, or load one — or press s',
+                onSelect: () => setFileOpen(true),
+              },
+              {
+                label: serverLabel,
+                title:
+                  'Saved drafts and rebuilds, when a server is running. The app does not need one.',
+                onSelect: () => setServerOpen(true),
+                active: server.discovery.state === 'ready',
+              },
+            ]}
+          />
+
           <button
-            className="dr-exposure"
-            data-level={exposureLevel(unsaved)}
-            onClick={() => setFileOpen(true)}
-            title={
-              unsaved === 0
-                ? `The whole draft has been ${exportMark?.kind === 'clipboard' ? 'copied' : 'saved'} since the last pick. Press s to save a file, c to copy it.`
-                : `${unsaved} pick${unsaved === 1 ? '' : 's'} since the draft last left this browser${exportMark ? '' : ' — no copy has ever been made'}. Press s to save a file, c to copy it.`
-            }
+            className="dr-button dr-button-danger"
+            onClick={() => setConfirmReset(true)}
+            disabled={!drafted.length}
           >
-            {unsaved === 0 ? 'Copy kept' : `${unsaved} unsaved`}
+            Reset
           </button>
+        </header>
+
+        {resumed > 0 && (
+          <p
+            className="dr-ticker"
+            role="status"
+            style={{ color: 'var(--dr-ink-muted)', fontSize: 12 }}
+          >
+            Resumed your saved draft — {resumed} pick{resumed === 1 ? '' : 's'} restored.
+          </p>
         )}
-        <button className="dr-button" onClick={() => setBoardOpen(true)} disabled={!drafted.length}>
-          The room
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={preferences.advisor}
-          onClick={() => setAdvisor(!preferences.advisor)}
-          title="An opinion layer, kept separate from the numbers"
-        >
-          Advisor {preferences.advisor ? 'on' : 'off'}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setResultsOpen(true)}
-          disabled={!drafted.length}
-        >
-          Results
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={customCount > 0}
-          onClick={() => setImportOpen(true)}
-          title="Use your own rankings instead of ours"
-        >
-          {customCount > 0 ? `Your ranks (${customCount})` : 'Import ranks'}
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={sheet.ids.length > 0}
-          onClick={() => setSheetOpen(true)}
-          title="The commissioner's sheet — the players money actually buys"
-        >
-          {sheet.ids.length > 0 ? `Sheet (${sheet.ids.length})` : 'Auction sheet'}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setLeagueOpen(true)}
-          title="Teams, budget and roster shape — every price is computed from them"
-        >
-          {league.teams} × ${league.budget}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setOrderOpen(true)}
-          title="The order the snake is called in — the commissioner sets it"
-        >
-          Snake order
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setFileOpen(true)}
-          title="Save the draft to a file, or load one"
-        >
-          File
-        </button>
-        <button
-          className="dr-button"
-          aria-pressed={server.discovery.state === 'ready'}
-          onClick={() => setServerOpen(true)}
-          title="Saved drafts and rebuilds, when a server is running. The app does not need one."
-        >
-          {serverLabel}
-        </button>
-        <button
-          className="dr-button"
-          onClick={() => setConfirmReset(true)}
-          disabled={!drafted.length}
-        >
-          Reset
-        </button>
-      </header>
 
-      {resumed > 0 && (
-        <p
-          className="dr-ticker"
-          role="status"
-          style={{ color: 'var(--dr-ink-muted)', fontSize: 12 }}
-        >
-          Resumed your saved draft — {resumed} pick{resumed === 1 ? '' : 's'} restored.
-        </p>
-      )}
+        {handoff && (
+          <p
+            className={handoff.tone === 'bad' ? 'dr-ticker dr-ticker-warn' : 'dr-ticker'}
+            role="status"
+            style={handoff.tone === 'bad' ? undefined : { color: 'var(--dr-value)', fontSize: 12 }}
+          >
+            {handoff.text}
+          </p>
+        )}
 
-      {handoff && (
-        <p
-          className={handoff.tone === 'bad' ? 'dr-ticker dr-ticker-warn' : 'dr-ticker'}
-          role="status"
-          style={handoff.tone === 'bad' ? undefined : { color: 'var(--dr-value)', fontSize: 12 }}
-        >
-          {handoff.text}
-        </p>
-      )}
+        {cleared > 0 && (
+          <p className="dr-ticker dr-ticker-warn" role="status">
+            Cleared {cleared} pick{cleared === 1 ? '' : 's'}.{' '}
+            <button type="button" className="dr-linkish" onClick={undoReset}>
+              Put them back
+            </button>{' '}
+            — available until somebody drafts again.
+          </p>
+        )}
 
-      {cleared > 0 && (
-        <p className="dr-ticker dr-ticker-warn" role="status">
-          Cleared {cleared} pick{cleared === 1 ? '' : 's'}.{' '}
-          <button type="button" className="dr-linkish" onClick={undoReset}>
-            Put them back
-          </button>{' '}
-          — available until somebody drafts again.
-        </p>
-      )}
+        {/* The block, across the whole width.
+          It lived in the 380px aside, where its own content is about nine
+          hundred pixels tall — so the winning-team select, the bid box and
+          SOLD, which are the entire mechanism of the night, sat below the fold
+          of a sub-panel. Nothing else on this screen is a control somebody
+          uses under time pressure, and the board underneath had 1100px to hold
+          four cards. Sticky, so it stays put while the board scrolls. */}
+        <div className="dr-band">
+          {complete ? (
+            <section className="dr-stage dr-stage-done" aria-label="Draft complete">
+              <h2 className="dr-stage-name" style={{ fontSize: 24 }}>
+                That is the draft
+              </h2>
+              <p className="dr-meter-note">
+                Every roster is full — {drafted.length} pick
+                {drafted.length === 1 ? '' : 's'}, ${spent} spent. Nobody has room for another
+                player, so there is nothing left to nominate.
+              </p>
+              <div className="dr-results-actions">
+                <button
+                  type="button"
+                  className="dr-button dr-button-primary"
+                  onClick={() => setResultsOpen(true)}
+                >
+                  See the results
+                </button>
+                <button type="button" className="dr-button" onClick={() => setBoardOpen(true)}>
+                  The room
+                </button>
+              </div>
+            </section>
+          ) : (
+            <NominationStage
+              mode={phase}
+              myTeamId={myTeamId}
+              walkAway={walkAway}
+              planNames={planNames}
+              /* The row asks the engine rather than guessing, so a chip that
+                 looks live is a sale the engine will accept. Twelve cheap
+                 lookups per render of one panel. */
+              checkTeam={
+                selected && phase === 'auction'
+                  ? (candidate, amount) =>
+                      draftService.validateBid(selected.id, candidate, amount || 1)
+                  : undefined
+              }
+              player={selected}
+              teams={teams}
+              teamId={teamId}
+              bid={bid}
+              analytics={analytics}
+              check={check}
+              onTeamChange={setTeamId}
+              onBidChange={setBid}
+              onConfirm={confirm}
+              dossier={dossier}
+              consequence={
+                selected && myTeam && phase === 'auction' ? (
+                  <BidConsequence
+                    bid={bidNumber}
+                    walkAway={walkAway}
+                    value={bidValue}
+                    plan={plan}
+                    spend={spendSim}
+                  />
+                ) : null
+              }
+              folded={stageFolded || autoFolded}
+              onToggleFold={() => {
+                if (stageFolded || autoFolded) {
+                  setStageFolded(false);
+                  window.scrollTo({ top: 0 });
+                } else {
+                  setStageFolded(true);
+                }
+              }}
+              canDraft={(team) => draftService.canDraft(team)}
+              onTheClock={onTheClock}
+              onAddToSheet={
+                selected
+                  ? () => {
+                      draftService.setAuctionSheet(
+                        [...sheet.ids, selected.id],
+                        sheet.loss ?? undefined
+                      );
+                      sync();
+                    }
+                  : undefined
+              }
+              snakeGain={snakeGain}
+              snakeBounds={snakeBounds}
+              freeManResearch={freeManResearch}
+              sheetRemaining={sheetRemaining}
+              onUnsold={markUnsold}
+              onReturnToSheet={returnToSheet}
+              passedOver={!!selected && sheet.unsold.includes(selected.id)}
+              adjusted={selected && !snake ? adjust.price(selected) : null}
+              inflation={adjust.inflation}
+              competition={competition}
+            />
+          )}
+        </div>
+      </div>
 
       <div className="dr-body">
         <main aria-label="Available players">
@@ -1285,7 +1914,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                   adjust={adjust}
                 />
               ) : (
-                <div className="dr-grid">
+                <div className={`dr-grid${expandedId ? ' is-receded' : ''}`}>
                   {available.slice(0, cardLimit).map((player) => (
                     <PlayerCard
                       key={player.id}
@@ -1297,6 +1926,19 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                       onTogglePin={togglePin}
                       pinned={preferences.pinned.includes(player.id)}
                       researchReady={researchReady}
+                      historyReady={historyReady}
+                      gainLow={boardGains.get(player.id)?.low}
+                      gainHigh={boardGains.get(player.id)?.high}
+                      gainFree={boardGains.get(player.id)?.free}
+                      gainSlot={boardGains.get(player.id)?.slot}
+                      pulse={pulse.get(player.position)}
+                      onFlip={toggleFlip}
+                      /* Flipped in the grid; the raised copy is rendered once,
+                         below, in its own layer. A card cannot be both, and
+                         leaving the expansion here would have it grow inside a
+                         cell — which is the layout this replaced. */
+                      flipped={flippedId === player.id && !expandedId}
+                      onExpand={expandCard}
                     />
                   ))}
                 </div>
@@ -1306,59 +1948,72 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
                   {available.length - cardLimit} more — keep scrolling, or search for a name
                 </div>
               )}
+
+              {/* The raised card, in its own layer above the board.
+                  Rendered here rather than inside the grid because a fixed,
+                  centred overlay cannot be a grid child without the grid
+                  reserving a cell for it — which is exactly the hole in the
+                  row that the lift exists to avoid. The board behind is
+                  dimmed and pushed back rather than replaced, so what closing
+                  restores is the board that was there, unmoved. */}
+              {expandedPlayer && (
+                <div
+                  className="dr-lift"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={`${expandedPlayer.name} dossier`}
+                  onClick={closeExpanded}
+                >
+                  <PlayerCard
+                    player={expandedPlayer}
+                    selected={selected?.id === expandedPlayer.id}
+                    watched={preferences.watchlist.includes(expandedPlayer.id)}
+                    onSelect={nominate}
+                    onToggleWatch={toggleWatch}
+                    onTogglePin={togglePin}
+                    pinned={preferences.pinned.includes(expandedPlayer.id)}
+                    researchReady={researchReady}
+                    historyReady={historyReady}
+                    gainLow={boardGains.get(expandedPlayer.id)?.low}
+                    gainHigh={boardGains.get(expandedPlayer.id)?.high}
+                    gainFree={boardGains.get(expandedPlayer.id)?.free}
+                    gainSlot={boardGains.get(expandedPlayer.id)?.slot}
+                    pulse={pulse.get(expandedPlayer.position)}
+                    onFlip={closeExpanded}
+                    flipped
+                    expanded
+                    liftFrom={open?.from ?? undefined}
+                    /* The dossier goes *into* the raised card, which is what
+                       makes this a drilldown rather than a panel that appears
+                       beside one. */
+                    detail={
+                      <PlayerProfile
+                        inline
+                        player={expandedPlayer}
+                        analytics={selected?.id === expandedPlayer.id ? analytics : null}
+                        currentBid={selected?.id === expandedPlayer.id ? Number(bid) || 0 : 0}
+                        players={players}
+                        replacement={draftService.getReplacementLevel(expandedPlayer.position)}
+                        /* The league, so a season's points are restated the way
+                           every other number in the room already is — the pool
+                           file counts full PPR and this one is half. */
+                        league={draftService.getLeagueShape()}
+                        gain={boardGains.get(expandedPlayer.id)?.high ?? null}
+                        gainFree={boardGains.get(expandedPlayer.id)?.free ?? null}
+                        ceiling={pulse.get(expandedPlayer.position)?.myCeiling ?? null}
+                        pinned={preferences.pinned.includes(expandedPlayer.id)}
+                        onTogglePin={() => togglePin(expandedPlayer.id)}
+                        onClose={closeExpanded}
+                      />
+                    }
+                  />
+                </div>
+              )}
             </>
           )}
         </main>
 
         <aside className="dr-aside">
-          {complete ? (
-            <section className="dr-stage dr-stage-done" aria-label="Draft complete">
-              <h2 className="dr-stage-name" style={{ fontSize: 24 }}>
-                That is the draft
-              </h2>
-              <p className="dr-meter-note">
-                Every roster is full — {drafted.length} pick
-                {drafted.length === 1 ? '' : 's'}, ${spent} spent. Nobody has room for another
-                player, so there is nothing left to nominate.
-              </p>
-              <div className="dr-results-actions">
-                <button
-                  type="button"
-                  className="dr-button dr-button-primary"
-                  onClick={() => setResultsOpen(true)}
-                >
-                  See the results
-                </button>
-                <button type="button" className="dr-button" onClick={() => setBoardOpen(true)}>
-                  The room
-                </button>
-              </div>
-            </section>
-          ) : (
-            <NominationStage
-              mode={phase}
-              player={selected}
-              teams={teams}
-              teamId={teamId}
-              bid={bid}
-              analytics={analytics}
-              check={check}
-              onTeamChange={setTeamId}
-              onBidChange={setBid}
-              onConfirm={confirm}
-              onOpenProfile={() => setProfileOpen(true)}
-              canDraft={(team) => draftService.canDraft(team)}
-              onTheClock={onTheClock}
-              snakeGain={snakeGain}
-              sheetRemaining={sheetRemaining}
-              onUnsold={markUnsold}
-              onReturnToSheet={returnToSheet}
-              passedOver={!!selected && sheet.unsold.includes(selected.id)}
-              adjusted={selected && !snake ? adjust.price(selected) : null}
-              inflation={adjust.inflation}
-              competition={competition}
-            />
-          )}
           {preferences.advisor && (
             <AdvisorPanel
               advice={advice}
@@ -1378,24 +2033,34 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
           )}
 
           <div className="dr-segmented dr-aside-tabs" role="group" aria-label="Side panel">
-            {(['spend', 'budgets', 'rosters', 'market', 'bargains', 'plan'] as const).map(
-              (panel) => (
-                <button
-                  key={panel}
-                  type="button"
-                  aria-pressed={asidePanel === panel}
-                  onClick={() => setAsidePanel(panel)}
-                >
-                  {panel}
-                </button>
-              )
-            )}
+            {/* Six, in a three-by-two grid. There were seven — a lone button
+                on a third row — and two of them were "Budget" and "Budgets",
+                one letter apart and about different things. The budgets rail
+                was a strict subset of the rosters panel and is folded into
+                it; the planner says what it is. Labels come from a table
+                rather than from capitalising the state key. */}
+            {(
+              [
+                ['plan', 'Plan'],
+                ['spend', 'Spend'],
+                ['bid', 'This bid'],
+                ['rosters', 'Rosters'],
+                ['market', 'Market'],
+                ['bargains', 'Bargains'],
+              ] as const
+            ).map(([panel, label]) => (
+              <button
+                key={panel}
+                type="button"
+                aria-pressed={asidePanel === panel}
+                onClick={() => setAsidePanel(panel)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           {asidePanel === 'spend' && <SpendOutlook service={draftService} players={players} />}
-          {asidePanel === 'budgets' && (
-            <BudgetRail teams={teams} players={players} activeTeamId={teamId} />
-          )}
           {asidePanel === 'rosters' && (
             <TeamsPanel
               teams={teams}
@@ -1414,15 +2079,29 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
               basis={basis}
               tierBreaks={tierBreaks}
               endgame={endgameState}
+              stamps={stamps}
             />
           )}
           {asidePanel === 'bargains' && (
             <BargainBoard service={draftService} players={players} onSelect={nominate} />
           )}
           {asidePanel === 'plan' && (
+            <RosterPlanPanel service={draftService} players={players} onSelect={nominate} />
+          )}
+          {asidePanel === 'bid' && (
             <BudgetPlanner
               service={draftService}
-              team={activeTeam}
+              /* Yours, not whoever the winning-team select happens to sit on.
+                 That select is a *recording* control — it names who just bought
+                 a player, so through a normal auction it sits on an opponent
+                 most of the night — and this panel answers "what does this bid
+                 leave me". It was handed `activeTeam`, which is the same
+                 mistake the advisor was found making, and it read "Team 9's
+                 budget" on a screen whose owner is Team 1. `activeTeam` is
+                 still the fallback, because with nobody marked as yours there
+                 is no better answer than the team being recorded, and the
+                 header names whichever it is. */
+              team={myTeam ?? activeTeam}
               player={selected}
               bid={bid}
               players={players}
@@ -1627,18 +2306,7 @@ export const DraftRoom = ({ draftService }: DraftRoomProps) => {
         />
       )}
 
-      {profileOpen && selected && (
-        <PlayerProfile
-          player={selected}
-          analytics={analytics}
-          players={players}
-          replacement={draftService.getReplacementLevel(selected.position)}
-          currentBid={Number.parseInt(bid, 10) || undefined}
-          pinned={preferences.pinned.includes(selected.id)}
-          onTogglePin={() => togglePin(selected.id)}
-          onClose={() => setProfileOpen(false)}
-        />
-      )}
+      {readyOpen && <ReadinessPanel checks={checks} onClose={() => setReadyOpen(false)} />}
     </div>
   );
 };

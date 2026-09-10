@@ -9,6 +9,7 @@ import {
 } from '@/lib/rankingsCsv';
 import type { Player } from '@/services/auctionDraftService';
 import { describeMarket, marketFreshness, type MarketSnapshot } from '@/lib/marketContract';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface RankingsImportProps {
   players: Player[];
@@ -69,12 +70,9 @@ export const RankingsImport = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   const candidates = useMemo(() => asCandidates(players), [players]);
   const parsed: ParsedRankings | null = useMemo(

@@ -1,0 +1,1684 @@
+{
+  "source": "nflverse stats_player_week (regular season)",
+  "season": 2025,
+  "generatedAt": "2026-09-02T00:23:26.646Z",
+  "kickers": {
+    "00-0023853": {
+      "name": "Matt Prater",
+      "team": "BUF",
+      "games": [
+        { "week": 1, "made": [25, 43, 32], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 2, "made": [28, 52, 33], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 3, "made": [48], "missed": [39], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 4, "made": [35], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 5, "made": [31, 45], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 6, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 8, "made": [45, 43], "missed": [], "blocked": [], "patMade": 4, "patAtt": 5 },
+        { "week": 9, "made": [], "missed": [52], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 10, "made": [], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 11, "made": [39], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 12, "made": [44, 38], "missed": [], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 13, "made": [27, 37], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 14, "made": [26], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 15, "made": [], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 18, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 }
+      ],
+      "attempts": 20,
+      "made": 18,
+      "long": 52,
+      "patMade": 46,
+      "patAtt": 49
+    },
+    "00-0025565": {
+      "name": "Nick Folk",
+      "team": "NYJ",
+      "games": [
+        { "week": 1, "made": [35, 51], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 2, "made": [51], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 3, "made": [38, 42], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 4, "made": [58, 50], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 5, "made": [25, 48], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 6, "made": [52, 41, 38], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 7, "made": [34, 47], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 8, "made": [46, 25, 24], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 10, "made": [26, 37], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 11, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 12, "made": [42], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 13, "made": [32, 56], "missed": [55], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 14, "made": [31], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 15, "made": [41, 51], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 16, "made": [29, 36], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 17, "made": [39], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 }
+      ],
+      "attempts": 29,
+      "made": 28,
+      "long": 58,
+      "patMade": 22,
+      "patAtt": 22
+    },
+    "00-0026858": {
+      "name": "Graham Gano",
+      "team": "NYG",
+      "games": [
+        { "week": 1, "made": [21, 55], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 2, "made": [38, 33, 33], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 3, "made": [25], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 8, "made": [47, 34], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 9, "made": [22], "missed": [45], "blocked": [], "patMade": 3, "patAtt": 3 }
+      ],
+      "attempts": 10,
+      "made": 9,
+      "long": 55,
+      "patMade": 9,
+      "patAtt": 9
+    },
+    "00-0029822": {
+      "name": "Brandon McManus",
+      "team": "GB",
+      "games": [
+        { "week": 1, "made": [34, 38], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 2, "made": [22, 56], "missed": [48], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 3, "made": [39], "missed": [], "blocked": [43], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [53, 34], "missed": [], "blocked": [], "patMade": 4, "patAtt": 5 },
+        {
+          "week": 8,
+          "made": [28, 25],
+          "missed": [57, 44],
+          "blocked": [],
+          "patMade": 3,
+          "patAtt": 3
+        },
+        { "week": 9, "made": [49, 27], "missed": [43], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 10, "made": [], "missed": [64], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 12,
+          "made": [32, 30, 40],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 13, "made": [45], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 14, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 15,
+          "made": [53, 26, 35, 37],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 16,
+          "made": [26, 22, 28],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 17, "made": [24], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 18, "made": [24], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 }
+      ],
+      "attempts": 30,
+      "made": 24,
+      "long": 56,
+      "patMade": 32,
+      "patAtt": 33
+    },
+    "00-0031136": {
+      "name": "Chris Boswell",
+      "team": "PIT",
+      "games": [
+        { "week": 1, "made": [56, 60], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 2, "made": [48, 48, 45], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 3, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 4, "made": [33], "missed": [], "blocked": [30], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 6,
+          "made": [44, 50, 48],
+          "missed": [54],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 7, "made": [41], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 8,
+          "made": [56, 50, 48, 56],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 9, "made": [25, 46], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 10, "made": [59], "missed": [45], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 11, "made": [25, 30], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 12, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 14, "made": [23, 28], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 15, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 16, "made": [59, 23], "missed": [37], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 17, "made": [44, 40], "missed": [54], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 18, "made": [57, 25], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 }
+      ],
+      "attempts": 32,
+      "made": 27,
+      "long": 60,
+      "patMade": 42,
+      "patAtt": 43
+    },
+    "00-0031203": {
+      "name": "Cairo Santos",
+      "team": "CHI",
+      "games": [
+        { "week": 1, "made": [42], "missed": [50], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 2, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 3, "made": [30], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 4,
+          "made": [46, 43, 52, 51],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 8,
+          "made": [32, 39, 47],
+          "missed": [58],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 9, "made": [24, 36], "missed": [], "blocked": [47], "patMade": 5, "patAtt": 5 },
+        { "week": 10, "made": [22], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 11,
+          "made": [38, 54, 33, 48],
+          "missed": [45],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 12, "made": [47], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 13, "made": [30], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 14, "made": [33, 41], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 15, "made": [41], "missed": [35], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 16,
+          "made": [46, 51, 43],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 17, "made": [29], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 18, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 }
+      ],
+      "attempts": 30,
+      "made": 25,
+      "long": 54,
+      "patMade": 39,
+      "patAtt": 39
+    },
+    "00-0031492": {
+      "name": "Jason Myers",
+      "team": "SEA",
+      "games": [
+        { "week": 1, "made": [48, 37], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 2, "made": [54], "missed": [36], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 3, "made": [56, 46, 37], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        {
+          "week": 4,
+          "made": [44, 31, 52],
+          "missed": [53],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 5, "made": [], "missed": [44], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 6, "made": [24, 53], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 7, "made": [26, 47], "missed": [], "blocked": [53], "patMade": 3, "patAtt": 3 },
+        { "week": 9, "made": [41], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        {
+          "week": 10,
+          "made": [46, 32, 34],
+          "missed": [],
+          "blocked": [],
+          "patMade": 5,
+          "patAtt": 5
+        },
+        {
+          "week": 11,
+          "made": [57, 30, 22, 29],
+          "missed": [61],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 12,
+          "made": [47, 30, 36],
+          "missed": [],
+          "blocked": [],
+          "patMade": 3,
+          "patAtt": 3
+        },
+        {
+          "week": 13,
+          "made": [33, 56, 54, 40],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 14,
+          "made": [22, 48, 37],
+          "missed": [],
+          "blocked": [],
+          "patMade": 4,
+          "patAtt": 4
+        },
+        {
+          "week": 15,
+          "made": [47, 52, 46, 32, 30, 56],
+          "missed": [],
+          "blocked": [],
+          "patMade": 0,
+          "patAtt": 0
+        },
+        { "week": 16, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 17, "made": [48, 30], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 18,
+          "made": [45, 31],
+          "missed": [47, 26],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        }
+      ],
+      "attempts": 48,
+      "made": 41,
+      "long": 57,
+      "patMade": 48,
+      "patAtt": 48
+    },
+    "00-0032569": {
+      "name": "Wil Lutz",
+      "team": "DEN",
+      "games": [
+        { "week": 1, "made": [39, 33], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 2, "made": [], "missed": [42], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 3, "made": [42, 26], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 4, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 5, "made": [55, 36], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 6, "made": [57, 27], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 7, "made": [39], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 8, "made": [42], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 9, "made": [34], "missed": [], "blocked": [51], "patMade": 1, "patAtt": 1 },
+        { "week": 10, "made": [32], "missed": [59], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 11,
+          "made": [29, 24, 38, 54, 35],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 13, "made": [33, 33], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 14, "made": [23], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 15, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 16, "made": [54, 21], "missed": [44], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 17, "made": [27, 30], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 18,
+          "made": [24, 26, 41, 23],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        }
+      ],
+      "attempts": 32,
+      "made": 28,
+      "long": 57,
+      "patMade": 39,
+      "patAtt": 39
+    },
+    "00-0032726": {
+      "name": "Ka'imi Fairbairn",
+      "team": "HOU",
+      "games": [
+        { "week": 1, "made": [51, 45, 53], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 2, "made": [35, 53], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 3, "made": [27], "missed": [52], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [47, 43], "missed": [54], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 5, "made": [50, 57, 34], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 7, "made": [36, 46], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 8,
+          "made": [33, 34, 37, 30],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 9,
+          "made": [23, 41, 38, 40, 41],
+          "missed": [51],
+          "blocked": [],
+          "patMade": 0,
+          "patAtt": 0
+        },
+        {
+          "week": 12,
+          "made": [24, 43, 26],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 13, "made": [23, 43], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 14, "made": [35, 28], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 15,
+          "made": [30, 55, 22, 33],
+          "missed": [],
+          "blocked": [52],
+          "patMade": 4,
+          "patAtt": 4
+        },
+        {
+          "week": 16,
+          "made": [55, 50, 49],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 17, "made": [41, 44], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 18,
+          "made": [51, 48, 29, 43, 44, 43],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        }
+      ],
+      "attempts": 48,
+      "made": 44,
+      "long": 57,
+      "patMade": 28,
+      "patAtt": 28
+    },
+    "00-0033303": {
+      "name": "Harrison Butker",
+      "team": "KC",
+      "games": [
+        { "week": 1, "made": [35, 59, 27], "missed": [], "blocked": [], "patMade": 0, "patAtt": 1 },
+        { "week": 2, "made": [56], "missed": [58], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 3,
+          "made": [54, 48, 28],
+          "missed": [40],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 2
+        },
+        {
+          "week": 4,
+          "made": [38, 23, 31],
+          "missed": [56],
+          "blocked": [],
+          "patMade": 4,
+          "patAtt": 4
+        },
+        { "week": 5, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 6, "made": [33], "missed": [], "blocked": [], "patMade": 3, "patAtt": 4 },
+        { "week": 7, "made": [38], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 8, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 9, "made": [46, 19], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 11, "made": [31, 31], "missed": [], "blocked": [], "patMade": 1, "patAtt": 2 },
+        {
+          "week": 12,
+          "made": [28, 48, 22, 25, 27],
+          "missed": [],
+          "blocked": [],
+          "patMade": 0,
+          "patAtt": 0
+        },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 14, "made": [36], "missed": [43], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 15, "made": [27, 47], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 16,
+          "made": [54, 41, 27],
+          "missed": [51],
+          "blocked": [],
+          "patMade": 0,
+          "patAtt": 0
+        },
+        { "week": 17, "made": [53, 47], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 18,
+          "made": [36, 40, 47, 41],
+          "missed": [],
+          "blocked": [],
+          "patMade": 0,
+          "patAtt": 0
+        }
+      ],
+      "attempts": 38,
+      "made": 33,
+      "long": 59,
+      "patMade": 31,
+      "patAtt": 35
+    },
+    "00-0033702": {
+      "name": "Younghoe Koo",
+      "team": "NYG",
+      "games": [
+        { "week": 1, "made": [41, 36], "missed": [44], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 10, "made": [32, 19], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 11, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 12, "made": [21, 44], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 15, "made": [], "missed": [52, 51], "blocked": [], "patMade": 3, "patAtt": 3 }
+      ],
+      "attempts": 9,
+      "made": 6,
+      "long": 44,
+      "patMade": 13,
+      "patAtt": 14
+    },
+    "00-0033787": {
+      "name": "Jake Elliott",
+      "team": "PHI",
+      "games": [
+        { "week": 1, "made": [58], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 2, "made": [58, 51], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 3, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 4, "made": [39], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 5, "made": [31], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 6, "made": [42], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 7, "made": [], "missed": [42], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 8, "made": [40], "missed": [58], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 10, "made": [39], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 11,
+          "made": [27, 34, 49],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 12, "made": [], "missed": [56], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 13, "made": [44], "missed": [52], "blocked": [], "patMade": 0, "patAtt": 1 },
+        {
+          "week": 14,
+          "made": [41, 30, 54, 44],
+          "missed": [48],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 15, "made": [27], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 16, "made": [], "missed": [43, 52], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 17, "made": [47, 28], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 18, "made": [39], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 27,
+      "made": 20,
+      "long": 58,
+      "patMade": 41,
+      "patAtt": 42
+    },
+    "00-0034161": {
+      "name": "Daniel Carlson",
+      "team": "LV",
+      "games": [
+        { "week": 1, "made": [51, 40], "missed": [58], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 2, "made": [54, 40, 37], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 3, "made": [37], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [29], "missed": [], "blocked": [54], "patMade": 3, "patAtt": 3 },
+        { "week": 5, "made": [24, 37], "missed": [57], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 6, "made": [50, 29], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 7, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 9, "made": [24], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 10, "made": [], "missed": [48], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 11,
+          "made": [35, 45, 38],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 12, "made": [41], "missed": [48], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 14, "made": [46], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 15, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 16, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 17, "made": [42], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 18,
+          "made": [32, 23, 55, 60],
+          "missed": [],
+          "blocked": [],
+          "patMade": 0,
+          "patAtt": 0
+        }
+      ],
+      "attempts": 27,
+      "made": 22,
+      "long": 60,
+      "patMade": 21,
+      "patAtt": 22
+    },
+    "00-0035192": {
+      "name": "Joey Slye",
+      "team": "TEN",
+      "games": [
+        {
+          "week": 1,
+          "made": [50, 33, 42, 35],
+          "missed": [],
+          "blocked": [],
+          "patMade": 0,
+          "patAtt": 0
+        },
+        {
+          "week": 2,
+          "made": [55, 37, 57, 35],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 3, "made": [57, 42], "missed": [64], "blocked": [62], "patMade": 2, "patAtt": 2 },
+        { "week": 4, "made": [], "missed": [41, 43], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 5, "made": [44, 51, 29], "missed": [], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 7, "made": [49, 50], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 8, "made": [], "missed": [58], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 9, "made": [49, 37], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 11, "made": [56, 47], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 12, "made": [22], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 13, "made": [28], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 14, "made": [41], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 15, "made": [25], "missed": [50], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 16, "made": [27], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 17,
+          "made": [50, 38, 28, 58],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 18, "made": [], "missed": [52], "blocked": [], "patMade": 1, "patAtt": 1 }
+      ],
+      "attempts": 35,
+      "made": 28,
+      "long": 58,
+      "patMade": 26,
+      "patAtt": 27
+    },
+    "00-0035269": {
+      "name": "Matt Gay",
+      "team": "SF",
+      "games": [
+        { "week": 1, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 2, "made": [51], "missed": [58, 52], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 3, "made": [46, 56], "missed": [37], "blocked": [], "patMade": 5, "patAtt": 5 },
+        {
+          "week": 4,
+          "made": [43, 52, 41, 42],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 5, "made": [29, 36], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 6, "made": [53], "missed": [50], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 9, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 10, "made": [44], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 11,
+          "made": [26, 30],
+          "missed": [51, 56],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 12, "made": [47, 29], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 13, "made": [25, 31], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 23,
+      "made": 17,
+      "long": 56,
+      "patMade": 26,
+      "patAtt": 26
+    },
+    "00-0035358": {
+      "name": "Chase McLaughlin",
+      "team": "TB",
+      "games": [
+        { "week": 1, "made": [48], "missed": [44], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 2, "made": [], "missed": [38], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 3,
+          "made": [54, 33, 28, 55, 36],
+          "missed": [],
+          "blocked": [43],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 4, "made": [42, 65, 58], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 5, "made": [30, 36, 39], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 6, "made": [45], "missed": [49], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [53], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 8, "made": [55, 52, 54], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 10, "made": [36], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 11, "made": [23, 24], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 12, "made": [], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 13, "made": [25, 57], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 14, "made": [41, 37], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 15, "made": [49, 52], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 16, "made": [23, 50], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 17, "made": [33], "missed": [], "blocked": [55], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 18,
+          "made": [29, 36, 48],
+          "missed": [],
+          "blocked": [38],
+          "patMade": 1,
+          "patAtt": 1
+        }
+      ],
+      "attempts": 38,
+      "made": 32,
+      "long": 65,
+      "patMade": 32,
+      "patAtt": 33
+    },
+    "00-0036816": {
+      "name": "Riley Patterson",
+      "team": "MIA",
+      "games": [
+        { "week": 1, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 2, "made": [40, 44], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 3, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 4, "made": [47, 36], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 5, "made": [43], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 6, "made": [47, 27], "missed": [57], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [33, 26], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 8, "made": [34, 36], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 9, "made": [49, 43], "missed": [35], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 10, "made": [46], "missed": [], "blocked": [], "patMade": 3, "patAtt": 4 },
+        {
+          "week": 11,
+          "made": [46, 39, 29],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 13,
+          "made": [39, 25, 48, 33],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 14, "made": [43, 53], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 15, "made": [54], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 16, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 17, "made": [29, 31], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 18, "made": [52], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 }
+      ],
+      "attempts": 29,
+      "made": 27,
+      "long": 54,
+      "patMade": 34,
+      "patAtt": 35
+    },
+    "00-0036854": {
+      "name": "Evan McPherson",
+      "team": "CIN",
+      "games": [
+        { "week": 1, "made": [35], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 2, "made": [31], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 3, "made": [45], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [26], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 5, "made": [50], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 6, "made": [45], "missed": [67, 56], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 7,
+          "made": [49, 23, 45, 36],
+          "missed": [],
+          "blocked": [],
+          "patMade": 3,
+          "patAtt": 3
+        },
+        { "week": 8, "made": [26], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 9, "made": [41, 33], "missed": [54], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 11, "made": [43, 48], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 12, "made": [54, 63], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 13,
+          "made": [31, 42, 24, 33, 52, 41],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 14, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 15, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 16, "made": [45], "missed": [], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 17, "made": [57], "missed": [], "blocked": [], "patMade": 4, "patAtt": 5 },
+        { "week": 18, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 2 }
+      ],
+      "attempts": 28,
+      "made": 25,
+      "long": 63,
+      "patMade": 41,
+      "patAtt": 44
+    },
+    "00-0037224": {
+      "name": "Cameron Dicker",
+      "team": "LAC",
+      "games": [
+        { "week": 1, "made": [39, 36], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 2, "made": [38, 20], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 3, "made": [32, 24, 43], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 4, "made": [43], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 5, "made": [55], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 6,
+          "made": [35, 31, 29, 35, 33],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 7, "made": [43], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 8,
+          "made": [43, 34, 45],
+          "missed": [49],
+          "blocked": [],
+          "patMade": 4,
+          "patAtt": 4
+        },
+        { "week": 9, "made": [27, 52], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 10,
+          "made": [32, 59, 42],
+          "missed": [55],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 11, "made": [41, 46], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 13, "made": [56], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 14,
+          "made": [45, 34, 31, 46, 54],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 15,
+          "made": [49, 23, 49],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 16, "made": [37, 27], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 17, "made": [27], "missed": [32], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 18, "made": [30], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 }
+      ],
+      "attempts": 41,
+      "made": 38,
+      "long": 59,
+      "patMade": 34,
+      "patAtt": 35
+    },
+    "00-0037692": {
+      "name": "Brandon Aubrey",
+      "team": "DAL",
+      "games": [
+        { "week": 1, "made": [41, 53], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 2,
+          "made": [51, 44, 64, 46],
+          "missed": [],
+          "blocked": [],
+          "patMade": 4,
+          "patAtt": 4
+        },
+        { "week": 3, "made": [53, 33], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 4, "made": [22], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 5, "made": [35], "missed": [], "blocked": [], "patMade": 4, "patAtt": 5 },
+        { "week": 6, "made": [23, 28], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [47, 61, 29], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 8, "made": [24], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 9, "made": [26], "missed": [68], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 11, "made": [50], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 12, "made": [42], "missed": [51], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 13,
+          "made": [49, 36, 26],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 14,
+          "made": [57, 42, 55, 63, 29],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 15,
+          "made": [37, 26, 41, 41],
+          "missed": [51, 59],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 16, "made": [33], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 17,
+          "made": [42, 52, 51],
+          "missed": [58],
+          "blocked": [],
+          "patMade": 3,
+          "patAtt": 3
+        },
+        { "week": 18, "made": [22], "missed": [57], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 42,
+      "made": 36,
+      "long": 64,
+      "patMade": 47,
+      "patAtt": 48
+    },
+    "00-0038428": {
+      "name": "Andre Szmyt",
+      "team": "CLE",
+      "games": [
+        { "week": 1, "made": [45], "missed": [36], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 2, "made": [38], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 3, "made": [35, 55], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [33], "missed": [56], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 5, "made": [31], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 6, "made": [31, 53, 32], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 7, "made": [30], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 8, "made": [], "missed": [47], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 10, "made": [45, 29], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 11,
+          "made": [30, 24, 46],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 12, "made": [53], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 14, "made": [38], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 15, "made": [50], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 16, "made": [24, 41], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 17, "made": [50, 33], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 18, "made": [27, 49], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 27,
+      "made": 24,
+      "long": 55,
+      "patMade": 25,
+      "patAtt": 26
+    },
+    "00-0038562": {
+      "name": "Jake Moody",
+      "team": "WAS",
+      "games": [
+        { "week": 1, "made": [32], "missed": [27], "blocked": [36], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 6,
+          "made": [47, 48, 41, 38],
+          "missed": [],
+          "blocked": [48],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 7,
+          "made": [27, 39, 24, 33],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 13, "made": [38, 32], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 14, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        {
+          "week": 15,
+          "made": [46, 39, 42],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 3
+        },
+        { "week": 16, "made": [20], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 17,
+          "made": [29, 23, 51],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 18, "made": [56], "missed": [24], "blocked": [], "patMade": 3, "patAtt": 3 }
+      ],
+      "attempts": 23,
+      "made": 19,
+      "long": 56,
+      "patMade": 15,
+      "patAtt": 16
+    },
+    "00-0038567": {
+      "name": "Chad Ryland",
+      "team": "ARI",
+      "games": [
+        { "week": 1, "made": [42, 50], "missed": [], "blocked": [46], "patMade": 2, "patAtt": 2 },
+        { "week": 2, "made": [29, 47], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 3, "made": [34, 28], "missed": [57], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [33, 57], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 5, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 6, "made": [40, 44], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [32, 40, 39], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 9, "made": [48, 34], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 10, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 11, "made": [26], "missed": [58], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 12, "made": [29], "missed": [33], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 13, "made": [52], "missed": [43], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 14, "made": [38], "missed": [63], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 15, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 16,
+          "made": [50, 51, 25, 34],
+          "missed": [50, 44],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 17, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 18, "made": [45, 56], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 33,
+      "made": 25,
+      "long": 57,
+      "patMade": 36,
+      "patAtt": 36
+    },
+    "00-0038905": {
+      "name": "Blake Grupe",
+      "team": "IND",
+      "games": [
+        { "week": 1, "made": [36, 28], "missed": [37], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 2, "made": [], "missed": [40], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 3, "made": [27, 23], "missed": [52], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [54, 35], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 5,
+          "made": [28, 53, 29, 28],
+          "missed": [52, 46],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 6,
+          "made": [34, 48, 38, 54],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 7, "made": [], "missed": [53], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 8, "made": [48], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 9, "made": [39], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 10, "made": [20], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 12, "made": [33], "missed": [38, 47], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 14, "made": [28, 36], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 15,
+          "made": [42, 54, 60],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 16, "made": [39, 51], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 17, "made": [33], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 18, "made": [50, 39, 22], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 }
+      ],
+      "attempts": 37,
+      "made": 29,
+      "long": 60,
+      "patMade": 25,
+      "patAtt": 25
+    },
+    "00-0039172": {
+      "name": "Jake Bates",
+      "team": "DET",
+      "games": [
+        { "week": 1, "made": [30, 27], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 2, "made": [34], "missed": [55], "blocked": [], "patMade": 7, "patAtt": 7 },
+        { "week": 3, "made": [45], "missed": [67], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 4, "made": [48, 58], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 5, "made": [], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 6, "made": [28], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 7, "made": [58], "missed": [54], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 9, "made": [41], "missed": [], "blocked": [45], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 10,
+          "made": [22, 28, 48],
+          "missed": [],
+          "blocked": [],
+          "patMade": 3,
+          "patAtt": 4
+        },
+        { "week": 11, "made": [54], "missed": [], "blocked": [], "patMade": 0, "patAtt": 1 },
+        { "week": 12, "made": [37, 59], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 13, "made": [31], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 14,
+          "made": [38, 47, 46],
+          "missed": [],
+          "blocked": [52],
+          "patMade": 5,
+          "patAtt": 5
+        },
+        { "week": 15, "made": [24, 48], "missed": [43], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 16, "made": [36], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 17, "made": [48], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 18,
+          "made": [34, 30, 25, 42],
+          "missed": [53],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        }
+      ],
+      "attempts": 34,
+      "made": 27,
+      "long": 59,
+      "patMade": 54,
+      "patAtt": 56
+    },
+    "00-0039404": {
+      "name": "Will Reichard",
+      "team": "MIN",
+      "games": [
+        { "week": 1, "made": [31, 59], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 2, "made": [33, 51], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 3, "made": [35, 62], "missed": [], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 4, "made": [41, 28], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 5, "made": [], "missed": [51], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 7,
+          "made": [59, 34, 28, 35, 29],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 8, "made": [54], "missed": [53], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 9, "made": [50, 20], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 10, "made": [49, 43], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 11, "made": [31], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 12, "made": [52, 59], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 14, "made": [45], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 15, "made": [29, 53], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 16,
+          "made": [43, 31, 30],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 17,
+          "made": [52, 56, 42],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 18, "made": [43, 25, 37], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 }
+      ],
+      "attempts": 35,
+      "made": 33,
+      "long": 62,
+      "patMade": 31,
+      "patAtt": 31
+    },
+    "00-0039409": {
+      "name": "Cam Little",
+      "team": "JAX",
+      "games": [
+        {
+          "week": 1,
+          "made": [35, 47, 36, 28],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 2, "made": [42, 25], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 3, "made": [39], "missed": [47], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 4, "made": [26, 44], "missed": [47], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 5, "made": [52], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 6, "made": [], "missed": [50], "blocked": [], "patMade": 0, "patAtt": 1 },
+        { "week": 7, "made": [], "missed": [50], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 9, "made": [68, 33, 48], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 10,
+          "made": [32, 53, 33],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 11, "made": [], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 12, "made": [52, 52], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 13, "made": [45], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 14, "made": [35, 48], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 15, "made": [33, 22], "missed": [], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 16, "made": [47, 26], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 17,
+          "made": [34, 42, 53],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 18, "made": [67, 52], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 }
+      ],
+      "attempts": 34,
+      "made": 30,
+      "long": 68,
+      "patMade": 50,
+      "patAtt": 51
+    },
+    "00-0039576": {
+      "name": "Spencer Shrader",
+      "team": "IND",
+      "games": [
+        {
+          "week": 1,
+          "made": [24, 35, 28, 48],
+          "missed": [],
+          "blocked": [],
+          "patMade": 3,
+          "patAtt": 3
+        },
+        {
+          "week": 2,
+          "made": [29, 33, 36, 28, 45],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 3, "made": [24, 36], "missed": [51], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 4, "made": [52, 38], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 5, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 14,
+      "made": 13,
+      "long": 52,
+      "patMade": 14,
+      "patAtt": 14
+    },
+    "00-0039750": {
+      "name": "Joshua Karty",
+      "team": "LA",
+      "games": [
+        { "week": 1, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 2, "made": [21, 21], "missed": [], "blocked": [], "patMade": 3, "patAtt": 4 },
+        {
+          "week": 3,
+          "made": [51, 28, 33, 46],
+          "missed": [],
+          "blocked": [36, 44],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 4, "made": [42, 37], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 5, "made": [48], "missed": [53], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 6, "made": [36], "missed": [26], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 7, "made": [], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 9, "made": [], "missed": [39], "blocked": [], "patMade": 4, "patAtt": 5 }
+      ],
+      "attempts": 15,
+      "made": 10,
+      "long": 51,
+      "patMade": 23,
+      "patAtt": 26
+    },
+    "00-0040074": {
+      "name": "Tyler Loop",
+      "team": "BAL",
+      "games": [
+        { "week": 1, "made": [52, 49], "missed": [], "blocked": [], "patMade": 4, "patAtt": 5 },
+        { "week": 2, "made": [43, 32], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 3, "made": [41], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 4, "made": [43, 32], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 5, "made": [27], "missed": [55], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 6, "made": [37], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 8, "made": [42, 28, 32], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 9, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 10,
+          "made": [44, 28, 30, 22],
+          "missed": [56],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        {
+          "week": 11,
+          "made": [25, 24, 44],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 12,
+          "made": [31, 35, 27],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 14,
+          "made": [36, 28, 36],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 2
+        },
+        { "week": 15, "made": [27], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 16, "made": [36], "missed": [56], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 17, "made": [22, 34], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 18, "made": [40], "missed": [44], "blocked": [], "patMade": 3, "patAtt": 3 }
+      ],
+      "attempts": 34,
+      "made": 30,
+      "long": 52,
+      "patMade": 44,
+      "patAtt": 46
+    },
+    "00-0040200": {
+      "name": "Andy Borregales",
+      "team": "NE",
+      "games": [
+        { "week": 1, "made": [35, 44], "missed": [40], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 2, "made": [22, 53], "missed": [], "blocked": [], "patMade": 1, "patAtt": 3 },
+        { "week": 3, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 4, "made": [], "missed": [], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 5, "made": [30, 19, 52], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 6, "made": [24], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 7, "made": [36], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 8, "made": [36, 32, 42], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 9, "made": [32], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 10, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 11, "made": [44, 26], "missed": [45], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 12,
+          "made": [41, 45, 19, 52],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 13,
+          "made": [22, 30, 28, 23],
+          "missed": [45],
+          "blocked": [],
+          "patMade": 3,
+          "patAtt": 3
+        },
+        { "week": 15, "made": [36], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 16, "made": [45, 41], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 17, "made": [], "missed": [41], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 18, "made": [59], "missed": [], "blocked": [38], "patMade": 5, "patAtt": 5 }
+      ],
+      "attempts": 32,
+      "made": 27,
+      "long": 59,
+      "patMade": 53,
+      "patAtt": 55
+    },
+    "00-0040279": {
+      "name": "Ryan Fitzgerald",
+      "team": "CAR",
+      "games": [
+        { "week": 1, "made": [48], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 2, "made": [27], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 3, "made": [57, 35, 41], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 4, "made": [], "missed": [55], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 5, "made": [35, 49], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 6, "made": [31, 55, 33], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [30, 29], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 8, "made": [48], "missed": [32], "blocked": [], "patMade": 0, "patAtt": 1 },
+        { "week": 9, "made": [49], "missed": [], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 10, "made": [], "missed": [], "blocked": [48], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 11,
+          "made": [29, 34, 28],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 12, "made": [25], "missed": [57], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 13, "made": [33], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 15, "made": [40], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 16,
+          "made": [27, 41, 48],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 17, "made": [35], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 18, "made": [], "missed": [54], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 29,
+      "made": 24,
+      "long": 57,
+      "patMade": 27,
+      "patAtt": 30
+    },
+    "00-0034173": {
+      "name": "Eddy Pineiro",
+      "team": "SF",
+      "games": [
+        { "week": 2, "made": [44, 46], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 3, "made": [38, 51, 35], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 4, "made": [26, 23], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        {
+          "week": 5,
+          "made": [37, 20, 59, 41],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        {
+          "week": 6,
+          "made": [52, 54, 42, 29],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 7, "made": [55, 43], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 8, "made": [], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 9, "made": [54, 33], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 10, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 },
+        {
+          "week": 11,
+          "made": [48, 47, 47],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 4
+        },
+        {
+          "week": 15,
+          "made": [33, 37, 40],
+          "missed": [],
+          "blocked": [],
+          "patMade": 4,
+          "patAtt": 4
+        },
+        { "week": 16, "made": [25, 38], "missed": [64], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 17, "made": [], "missed": [], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 18, "made": [48], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 }
+      ],
+      "attempts": 29,
+      "made": 28,
+      "long": 59,
+      "patMade": 34,
+      "patAtt": 38
+    },
+    "00-0037542": {
+      "name": "John Parker Romo",
+      "team": "ATL",
+      "games": [
+        {
+          "week": 2,
+          "made": [38, 29, 33, 33, 54],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 3, "made": [], "missed": [49, 55], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 4, "made": [38, 26], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 6, "made": [33], "missed": [], "blocked": [37], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [38], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 8, "made": [45], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 9, "made": [38], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 }
+      ],
+      "attempts": 14,
+      "made": 11,
+      "long": 54,
+      "patMade": 12,
+      "patAtt": 13
+    },
+    "00-0039934": {
+      "name": "Jude McAtamney",
+      "team": "NYG",
+      "games": [
+        { "week": 4, "made": [22, 31], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 5, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 6, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 5 },
+        { "week": 7, "made": [], "missed": [], "blocked": [], "patMade": 2, "patAtt": 4 }
+      ],
+      "attempts": 2,
+      "made": 2,
+      "long": 31,
+      "patMade": 9,
+      "patAtt": 12
+    },
+    "00-0034084": {
+      "name": "Mike Badgley",
+      "team": "BUF",
+      "games": [
+        { "week": 6, "made": [45], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 7, "made": [36], "missed": [], "blocked": [], "patMade": 3, "patAtt": 4 },
+        { "week": 8, "made": [43], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        { "week": 9, "made": [52, 53], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 10, "made": [34, 44], "missed": [53], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 12, "made": [32, 23], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 13, "made": [42], "missed": [], "blocked": [], "patMade": 1, "patAtt": 2 },
+        { "week": 16, "made": [41], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 17, "made": [], "missed": [], "blocked": [], "patMade": 0, "patAtt": 1 }
+      ],
+      "attempts": 12,
+      "made": 11,
+      "long": 53,
+      "patMade": 20,
+      "patAtt": 25
+    },
+    "00-0035189": {
+      "name": "Matthew Wright",
+      "team": "HOU",
+      "games": [
+        { "week": 6, "made": [46], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 8, "made": [], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 10, "made": [23], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 11, "made": [41, 43, 35], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 }
+      ],
+      "attempts": 5,
+      "made": 5,
+      "long": 46,
+      "patMade": 4,
+      "patAtt": 4
+    },
+    "00-0038152": {
+      "name": "Lucas Havrisik",
+      "team": "GB",
+      "games": [
+        { "week": 6, "made": [43, 39], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 7, "made": [31, 61], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 11, "made": [], "missed": [], "blocked": [], "patMade": 1, "patAtt": 3 }
+      ],
+      "attempts": 4,
+      "made": 4,
+      "long": 61,
+      "patMade": 7,
+      "patAtt": 9
+    },
+    "00-0033862": {
+      "name": "Zane Gonzalez",
+      "team": "ATL",
+      "games": [
+        { "week": 10, "made": [43], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 11, "made": [52, 45], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 12,
+          "made": [56, 41, 54],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        },
+        { "week": 13, "made": [52], "missed": [50], "blocked": [], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 14,
+          "made": [35, 43, 27],
+          "missed": [],
+          "blocked": [50],
+          "patMade": 0,
+          "patAtt": 0
+        },
+        { "week": 15, "made": [43], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        { "week": 16, "made": [49, 40], "missed": [], "blocked": [], "patMade": 2, "patAtt": 3 },
+        { "week": 17, "made": [56, 51], "missed": [], "blocked": [37], "patMade": 3, "patAtt": 3 },
+        {
+          "week": 18,
+          "made": [40, 51, 38, 38],
+          "missed": [],
+          "blocked": [],
+          "patMade": 1,
+          "patAtt": 1
+        }
+      ],
+      "attempts": 22,
+      "made": 19,
+      "long": 56,
+      "patMade": 17,
+      "patAtt": 18
+    },
+    "00-0039498": {
+      "name": "Harrison Mevis",
+      "team": "LA",
+      "games": [
+        { "week": 10, "made": [], "missed": [], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 11, "made": [], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 12, "made": [40, 52], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 13, "made": [], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 14, "made": [26], "missed": [], "blocked": [], "patMade": 6, "patAtt": 6 },
+        { "week": 15, "made": [37, 44], "missed": [], "blocked": [], "patMade": 5, "patAtt": 5 },
+        {
+          "week": 16,
+          "made": [23, 28, 41],
+          "missed": [48],
+          "blocked": [],
+          "patMade": 4,
+          "patAtt": 4
+        },
+        { "week": 17, "made": [35], "missed": [], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 18, "made": [34, 42, 40], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 }
+      ],
+      "attempts": 13,
+      "made": 12,
+      "long": 52,
+      "patMade": 39,
+      "patAtt": 39
+    },
+    "00-0039229": {
+      "name": "Charlie Smyth",
+      "team": "NO",
+      "games": [
+        { "week": 13, "made": [56], "missed": [], "blocked": [], "patMade": 0, "patAtt": 0 },
+        { "week": 14, "made": [30], "missed": [48], "blocked": [], "patMade": 3, "patAtt": 3 },
+        { "week": 15, "made": [42, 47], "missed": [], "blocked": [], "patMade": 2, "patAtt": 2 },
+        {
+          "week": 16,
+          "made": [35, 49, 36, 50, 39],
+          "missed": [61],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        },
+        { "week": 17, "made": [56, 57], "missed": [43], "blocked": [], "patMade": 4, "patAtt": 4 },
+        { "week": 18, "made": [29], "missed": [56], "blocked": [], "patMade": 2, "patAtt": 2 }
+      ],
+      "attempts": 16,
+      "made": 12,
+      "long": 57,
+      "patMade": 13,
+      "patAtt": 13
+    },
+    "00-0040530": {
+      "name": "Ben Sauls",
+      "team": "NYG",
+      "games": [
+        { "week": 16, "made": [27, 39], "missed": [], "blocked": [], "patMade": 1, "patAtt": 1 },
+        { "week": 17, "made": [32, 23], "missed": [], "blocked": [], "patMade": 4, "patAtt": 4 },
+        {
+          "week": 18,
+          "made": [45, 35, 23, 30],
+          "missed": [],
+          "blocked": [],
+          "patMade": 2,
+          "patAtt": 2
+        }
+      ],
+      "attempts": 8,
+      "made": 8,
+      "long": 45,
+      "patMade": 7,
+      "patAtt": 7
+    }
+  }
+}

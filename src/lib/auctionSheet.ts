@@ -23,8 +23,14 @@
  * Nothing here reads the DOM or the engine — text and a roster in, rows out.
  */
 
-import { normaliseName, resolveRankings, splitCsvLine } from './rankingsCsv';
-import type { Candidate, RankingRow, Resolution } from './rankingsCsv';
+// The extension is explicit so this file is reachable from a `.mjs` script
+// through Node's type stripping, which does not resolve extensionless
+// specifiers. `scripts/refresh.mjs` reads the commissioner's list with the same
+// parser the room does, rather than a second one — the property every other
+// shared module here already has, and the reason they carry no relative
+// imports at all. `allowImportingTsExtensions` is on, and Vite resolves it.
+import { normaliseName, resolveRankings, splitCsvLine } from './rankingsCsv.ts';
+import type { Candidate, RankingRow, Resolution } from './rankingsCsv.ts';
 
 /**
  * One line of the sheet.

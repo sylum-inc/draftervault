@@ -45,24 +45,36 @@ describe('the room, driven', () => {
   });
 
   it('says plainly that no team has been marked as yours', () => {
+    // A fresh browser now marks one — four panels were inert without it, one of
+    // them the snake gain this whole format turns on. The refusal still has to
+    // work, because unmarking is a thing somebody can do and advising for a
+    // team nobody chose is the bug this message exists to prevent.
+    service.seedHomeDefaults();
+    service.setMyTeam(null);
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: /Advisor off/ }));
+    // The advisor is on by default now — the panel that answers "what do I do
+    // now" was behind a button nobody had pressed. What keeps it an opinion is
+    // the box, the badge and the caveat, not the default.
+    expect(screen.getByRole('button', { name: /Advisor on/ })).toBeInTheDocument();
 
     expect(screen.getByText(/No team is marked as yours/)).toBeInTheDocument();
   });
 
-  it('speaks for the owner’s team rather than whoever is in the winning-team box', () => {
+  it('speaks for the owner’s team rather than whoever won the last bid', () => {
     service.setMyTeam('team-1');
     service.renameTeam('team-1', 'The Owner');
     service.renameTeam('team-5', 'Somebody Else');
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: /Advisor off/ }));
     nominate();
 
-    // Selecting a winning team is a recording control: it records who bought a
+    // Naming the winning team is a recording control: it records who bought a
     // player, and through a normal auction it sits on an opponent most of the
     // time. Advice computed against it was advice about their roster.
-    fireEvent.change(screen.getByLabelText('Winning team'), { target: { value: 'team-5' } });
+    fireEvent.click(
+      within(screen.getByRole('group', { name: /winning team/i })).getByRole('button', {
+        name: /Somebody Else/,
+      })
+    );
 
     const advisor = screen.getByLabelText('Advisor — opinions, not measurements');
     expect(within(advisor).getByText('opinion, for The Owner')).toBeInTheDocument();
@@ -72,7 +84,6 @@ describe('the room, driven', () => {
   it('keeps the estimate out of the measurement panel and the rule out of the advice', () => {
     service.setMyTeam('team-1');
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: /Advisor off/ }));
     const player = nominate();
 
     const stage = screen.getByLabelText(`Nomination: ${player.name}`);
@@ -95,9 +106,12 @@ describe('the room, driven', () => {
 
     const stage = screen.getByLabelText(`Nomination: ${player.name}`);
     const adjust = service.getPriceAdjuster();
-    expect(
-      within(stage).getByText(`$${adjust.price(player)} at ${adjust.inflation.toFixed(2)}×`)
-    ).toBeInTheDocument();
+    // One tile, two figures: the restated price and the multiplier that made
+    // it. Read off the tile itself, because the same dollar figure can appear
+    // again further down the block in the plan.
+    const tile = within(stage).getByTitle("List price restated at the room's inflation");
+    expect(tile).toHaveTextContent(`$${adjust.price(player)}`);
+    expect(tile).toHaveTextContent(`${adjust.inflation.toFixed(2)}×`);
   });
 
   it('shows the adjusted price as its own column on the table board', () => {
@@ -114,7 +128,7 @@ describe('the room, driven', () => {
   it('explains the inflation number in the market panel', () => {
     service.draftPlayer(service.getAvailablePlayers()[0].id, 'team-2', 120);
     render(<DraftRoom draftService={service} />);
-    fireEvent.click(screen.getByRole('button', { name: 'market' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Market' }));
 
     const basis = service.getInflationBasis();
     const market = screen.getByLabelText('Market');

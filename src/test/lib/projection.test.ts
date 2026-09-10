@@ -177,15 +177,91 @@ describe('expected games', () => {
     expect(expectedGames(17)).toBe(11);
   });
 
-  it('is the volume half of the model', () => {
-    const projection = projectPlayer(
-      { position: 'WR', age: 26, seasons: new Map([[2025, season(17, 340)]]), gamesMissed: 4 },
+  /*
+   * The half of the model the backtest was hardest on. Discounting for injury
+   * alone projects a full seventeen for a healthy player who was active for
+   * six games — a backup, a rotational body, a rookie who did not win the job —
+   * and that is the single worst input this model takes: at one to sixteen
+   * games of tape it scored 0.21, 0.13 and 0.04 while last season's points
+   * scored 0.52 to 0.58 on the same players.
+   */
+  const gamesFor = (seasons: Array<[number, number]>, gamesMissed = 0): number =>
+    projectPlayer(
+      {
+        position: 'WR',
+        age: 26,
+        seasons: new Map(seasons.map(([year, games]) => [year, season(games, games * 12)])),
+        gamesMissed,
+      },
+      baselinesOf({ WR: 10 }),
+      noRookies,
+      2026
+    ).expectedGames;
+
+  it('leaves a player who has turned up every week where he was', () => {
+    expect(
+      gamesFor([
+        [2023, 17],
+        [2024, 17],
+        [2025, 17],
+      ])
+    ).toBe(17);
+  });
+
+  it('does not project a full season for somebody who has never played one', () => {
+    // Six games, healthy. The old arithmetic gave him seventeen.
+    const six = gamesFor([[2025, 6]]);
+    expect(six).toBeLessThan(13);
+    expect(six).toBeGreaterThanOrEqual(10);
+  });
+
+  it('weights the record it has by how much of it there is', () => {
+    // One six-game season is a coin flip against the assumption; three of them
+    // are most of the answer.
+    expect(gamesFor([[2025, 6]])).toBeGreaterThan(
+      gamesFor([
+        [2023, 6],
+        [2024, 6],
+        [2025, 6],
+      ])
+    );
+  });
+
+  it('still discounts for injury, and the two compound', () => {
+    expect(gamesFor([[2025, 11]], 6)).toBeLessThan(gamesFor([[2025, 11]], 0));
+  });
+
+  it('never reads a playoff run as an eighteen-game season', () => {
+    expect(
+      gamesFor([
+        [2023, 18],
+        [2024, 18],
+        [2025, 18],
+      ])
+    ).toBe(17);
+  });
+
+  it('has nothing to read for a rookie, so the assumption stands alone', () => {
+    const rookie = projectPlayer(
+      { position: 'WR', age: 22, seasons: null, gamesMissed: 4, draftRound: 1 },
       baselinesOf({ WR: 10 }),
       noRookies,
       2026
     );
-    expect(projection.expectedGames).toBe(13);
-    expect(projection.points).toBeCloseTo(projection.ppg * projection.ageMultiplier * 13, 6);
+    expect(rookie.expectedGames).toBe(13);
+  });
+
+  it('is the volume half of the model', () => {
+    const projection = projectPlayer(
+      { position: 'WR', age: 26, seasons: new Map([[2025, season(13, 260)]]), gamesMissed: 4 },
+      baselinesOf({ WR: 10 }),
+      noRookies,
+      2026
+    );
+    expect(projection.points).toBeCloseTo(
+      projection.ppg * projection.ageMultiplier * projection.expectedGames,
+      6
+    );
   });
 });
 

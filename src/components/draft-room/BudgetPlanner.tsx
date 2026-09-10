@@ -32,7 +32,14 @@ export const BudgetPlanner = ({ service, team, player, bid, players }: BudgetPla
   );
 
   if (!team) {
-    return <p className="dr-empty dr-panel">Pick a team to plan its budget.</p>;
+    return (
+      <section className="dr-panel dr-rail" aria-label="This bid">
+        <header className="dr-rail-head">
+          <h2 className="dr-eyebrow">This bid</h2>
+        </header>
+        <p className="dr-empty">Mark a team as yours in league settings to plan its budget.</p>
+      </section>
+    );
   }
 
   const filled = Object.values(team.roster).reduce((a, b) => a + b, 0);
@@ -96,10 +103,12 @@ export const BudgetPlanner = ({ service, team, player, bid, players }: BudgetPla
               <dt>Per slot</dt>
               <dd className="dr-num">${simulation.perSlot.toFixed(1)}</dd>
             </div>
-            <div>
-              <dt>Must reserve</dt>
-              <dd className="dr-num">${simulation.minimumHold}</dd>
-            </div>
+            {simulation.minimumHold > 0 && (
+              <div>
+                <dt>Must reserve</dt>
+                <dd className="dr-num">${simulation.minimumHold}</dd>
+              </div>
+            )}
           </dl>
 
           {/* The reserve is not advice; it is the rule the engine enforces. */}
@@ -142,8 +151,10 @@ export const BudgetPlanner = ({ service, team, player, bid, players }: BudgetPla
           </p>
 
           <p className="dr-footnote">
-            {filled} of 16 slots filled. The reserve is a dollar for every starting slot still open,
-            which is the same rule the bid check applies.
+            {filled} of 16 slots filled.{' '}
+            {simulation.minimumHold > 0
+              ? 'The reserve is a dollar for every starting slot still open, which is the same rule the bid check applies.'
+              : 'No reserve in this format — the snake fills the rest, so every dollar may be bid.'}
           </p>
         </>
       )}

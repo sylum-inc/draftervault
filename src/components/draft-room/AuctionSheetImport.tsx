@@ -9,6 +9,7 @@ import {
 import { copyTextToClipboard } from '@/lib/saveFile';
 import type { Candidate } from '@/lib/rankingsCsv';
 import type { Player } from '@/services/auctionDraftService';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface AuctionSheetImportProps {
   players: Player[];
@@ -33,7 +34,10 @@ interface AuctionSheetImportProps {
     bought: number;
     movers: Array<{ id: string; name: string; from: number; to: number }>;
   };
-  onApply: (ids: string[]) => void;
+  /** The share of the paste that did not resolve travels with it: it is the
+   *  fact that decides whether the board is priced for the auction being held,
+   *  and the text it was measured from is gone the moment this panel closes. */
+  onApply: (ids: string[], loss: number) => void;
   onClear: () => void;
   onClose: () => void;
 }
@@ -80,12 +84,9 @@ export const AuctionSheetImport = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  useDismissOnEscape(onClose);
 
   const candidates = useMemo(() => asCandidates(players), [players]);
   const parsed: ParsedSheet | null = useMemo(
@@ -410,7 +411,7 @@ export const AuctionSheetImport = ({
             type="button"
             className="dr-button dr-button-primary"
             disabled={ids.length === 0 || tooShort}
-            onClick={() => onApply(ids)}
+            onClick={() => onApply(ids, loss?.share ?? 0)}
           >
             {ids.length === 0
               ? 'Nothing to auction'

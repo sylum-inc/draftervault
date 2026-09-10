@@ -28,8 +28,9 @@ export const usePWA = () => {
   useEffect(() => {
     const checkInstalled = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOSStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
-      setState(prev => ({ ...prev, isInstalled: isStandalone || isIOSStandalone }));
+      const isIOSStandalone =
+        (navigator as Navigator & { standalone?: boolean }).standalone === true;
+      setState((prev) => ({ ...prev, isInstalled: isStandalone || isIOSStandalone }));
     };
 
     checkInstalled();
@@ -45,7 +46,7 @@ export const usePWA = () => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setState(prev => ({ ...prev, isInstallable: true }));
+      setState((prev) => ({ ...prev, isInstallable: true }));
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -59,7 +60,7 @@ export const usePWA = () => {
   useEffect(() => {
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
-      setState(prev => ({ ...prev, isInstallable: false, isInstalled: true }));
+      setState((prev) => ({ ...prev, isInstallable: false, isInstalled: true }));
     };
 
     window.addEventListener('appinstalled', handleAppInstalled);
@@ -71,8 +72,8 @@ export const usePWA = () => {
 
   // Handle online/offline status
   useEffect(() => {
-    const handleOnline = () => setState(prev => ({ ...prev, isOnline: true }));
-    const handleOffline = () => setState(prev => ({ ...prev, isOnline: false }));
+    const handleOnline = () => setState((prev) => ({ ...prev, isOnline: true }));
+    const handleOffline = () => setState((prev) => ({ ...prev, isOnline: false }));
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -85,14 +86,17 @@ export const usePWA = () => {
 
   // Register service worker
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    // The property can exist and be undefined — the single-file artifact's
+    // prelude shadows it, and a browser context with workers blocked reports it
+    // that way — so the test is the value, not the key.
+    if (navigator.serviceWorker) {
       const registerSW = async () => {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js', {
             scope: '/',
           });
 
-          setState(prev => ({ ...prev, registration }));
+          setState((prev) => ({ ...prev, registration }));
 
           // Check for updates
           registration.addEventListener('updatefound', () => {
@@ -100,17 +104,19 @@ export const usePWA = () => {
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  setState(prev => ({ ...prev, isUpdateAvailable: true }));
+                  setState((prev) => ({ ...prev, isUpdateAvailable: true }));
                 }
               });
             }
           });
 
           // Check for updates periodically
-          setInterval(() => {
-            registration.update();
-          }, 60 * 60 * 1000); // Every hour
-
+          setInterval(
+            () => {
+              registration.update();
+            },
+            60 * 60 * 1000
+          ); // Every hour
         } catch (error) {
           console.error('[PWA] Service worker registration failed:', error);
         }
@@ -130,7 +136,7 @@ export const usePWA = () => {
 
       if (outcome === 'accepted') {
         setDeferredPrompt(null);
-        setState(prev => ({ ...prev, isInstallable: false }));
+        setState((prev) => ({ ...prev, isInstallable: false }));
         return true;
       }
       return false;

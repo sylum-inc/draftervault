@@ -8,6 +8,7 @@ import type {
 } from '@/services/auctionDraftService';
 import { getIdentity } from '@/services/nflIdentity';
 import { matchesSearch, searchable } from '@/lib/playerSearch';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface PickEditorProps {
   service: AuctionDraftService;
@@ -55,15 +56,13 @@ export const PickEditor = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  // The editor opens on top of the draft board, and the hook's stack is what
+  // keeps one keystroke from closing both. The `stopPropagation` that used to
+  // live here could not have done it: it does not stop a second listener on
+  // the same node, and both would have been on `document`.
+  useDismissOnEscape(onClose);
 
   const named = (player: Player): string => getIdentity(player.id)?.name ?? player.name;
 

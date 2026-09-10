@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-30T03:39:33.148Z",
+  "generatedAt": "2026-08-31T21:04:57.464Z",
   "model": "claude-code-agents",
   "engine": "websearch",
   "league": {
@@ -161,11 +161,19 @@
       "name": "Amon-Ra St. Brown",
       "position": "WR",
       "team": "DET",
-      "researchedAt": "2026-08-30T03:39:33.033Z",
+      "researchedAt": "2026-08-31T21:04:57.464Z",
       "direction": "NEUTRAL",
-      "confidence": "LOW",
-      "headline": "",
-      "findings": [],
+      "confidence": "MEDIUM",
+      "headline": "Detroit changes offensive coordinator again, and nothing about his target share moves",
+      "findings": [
+        {
+          "claim": "Detroit is transitioning to a new offensive coordinator for 2026, and St. Brown's elite target share and reliable weekly production still give him one of the safest floor and ceiling combinations at the position.",
+          "url": "https://www.fantasypros.com/nfl/notes/419029/amonra-stbrown-2026-outlook.php",
+          "source": "fantasypros.com",
+          "published": "2026-08-31",
+          "impact": "CONTEXT"
+        }
+      ],
       "dropped": {
         "unsourced": 0,
         "undated": 0,
@@ -1237,13 +1245,6 @@
       "headline": "Healthy, re-signed, and Dallas is deliberately adding a receiving role he did not have last year",
       "findings": [
         {
-          "claim": "Williams re-signed with Dallas on a three-year, $24 million deal in February, the team did not add a running back in the 2026 draft, and he remains the undisputed lead back with the December shoulder issue that ended his 2025 no longer a concern.",
-          "url": "https://www.cbssports.com/nfl/players/2961719/javonte-williams/",
-          "source": "cbssports.com",
-          "published": "2026-08-11",
-          "impact": "POSITIVE"
-        },
-        {
           "claim": "The Cowboys are working Williams into the screen and passing game, an area where he was a non-factor in 2025 — he ranked last among 51 running backs in EPA per target and in yards per route run — while rookie-year-two back Jaydon Blue is impressing and may take some passing-down work.",
           "url": "https://sports.yahoo.com/articles/dallas-cowboys-training-camp-day-215149606.html",
           "source": "sports.yahoo.com",
@@ -1326,13 +1327,6 @@
       "confidence": "MEDIUM",
       "headline": "Jaguars target room got crowded — Washington starring, Thomas healthy, Hunter back on offense — plus a hand brace",
       "findings": [
-        {
-          "claim": "Meyers jammed his right hand in a joint practice with Carolina, sat out the following Sunday's practice and the preseason game, and was seen wearing a brace; HC Liam Coen said the injury 'doesn't appear to be very serious' and he is expected to be ready for Week 1.",
-          "url": "https://fantasyfootballcalculator.com/players/jakobi-meyers/news",
-          "source": "fantasyfootballcalculator.com",
-          "published": "2026-08-23",
-          "impact": "NEGATIVE"
-        },
         {
           "claim": "Meyers faces materially more target competition than the depth chart implies: Parker Washington has been the star of Jaguars training camp, Brian Thomas Jr. is healthy again, Travis Hunter is back taking offensive reps, and reporting suggests Meyers could end up the third option in the passing game.",
           "url": "https://www.espn.com/nfl/story/_/id/49427691/jacksonville-jaguars-training-camp-2026-intel-updates",

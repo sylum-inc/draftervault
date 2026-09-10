@@ -19,33 +19,42 @@ const initials = (name: string): string =>
     .join('');
 
 /**
- * A player's face, with a typographic fallback.
+ * A player's face, with a typographic fallback that is always underneath it.
  *
  * Headshots come from ESPN's CDN, which is a third party: it can be blocked by
- * a network, missing for a given player, or unreachable offline. None of those
- * should leave a hole in the card, so a monogram takes over instead.
+ * a network, missing for a given player, unreachable offline, or — the case
+ * that was actually found — swallowed by a service worker whose fetch never
+ * settles, so the image sits `complete: false` for the whole night and no
+ * `error` event ever fires. The first version of this component rendered the
+ * monogram *only* on error, and on a sixty-card board driven with the CDN
+ * unreachable it rendered zero monograms: sixty empty rings, on the one element
+ * whose job is telling you who was just called.
+ *
+ * So the monogram is not a branch, it is a layer. It is always in the DOM under
+ * the image; a photo that arrives paints over it, and one that never arrives —
+ * for any reason, including reasons that fire no event — leaves it showing.
+ * `onError` still hides the broken image outright so no broken-image glyph can
+ * sit on top of the letters.
  */
 export const Headshot = ({ identity, fallbackName, width, className }: HeadshotProps) => {
   const [failed, setFailed] = useState(false);
-
-  if (!identity?.espnId || failed) {
-    return (
-      <div className={`${className} dr-card-monogram`} aria-hidden="true">
-        {initials(fallbackName)}
-      </div>
-    );
-  }
+  const canTry = Boolean(identity?.espnId) && !failed;
 
   return (
-    <img
-      className={className}
-      src={headshotUrl(identity, width)}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      width={width}
-      height={Math.round(width * 0.73)}
-      onError={() => setFailed(true)}
-    />
+    <span className={`${className} dr-face`} aria-hidden="true">
+      <span className="dr-face-mono">{initials(fallbackName)}</span>
+      {canTry && (
+        <img
+          className="dr-face-img"
+          src={headshotUrl(identity!, width)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          width={width}
+          height={Math.round(width * 0.73)}
+          onError={() => setFailed(true)}
+        />
+      )}
+    </span>
   );
 };

@@ -21,6 +21,9 @@ npm run build:artifact  # that file, as a publishable Artifact fragment
 npm run fetch:nfl    # regenerate team colors, crests and defensive units from ESPN
 npm run build:pool   # rebuild the 628-player pool from nflverse production data
 npm run fetch:adp    # refresh the draft market alone, in seconds, before draft day
+npm run build:kicking  # every kick of last season, from the cached weekly stats
+npm run refresh      # the day-of ritual: market + research, and what moved
+npm run refresh -- --check   # the same report, changing nothing
 npm run backtest     # score the projection model against 2023-25, and the baselines
 npm run build:icons  # redraw the app icons (CI checks they match)
 OPENROUTER_API_KEY=sk-or-... npm run research:players   # web-research the pool
@@ -57,10 +60,10 @@ src/pages/Index.tsx
         ├── AuctionSheetImport.tsx  the sheet the commissioner circulated
         ├── ServerPanel.tsx       the optional server: saved drafts and rebuilds
         ├── SnakeOrder.tsx        the order the snake is called in
-        ├── charts/               RangeBar, PercentileBars, SeasonMultiples,
-        │                         ScheduleStrip, BidLadder, PositionSwarm,
-        │                         OutcomeCurve, ConsensusRange, QuadrantScatter,
-        │                         DraftFlow, TierDepletion, CareerArc
+        ├── charts/               micro (the card's instruments), profile (the
+        │                         dossier's), KickChart, DepthChart, ScheduleStrip,
+        │                         PositionSwarm, OutcomeCurve, ConsensusRange,
+        │                         QuadrantScatter, DraftFlow, TierDepletion, CareerArc
         ├── DraftResults.tsx      grades and export
         ├── Sparkline.tsx         one season, game by game
         └── Headshot.tsx          photo with monogram fallback
@@ -72,7 +75,9 @@ src/lib/valuation.ts                  league shape + points-to-dollars (shared)
 src/lib/projection.ts                 the projection model itself (shared)
 src/lib/modelTrust.ts                 where the backtest says not to trust it
 src/lib/consensusBoard.ts             the market's order, our dollars
-src/lib/snakeOutlook.ts               what the snake gives free, so a bid has a bar
+src/lib/snakeOutlook.ts               what the snake gives free, so a bid has a bar,
+                                      and the bound across every draw before one is made
+src/data/league/auction-sheet.txt     the commissioner's sixty, bundled and seeded
 src/lib/endgame.ts                    par against pace: when to buy, not what
 src/lib/marketContract.ts             what a market snapshot is (shared)
 src/data/nfl/market-adp.json          live half-PPR ADP, keyed by gsis (generated)
@@ -89,6 +94,9 @@ src/services/nflIdentity.ts           team colors, crests, headshots
 src/services/draftSync.ts             tells other windows the draft moved
 src/services/draftServer.ts           talking to the optional server, or not at all
 src/services/playerResearch.ts        the researched findings, lazily
+src/services/kicking.ts               every kick of last season, lazily
+src/data/nfl/kicking.json             per-kicker attempts by week and distance (generated)
+scripts/build-kicking.mjs             folds the weekly kicking columns into that file
 src/data/nfl/research.json            per-player sourced findings (generated)
 src/data/nfl/pool.json                628 players: projections, values (generated)
 src/data/nfl/player-history.json      per-player season and weekly scoring (lazy)
@@ -449,6 +457,83 @@ At zero flex it returns zeroes and is a no-op to the last cent — which is what
 keeps the shipped pool's 628 values reproducible, and three tests fail if the
 condition is removed.
 
+**The default is the league being played, and that was three constants
+pretending to be one.** `DEFAULT_LEAGUE` answered three different questions at
+once: what the pool builder prices its stored dollars at, what an empty browser
+falls back to, and what is being drafted. The first has to stay where nflverse
+put it — full PPR is what the source data scores, and a zero flex is what the
+engine assumed before the lineup was configurable. Welding the other two to it
+is what made the first-run gate necessary, and the gate was telling the truth:
+the board really did open under somebody else's rules, on every fresh browser,
+every second laptop and the published artifact on a phone.
+
+`HOME_LEAGUE` is the second and third of those, separated out — twelve teams,
+$100, sixteen spots, half PPR, one flex. `readStoredLeague` falls back to it and
+`writeStoredLeague` compares against it, so "a league is stored" keeps meaning
+"somebody changed it". The pool file still records the shape it was priced at
+and `valuation.test.ts` re-prices at _that_ rather than at a constant, which is
+what stops the guard silently checking the wrong league the moment the two moved
+apart.
+
+`auctionSheetSize` is deliberately **not** 60 in it, because a size is a guess
+at the sheet and the sheet is a list. The list is bundled instead
+(`src/data/league/auction-sheet.txt`, out of `src/test/fixtures/` where it was
+never really a fixture) and seeded through the same `setAuctionSheet` a paste
+comes through, which pins the size to what actually resolved. Two statements of
+one fact would disagree the first time a name stopped matching.
+
+**A default that reapplies itself is not a default, it is an action that
+overrules its owner.** `seedHomeDefaults` is called once, after `restore()`, and
+writes a marker in the idiom `LEAGUE_CONFIRMED_KEY` already uses. It refuses on
+a stored sheet, stored overrides, a draft in progress, or a marker already
+there — so a sheet the owner cleared stays cleared and a market board he turned
+off stays off. The order inside it is the one this file has already been caught
+by: sheet first, then the market board, because "Use consensus" reads dollars
+off the surplus curve for the board in force and a sheet re-prices that curve
+for one where the same money buys sixty. Seeded the other way the whole sheet
+reads about a third cheap.
+
+It also marks one of the twelve teams as yours, and that looks like the guess
+three panels were caught making until you see which way it points. Those bugs
+read `activeTeam` — the winning-team select, which names whoever just _bought_ a
+player — and presented an opponent's roster as the owner's. Nothing is inferred
+here: the twelve slots are arbitrary labels assigned as the auction runs, so
+"you are the first one" is a naming convention, and the gate it has to be
+dismissed through carries the picker. What it costs to leave null is four panels
+inert, one of them `gainOverSnake` — the number this whole format turns on.
+
+**A guard that can never fire is worse than no guard, and this one was on the
+number the format turns on.** `getSpendOutlook` refused with
+`!getSnakeOrder().length`. `getSnakeOrder` repairs itself against the current
+teams and backfills everybody missing — which is right for putting somebody on
+the clock, and means it is never empty. So the refusal was dead code and the
+outlook was computed at the _team_ order: the owner is team one, so the panel
+printed "at your pick 1" and "free at your pick: Jalen Hurts · 312 pts" for a
+draw nobody had made. The earliest seat is the one where the free man is best
+and a bid buys least, so the most favourable possible draw was being reported as
+a fact. `hasSnakeOrder()` is now its own question and the guard is live.
+
+What replaces the refusal is better than either: **the answer is a bound, not a
+guess.** `snakeOutlookSpread` runs the same arithmetic at all twelve seats and
+reports the range, so nothing is assumed that `snakeOutlook` does not already
+assume and the true figure is one of the twelve. On the shipped board that lands
+somewhere the room would not have guessed. Quarterback and tight end have width
+zero — Jalen Hurts and George Kittle survive every draw, because nobody reaches
+for a one-starter position in the first round of a snake — so those two can be
+decided a month early. Running back is what the draw decides: the free back
+falls from Josh Jacobs at 196 to RJ Harvey at 154, and a bid there moves from
+buying 82 points to buying 124. Receiver moves 89 to 96. `settled` is therefore
+the load-bearing field rather than the numbers.
+
+It renders in both places a gain belongs, for the reason `modelTrust` is in two:
+the plan panel, and the nomination stage, because a finding that lives only in a
+panel is a finding nobody has at the moment a name is called. `gainAgainst` is
+one copy of the roster-aware "which free man does he actually replace", called
+with the outlook's free men when the order is known and with each end of the
+spread when it is not — a second copy would be a second answer to whether a bid
+buys a starter, a flex or a bench body, and the two would part company exactly
+when a roster filled up.
+
 **Nobody has confirmed the league until somebody says so.** With nothing in
 storage the board prices at the league the _pool_ was built for — full PPR, no
 flex — because that is what nflverse scores and what the builder had to choose.
@@ -535,6 +620,477 @@ bound silently and wrongly. Imported values replace ours everywhere including
 in the advice, because an opinion nothing acts on is decoration; ours survives
 on `player.modelValue` and the board marks whose number it is showing.
 
+**The card was a photograph with six numbers under it.** Two fifths of every
+card was an 88x64 headshot in an 84px band, the price was one cell of a
+three-up grid below it at the same weight as "Rank", and the team colour was a
+42% gradient across the whole head — so twelve different backgrounds sat under
+one column of figures and a bright club fought the name for attention. What it
+actually carried was name, position, club, tier, price, projection, rank and
+three usage figures whose percentile bars were 2px hairlines under 8px labels.
+Everything else the pool knows — the floor-to-ceiling range, the disagreement
+with the room, weekly consistency, games missed, whether he is in a timeshare,
+what the research file found last Tuesday, and the gain over the man the snake
+hands you free — was two clicks away in a panel nobody opens with money on the
+table.
+
+**A bar and a dial are containers, and both were tried before either was
+right.** Any number goes in one; nothing about the glyph says what kind of
+thing is being looked at, so it contributes a magnitude already printed as a
+numeral an inch to the left. `charts/micro.tsx` holds four instruments shaped
+by what they measure instead.
+
+The **game log** replaced a sparkline, which was wrong three ways: it drew a
+line between games, asserting something happened in between and making a
+nine-game season the same width as a seventeen-game one, so the most important
+fact about an injured player was invisible; it scaled to his own best week, so
+every squiggle filled its box and no two cards compared; and it drew a mean,
+the one summary already printed twice. It is seventeen columns now — one per
+Sunday, whether or not he filled it — with a dashed rule at what a free player
+at his position scores per game. Columns above it are weeks he beat the
+alternative; the empty sockets are weeks he was not there.
+
+The **outcome curve** replaced a range bar. Floor and ceiling are one standard
+deviation either side, so the honest picture is a bell: a bar says "somewhere in
+here" with every point equally likely. The mass left of replacement is shaded as
+a loss, because that region is the risk in one shape — how much of his range
+finishes below a player you could have had for nothing.
+
+The **role field** replaced three readings, and that was the sharper mistake.
+Snap share, touch share and red-zone work are not three questions, they are one
+— _is he the guy, or is he a piece?_ — and three needles make the reader do that
+join in their head with money on the table. One field, two axes, crosshair at
+the median starter: top right is a bell cow, top left a specialist, bottom right
+a decoy, bottom left a backup. The mark's size is red-zone work, a premium on
+the other two rather than an independent question.
+
+**A team colour is chosen to look good on a helmet.** Used raw as an accent it
+fails in two directions at once: the Raiders and the Ravens vanish into the
+ground, the Dolphins glow over the numbers, and neither has anything to do with
+the player. `accent.ts` lifts the hue into a luminance band that reads, so the
+raw colour is kept only where something sets its own ink against it — a
+position badge — and everything drawn _on_ the dark ground uses the lifted one.
+`inkFor` moved in there too; it had been written out twice, which is two
+answers to one question and the kind of thing noticed only when a light jersey
+turns a label white on white.
+
+The card's own club marking went through three shapes before it was right. A
+42% gradient across the head meant a bright club fought the name. A 3px spine
+down the left edge was worse in a different way — too saturated to ignore, too
+thin to read as deliberate, invisible for a third of the league, and a second
+hard edge a few pixels outside the one the content was aligned to. It is a
+faint corner wash and a ring on the avatar now: the same hue, never crossing a
+number, and present for the Raiders as well as the Dolphins. Five of the card's
+six horizontal rules went with it, because a card with five rules on it reads
+as a form rather than as a card.
+
+**The profile was a 760px column in a 1512px window.** Eight tabs of charts
+stacking into a scroll nobody reaches the end of, with half the screen empty
+either side. It is as wide as the window allows and lays out in columns —
+`auto-fit` at a 420px minimum, so the same rule serves a laptop and the phone
+the artifact gets opened on — which turns most tabs from a scroll into a page.
+Sections became their own surfaces rather than full-width rules, because in a
+column layout a rule between sections has nothing to separate.
+
+Two instruments were drawing the same numbers twice. The overview printed a
+range bar and then, directly beneath it, an outcome curve carrying the same
+floor, projection and ceiling plus the share above replacement — and the bar
+was the weaker claim besides. `RangeBar` is gone from the tree, and the
+nomination stage draws the same curve the card does, because one set of figures
+should not read as a bell in one place and a bar in another. `Sparkline` went
+the same way in favour of the game log.
+
+**And the profile's percentiles were the whole-pool bug again, one panel
+along.** "Against the position" read `player.percentiles`, which the pool
+computes over all 628 — so every player worth opening a profile on scored in
+the high nineties and the panel drew seven full bars saying nothing: projected
+points 100th, ceiling 100th, floor 99th. Recomputed over the men who beat
+replacement at his position — the set he is actually competing with for a
+roster spot — Jahmyr Gibbs reads 99th on points and 53rd on consistency, which
+is a reading rather than a wall.
+
+**Half a card is what a player _is_; the other half is what the room has
+_done_.** Everything on the card read the same at pick one and at pick a
+hundred and fifty, which for an auction is most of the information missing. The
+live band holds four readings that move, marked off with its own ground so the
+distinction is visible: what is left, how fast it is going, whether you still
+need one, and who can still outbid you.
+
+The **shelf** is the undrafted men at his position as columns, best first, with
+him lit — and its baseline is _replacement level, not zero_. From zero the
+sixteen best backs left are 270 down to 190 and the shelf is sixteen
+near-identical columns, a picture of a position rather than a reading of one.
+From replacement the columns are surplus, which is the only part anybody bids
+on, so the step down from his column to the next is the cliff you are actually
+paying for. It empties as the room drafts, and it counts both halves of the
+draft: a receiver taken in the snake is exactly as unavailable as one bought
+for forty dollars.
+
+The **run tape** is the last ten picks as ten cells, lit for the ones at his
+position, amber past a third. A run is the one genuinely urgent thing in an
+auction and it is invisible in any static number.
+
+The **seat pips** are your own starting slots at his position, filled for the
+ones you have bought, with the seat he would take outlined and a diamond for
+the flex. The most expensive mistake in this format is buying a third running
+back at starter money, and the board will quote a big number for him because
+the number is about the player.
+
+The **money bite** is his price against your own ceiling — the same
+`spendableFor` `validateBid` uses, so a number read off a card is a number the
+engine will accept — with a tick for every opponent who can still go past it.
+
+**A pick moves every position's money, and that had to be measured rather than
+claimed away.** The first test asserted that buying a running back left the
+receiver pulse untouched, and it failed — correctly. Supply is local; money is
+not, because forty dollars spent on a back is forty dollars unavailable for a
+receiver. So the whole board really does re-render on a sale, and the cost is
+real: nominating went 773ms to 1099ms under a 4x CPU throttle. Hoisting
+`spendableFor` out of the per-position loop bought 24ms, which was the tell —
+the cost is React rebuilding sixty element trees, not the arithmetic. Memoising
+the four instruments that describe a _player_ (their props are numbers, strings
+and two arrays that come from module caches) and comparing the live arrays by
+contents rather than by reference brought it to 921ms, and there it was left.
+About 230ms unthrottled, against the 4340ms the board began at.
+
+**The scale cannot come from the board, and getting that wrong made both
+instruments useless in the same way.** `positionNorms.ts` takes the median and
+the ninetieth percentile per position — but over the players the league
+_rosters_, not over all 628. Across the whole pool the median running back is on
+the field for 31% of snaps and scores 4.3 points a game, so every one of the
+sixty on a commissioner's sheet sat in the same corner of the role field and
+every column of every game log pinned: Jahmyr Gibbs _averages_ 16.6 points a
+game against a ninetieth percentile of 9.7. Over starters the median back is
+54.5% of snaps and 9.3 a game, and the sixty spread out across it. A drafter
+never compares a player to the four hundredth back.
+
+It is built from the engine's _live_ players rather than from pool.json, which
+is not a detail: `snapPercentage` and `pointsPerGame` are derived when a player
+is built and are null in the file, so reading the file left every snap bucket
+empty and the role field silently rendered nothing at all on every card — the
+failure mode of a lookup that answers "I don't know" the same way it answers
+"there is nothing there".
+
+It is a dossier now. The photo is a 36px mark beside the name, the team colour
+is a 3px spine so every card's ground is the same and the prices down a column
+can be compared, and the price is the second thing read after the name because
+that is the order an auction reads in. Under it: projection, VORP and points
+per dollar; a floor-to-ceiling track with the projection's position on it,
+which is the shape of the bet rather than its size — two backs projected at 240
+are not the same bid when one runs 210-260 and the other 150-380; our rank
+beside the room's, labelled, because `adp` is whatever is _driving_ the board
+and `modelRank` is always ours and the card used to print one of them under the
+heading "Rank"; three usage figures with their standing in the position as a
+real bar and the percentile printed at the end of it; the snake gain; the
+research headline; and chips for a timeshare, games missed and a trend. The
+card went from 260px to about 300 and from six facts to nineteen.
+
+**The gain is on every card, and it costs nothing, which took a design.**
+`gainOverSnake` builds a whole outlook per call — a market sort over six
+hundred players — so sixty cards would be sixty sorts on every render, which is
+exactly the cost the board was measured and fixed for once. `getBoardGains()`
+builds the outlook a single time and each player costs a lookup and a
+subtraction. It is handed to the card as three **primitives** rather than as
+the object the engine returns, because an object prop is a new reference on
+every render and would re-render all sixty cards on every pick — the same
+objection that keeps the adjusted price off the card. A card's numbers only
+change when its own position's free man does, so the memo holds. Measured the
+way the original was: 639ms to nominate under a 4x CPU throttle, against the
+663ms the board was left at.
+
+It carries the roster-aware bar rather than a cheaper position-level one,
+because quoting the gap to the best free back for a third running back when
+both your slots are full is the specific way this format is lost. And where the
+order has not been drawn it prints the range with no name attached — the two
+ends are two different free men, and putting the worst one's name beside both
+numbers would say the low end was measured against somebody it was not.
+
+**A card has a back, and the order of the three states is the design.** The
+front carries nineteen readings and is at the limit of what can be scanned
+while a name is being called, so the twentieth would cost the nineteen — and
+everything the pool knows that is not on it is not less important, it is
+answered second. What offence feeds him. Who else is in his room, and by how
+much. Where his career sits on its own curve. How far apart the experts are
+from each other, before we disagree with them. How far downfield the ball
+actually reaches him. What the eighteen weeks in front of him look like.
+
+Expanding straight off the front was built first and is wrong twice: it is a
+screen-filling panel on one click, on the one surface somebody scans with money
+on the table, and the click that does it sits a few pixels from the click that
+nominates. So the sequence is front → `↻` → back → `⤢`, each step undone by the
+control that made it. Turning a card over is the softer act — it costs the
+front face and nothing else, and it happens between nominations rather than
+during one; only from there, having already decided to study somebody, does
+growing to every tab make sense.
+
+**Both halves of the hinge stay inside the card's own cell.** The front is in
+the document flow and sets the cell's height; the back is absolutely positioned
+over it. That is not a detail — a back face that reflowed would make studying
+one player rearrange the board you were studying him against, and the
+fifty-nine cards around it would move under the cursor. The second page is
+taller than a card, so it scrolls, and the sticky bar at the foot of the _view_
+is what says so — an edge that fades is read as continuing, an edge that stops
+is read as the end — while also carrying the way out of the scroll rather than
+only a notice that there is one.
+
+The `transform` on the hover lift is the trap the hinge sets. `.dr-card:hover`
+sets `translateY(-1px)`, and a transform on the back face **replaces** the
+half-turn that put it there — so the card shows its own back, the right way
+round, on the front of the board. It is restated rather than inherited, for
+both states that set it.
+
+None of the back is built for the fifty-nine cards that are not turned over.
+Sixty would be sixty career arcs, sixty schedule strips and sixty reads of two
+lazy caches, on a board whose entire performance story is that it mounts sixty
+cards without stalling — so `flipped` is a boolean, false on all of them, and
+the second page is `null`. Measured after: nominate is 465ms on the first and
+about 200ms after under a 4x CPU throttle, against the 663ms the board was left
+at; building a whole back face costs 287ms, once, for the one card asked for.
+
+**Raised, it leaves the board exactly where it was.** Spanning the grid was
+tried and is wrong twice over: the cells beside it in its own row are left
+empty, which reads as a rendering fault, and everything below jumps down the
+page — the board being read is rearranged as the price of reading one card of
+it. It rises to the middle of its own fixed layer instead and the rest recedes
+behind a scrim, so nothing moves and closing puts everything back. The lift
+animates _from_ the cell it came from, measured at the click and handed to the
+card as three CSS custom properties, because a panel that fades in at the
+centre is a modal and a modal is the thing this is deliberately not.
+
+The raised card is the _back_ grown, never the front, which is what makes it a
+drilldown rather than a second object: the second page down the left at the
+width it had, every tab of the dossier in the room it just gained. `.dr-profile`
+carries `width: min(1140px, 96vw)` for the modal it was written for, and inline
+that made the dossier 1140 wide in an 878-pixel column while the card's
+`overflow: hidden` quietly cut the right-hand quarter off every tab — the value
+swarm, the fourth headline tile, the right column of every two-column panel. A
+panel that is silently clipped is worse than one that scrolls, because nothing
+on screen says there is more.
+
+**Seven more instruments, and one of them had to be un-drawn to work.** They
+follow the rule the front's four already do — a bar and a dial are containers,
+so an instrument earns its space by being the shape of its own data — and each
+carries its own reference mark.
+
+`PlayMix` is how much this offence runs and what it does with it, as one shape:
+the bar's **length** is plays a game against the league's fastest, the **split**
+inside it is pass against run, and the dashed notch is the rate the _situations_
+called for. A proportion with no reference is a fact about a scheme; a
+proportion beside its counterfactual is a claim about a coach, and it is the
+second one that moves a bid.
+
+`GoalLine` is scoring chances and how many of them are his — the offence's
+red-zone trips as pips on one pitch, his touches on the row beneath at the same
+scale, goal-line work marked on his own row rather than as a third number.
+Touchdowns are most of the gap between two players with the same yards and they
+are handed out rather than earned at random; both halves were in the pool and
+neither was anywhere on the board. An empty chance is an outline and not a
+darker fill, because on a near-black ground a dark fill is not a socket, it is
+nothing, and a row of nothing cannot be counted against the row above it.
+
+`DepthLadder` puts the margin in the geometry. "Depth 1 of 4" is three facts as
+a fraction and hides the one that decides the bet: a starter nine points a game
+clear of his backup and one half a point clear are the same fraction and the
+second loses the job in September. **It was drawn with a stile first** — a rail
+down the left so the rungs would read as one ladder — and with the air marker
+down the right the pair closed into a rectangle with a bar across the top. The
+instrument stopped being a ladder and became a box, which is the exact failure
+this whole file exists to avoid: a container, with the reading inside it as a
+magnitude. Left-aligned rungs of two widths are already unmistakably a ladder,
+and the empty space between them is the reading rather than a gap in a frame.
+
+`CareerArc` plots every season against **age**, not against the calendar, and
+that axis is the whole instrument. Against years it says "he was better in
+2024", which anybody can read off a table; against age it says where he is on
+the curve the backtest named as one of the three places this board is worst,
+over-projecting the thirty-and-overs by 52 to 66 points a man in every season
+measured. So past thirty is shaded and the projection is an open ring at _next_
+year's age: a hollow mark floating above a descending run of solid ones is the
+model paying for old tape, drawn as what it is.
+
+`Consensus` is how much the experts disagree with each other, against how much
+we disagree with them. Ten places clear of a panel that agrees within two is a
+different claim from ten places clear of a panel spread over sixty, and a single
+edge number cannot tell them apart. Inside the whisker, somebody at FantasyPros
+already holds our view; outside it, nobody does — and three seasons say that is
+where this board has been wrong.
+
+`CatchDepth` is the one instrument here whose axis is literally the thing it
+measures. Eleven yards of target depth with three after the catch is a downfield
+receiver whose production is the quarterback's; three with eight after it is a
+screen game that survives a change at quarterback. Both average fourteen, and
+the pool printed both as numerals in a table. Drawn on a field — line of
+scrimmage, catch point, the run beyond it — it reads with no legend.
+
+`SeasonAhead` is the eighteen weeks with the three that decide the season marked
+as the three that decide the season. A strength-of-schedule number out of ten is
+an average, and an average is exactly the wrong summary here: soft defences in
+weeks fifteen to seventeen and a brutal September beat the reverse at the
+identical mean. The bye is a full-height dashed socket rather than a stub,
+because an absence the same size as a week is counted as a week and a
+three-pixel mark among eighteen columns reads as a rendering fault.
+
+**The tabs behind the raised card were nineteen lists of numerals and thirteen
+charts, three of which were bars.** The card got the instrument treatment twice
+and the dossier it opens into never did — so the surface with the most room on
+it was the sparsest thing in the app. A number in a list is not wrong; it is the
+most precise form there is. But a _column_ of them answers no question, because
+every question a drafter has is comparative — against the other men at his
+position, against what a free player scores, against what the room will pay —
+and a list has nowhere to put the comparison. The reader carries it in their
+head with money on the table.
+
+`charts/profile.tsx` is the same rule as `micro.tsx` at the size a raised card
+can afford, and the palette is imported from there rather than restated: two
+copies of five colour tokens is two answers to what a reference mark looks like,
+and it shows up as one chart's median notch being a different grey from
+another's directly beneath it.
+
+**A percentile is a position in a distribution, so `MetricStrip` draws the
+distribution.** `PercentileBars` is gone. Eight bars on one shared 0-100 scale
+said the same thing eight times, and what they hid is the only interesting part:
+_the distributions differ_. Consistency at a position is tight and crowded;
+ceiling is skewed with a long thin tail; red-zone touches are bimodal, because a
+team either feeds a man at the goal line or it does not. A percentile of 90
+means something different in each of those three, and a bar cannot say which one
+you are in. Every startable player is a tick on the real axis, he is the lit
+caret, the median is a notch under it, and hovering names the nearest man —
+which is the question a distribution provokes and the one an auction needs,
+because the answer is usually somebody you could buy instead.
+
+It is the workhorse: eight readings on the overview, four on usage, seven clubs
+deep on the offence, the December schedule against the position, and five across
+the thirty-two defences. Two things it has to get right. The domain is the 2nd
+to 98th percentile, so one outlier cannot compress the field into the first
+third of the axis. And `invert` exists because five readings on these screens
+are better when smaller — age, games missed, sack rate allowed, points allowed,
+seconds per play — and a percentile that does not flip reports the best defence
+in the league as the worst.
+
+**Three more, each the shape of its own data.** `ScoringMix` is where a season's
+points actually came from, because two backs projected for the same total are
+not the same bet when one got ninety of last year's from touchdowns — the least
+stable thing in football, handed out by field position and play-calling rather
+than earned at a repeatable rate, and invisible to a projection that only ever
+saw the total. The tick on each column is the share a typical startable player
+at that position takes from scores, _measured over the cohort_ rather than
+chosen: the whole history file is already in memory once any game log has
+loaded, so it is sixty map reads, and a constant nobody derived would be
+indistinguishable on screen from one three seasons produced.
+
+`WeeksAbove` replaces "consistency 7/10". Variance is symmetric — it scores a
+man who is never bad and a man who is never good the same — and what a lineup
+needs is the other question, _how often did starting him win the week_, which is
+a staircase. The denominator is a full season rather than games played, so a man
+who missed six weeks visibly cleared nothing in six of them.
+
+`PriceChain` replaces six unrelated cells with the chain they actually are: a
+list price from points over replacement, times what the room is paying tonight,
+times what this roster still needs. The useful reading is _which step moved it_,
+because "the model likes him" and "you need one and the room is hot" are
+different reasons to be looking at the same $54 and only one of them survives
+you filling the slot.
+
+**Interaction is held to the same bar as ink: it earns its place by answering a
+question that was already being asked.** `Threshold` is a slider because the
+outcome curve above it is the right picture and answers a question nobody has —
+the question people have arrives with a number already in it (_my other back
+gives me 210, does this man beat that_) and it is different for every reader,
+which is the case for making it draggable rather than for drawing forty more
+marks. `BidScrub` is the same argument about the only number that decides the
+night: every other price on the screen is one somebody else arrived at, and the
+one being said out loud moves a dollar at a time while people shout. It carries
+gain-per-dollar where the snake outlook is knowable, because that is what this
+format turns on — on the shipped board a $48 bid on Gibbs is buying the 124
+points between him and RJ Harvey, not the 278 on his card.
+
+Two things the interaction had to get right, both found by driving it. The
+readout under an instrument has a fixed minimum height, because a chart that
+reflows when you point at it is a chart you cannot point at twice. And the
+hovered value replaces the resting one in a fixed-width right-hand column rather
+than appending to it, so eight strips stay a table the eye can run down.
+
+**Two defects, and the shape of both is worth keeping.** `Threshold` shipped
+reading "0% chance he clears 72 points" for a player projected at 278 with a
+floor of 253. `tailAbove` is Q(z) — the chance of exceeding a _standardised
+threshold_ — and it was being handed the distance back to the mean instead,
+which inverts every reading. The second is subtler: replacement level sits well
+below a good player's floor and the slider opens on it, so a range of
+floor-to-ceiling clamped the handle to its left end while the label read the
+true number. A control saying one thing and showing another is worse than no
+control. Three tests pin both.
+
+**The dead space was a grid putting independent things in rows.** Every tab had
+a hole in the middle of it — a four-line panel beside a swarm plot left three
+hundred empty pixels on a screen whose whole complaint was sparseness — because
+`auto-fit` lays sections out in rows and a short one beside a tall one leaves
+the difference. There is no row structure to preserve here: the sections are
+independent and their order is a reading order, not a table. Multi-column flows
+them instead and the columns balance themselves, with `break-inside: avoid`
+keeping a chart off a column break and `column-span: all` for the headline
+tiles.
+
+Two smaller things went with it. `.dr-role-wide > .dr-facts` states its track
+count rather than using `auto-fit`, because `flex: 1` sets a base size of zero
+and `auto-fit` resolves against that base rather than the width the item grows
+to — so five readings beside the role field came out as one tall column. And the
+range inputs carry `color-scheme: dark`, without which the browser paints its
+light-theme track: a bright white bar across a near-black panel, and the loudest
+thing on a screen where it is a control rather than a reading.
+
+**A season's points are restated at the league being played.** `player-history.
+json` stores nflverse's full-PPR total, and the totals table and the scoring mix
+both read it — printing a season a fifth too large directly beneath a projection
+that is not, which is the quiet drift `valuation.ts` exists to prevent one
+register out. The profile takes the league and goes through the same `pointsFor`
+the pool builder and the board come through, so there is no second definition of
+what a catch is worth.
+
+**The offence needed a scale too, and its cohort is not the players.**
+`offenceNorm` lives beside `positionNorm` because it answers the same question —
+_compared to what?_ — and is primed off the same array at the same moment. What
+differs is who is counted: an offence is a club, and every player on a roster
+carries the identical reading, so bucketing per player would weight Kansas City
+by however many Chiefs the pool happens to hold. That is a distribution of
+roster depth wearing the label of a distribution of offences. One reading per
+club, then the distribution over clubs, and a test drives thirty men from one
+fast club against six slow ones to prove which it is.
+
+**Fifteen identical pills in one wrapping row is a menu with the labels rubbed
+off.** The top bar carried a wordmark, three readouts, a progress bar taking
+`flex: 1` of the one row everything had to fit on, a clock, and eleven buttons
+of identical weight — with Reset, which deletes the afternoon, sitting inline
+between Server and the edge. It is three groups now: what the auction touches
+is solid, what is set up once is quiet until hovered, and Reset is alone at the
+end in the colour of the thing it does. The progress bar is the header's own
+bottom edge, two pixels, saying continuously what the "0/639" beside it says
+exactly.
+
+**The bid box was below the fold.** The stage lived in the 380px aside and its
+own content is about nine hundred pixels tall, so the winning-team select, the
+bid stepper and SOLD — the entire mechanism of the night — were reachable only
+by scrolling a sub-panel while somebody shouts a number across the room.
+Meanwhile the board beside it had 1100px to hold four cards, and when a search
+was filtered to one name, seventy per cent of the screen was empty.
+
+The block is a full-width band now, in three columns: who he is, what he is
+worth, and what you are doing about it. The reading column is the one that
+varies — a gain line, a research flag, a competition list — so it scrolls
+rather than growing the band, because a band that changes height moves the
+controls and the controls not moving is the whole point of a band. Header and
+band share one sticky context rather than the band guessing an offset under a
+header that wraps: at any width where the setup row wrapped, a fixed offset
+tucked the block underneath the header and hid the bid box behind the thing
+meant to be above it. With nobody on the block the band is a single line, not a
+two-hundred-pixel empty panel across the top of the board.
+
+**The tokens were three greys and a gap.** There was no type scale, so eight
+components invented their own and a stat label and a section heading came out
+the same size; no spacing scale beyond one gutter; no elevation and no motion
+token. There is one of each now, plus a verdict language — good, warn, bad,
+info, each with a paired background and border — because "this bid is a
+mistake" is rendered on the card, the stage, the market panel and the bargain
+board, and those four were each picking their own green.
+
 **The board renders a page at a time, and it is not a preference.** Measured
 before it was changed: under a 4x CPU throttle, nominating froze the interface
 for 4.3 seconds because React mounts a card per player and the board handed it
@@ -559,6 +1115,42 @@ moment there is no room for it. Names live in their own storage key rather than
 in `LeagueShape`, because `sameLeague` decides whether a draft survives a
 change and a rename must never throw one away. `getMyTeamId()` is what lets the
 rest of the room be read as opponents.
+
+**Every catastrophic failure this app has is silent, and nothing collected
+them.** A league left at the pool's own defaults prices 628 players under
+somebody else's rules. A paste that lost eight names to a spelling re-prices the
+board for an auction nobody is holding. No team marked as yours turns the plan,
+every walk-away and four panels inert. In each case the board renders, the
+numbers look exactly as authoritative as correct ones, and the first evidence is
+a roster nobody can explain in December.
+
+The individual warnings all existed — the settings panel refuses a first run,
+the import panel bands a lossy paste at one row in eight, the market panel dates
+the ADP — and every one of them is seen only by somebody who happens to open
+that panel. What did not exist was anywhere that answers the question worth
+asking before the first name is called: _is this ready?_
+
+`src/lib/readiness.ts` is that, as a fact module in the idiom `modelTrust` uses:
+it states what is true of the setup and never what to bid, and a test asserts no
+check ever prints a dollar figure. Three levels, and the distinction is what to
+do about it now — `blocking` means a number on the board is wrong rather than
+merely unknown, `warn` costs precision and not correctness, and `ready` is
+listed anyway, because a checklist that only shows problems can say something is
+wrong but never that nothing is.
+
+The badge lives in the top bar and disappears entirely when there is nothing to
+say, because a checklist nobody opens is a checklist nobody has. Two of the
+checks change level with the draft rather than being fixed: a stale market is
+blocking before the first pick and a warning after it, since re-pricing mid-
+draft would throw the afternoon away and the honest instruction is different
+once it is too late to act.
+
+`StoredSheet` gained a `loss`, and it is stored rather than recomputed for the
+reason `phase` is stored on a pick: the paste it was measured from is gone the
+moment the panel closes, so it cannot be recovered afterwards — and it is
+exactly the fact that decides whether the board is priced for the auction being
+held. It rides through the draft file too, or a restore would report a lossy
+sheet as a clean one on the machine that has to finish the night.
 
 **Draft night is the deadline, and the room has to survive it.** Three things
 were found by driving a full 192-pick draft rather than by testing one. Reset
@@ -777,6 +1369,36 @@ When a refusal lands, the headline goes too. Josh Jacobs kept a summary reading
 claim was found to say the opposite. The findings that survived are still shown;
 the one line that summarised all of them, including the wrong part, is not — it
 is the line most likely to be read and least likely to be checked.
+
+**A page that cannot hold still cannot carry a dated claim.** Found by
+re-fetching citations rather than by reasoning about them. Seven of the
+strongest findings on the owner's own sheet were checked against the pages they
+cite and six held exactly — Nacua's psoas down to the dates of the two joint
+practices he missed, Rapoport on Jeanty's Week 1 chance, the Montgomery trade
+and Gibbs' bell-cow line, the DJ Moore trade three separate findings lean on.
+The seventh held in part: the source confirms Kamara's MCL sprain and a month
+out, and says nothing about the mid-August joint practice the finding places it
+at.
+
+The one that mattered was structural rather than false. Two of the two hundred
+and thirty cited a _player hub_ — CBS Sports' Javonte Williams page, and a
+rolling news index — and the CBS one carried a finding stamped 11 August about
+content the page itself dates to 27 April, inside a block that will be
+rewritten next week. Both claims were true. The defect is that nothing in the
+pipeline could have told: the page has no publication date, so the date on the
+finding could only have come from the model. That is the same objection as "the
+model's URL is never trusted" one level in — there the URL was checked against
+what the search returned, here the URL is real and it is the _date_ that has
+nothing behind it. `isDatelessPage` refuses a hub, an injury history, a depth
+chart or a stats page on the shape of its path, and counts it as undated,
+because that is what it is.
+
+`ingest-research.mjs --revalidate` is what let that reach the file already
+shipped. The contract gets tightened whenever re-fetching turns up a new way a
+citation can fail, and without this a tightening would only ever apply to the
+next run — which through the other door costs money and twenty minutes. The
+findings on disk are their own allowlist, since a search really did return
+them. It dropped 2 of 230 and left the other 228 untouched.
 
 **A wrong id does not fail loudly, so the name is checked too.** Every id in the
 pool belongs to somebody, so a transposed one silently writes one player's
@@ -1237,6 +1859,72 @@ in all three seasons**. Averaging only helps when two estimators are comparably
 good; ours is not, so the blend dilutes the better signal. A negative result,
 and the one that decided what got built.
 
+### The one thing the backtest found that was worth fixing
+
+**A model that projects a full season for a man who has never played one.**
+`expectedGames` discounted for _injury_ alone — `17 - gamesMissed`, floored at
+ten — so a healthy player who was active for six games got seventeen. That is a
+backup, a rotational body, or a rookie who did not win the job, and the backtest
+named it in the plainest terms it had: at one to sixteen games of tape the model
+scored 0.21, 0.13 and 0.04 while last season's points scored 0.52 to 0.58 on the
+same players, and it over-projected them by 62, 58 and 72 points against a field
+it over-projected by 43 to 48. The mechanism was visible in the arithmetic
+rather than inferred — six games at a good rate shrink to a respectable rate
+against an eight-game prior, and are then multiplied by seventeen.
+
+`expectedGamesFrom` estimates availability the way the rate is already
+estimated: the player's own recency-weighted games played, shrunk toward the
+assumption in proportion to how little of it there is. A three-season starter
+lands on seventeen either way; a man with one six-game season does not. Games
+are capped at a full season before averaging, because seventeen plus a playoff
+week is not eighteen games of availability next year, and a player with no tape
+at all keeps the assumption, because there is no record to read.
+
+What it bought, measured on the same three held-out seasons:
+
+|                           | 2023              | 2024              | 2025              |
+| ------------------------- | ----------------- | ----------------- | ----------------- |
+| whole-field rho           | 0.556 → **0.616** | 0.526 → **0.553** | 0.514 → **0.564** |
+| mean absolute error       | 60.7 → **49.0**   | 60.9 → **51.2**   | 60.8 → **49.3**   |
+| over-projection           | +46.4 → **+30.1** | +43.0 → **+28.5** | +47.5 → **+32.2** |
+| 1-16 games of tape, rho   | 0.21 → **0.30**   | 0.13 → **0.27**   | 0.04 → **0.16**   |
+| surplus (what a bid buys) | 0.368 → **0.430** | 0.378 → 0.378     | 0.428 → 0.427     |
+
+Every accuracy measure improves in all three seasons, the diagnosed bucket
+roughly doubles, tight end and quarterback improve in all three, and running
+back gets slightly worse in all three (−0.005, −0.026, −0.031) — availability
+says less at a position where the argument is role rather than games.
+
+**What it does not buy is the headline.** On surplus the market still wins
+comfortably — 0.533, 0.472, 0.486 against 0.430, 0.378, 0.427 — so "press Use
+consensus and let the market drive" is unchanged, and so is every line in the
+section above. What improved is the _points_, and that is worth having for a
+reason specific to this format: `snakeOutlook` compares an auction player's
+points with a free player's points, so a uniform over-projection cancels and a
+_differential_ one does not. The free men in the snake are disproportionately
+the low-games players this was over-projecting, which made the one number the
+whole plan turns on wrong in a direction nobody could see.
+
+`AVAILABILITY_PRIOR_SEASONS` is 0.5 and was chosen before anything was measured
+— half a season's worth of belief in a full season. A sweep was run afterwards
+and is recorded here as a robustness check rather than as a choice, because
+picking the best of three values on the three seasons being scored is the
+in-sample mistake the blend section above already documents. Nothing dominates:
+at 0.25 the 2023 surplus is better and 2025 worse, at 1.0 the reverse, and every
+setting beats the old model on every accuracy measure. It is a plateau, not a
+peak.
+
+The pool was rebuilt on it, which is not optional: `pool.json` stores
+`projection.points` and the client re-prices from it, so leaving the file alone
+would have shipped the old model behind the new code. 328 of 628 projections
+moved and the mean fell 10 points. The corrections are the ones the diagnosis
+predicts — Kyler Murray 283 → 196 at 11.8 expected games, Rashee Rice 229 → 154,
+Malik Nabers 208 → 141, James Conner 161 → 110, Christian McCaffrey $44 → $34 —
+and Nabers is worth naming twice, because he is one of the players the section
+above lists as the _market's_ confident departure from us. This moves us further
+from the room on him. The backtest says the trade is worth it; the room may
+still be right about that one man.
+
 ### The signal that was measured, and the one that shipped
 
 Worth recording because it was a real hole rather than a refinement. The
@@ -1311,6 +1999,29 @@ so; the other 245 keep our price, which is right rather than a gap — they are
 the $1-2 bench players consensus does not bother to rank, they already sit at
 the floor, and inventing a market opinion for them would be inventing the one
 thing the whole module exists to defer to.
+
+**The board's own price can rest on the disagreement the backtest says we
+lose.** The plan's _prices_ come from the market — consensus drives the board —
+but its _gains_ come from `projection.points`, which is ours, because a rank has
+no points behind it and there is nothing else to compute a gain from. So our
+model's error rides into the one number that decides a bid, and the profile
+where it does most damage is the one `CONSENSUS_VERDICT` is already about.
+
+Measured on the shipped board it is mostly not a problem: thirteen of the top
+fourteen buys are within single digits of consensus. The exception is the plan's
+own third pick — Kyren Williams, ours #10 against the room's #42 — which is
+exactly the shape the backtest punished. So a wide disagreement is now a fourth
+`modelCaveat` beside the three the backtest printed, and it earns its place on
+the same evidence: the market's side of the widest gaps was nearer the truth in
+all three seasons and worth about twice as much in hindsight dollars.
+
+It carries the depth bound with it, because a gap is only a claim where a rank
+is. Below the top hundred both boards are ranking noise and the difference
+measures how little either knows — the lesson the bargain board learned when a
+$2 bench receiver a hundred and sixty places adrift led a panel about bargains.
+`TrustSubject` grew a `market` field shaped the way `Player` already is, so all
+four surfaces that hand this function a whole player light up without the two
+numbers being threaded through each of them by hand.
 
 `src/lib/modelTrust.ts` is where that stops being a document and starts being
 something the room can see. It holds the verdict line the bargain board leads
@@ -1453,8 +2164,26 @@ market alone, a sheet paste that says how much of itself it lost and hands the
 failures back to be fixed, a bargain board sorted by money rather than by rank,
 73,407 lines of dead tree finally gone, and the board finally ordered by the
 signal that was actually measured — live half-PPR ADP, refreshable on its own in
-seconds, with expert consensus extending it past where real drafts stop;
-609 tests.
+seconds, with expert consensus extending it past where real drafts stop; and the
+card given a back and a raised state — front to scan, `↻` to turn it over onto a
+second page of seven more instruments, `⤢` to raise that page into the full
+dossier with the board receding behind it and nothing on it moving, and every
+one of that dossier's eight tabs rebuilt out of instruments rather than lists —
+distributions where percentile bars were, where a season's points came from,
+how many weeks he cleared a bar, the price as the chain of multipliers it is,
+and three draggable readings that answer a question a static chart cannot,
+the sixty-times-a-night act of recording a sale cut from nine keystrokes to one
+press, the six side panels put back on the screen the advisor had pushed them
+off, and the number that decides a bid finally solved rather than guessed — a
+knapsack over the sheet that says which three players the hundred dollars
+should buy and what the marginal dollar is worth, replacing a "what to bid"
+that was the price times 1.15 and recommended $28 on a man worth nothing, and
+one place that answers whether the board is set up at all rather than six
+panels each holding a piece of the answer, and the half of scarcity that had
+never been counted — the seats the room still has to fill and the money aimed at
+them;
+758 tests, and the block rebuilt as the Spotlight — the whole dossier beside the bid
+box, with a live tab for what this bid does to your draft tonight.
 
 The CSV download used to do nothing inside the published artifact, whose
 sandbox blocks any save a page starts itself. `src/lib/saveFile.ts` now goes
@@ -1475,6 +2204,148 @@ Open, roughly in order of value:
    a real design change rather than a route to add. The published artifact
    cannot have it either way: its CSP blocks every external host.
 
+   What _is_ covered, and had never been proved end to end, is the case that
+   actually costs an afternoon: the machine dies. Driven in two browser
+   profiles — `c` on the laptop, paste into a phone with empty storage — twenty
+   of twenty picks came back with a byte-identical log and the league with
+   them. Two things looked broken on the way and were not: the copy shortcut
+   works (the driver's clipboard permission was not origin-scoped), and the
+   paste box exists (behind "Paste a draft…", which the driver never pressed).
+   `wholeNight.test.ts` now carries the same journey at the engine, over a real
+   sheet with thirty sold, because a browser drive happens once and a test
+   happens every time.
+
+**The panel headed "What to bid" was telling you to pay for players who make
+the team worse.** `maxBid` was `riskAdjustedValue * 1.15` and `walkAwayPoint`
+was that plus one, on top of an `adjustedValue` built from a scarcity
+coefficient of 0.15 and a risk ladder of 0.88/0.95/0.90/0.96 — every one of
+them a constant nobody derived, and the same multiplier for everybody. So the
+number ranked players in exactly the order their prices already did and carried
+no information the price beside it did not.
+
+Measured on the shipped board at the home league, it said $37 for Derrick Henry
+against a gain over the free back of nine points, $32 for Kenneth Walker at
+nine, and **$28 for Omarion Hampton, whose gain is minus forty-two** — twenty
+eight dollars to finish worse than doing nothing — while quoting $32 for
+Amon-Ra St. Brown at plus eighty-three. It was the same defect the bargain
+board was already pulled out of once (`edge * 0.12`, a constant nobody
+derived), sitting on the one number that decides whether a player is won.
+
+**`src/lib/rosterPlan.ts` is what a bid should actually be measured against.**
+The question every other panel was answering around: _given the money and this
+sheet of sixty, which players should I end up with?_ Each one costs whole
+dollars and, if bought, fills a seat the snake would otherwise have filled for
+nothing, so it is a knapsack — and two things fall out of solving it. The
+**plan**, the best affordable set at tonight's prices; and the **price of a
+dollar**, how many points the marginal one buys, which is the rate every bid is
+really competing with.
+
+The objective is the lineup's points and **not a sum of per-player gains**, and
+the worked example that forces it is worth keeping. A league starting two backs
+with free men A (196) and B (154): buying nobody scores A + B. Buying Gibbs
+(278) scores Gibbs + A, because the _other_ seat still takes the best free back
+— so the first back you buy is measured against **B, the worse one**, and the
+second against A. Adding up "gain over the best free man" twice would credit A's
+replacement twice and never B's. Scoring the whole lineup makes the baseline a
+constant, so which free man each purchase displaces becomes bookkeeping the
+search does rather than a rule anybody states.
+
+On the shipped board the plan is three players — Bijan $47, Amon-Ra $28, Kyren
+Williams $25 — for the whole hundred and **+278 points over an all-snake
+roster**, at 2.7 points a dollar. And the walk-aways are a different draft from
+the ladder's: Henry $37 → **$0**, Walker $32 → **$0**, Hampton $28 → **$0**,
+Josh Allen $41 → **$17**, McCaffrey $40 → **$17**, Nacua $44 → **$25**. More
+than half a commissioner's sheet is players the snake very nearly matches,
+which is a thing a multiplier on the price could never say.
+
+**Where you pick is an input, not a precondition.** Everything downstream of
+`getSpendOutlook` refuses without a drawn order, which is right for a _reading_
+— computed at somebody else's seat it is somebody else's draft. The plan
+inherited that and was first solved at the safest seat, which was defensible and
+wrong in a knowable direction: it understated every gap on the board for the
+eleven draws out of twelve you are not going to get, and it made a question the
+commissioner answers at the table into a question the tool asked first.
+
+The draw is uniform over the seats and nobody knows it, so the baseline is the
+**expected** free man at each rank, averaged over all twelve element by element
+— the average n-th free man, not the n-th of an averaged list, because only the
+first is the one a purchase displaces. One plan, one number, no caveat. Once
+the order is drawn it uses the real seat instead: an average over draws you now
+know you did not get is worse than the one you did.
+
+**Every player being auctioned needs a price, and the exact answer could not
+give one.** `maxPriceFor` asked "what is the most I could pay for him and still
+beat the best plan that excludes him" — the _more precise_ answer to the _wrong
+question_. It assumes the optimal basket is guaranteed, and it never is: sixty
+players come up one at a time in an order nobody controls, and you will be
+outbid on some of them. Under that assumption it priced fifty-seven of the
+sixty at zero, which is advice that leaves you holding a hundred dollars and a
+bad roster the moment two of your three targets go elsewhere.
+
+The question actually faced sixty times, once per name called, is _is he better
+value than the money?_ — and that is the knapsack's **dual**, not its primal.
+The plan prices a dollar at `perDollar` points; a player is worth the price at
+which the points he adds per dollar meet that rate, which is `gain ÷ rate`.
+Every player who helps the lineup at all therefore has a real bid, which is the
+property that makes this usable at a live auction and the previous version not.
+
+The two disagree by the knapsack's duality gap — the plan will pay $47 for a man
+the rate prices at $46, because he happens to fit the budget exactly — so
+anybody in the plan is floored at what the plan pays for him. A plan that would
+pay a price is a demonstration that the price is worth paying, and the gap
+closes without either number having to be explained away.
+
+It is also what makes the whole board affordable: one knapsack, then a map read
+per player, so all sixty are priced in the 36ms the single player used to cost.
+`getBidBoard` is that, and the plan panel is the board it produces — thirty-five
+names with real prices, and the twenty-five the snake covers listed once at the
+bottom rather than hidden. Both halves are the finding: more than a third of a
+commissioner's sheet adds nothing you would not be handed for nothing, and
+knowing which is most of the edge this format offers.
+
+`getPickBoard` is the same function pointed at the snake, because a free pick
+and a bid differ in what they cost and not in what they are worth. The advisor
+ranked the snake by projected points, which agrees with lineup gain while the
+roster is empty and parts company exactly when it fills: with both back slots
+gone and a flex open, the pick is not the highest-projected back left, it is
+whoever has the widest gap to whatever else would take that flex — a comparison
+across positions a per-position sort cannot make.
+
+**A bench body is not a worthless one, and getting that wrong priced half the
+sheet at zero.** The search forced a bought player into a seat, so a man behind
+the free alternative _reduced_ the lineup and came out worth nothing — as though
+owning him were an act of self-harm. Nobody starts a player worse than the one
+the snake handed them: you bench him, and benching costs the lineup nothing.
+
+A gain is also never negative now, for the same reason: forced into a seat, a
+man behind the free alternative came out at minus four, as though buying him
+damaged the lineup. He does not — you bench him and start the free man exactly
+as you would have. What he costs is the dollars and what he adds is nothing,
+which is a different statement from a negative.
+
+What he is worth instead is the plan's **slack** — the money the best lineup has
+no use for, taken as the cheapest budget that still reaches it rather than
+`budget - spend`. The reason it is a floor under every price on the board is
+that **a dollar left unspent at the end of an auction scores nothing**, so
+anyone the roster can legally carry is worth at least that much however little
+he adds. Zero survives in exactly two places, and both are facts rather than
+valuations: a roster that cannot carry him at any price, and a plan with no
+slack at all — which on the shipped board is every dollar of the hundred
+committed to Bijan, Amon-Ra and Kyren. The stage says which of the two it is
+rather than printing a bare nought, because "worth nothing" and "worth nothing
+_while the plan holds_" are different instructions the moment one of those three
+goes to somebody else.
+
+**The inner loop allocated, and it was on the path that runs while a name is
+being called.** Items × dollars × states is about three quarters of a million
+passes on a real sheet, and decoding the roster state inside it built a fresh
+array every time: nominating went from about 200ms to 700ms under a 4x CPU
+throttle. The hundred and twenty states are decoded once into an `Int32Array`,
+feasibility is decided per candidate rather than per candidate-and-dollar, and
+the unrestricted plan is handed into `maxPriceFor` rather than re-solved inside
+it. Back to about 320ms, and it re-solves when the player changes rather than
+on every keystroke in the bid box.
+
 **Money left over players left is a constraint, not a forecast, and it decides
 when to buy.** `snakeOutlook` says _what_ a dollar buys; `endgame.ts` says
 _when_ it goes furthest. Twelve teams at $200 chasing sixty players means the
@@ -1489,12 +2360,104 @@ opens at $44, and after eight sales at $75-95 it reads "the room is paying $84
 against a par of $37 — the last 47 have to come down", with his share of the
 remaining money up from 8% to 12% for doing nothing.
 
+**Supply was half the reading, and the other half is what makes a run.**
+`MarketState.scarcity` counted how many are gone, how many are left, what the
+drop from the best one to the fifth costs — every one of them a fact about the
+players. None of them can say whether a position is about to go, because that
+is demand arriving: eleven teams needing a tight end with three startable ones
+left is a run that has not happened yet, and three teams needing one with twenty
+left is a position you can wait on all night. The two look identical in a supply
+count.
+
+So a row now carries the seats the whole room still has to fill there, the
+startable players left to fill them, and the money belonging to the teams doing
+the filling. **The flex is deliberately in none of them.** `unfilledSlotsFor`
+falls through to the flex allowance once a position's own seats are full, which
+is right when asking whether a player fills a hole for one team and wrong when
+summing across positions — the single flex seat would be counted once for the
+backs, once for the receivers and once for the tight ends, and the room would
+read three times as hungry as it is.
+
+**The money is a rate, and it had to be.** Money is fungible: a team's $190 sits
+in its quarterback row and its receiver row at once, so the six totals do not
+add to the room's money and must never be read as though they did. Worse, before
+anybody has bought anything every team has a seat open everywhere, so the total
+_is_ the room's whole budget in all six rows — six identical figures, which is
+the shape of a reading that is not being taken, and it collided in a test with
+the inflation basis printed four inches above it. Per seat they differ from the
+first frame because the seats do: twelve quarterback seats and thirty-six
+receiver seats against the same money is $190 a seat against $63, which is also
+directly comparable to a price. It is null rather than 0 where the room has no
+seat left at all, because "nobody needs one" and "the teams that need one are
+broke" are different facts.
+
+The rate behaves in a way worth stating because it looks wrong and is not: a
+quarterback sale takes a seat _and_ the buyer's whole remaining budget out of
+the row together, so a one-starter position holds its rate at a team's budget
+however expensively it sells. What moves it is spending _elsewhere_ — a team
+that buys a receiver is still holding money for a quarterback, and less of it.
+The rate is therefore a reading of what the teams that still need one can
+afford, not of this position's own market.
+
+**And the squeeze is measured against where the position started, which is the
+whole instrument.** The obvious test is `seats >= startable`, and it lights
+kicker and defence red on the first render and keeps them red all night: those
+two are regressed so hard that the pool holds barely one startable per club
+while the league rosters twelve, so the seats meet the players in the opening
+frame and never part. That is the permanent false alarm the advisor's own
+roster-need alert was already pulled out of once, and it is not even true in the
+sense that matters — no kicker is on the sheet, so the snake hands you one for
+nothing. What is worth saying is that a position has _become_ squeezed, so the
+slack it opened with is the denominator: `high` is the seats having caught the
+players, `some` is over half that slack gone, and a position with no slack to
+lose says nothing at all. Both halves of the baseline are recomputed rather than
+remembered — the seats are a property of the league and the startable count a
+property of the pool — so neither depends on the draft and neither has to be
+stored to survive a reload, a replay or an undo. The engine decides the level
+rather than the panel, because deciding it needs that baseline.
+
+Slack is invariant under an ordinary sale, which is the mechanism: a team that
+needs a tight end takes a seat and a player together. What spends it is a
+_backup_ — a second one to a team already covered — which is exactly what a run
+is made of, and the reason this shows before a run rather than after it. Driven
+at the home league it is silent at the open and silent after ten ordinary sales,
+which is the correct reading of an auction in which nothing has happened yet.
+
 The count of teams that can still cover par short-circuits that comparison, and
 deliberately: a team with $8 left is not a quiet bidder but a spectator, and
 once most of the room is spectating what a player is worth stops mattering. It
 lives in `MarketPanel` beside inflation rather than in a panel of its own,
 because both are readings of the same thing — how much money is chasing how few
 players — and two panels would let the room find two answers to one question.
+
+**They were in one panel and still gave two answers, and the fix is the one
+piece of arithmetic here that was simply wrong.** Driven mid-auction the panel
+read, top to bottom: "Money is chasing scraps — expect overpays" in red; "$1009
+left chasing $875 of value · room paying −40% vs our numbers"; "RB −44% going
+cheap · 4 sold"; and "the room is paying about par — $24 against $21. No timing
+edge right now." Four readings of one thing pointing three ways.
+
+Par is the average of the players **left**. A raw pace is the average of the
+players **sold**. The dear ones go first, so pace beats par from the opening
+sale whatever the room does — the comparison reads the shape of an auction, not
+the behaviour of a room, and it fired "spending ahead of its budget, hold" while
+every other line on the panel said bargain. `endgame` now takes `recentList`
+beside `recentPrices` — what those same players were listed at — and takes its
+verdict from the share, which is composition-free and is the same normalisation
+inflation already does. The list price and not tonight's adjusted one: the
+adjusted price carries the multiplier this is meant to be independent of, so
+dividing by it would compare the room with itself and report agreement always.
+Par stays printed, because "the rest have to average $21" is a real budget
+constraint; it is simply not evidence about anybody's discipline.
+
+The direction was worth getting right twice, because the intuitive word is
+wrong both times. A room paying **under** list leaves more money behind less
+value, so nothing from here is a bargain and the discount only shrinks — the
+call is buy now, not hold, and "money is piling up, hold your nerve" is how a
+budget ends up buying the last forty players at a premium. `readInflation`
+moved into `endgame.ts` for the same reason and now takes the room's premium,
+so the loud band says which of the two cases it is instead of shouting overpay
+above a column of bargains.
 
 **What the snake gives you free is what a bid is competing with, and `vorp` is
 the wrong bar for it.** This is the one piece of arithmetic here that is
@@ -1535,6 +2498,279 @@ authoritative as a real one. The same number is pointed at the man on the block
 from the nomination stage, since that is where it is needed while money is on
 the table.
 
+**The man the gain is measured against is a player too, and nobody was asking
+about him.** `gainOverSnake` is a _difference_ against one named free player,
+and the projection knows only what he has done. On the shipped research file
+the free running back is under an NFL review that could suspend him, and the
+free tight end tore an Achilles in January and was still individual-drills-only
+a fortnight before Week 1. Both sourced, both dated, both sitting in
+`research.json` — and neither reached the one number they move, because nothing
+joined the two registers at the point a bid is decided. The board would happily
+quote "+55 pts over George Kittle, free in the snake" with no hint that Kittle
+might not play.
+
+`SnakeGain` carries `freeId` for that, since a name is not enough to look
+somebody up with, and the stage prints the finding under the gain with which
+way it cuts: a FADE on the free man means he may do less than the projection
+the difference was taken against, so the bid is worth _more_ than the number
+says, and the reverse for a PAY_UP. It carries no figure, exactly as
+`researchContract` has no price field — it says the difference is soft, never
+by how much. `NEUTRAL` prints nothing: "we looked and there is nothing to say"
+is not a finding, and rendering it would be noise wearing a source.
+
+**A seat you have already filled is not a seat.** The gain was computed against
+the best free man at the player's _position_, which is the right bar exactly
+until your own slots at it fill — and then it is a number about a seat that is
+taken. Two running backs in and the board went on quoting the gap to the best
+free back for every back after that, which is the specific way this format is
+lost: the third back is not competing with a back, he is competing for your
+flex against every position that can fill it, and the fourth is a bench body.
+`gainOverSnake` therefore reads your own roster through the same
+`unfilledSlotsFor` the reserve uses, and returns which of the three it is
+alongside the number. Bench is `gain: 0` with no free man named, because there
+is nobody to name: the snake hands you eleven bench bodies for nothing, so the
+alternative to buying him is any of them.
+
+**Escape closed eleven dialogs and not the other two.** `DraftBoard` — the
+room, the 12x16 grid somebody opens mid-auction — and `CompareTray` are both
+`aria-modal` overlays that cover the screen and swallow every click, and the
+only way out of either was to find the Close button. Eleven components had
+written the same effect out by hand, which is how the twelfth gets missed, and
+the copies had already diverged: only `PickEditor` stopped the event, because
+it opens _inside_ `DraftBoard`. That fix would not have survived a `DraftBoard`
+that also listened — `stopPropagation` does not stop a second listener on the
+same node and both are on `document` — so one keystroke would have closed the
+editor and the board behind it, losing the place somebody was correcting.
+
+`useDismissOnEscape` is therefore a stack rather than eleven listeners: every
+open dialog registers, and a keystroke is answered only by whichever registered
+last. Nesting works by construction instead of by each dialog knowing what
+might be above it, and the callback is read through a ref so the effect depends
+on nothing that changes per render — a dependency on the handler would pop and
+re-push on every parent render, floating an _outer_ dialog to the top of the
+stack every time the room behind it re-drew, which it does on every pick.
+`LeagueSettings` passes the enabled flag, because on a first run there is
+nowhere out to go.
+
+**Our own rank did not survive the market board.** `modelValue` exists so the
+board can say whose number it is showing; there was no `modelRank`, and `adp`
+is whatever is _driving_ the board — the market's, after "Use consensus". Two
+panels printed it as ours: the bargain board's `title="Our rank"`, and the
+profile's "our board #21" beside "consensus #14". Both were comparing ADP with
+expert consensus and reporting it as our disagreement with the room. It is the
+trap `getBargains` had already been pulled out of once — it reads `modelValue`
+rather than the live price so that pressing the button cannot re-derive the
+disagreement against itself — and the ranks printed beside those dollars never
+got the same treatment. On the shipped board Kyren Williams went from "#28 vs
+#42" to "#9 vs #42", which is the disagreement we actually hold.
+
+**The day-of refresh is one command, and it says what moved.** The board
+fetches nothing on the night, so everything it knows is frozen at whenever
+somebody last ran a script. That is deliberate and it is what makes the
+artifact work — but it leaves a ritual on draft morning, and a four-step ritual
+with no output is one somebody half-performs at nine with a draft at noon.
+`npm run refresh` runs the two cheap ones (the market, and the research
+contract over the file already on disk) and prints what changed.
+
+What it deliberately does **not** do is rebuild the board to report new prices.
+A second place deciding what a player is worth is exactly the drift
+`valuation.ts` exists to prevent, and a report disagreeing with the room would
+be worse than no report. So it diffs the _inputs_ — which is both exact and
+more useful, since "Gibbs moved from ADP 1 to 4" is the thing to know and the
+price follows from it in the room. The pool is left alone for the same reason
+it always is: a nineteen-megabyte download and a rebuild that moves every price
+is the last thing anybody wants before a draft, and projections do not age.
+
+Two sections earn the command on their own. The commissioner's list is
+re-resolved every time, so a pool rebuild that quietly stopped matching a name
+is caught on the morning rather than at the table. And the standing research
+flags are grouped by position **for the men the snake hands you free**, because
+the gain on every bid is a difference against one of them — on the shipped file
+that reads RB 8 fading against 3 being paid up for, which says the free back is
+the shakiest baseline on the board and a bid at running back therefore buys
+more than the number says.
+
+`auctionSheet.ts` gained an explicit `.ts` on its one relative import so the
+script can read the sheet with the same parser the room uses rather than a
+second one. That is the property every other script-reachable module here
+already had by having no relative imports at all.
+
+**And re-resolving the list is worthless if the count is wrong, which it was.**
+Driven against the owner's real sixty-name paste the report said "resolved 60 of
+60 rows" while eight names had failed — Puka Nakua, Saquan Barkley, Garret
+Wilson, Sam La Porta and four more, every one of them a spelling the room writes
+and the pool does not. The numerator was `resolutions.length`, and an _unmatched
+row is still a resolution_; the per-kind breakdown underneath it never printed
+either, because it read `row.kind` on a union discriminated by `row.status`, so
+every row counted as matched. Both halves of the one section that exists to
+catch a broken paste were reporting a broken paste as perfect — on the morning
+of a draft, about the eight players the room would then snake rather than buy,
+with `auctionSheetSize` dropping to fifty-two and re-pricing the whole board for
+an auction nobody is holding.
+
+The fix is not a corrected count, it is `sheetLoss` — the function the import
+panel already answers this question with, which bands the share at one row in
+eight and hands back the text of every lost line to be fixed. A script and a
+panel reporting a paste two different ways is the same defect `valuation.ts` and
+`serverContract.ts` are each shaped to prevent, one register further out. The
+`onSheet` set is built from `status === 'matched'` for the same reason: reaching
+for `row.player?.id ?? row.id` across the whole union happened to be right and
+would stop being right the moment the union gained a member carrying an `id`.
+It was not harmless in the meantime either — the eight unmatched sheet players
+were counted as free men, so Puka Nacua and Saquon Barkley were being reported
+as baselines the snake would hand you for nothing.
+
+**The board fetches nothing on the night, and never said when it stopped
+knowing things.** That is the trade that makes it work in the published
+artifact and in a basement with no wifi, and the honest mitigation is not to
+pretend otherwise — it is to say what it knows and when it learned it, so a
+"questionable" tag from three weeks ago reads as three weeks old rather than as
+news. The market's age was already computed and already banded and was visible
+in exactly one place: inside the rankings modal, a setup screen nobody opens
+twice. Everything else had a `generatedAt` in its file and nowhere on screen.
+
+`dataAge.ts` says it once, in the market panel, because that panel is already
+the one answering _what is the room doing_ and how old the market is **is** a
+market reading. What ages and what does not is the part worth stating: a
+projection is built from seasons that have finished and does not decay, so a
+pool built a month ago projects exactly what it projected — what decays inside
+that same file is the roster and injury snapshot around it. And only the market
+carries a colour, because it is the only one anybody has measured a decay rate
+for; inventing thresholds for the other three would spend its credibility on a
+guess, which is the argument `modelTrust` already makes for carrying three
+blind spots and not a dozen. The one loud line names the script to run, because
+a warning that does not say what to do about it costs attention and buys
+nothing — and `fetch:adp` takes seconds, unlike the rebuild behind everything
+else on the panel.
+
+The research row needed a dependency nobody would have guessed at. That file is
+a lazy import and nothing else in the room changes when it lands, so the memo
+reading its stamp sat on `[draftService, players]` and reported "—" until the
+first pick — and "—" is a claim, "there is no research", rather than a gap.
+
+**A permanent false alarm in the one panel that has to stay terse.** The
+advisor's roster-need alert counted "startable" as `tier <= 2`, while the run
+alert twenty lines above it counted players above replacement — two answers to
+one question in a single function, and the tier one was wrong. Kickers and
+defences are regressed so hard that the pool holds none above tier 2 at all, so
+it fired "0 startable Ks left and Team 1 needs 1" from the fourth pick of every
+draft and never stopped. It is not even true in the sense that matters: no
+kicker is on the sheet, so the snake hands you one for nothing.
+
+**The advisor is on by default, which is a reversal.** Facts and opinions being
+different files is the rule, and nothing about that rule lived in the default.
+What carries it is the separate module, the dashed box, the "Advisor" badge,
+the "opinion, for Team 1" caveat and an aria-label reading "opinions, not
+measurements" — all of which stay. Off bought none of that; it only meant the
+one panel answering _what do I do now_ — which name to put on the block, which
+to keep off it, who can still afford the man you want — sat behind a button
+nobody had pressed. Flipping the default alone would have reached nobody,
+because preferences merge over the defaults and are written back on mount, so
+everybody who has ever opened the app carries an explicit `advisor: false` that
+is the old default echoed back rather than a choice. `draft-vault:advisor-default:v2`
+is a one-time migration key in the idiom `LEAGUE_CONFIRMED_KEY` already uses,
+and turning it off after that sticks.
+
+**The budget rail highlighted the wrong row.** It coloured `activeTeamId` — the
+winning-team select, which names whoever just bought a player — on the panel
+somebody scans for _how much have I got left against them_. It marks yours now,
+the same way `TeamsPanel` already did. That is the third panel found making
+this mistake, after the advisor and the budget planner.
+
+**The act that happens sixty times was a dropdown of twelve identical words.**
+Recording a sale — who won, for how much — is the only thing in this app done
+once per player on the commissioner's sheet, while somebody shouts a number
+across a room, and it was a `<select>` whose every option began with "Team". So
+typeahead matched all twelve and reaching team nine was nine arrow presses or a
+mouse trip into a dropdown that covers the board. Measured in a browser: nine.
+
+A dropdown is the control for a list too long to show. Twelve is a row. Showing
+them costs one line of the band and buys three things: the choice is one press,
+the budgets are legible without opening anything, and the row is the readout for
+who can still bid — the question being asked at exactly that moment, previously
+a sentence underneath. Each chip asks `validateBid`, the same call that runs
+when it is pressed, so a chip that reads as live is a sale the engine will take;
+a full roster or a full position disables it because no price makes those legal,
+while money that cannot reach the bid only dims, because they may still take him
+at a lower number. A team that cannot win stays in place rather than
+disappearing — a row that reorders under the cursor mid-auction is worse than a
+button that says why.
+
+**The focus went to the wrong end of the transaction.** Nominating handed the
+cursor to the winning-team control, and the information arrives in the opposite
+order: the price is shouted _while_ the bidding runs and the winner is only
+known when it stops. It lands in the bid box now, so the running number can be
+typed as it climbs — which is also what keeps the competition readout honest
+while the decision is live. Who won costs one press whenever the bidding ends.
+
+**The advisor pushed all six panels off the bottom of the screen.** Turning it
+on by default was right — the panel answering _what do I do now_ was sitting
+behind a button nobody had pressed — and it made a second thing true that
+nobody looked at. At a 1050px window the box is about 880 tall, so the tab row
+and whatever panel it opens started below the fold: clicking `market` appeared
+to do nothing. Found by screenshotting the tabs rather than by reasoning about
+them, which is how every layout defect in this file was found. The aside is now
+the height of the window under the header and its three parts share it — the
+advisor keeps at most two fifths and scrolls inside that, the tab row is never
+squeezed, and the panel takes what is left. An opinion is worth less than the
+numbers under it, and it is the part that varies most in length.
+
+**Two of the six side panels could not be opened, at any window width.** The
+tab row was a `.dr-segmented` — an `inline-flex` with `overflow: hidden` — and
+`flex: 1` cannot shrink a button below its own text, so 443px of tabs were
+clipped to 378 and `bargains` and `plan` ran off the end. The aside is a fixed
+column, so this had nothing to do with the viewport and was the same at 1280 as
+at 1920. `plan` had therefore never been reachable. It is a three-column grid
+now rather than a wrap, because a grid cannot bring it back: a seventh panel
+adds a row instead of running off the end. jsdom measures nothing, so no
+assertion could have caught it — the guard is the layout, not a test.
+
+**And the panel behind it was planning the wrong team's money.** `BudgetPlanner`
+was handed `activeTeam`, the winning-team select — a _recording_ control that
+names who just bought a player and therefore sits on an opponent most of the
+night. It read "Team 9's budget" on a screen whose owner is Team 1: exactly the
+mistake the advisor was found making, in the panel whose whole subject is what a
+bid leaves _you_. It takes `myTeam` now, falling back to the select only when
+nobody is marked, and the header names whichever it got.
+
+**Two claims on one screen may not point opposite ways, and this one was found
+by looking.** The stage said "Bench only — he is a bench player and adds nothing
+to the lineup that scores", and an inch above the sold button, "Below value" in
+green. Both sentences were true. The price comparison is against the _league's_
+bar — points over the last man the league rosters — and a bench body really can
+sit under it. What is not true is that beating it is a reason to bid, and green
+beside a bid box is nothing but a reason to bid. The same thing happens without
+a full roster whenever the gain is negative: "Buying him gains −35 pts over
+Jonathan Taylor, free in the snake" under a green "Below value" is the sharper
+version, because there the seat is open and paying is still a measured loss.
+
+So `verdictFor` takes the snake gain and withholds the _tone_ rather than
+changing the words — the comparison still says Below value, in the colour of
+something that is not an argument, with one quiet line saying which lineup it
+is talking about. An overpay is deliberately left alone: it is already the
+loudest warning on the panel and muting it would be the same mistake pointed
+the other way. Four tests pin the relationship rather than the wording, because
+what must never come back is the green, not the phrasing.
+
+**What is for sale is what the sheet says, not what our prices imply.**
+`forSale` was `onSheet && estimatedValue > 1`, and the doc block above it
+already explained why the price half is wrong — then kept it anded on. A
+commissioner's list legitimately holds players we price at a dollar; that is
+the whole difference between a list and a size. Five of the owner's real sixty
+were therefore dropped out of everything that counts what is for sale: the
+market panel read "still for sale 47/55" over a sixty-name sheet, par was
+computed over 55 and so came out high, and `adviseOnNomination` — which reads
+`getForSale` precisely to avoid this proxy — could never put any of the five on
+the block.
+
+The tell is an invariant that should hold exactly and did not. `pricePool`
+spreads the room's whole budget across the sheet, so before anybody has bid,
+money left equals value left and inflation is 1. It opened at 1.004, and a
+multiplier wrong at the start is wrong all night. The proxy survives in the one
+case it is right for: with no sheet at all `onSheet` is everybody, because
+there is no list to mask with, so whether the money is chasing a player has to
+be inferred and the dollar floor is the only signal there is.
+
 **A player the room drafts and the pool has never heard of is still draftable.**
 nflverse's roster file lags signings, so Keenan Allen, Stefon Diggs and Deebo
 Samuel were inside the top 230 of real drafts and absent from a pool built the
@@ -1557,12 +2793,238 @@ is why he prices at a dollar anyway. The gain here is nominability, not price:
 these are all late-round names, and the point is that a commissioner's sheet
 naming one does not hit a board that has never heard of him.
 
+**Where an unrankable player sorts is a design decision, and getting it wrong
+cost the whole first impression.** The fourteen market-only players were given
+`adp: 0`, and the board's default sort reads `adp` directly — so the app opened
+on a wall of twelve cards with no projection, no rank and no price, made of
+exactly the players we know least about. Worse, each carried a four-line
+paragraph explaining itself, which made them the loudest thing on screen. They
+now sort behind everybody we can price (`MARKET_ONLY_RANK`), and the paragraph
+is a one-word `no data` chip beside the `snake` marker it sits next to, with
+the explanation on hover and in full on the nomination stage where a bid is
+actually decided. Nothing about the arithmetic changed; the board went from
+unusable to correct on one number and one element.
+
 `Player` requires numbers on a dozen headline fields, so widening them to null
 for fourteen players would be a large change to the type every panel reads.
 Instead `marketOnly` carries "we know nothing", and the rule it buys is that no
 panel may print one of those placeholder zeroes. The card and the nomination
 stage both show `—` and say why; the stage matters most, because "Projected 0"
 beside a bid box reads as a measurement and the measurement does not exist.
+
+**The block is the Spotlight now, and the dossier is on it.** The nomination
+band was a strip of six numbers, a 172px window onto prose with two hundred
+pixels of nothing under it, and a "Full profile" button — so the whole of what
+the board knows about the man being called was one click away from the one
+moment it is needed. `NominationStage` is one strip across the top (who he is,
+the six numbers a bid is decided on, the sentence that decides it), the dossier
+down the left, and the controls down the right in a column the dossier cannot
+move. The band has a fixed height and the tabs scroll inside it; the controls
+not moving is the rule that was kept, without the dead space that keeping it
+badly had cost. It folds — `▴ Fold` — to the strip and one row of controls, and
+below 1180px it is folded by CSS, because there is no room for a dossier under a
+strip and a form on one narrow column.
+
+`PlayerProfile` gained a `tonight` slot and is rendered inline inside the stage
+exactly as it is inside the raised card, so the block is not a second dossier
+that can drift from the first. What the slot carries is `SpotlightTonight`: what
+one bid on this player does to _your_ draft in the state the room is in right
+now. The seat he would take and the free man he displaces; the price worked as
+the chain it is — list, tonight, and the plan's walk-away as the last step, with
+a live reading of the bid typed so far against the plan's rate; the plan with
+him marked; who can legally take him off you, with the advisor's estimate of who
+_would_ in the same dashed box the advisor uses everywhere else; his position's
+shelf, run tape and demand row; the money in the room with par against pace;
+what the bid leaves you; and what the web said. None of it is new arithmetic.
+Every figure is one the engine already computes and a side panel already prints
+for the room as a whole — the tab points them at the one name being called,
+because a reading two tabs away is a reading nobody has with money on the table.
+The raised card and the modal deliberately do not get the tab: they are about
+the player, and the difference between the two surfaces is exactly this.
+
+The card carries a `◎` in its control cluster that puts him up top, and the
+table a column of them. Clicking the card still nominates; the glyph is the
+same act with a name on it, because a face that has to be clicked somewhere to
+do the one thing the board is for is a control nobody was told about. The
+cluster is 24px on its own ground rather than 20px glyphs over the card's last
+line of text.
+
+**A face is a layer over a monogram, never a branch between them.** Driven with
+the CDN unreachable, a sixty-card board showed sixty empty rings and not one
+set of initials — the fallback that exists for exactly that case rendered zero
+times. The cause is the service worker: its fetch handler takes every request,
+and a fetch for a CDN image on a dead network never settles, so the image sits
+`complete: false` for the whole night and no `error` event ever fires. An
+`onError` swap cannot see that. `Headshot` renders the initials always and the
+image over them; a photo that arrives covers the letters and one that never
+arrives, for any reason including reasons that fire no event, leaves them
+showing. The driver in the scratchpad blocks service workers and fulfils the CDN
+from `.cache/images/`, which is how screenshots show faces in a sandbox that
+cannot reach ESPN — and why the screenshots before it did not.
+
+**Two walk-aways on one screen.** The Value tab still carried the "What to bid"
+ladder built on `analytics.maxBid` — `riskAdjustedValue × 1.15`, the same
+multiplier for everybody, which the roster plan had already been written to
+replace — and it printed $42 beside a strip reading $52 for the same man. The
+ladder is gone; `BidScrub` reads the plan's number, so there is one walk-away
+in the room and it is the plan's.
+
+**Tokens that were referenced and never defined.** `--dr-ink-dim`, `--dr-dim`,
+`--dr-font-mono`, `--dr-bg` and `--dr-t-head` were used at twenty-two sites in
+the stylesheet and defined nowhere, so every one of them resolved to `inherit`:
+the team chips printed their names at full white, the bargain caveat was the
+brightest text in its panel, the "When to buy" tiles fell back to the browser's
+generic monospace, and the raised card's scrim had no background at all. They
+resolve to the canonical names now, and the check that finds them is one line of
+shell — every `var(--dr-*)` in the file against every `--dr-*:` declared.
+`--dr-ink-faint` was #5b6880, 3.2:1 on the surface it is printed on and the
+second most used colour in the room, at ten pixels; it is #728299, 4.6:1. Twenty-
+four font sizes below the scale's own ten-pixel floor were raised to it.
+Instruments fill "above the bar" with `--dr-mark`, a muted teal, rather than the
+verdict green: twelve elements on one card in that green left the price and the
+gain — the two things a bid is decided on — with nothing to stand out against.
+`GOOD` in `micro.tsx` resolves to the mark; `HOT` is the verdict green, for the
+one dot on a strip that is _him_.
+
+**The Bloomberg stylesheets were dead, both of them.** `bloomberg-sleeper.css`
+was imported by `index.css` and none of its ninety-eight classes was rendered by
+any component; `bloomberg-terminal.css` was not imported at all. Seventeen
+hundred lines, one of them shipping in the bundle. Deleted. The convention above
+that mentions `bloomberg-terminal.css` for the web-font lesson is history, not a
+file to look for.
+
+**What is set up once is behind one button.** The top bar carried eleven
+controls of one weight and wrapped to a second row at every laptop width — 95px
+at 1440, 133 at 1100 — and the row it wrapped onto held "Reset" alone. Six of
+those are pressed once a night or never: the rankings, the sheet, the league,
+the snake order, the file panel, the server. `SetupMenu` holds them, with a
+count of how many have something in force and a dot on each that does. The bar
+is 53px at 1440 with a player on the block.
+
+**The aside follows the chrome.** It was sticky at a fixed 74px while the block
+above it had become the whole dossier, so its top half sat under the bid box on
+any scroll. A `ResizeObserver` on `.dr-chrome` writes `--dr-chrome-h` on the
+room and the aside's offset and height are `calc()`s of it. It has a `height`
+rather than a `max-height`, which is what lets the advisor's percentage cap
+resolve — a percentage of a maximum resolves to nothing, so the box was as tall
+as its text and the tab row jumped between panels. Seven tabs became six:
+"Budgets" was a strict subset of "Rosters" and is folded into it as the money
+bar under each name; "Budget" beside it was the bid planner, one letter from a
+different thing, and is "This bid". The rosters panel drew nine seat chips for a
+ten-starter lineup because it iterated the positions and the flex is not one; it
+iterates the lineup slots. "When to buy" sits under the inflation meter, where
+the code comment already said it belonged.
+
+**The card front and the raised dossier, worked over from a screenshot audit.**
+Recorded as one list because the shape of every item is the same — something
+that was true of the code and invisible until the render was looked at. The
+crest behind the price at seven per cent painted a grey box under the one number
+that matters. The injury flag was a fourth grid child overflowing into a row of
+its own. A one-line name and a two-line name put every reading below them
+nineteen pixels apart across a row. The shelf's column count followed the list,
+so it redrew to fill the width and could never be seen to empty; it is sixteen
+sockets. "Can beat" was the quiet caption under the seat pips, labelling an
+instrument in the other column. The run tape was ten invisible cells before the
+first pick. A missed week and a bad week were two opacities of one grey. The
+raised card was 1180px in an 1800px window and resized to each tab so the tab
+bar moved under the cursor; it is 1600 and a fixed height, with an identity
+strip carrying the price and the gain on every tab, a Close, and focus on the
+tab bar. The Overview swarms were drawn over all of the position, so the median
+back sat below replacement and the value swarm piled at a dollar; they are over
+the startable cohort like every other instrument. "Season on season" was the
+sparkline the codebase had already retired, drawn under the game log that
+replaced it; it is three game logs at the same bar.
+
+**Pointing at an instrument names what is under the cursor.** The card's
+instruments carried `aria-label`s, which a screen reader gets and a mouse does
+not, so hovering a shelf column or a game-log bar produced nothing. Every mark
+carries a `data-tip` now — the man a shelf column is, what a game scored
+against the free man's number, who owns the seat a pip represents, which team
+a money tick belongs to and how far it can go, the chance of clearing the
+points under the cursor on the outcome curve — and the card reads it by
+delegation into one strip along its foot. The strip is a DOM node written
+through a ref rather than state, because sixty memoised cards and a re-render
+per mouse move on any of them is the cost the board was measured and fixed for
+once; and it is absolutely placed, because a card that reflows when pointed at
+moves the thing being pointed at. `PositionPulse` grew `shelfNames`,
+`rivalNames` and `mySeats` for the three tips that need a name — six objects
+for sixty cards, compared by contents as before.
+
+**The plan says when it last re-solved.** It always re-solved on every pick —
+the knapsack runs off `players` as its change signal — but nothing on the panel
+said so, and a number that does not visibly move is a number nobody trusts to
+have moved. The header carries "re-solved after pick N".
+
+**A kicker's dossier is every kick he took.** The pool prices a kicker off his
+points and knows nothing about how he got them; the two things a drafter wants
+to know — does his offence give him chances, and do the fifties go in — are
+not in it. nflverse's 2025 weekly asset carries both, as the distance of every
+made, missed and blocked attempt per game beside the extra points, and
+`scripts/build-kicking.mjs` folds them into `kicking.json` from the cached file
+the pool builder already downloaded. `KickChart` draws it as a spray: one row a
+week, one mark an attempt at its distance — a dot made it, a cross missed, a
+diamond was blocked — with rules at forty and fifty and the extra points down
+the right. Under it, his make rate per distance bucket against the league's
+kickers as a whole, which is the only sensible reference: a made fifty-five is
+not the same fact as a made twenty-five, and one rate over everything hides the
+only thing that separates kickers. The tab replaces Production, Usage, Offence
+and Career for a kicker, all four of which were empty for him.
+
+**A defence's personnel is a picture before it is a table.** The Unit tab
+listed the line, the linebackers and the secondary as three columns of names
+ordered by jersey. `DepthChart` puts the same men on the field — four down,
+three behind, two wide, two deep, the rest in a depth row under a dashed rule —
+and pointing at one names him with his age, his years, his size and his
+school. Amber rings are first- and second-year players, so how green the back
+seven is reads without a number. The order is still jersey, because the feed
+publishes no depth chart; the footnote says so.
+
+**Rosters are two columns.** Twelve teams in one column of a 380px aside was a
+scroll; two columns of six is a page.
+
+**Off the sheet there is no price, and the board printed one.** Every player
+not on the commissioner's sixty — every kicker, every defence, the four hundred
+depth men — carried "$1" on his card, in the table and across the spotlight's
+tiles, with a bid box beside it. The dollar is the pool's floor, where
+`pricePool` parks whatever the mask excludes, and it is not a claim about the
+player: nobody is bidding on him, he is taken in the snake for nothing. The slot
+where a price goes now says `snake` on the card and in the table, the
+spotlight's three money tiles collapse to one reading the same, and the form
+column carries no bid box for him — a note instead, and one button for the case
+that is actually possible on the night: the room _is_ auctioning him after all,
+so add him to the sheet, which is the same `setAuctionSheet` a paste comes
+through and leaves every pick already made exactly as legal.
+
+**The spotlight fits its tab, and steps back when you go to the board.** A
+fixed 58vh cut the live tab's second row off at every window size and made the
+one screen built to avoid scrolling scroll. The band is as tall as its tab
+needs now, up to the window under the bar — and because it is sticky, a
+full-height band would then cover the board it sits over. So scrolling past
+the top folds it to the strip and one row of controls: the bid box stays
+pinned, the board is browsable, and scrolling back up or pressing Dossier opens
+it again. Measured at 1440×900: 806px tall, nothing inside it scrolls.
+
+**One tooltip for the whole room.** Every `title` attribute in the app was a
+browser tooltip — half a second late, in the operating system's face, gone the
+moment the cursor twitched. `RoomTooltip` listens once on the room for the
+cursor arriving on anything titled, lifts the text off the element so the
+browser has nothing to show, draws it beside the cursor in the room's own type,
+and puts the attribute back when the cursor leaves. Nothing at a call site
+changed, which is what makes it complete: a caption written as a `title` is a
+custom tip everywhere, including the ones written next week. The card's
+instruments are deliberately not routed through it — they read into the strip
+at the card's foot, which sits still while the cursor moves over the thing it
+describes.
+
+**The kick spray is kicked on a field.** Goalposts at the end the marks fly
+toward, a yard line every ten, alternate weeks washed so a row can be followed
+across. The tab it sits on carries two more instruments built from the same
+kicks: the week-by-week game log every other position has, at the pool's own
+scoring for a kicker (three, four and five by distance, one for the extra
+point), and five strips against the kickers who held a job — points and
+attempts a game, accuracy, makes from fifty, longest — because attempts a game
+is the offence's doing and carries over least, while accuracy from fifty is his
+and is the part that separates him from the next man on the wire.
 
 ## The night, driven end to end
 
@@ -1575,6 +3037,13 @@ nothing ambiguous, unmatched or duplicated; all fifty sold through the keyboard
 path; the phase moving to the snake by itself when the sheet emptied; nineteen
 snake picks, **none of them carrying a cost**; and no console error anywhere
 across sixty-nine picks.
+
+That drive is now also a test. `src/test/services/wholeNight.test.ts` runs the
+same night at the engine — the sheet sold to exhaustion, the phase turning by
+itself when it empties, the snake filling all 132 remaining seats, the draft
+ending at 192, and not one free pick carrying a price. A browser drive is slow
+enough that it happens once and then stops happening, and the pieces were unit
+tested separately while the join between them was not.
 
 The run ends where it should. The driver takes whatever is top of the board
 regardless of who is on the clock, so it eventually offered a fourth tight end
@@ -1619,3 +3088,44 @@ page and logs a CSP error on every load, so the prelude shadows
 
 The app itself hotlinks the ESPN CDN and commits no images; `.cache/images/`
 holds what the artifact build has already fetched.
+
+**Safari painted every section's contents one section away, and the layout
+engine was the defect.** Found on the deployed page rather than in the driver,
+because the driver is Chromium. The Tonight tab and every dossier tab were CSS
+multi-column — `columns: 340px` and `columns: 420px` with `break-inside:
+avoid` — chosen over a grid because columns fill down and then across and so
+leave no holes. Chromium fragments that correctly. WebKit's fragmentation goes
+stale the moment something inside a column changes height after layout, and a
+bid box changes it on every keystroke: the owner's screenshot had the plan's
+three rows painted inside the "Can beat" box, the price chain inside "The
+plan", and the rival rows over the advisor, with every section's border in the
+right place and its contents a section adrift. On the Overview tab the same
+engine overflowed sideways into a horizontal scrollbar.
+
+`usePackedColumns` does the packing by arithmetic instead. The container is an
+ordinary grid of N equal columns and four-pixel rows; each child is measured
+and written a column — the shortest so far — and a run of rows tall enough to
+hold it, as two inline properties. Nothing moves in the DOM, so React never
+remounts a chart or loses a slider, and every `.dr-tabpanel > …` rule keeps
+matching. Wide children — the tiles, a verdict line, a notice, the research
+box — span every column and start a fresh band, which is what `column-span:
+all` did. Heights are re-read on mount, on any resize of the container or a
+child, and when a child comes or goes; `align-items: start` in the stylesheet
+is what keeps the reading honest, because a child stretched to the rows it was
+last given would measure as tall as them and the layout would feed on itself.
+Four tests state the sizes jsdom cannot lay out and assert where each section
+is dealt.
+
+Two smaller things from the same screenshot. What the typed bid does — its
+rate against the plan's, and what it leaves you — was two sections of the
+Tonight tab while the column the bid is typed in sat two thirds empty beneath
+the team chips; it is `BidConsequence` under SOLD now, and the tab lost the two
+sections rather than keeping a second copy. And the last `window.confirm` in
+the room, on passing over the final name of the sheet, asks inline in the
+block's own type; the server panel's rename prompt and delete confirm went the
+same way. The price chain's note moved under its bar because "59 pts ÷ 2.60
+pts/$" wrapped to two lines in a forty-six-pixel cell, the Tonight columns
+widened from 300 to 340 because "Bijan Robin…" is not a name, and the Overview's
+value swarm is drawn over the men actually for sale — with a sheet in force,
+every off-sheet man sits at the dollar floor by construction, so over the
+startable cohort the median read $1.

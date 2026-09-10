@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  HOME_LEAGUE,
   LEAGUE_LIMITS,
   LINEUP_SLOTS,
   RECEPTION_SCORING,
@@ -13,6 +14,7 @@ import {
   type LineupSlot,
   type Position,
 } from '@/lib/valuation';
+import { useDismissOnEscape } from '@/hooks/use-dismiss-on-escape';
 
 interface LeagueSettingsProps {
   /** Every team, so they can be named and one marked as yours. */
@@ -41,14 +43,16 @@ interface LeagueSettingsProps {
   sheetSize: number;
   onApply: (league: LeagueShape) => void;
   /**
-   * Nobody has said what league this is yet.
+   * Nobody has confirmed the league yet.
    *
-   * With nothing stored the board is priced at the league the *pool* was built
-   * for — full PPR, no flex — which is what nflverse scores, not what anybody
-   * plays. Every number on every card is computed from these fields, so the
-   * first run asks rather than assuming, and confirming is what makes the ask
-   * stop. It is the cheapest possible check against the most expensive possible
-   * mistake: pricing a whole auction under somebody else's rules.
+   * The board no longer opens under somebody else's rules — `HOME_LEAGUE` is
+   * the league being played, and an empty browser prices at it with the
+   * commissioner's sheet already applied. So this gate stopped being the
+   * cheapest check against the most expensive mistake and became something
+   * smaller and still worth one press: the only place a rule the commissioner
+   * changed *since this was built* can be caught before anything is bid. The
+   * flag stays because "somebody has looked" is a different question from
+   * "a league is stored", and it is still the second one that matters.
    */
   firstRun?: boolean;
   onClose: () => void;
@@ -107,13 +111,12 @@ export const LeagueSettings = ({
 
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      // Escape is a way out, and on a first run there is nowhere out to go.
-      if (event.key === 'Escape' && !firstRun) onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose, firstRun]);
+  }, []);
+
+  // Escape is a way out, and on a first run there is nowhere out to go: the
+  // gate exists because a board priced under somebody else's rules is worse
+  // than no board.
+  useDismissOnEscape(onClose, !firstRun);
 
   const draft = useMemo<LeagueShape>(() => {
     const teamCount = asNumber(teams, league.teams);
@@ -250,11 +253,12 @@ export const LeagueSettings = ({
             </p>
             {firstRun && (
               <p className="dr-league-warning">
-                These are the pool&rsquo;s own defaults, not yours: full PPR with no flex, because
-                that is what the source data scores. If your league is half PPR, every pass-catcher
-                on this board is currently worth about fifty points more than he is to you — and the
-                auction is mostly pass-catchers. Check the scoring and the starting lineup before
-                anything is bid.
+                These are already your league&rsquo;s rules — {league.teams} teams, ${league.budget}
+                , {league.rosterSize} spots, half PPR with {league.startingLineup.FLEX} flex — and
+                the commissioner&rsquo;s sheet is loaded, so the board behind this is priced for the
+                auction you are actually holding. This asks once anyway, because the only thing it
+                can still catch is a rule the commissioner changed since this was built. Read them,
+                then confirm.
               </p>
             )}
           </div>
@@ -546,9 +550,16 @@ export const LeagueSettings = ({
               Cancel
             </button>
           )}
-          {!sameLeague(league, poolLeague) && (
-            <button type="button" className="dr-button" onClick={() => onApply(poolLeague)}>
-              Back to {poolLeague.teams} × ${poolLeague.budget}
+          {/*
+            Back to *this build's* league, not to the shape the pool file was
+            priced at. They were one constant once, and the escape hatch went to
+            the wrong place the moment they stopped being: full PPR with no flex
+            is a valid league and not the one being played, so offering it as
+            the way back would undo the fix rather than complete it.
+          */}
+          {!sameLeague(league, HOME_LEAGUE) && (
+            <button type="button" className="dr-button" onClick={() => onApply(HOME_LEAGUE)}>
+              Back to {HOME_LEAGUE.teams} × ${HOME_LEAGUE.budget}
             </button>
           )}
         </div>

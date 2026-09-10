@@ -13,7 +13,7 @@ describe('getSpendOutlook', () => {
   const hybrid = () =>
     leagueShape({
       teams: 12,
-      budget: 200,
+      budget: 100,
       rosterSize: 16,
       receptionPoints: 0.5,
       auctionSheetSize: 50,

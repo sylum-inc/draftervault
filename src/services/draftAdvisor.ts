@@ -163,6 +163,44 @@ export const readTheRoom = (
 };
 
 /**
+ * Rivals who would stop at the same number for the same reason, said once.
+ *
+ * Before anybody has bought anything eleven teams have the identical seat open
+ * and the identical money, so a list of rivals is the identical two-line
+ * reason eleven times. One line per distinct price and reason, with the names
+ * run together, is the same information at a tenth of the height.
+ */
+export const groupRoomRead = (
+  room: RoomRead
+): Array<{ names: string; plausible: number; legal: number; why: string; count: number }> => {
+  const groups = new Map<
+    string,
+    { names: string[]; plausible: number; legal: number; why: string }
+  >();
+  for (const rival of room.rivals) {
+    const key = `${rival.plausible}|${rival.why}`;
+    const group = groups.get(key) ?? {
+      names: [],
+      plausible: rival.plausible,
+      legal: rival.legal,
+      why: rival.why,
+    };
+    group.names.push(rival.team.name);
+    groups.set(key, group);
+  }
+  return [...groups.values()].map((group) => ({
+    why: group.why,
+    plausible: group.plausible,
+    legal: group.legal,
+    count: group.names.length,
+    names:
+      group.names.length > 3
+        ? `${group.names.slice(0, 3).join(', ')} and ${group.names.length - 3} more`
+        : group.names.join(', '),
+  }));
+};
+
+/**
  * Bid, take the value, hold or walk.
  *
  * The verdict is a function of three things a bidder cannot hold in their head
@@ -304,15 +342,31 @@ export const adviseOnSnakePick = (
   const byPoints = (a: Player, b: Player) => b.projectedPoints - a.projectedPoints;
 
   const need = unfilledSlotsFor(player.position, team.roster, league);
+
+  /*
+   * Ranked by what each man adds to *this* lineup, not by raw projection.
+   *
+   * The two orderings agree while the roster is empty and part company exactly
+   * when it starts filling: with both back slots gone and a flex open, the
+   * highest-projected back left is not the pick — the pick is whoever has the
+   * widest gap to whatever else would take that flex, which is a comparison
+   * across positions that a per-position sort cannot make. It falls back to
+   * points wherever the plan cannot be computed at all, so the advice never
+   * goes quiet for want of a snake order.
+   */
+  const board = service.getPickBoard();
+  const gainOf = (entry: Player) => board.get(entry.id)?.gain ?? entry.projectedPoints;
+  const byGain = (a: Player, b: Player) => gainOf(b) - gainOf(a);
+
   const bestAtHis = available
     .filter((p) => p.position === player.position)
     .sort(byPoints)
     .find(() => true);
   const bestAtNeed = available
     .filter((p) => unfilledSlotsFor(p.position, team.roster, league) > 0)
-    .sort(byPoints)
+    .sort(byGain)
     .find(() => true);
-  const bestLeft = [...available].sort(byPoints)[0];
+  const bestLeft = [...available].sort(byGain)[0];
 
   // How long the roster waits before it is asked again. At the turn it is one
   // pick; in the middle of a round it is most of two.
@@ -343,7 +397,8 @@ export const adviseOnSnakePick = (
 
   if (bestAtNeed && bestAtNeed.id !== player.id && need === 0) {
     reasons.push(
-      `${bestAtNeed.name} is still there at ${bestAtNeed.position}, which this roster does have to fill.`
+      `${bestAtNeed.name} is still there at ${bestAtNeed.position}, which this roster does have to fill` +
+        (board.has(bestAtNeed.id) ? ` — worth ${gainOf(bestAtNeed)} points to the lineup.` : '.')
     );
   }
 
@@ -372,12 +427,14 @@ export const adviseOnSnakePick = (
   } else if (need > 0) {
     verdict = 'TAKE';
     headline = `Fills a starting slot, and he is the best ${player.position} left.`;
-  } else if (bestAtNeed && bestAtNeed.projectedPoints >= player.projectedPoints - 10) {
+  } else if (bestAtNeed && gainOf(bestAtNeed) >= gainOf(player) - 10) {
     verdict = 'HOLD';
     headline = `A slot still open has somebody comparable in it.`;
   } else if (bestLeft && bestLeft.id === player.id) {
     verdict = 'TAKE';
-    headline = `Best player left on the board.`;
+    headline = board.has(player.id)
+      ? `Adds more to this lineup than anybody left.`
+      : `Best player left on the board.`;
   } else {
     verdict = 'HOLD';
     headline = `Fine, but neither a need nor the best left.`;
@@ -729,11 +786,23 @@ export const buildAlerts = (
         message: `${team.name} has $${team.remaining} left and ${startersLeft} starting slot${startersLeft === 1 ? '' : 's'} still open.`,
       });
     }
+    /*
+     * A seat this roster still needs, at a position running out of anybody
+     * worth putting in it.
+     *
+     * Counted above replacement rather than by tier, which is the definition
+     * the run alert twenty lines up already uses — two answers to "how many
+     * startable ones are left" in one function, and the tier one was wrong.
+     * Kickers and defences are regressed so hard that the pool holds none
+     * above tier 2 at all, so this fired "0 startable Ks left and Team 1 needs
+     * 1" from the fourth pick of every draft and never stopped. It is not even
+     * true in the sense that matters: no kicker is on the sheet, so the snake
+     * hands you one for nothing.
+     */
+    const startableLeft = new Map(service.getPositionRuns().map((row) => [row.position, row.left]));
     for (const position of POSITIONS) {
       const short = unfilledSlotsFor(position, team.roster, league);
-      const left = players.filter(
-        (p) => p.position === position && !p.isDrafted && p.tier <= 2
-      ).length;
+      const left = startableLeft.get(position) ?? 0;
       if (short > 0 && left <= 4 && filled > 3) {
         alerts.push({
           id: `roster-need:${position}`,

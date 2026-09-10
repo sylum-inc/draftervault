@@ -126,7 +126,42 @@ export const consensusOverrides = (
   // Only the players the money is actually buying. Everybody else keeps the
   // dollar floor he already sits at, which is the honest price for somebody no
   // money is chasing.
-  const ordered = marketOrder(players).filter((player) => player.forSale !== false);
+  // One order over the whole board, in one space.
+  //
+  // `RankingOverride.rank` is an overall rank and nothing else: `rankingsCsv`
+  // reads it out of a column headed `rank`, `overall` or `ovr`, the profile
+  // prints it as "#n overall", and both boards sort 628 players by it. Writing
+  // a within-position index here — which is what this did — made all four of
+  // those wrong at once, and only after pressing the button that is the
+  // recommended way to run the night. What it looked like is the useful part:
+  // every position has a rank 1, so the sort round-robins them, and the top six
+  // cards were the TE4 at $3 and the QB5 at $1 above Ja'Marr Chase.
+  //
+  // Ranking only the players the market speaks for leaves two rank spaces in
+  // one field, which is the same bug an order of magnitude quieter: the rest
+  // keep our own 1-628 rank, and Easton Stick came out at #148 above two
+  // hundred and fifty players real drafts were actually taking. So the tail is
+  // ranked too, after every one of them, in our order — which is the honest
+  // claim about a player the market has no opinion on, and is a rank only. No
+  // *price* is written for them, here or anywhere: they keep ours, because
+  // inventing a market opinion for a player no market spoke about is the one
+  // thing this module exists to refuse.
+  const ranked = marketOrder(players);
+  const spokenFor = new Set(ranked.map((player) => player.gsis));
+  const tail = players
+    .filter((player) => !spokenFor.has(player.gsis))
+    .sort((a, b) => b.auctionValue - a.auctionValue);
+
+  const overrides: Record<string, RankingOverride> = {};
+  [...ranked, ...tail].forEach((player, index) => {
+    overrides[player.gsis] = { rank: index + 1 };
+  });
+
+  // Only the players the money is actually buying get a price. Everybody else
+  // keeps the dollar floor he already sits at, which is the honest number for
+  // somebody no money is chasing — and, once a sheet is in force, the thing
+  // that keeps the permutation inside the set the budget is spread across.
+  const ordered = ranked.filter((player) => player.forSale !== false);
   const byPosition = new Map<string, Array<(typeof ordered)[number]>>();
   for (const player of ordered) {
     const list = byPosition.get(player.position);
@@ -134,14 +169,13 @@ export const consensusOverrides = (
     else byPosition.set(player.position, [player]);
   }
 
-  const overrides: Record<string, RankingOverride> = {};
   for (const [, group] of byPosition) {
     // Our prices at this position, largest first: the curve, kept intact.
     const curve = group.map((player) => player.auctionValue).sort((a, b) => b - a);
     group.forEach((player, index) => {
       overrides[player.gsis] = {
+        ...overrides[player.gsis],
         value: curve[index],
-        rank: index + 1,
         notes: player.marketSource === 'adp' ? 'adp' : 'consensus',
       };
     });
